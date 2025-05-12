@@ -1,0 +1,518 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Sample blog post data
+const blogPosts = [
+  {
+    id: 'ai-in-product-management',
+    title: 'The Future of AI in Product Management',
+    date: 'May 10, 2025',
+    excerpt: 'Exploring how artificial intelligence is reshaping product development and creating new opportunities for innovation.',
+    categories: ['AI', 'Product Management'],
+    readTime: '6 min read'
+  },
+  {
+    id: 'better-user-experiences',
+    title: 'Building Better User Experiences',
+    date: 'April 25, 2025',
+    excerpt: 'Insights and best practices for designing user experiences that delight customers while driving business results.',
+    categories: ['UX Design', 'Frontend Development'],
+    readTime: '5 min read'
+  },
+  {
+    id: 'scaling-tech-teams',
+    title: 'Scaling Engineering Teams: Lessons Learned',
+    date: 'April 12, 2025',
+    excerpt: 'Key insights from my experience growing engineering teams from 5 to 50+ while maintaining productivity and culture.',
+    categories: ['Leadership', 'Engineering'],
+    readTime: '8 min read'
+  },
+  {
+    id: 'react-performance',
+    title: 'Advanced React Performance Optimization Techniques',
+    date: 'March 30, 2025',
+    excerpt: 'Practical strategies to improve the performance of your React applications and provide a smoother user experience.',
+    categories: ['React', 'Performance', 'Frontend'],
+    readTime: '10 min read'
+  },
+  {
+    id: 'data-driven-product-decisions',
+    title: 'Making Data-Driven Product Decisions',
+    date: 'March 15, 2025',
+    excerpt: 'How to effectively use data to inform your product decisions and create features that users actually want.',
+    categories: ['Product Management', 'Data'],
+    readTime: '7 min read'
+  },
+  {
+    id: 'microservices-architecture',
+    title: 'Microservices vs Monoliths: Making the Right Choice',
+    date: 'February 28, 2025',
+    excerpt: 'An analysis of when to choose microservices over monolithic architecture, with real-world case studies and lessons.',
+    categories: ['Architecture', 'Backend'],
+    readTime: '9 min read'
+  }
+];
+
+// Get all unique categories
+const allCategories = [...new Set(blogPosts.flatMap(post => post.categories))];
+---
+
+<Layout title="Blog" description="Read my latest thoughts on product management, software development, and technology trends">
+  <div class="blog-page">
+    <section class="blog-hero">
+      <h1>My Blog</h1>
+      <p class="lead">Thoughts on product management, software development, and technology trends</p>
+    </section>
+
+    <div class="blog-container">
+      <main class="blog-main">
+        <div class="blog-filters">
+          <div class="search-container">
+            <input type="text" id="blog-search" placeholder="Search articles..." class="search-input">
+          </div>
+        </div>
+
+        <div class="blog-grid">
+          {blogPosts.map(post => (
+            <article class="blog-card">
+              <a href={`/blog/${post.id}`} class="blog-card-link">
+                <div class="blog-card-image">
+                  <div class="placeholder-image"></div>
+                </div>
+                <div class="blog-card-content">
+                  <div class="blog-card-meta">
+                    <span class="blog-date">{post.date}</span>
+                    <span class="blog-read-time">{post.readTime}</span>
+                  </div>
+                  <h2 class="blog-title">{post.title}</h2>
+                  <p class="blog-excerpt">{post.excerpt}</p>
+                  <div class="blog-categories">
+                    {post.categories.map(category => (
+                      <span class="blog-category">{category}</span>
+                    ))}
+                  </div>
+                </div>
+              </a>
+            </article>
+          ))}
+        </div>
+
+        <div class="blog-pagination">
+          <button class="pagination-btn active">1</button>
+          <button class="pagination-btn">2</button>
+          <button class="pagination-btn">3</button>
+          <span class="pagination-ellipsis">...</span>
+          <button class="pagination-btn">Next →</button>
+        </div>
+      </main>
+
+      <aside class="blog-sidebar">
+        <div class="sidebar-widget">
+          <h3 class="widget-title">Categories</h3>
+          <ul class="category-list">
+            {allCategories.map(category => (
+              <li class="category-item">
+                <a href="#" class="category-link" data-category={category}>{category}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div class="sidebar-widget">
+          <h3 class="widget-title">Popular Posts</h3>
+          <ul class="popular-posts">
+            <li class="popular-post">
+              <a href="/blog/ai-in-product-management">
+                <span class="popular-post-title">The Future of AI in Product Management</span>
+                <span class="popular-post-date">May 10, 2025</span>
+              </a>
+            </li>
+            <li class="popular-post">
+              <a href="/blog/scaling-tech-teams">
+                <span class="popular-post-title">Scaling Engineering Teams: Lessons Learned</span>
+                <span class="popular-post-date">April 12, 2025</span>
+              </a>
+            </li>
+            <li class="popular-post">
+              <a href="/blog/data-driven-product-decisions">
+                <span class="popular-post-title">Making Data-Driven Product Decisions</span>
+                <span class="popular-post-date">March 15, 2025</span>
+              </a>
+            </li>
+          </ul>
+        </div>
+
+        <div class="sidebar-widget">
+          <h3 class="widget-title">Subscribe</h3>
+          <div class="subscribe-form">
+            <p>Get notified about new articles and updates.</p>
+            <div class="form-group">
+              <input type="email" placeholder="Your email address" class="form-input">
+              <button class="btn btn-primary">Subscribe</button>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Search functionality
+    const searchInput = document.getElementById('blog-search');
+    const blogCards = document.querySelectorAll('.blog-card');
+    
+    if (searchInput) {
+      searchInput.addEventListener('input', () => {
+        const searchTerm = searchInput.value.toLowerCase();
+        
+        blogCards.forEach(card => {
+          const title = card.querySelector('.blog-title').textContent.toLowerCase();
+          const excerpt = card.querySelector('.blog-excerpt').textContent.toLowerCase();
+          const categories = Array.from(card.querySelectorAll('.blog-category')).map(cat => cat.textContent.toLowerCase());
+          
+          const match = title.includes(searchTerm) || 
+                        excerpt.includes(searchTerm) || 
+                        categories.some(cat => cat.includes(searchTerm));
+          
+          card.style.display = match ? 'block' : 'none';
+        });
+      });
+    }
+    
+    // Category filtering
+    const categoryLinks = document.querySelectorAll('.category-link');
+    
+    categoryLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        
+        const selectedCategory = link.getAttribute('data-category').toLowerCase();
+        
+        blogCards.forEach(card => {
+          const cardCategories = Array.from(card.querySelectorAll('.blog-category')).map(cat => cat.textContent.toLowerCase());
+          
+          const match = cardCategories.includes(selectedCategory);
+          card.style.display = match ? 'block' : 'none';
+        });
+        
+        // Update active state for category links
+        categoryLinks.forEach(catLink => {
+          catLink.classList.remove('active');
+        });
+        link.classList.add('active');
+        
+        // Reset search input
+        if (searchInput) {
+          searchInput.value = '';
+        }
+      });
+    });
+  });
+</script>
+
+<style>
+  .blog-page {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .blog-hero {
+    text-align: center;
+    padding: 4rem 0 3rem;
+  }
+
+  .blog-hero h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+  }
+
+  .blog-hero .lead {
+    font-size: 1.25rem;
+    max-width: 700px;
+    margin: 0 auto;
+    color: var(--text-light);
+  }
+
+  .blog-container {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 3rem;
+    margin-top: 2rem;
+  }
+
+  .blog-filters {
+    margin-bottom: 2rem;
+  }
+
+  .search-container {
+    width: 100%;
+    max-width: 500px;
+  }
+
+  .search-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+  }
+
+  .blog-grid {
+    display: grid;
+    gap: 2.5rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .blog-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .blog-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .blog-card-link {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .blog-card-image {
+    height: 200px;
+    overflow: hidden;
+  }
+
+  .placeholder-image {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+  }
+
+  .blog-card-content {
+    padding: 1.5rem;
+  }
+
+  .blog-card-meta {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+  }
+
+  .blog-title {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+    transition: color 0.2s ease;
+  }
+
+  .blog-card:hover .blog-title {
+    color: var(--primary-color);
+  }
+
+  .blog-excerpt {
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+  }
+
+  .blog-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .blog-category {
+    background: var(--background-alt);
+    color: var(--text-light);
+    font-size: 0.8rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: 4px;
+  }
+
+  .blog-pagination {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 2rem;
+  }
+
+  .pagination-btn, .pagination-ellipsis {
+    padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    background: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .pagination-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+  }
+
+  .pagination-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+  }
+
+  .pagination-ellipsis {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: default;
+  }
+
+  /* Sidebar */
+  .blog-sidebar {
+    position: sticky;
+    top: 2rem;
+    align-self: start;
+  }
+
+  .sidebar-widget {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
+  }
+
+  .widget-title {
+    margin-bottom: 1.25rem;
+    position: relative;
+    padding-bottom: 0.75rem;
+    font-size: 1.25rem;
+  }
+
+  .widget-title::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 3px;
+  }
+
+  .category-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .category-item {
+    margin-bottom: 0.75rem;
+  }
+
+  .category-link {
+    display: block;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    padding: 0.25rem 0;
+  }
+
+  .category-link:hover, .category-link.active {
+    color: var(--primary-color);
+  }
+
+  .popular-posts {
+    list-style: none;
+    padding: 0;
+  }
+
+  .popular-post {
+    margin-bottom: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .popular-post:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .popular-post a {
+    display: block;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  .popular-post a:hover {
+    color: var(--primary-color);
+  }
+
+  .popular-post-title {
+    display: block;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+
+  .popular-post-date {
+    display: block;
+    font-size: 0.85rem;
+    color: var(--text-light);
+  }
+
+  .subscribe-form p {
+    margin-bottom: 1rem;
+    color: var(--text-light);
+  }
+
+  .form-group {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+  }
+
+  @media (max-width: 900px) {
+    .blog-container {
+      grid-template-columns: 1fr;
+    }
+
+    .blog-sidebar {
+      position: static;
+      margin-top: 3rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .blog-hero h1 {
+      font-size: 2.5rem;
+    }
+
+    .blog-card-image {
+      height: 180px;
+    }
+  }
+</style>

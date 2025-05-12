@@ -1,0 +1,334 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+const projects = [
+  {
+    id: 'project-1',
+    title: 'E-commerce Platform',
+    category: 'Web Development',
+    description: 'A fully responsive e-commerce platform built with React, Node.js, and MongoDB. Features include user authentication, product search, shopping cart, and payment integration.',
+    technologies: ['React', 'Node.js', 'Express', 'MongoDB', 'Stripe API'],
+    image: 'project1'
+  },
+  {
+    id: 'project-2',
+    title: 'Task Management App',
+    category: 'Web Application',
+    description: 'A productivity application designed to help teams manage tasks and projects efficiently. Includes features like task assignment, due dates, progress tracking, and collaboration tools.',
+    technologies: ['Vue.js', 'Firebase', 'Tailwind CSS', 'RESTful API'],
+    image: 'project2'
+  },
+  {
+    id: 'project-3',
+    title: 'Analytics Dashboard',
+    category: 'Data Visualization',
+    description: 'An interactive analytics dashboard that helps businesses visualize and understand their data. Includes customizable charts, filters, and reporting features.',
+    technologies: ['React', 'D3.js', 'AWS', 'TypeScript', 'GraphQL'],
+    image: 'project3'
+  },
+  {
+    id: 'project-4',
+    title: 'Mobile Fitness App',
+    category: 'Mobile Development',
+    description: 'A fitness tracking application that helps users monitor their workouts, nutrition, and progress. Features include workout plans, progress tracking, and social sharing.',
+    technologies: ['React Native', 'Redux', 'Node.js', 'MongoDB', 'Health API'],
+    image: 'project4'
+  },
+  {
+    id: 'project-5',
+    title: 'Content Management System',
+    category: 'Web Development',
+    description: 'A custom CMS built for a media company to manage their digital content. Includes features for content creation, scheduling, and distribution across multiple platforms.',
+    technologies: ['Next.js', 'GraphQL', 'PostgreSQL', 'AWS S3', 'CI/CD'],
+    image: 'project5'
+  },
+  {
+    id: 'project-6',
+    title: 'AI Recommendation Engine',
+    category: 'Machine Learning',
+    description: 'An AI-powered recommendation system that suggests products based on user behavior and preferences. Implemented for an e-commerce client to increase sales and user engagement.',
+    technologies: ['Python', 'TensorFlow', 'AWS', 'API Development', 'Data Analysis'],
+    image: 'project6'
+  }
+];
+
+const categories = [...new Set(projects.map(project => project.category))];
+---
+
+<Layout title="Portfolio" description="Explore my portfolio of software development and product management projects">
+  <div class="portfolio-page">
+    <section class="portfolio-hero">
+      <h1>My Portfolio</h1>
+      <p class="lead">A collection of my recent projects and work</p>
+    </section>
+
+    <section class="portfolio-filters">
+      <div class="filter-container">
+        <button class="filter-btn active" data-category="all">All Projects</button>
+        {categories.map(category => (
+          <button class="filter-btn" data-category={category}>{category}</button>
+        ))}
+      </div>
+    </section>
+
+    <section class="portfolio-grid">
+      {projects.map(project => (
+        <div class="portfolio-item" data-category={project.category}>
+          <div class="portfolio-image">
+            <div class="placeholder-image">{project.image}</div>
+            <div class="portfolio-overlay">
+              <a href={`/portfolio/${project.id}`} class="btn btn-white">View Details</a>
+            </div>
+          </div>
+          <div class="portfolio-content">
+            <h3>{project.title}</h3>
+            <div class="portfolio-category">{project.category}</div>
+            <p>{project.description}</p>
+            <div class="portfolio-tech">
+              {project.technologies.map(tech => (
+                <span class="tech-tag">{tech}</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      ))}
+    </section>
+
+    <section class="portfolio-cta">
+      <div class="cta-card">
+        <h2>Need a custom project?</h2>
+        <p>I'm available for freelance work and consulting. Let's discuss how I can help bring your ideas to life.</p>
+        <a href="/contact" class="btn btn-primary">Get in Touch</a>
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<script>
+  // Filter portfolio items by category
+  document.addEventListener('DOMContentLoaded', () => {
+    const filterBtns = document.querySelectorAll('.filter-btn');
+    const portfolioItems = document.querySelectorAll('.portfolio-item');
+    
+    filterBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        // Remove active class from all buttons
+        filterBtns.forEach(btn => btn.classList.remove('active'));
+        
+        // Add active class to clicked button
+        btn.classList.add('active');
+        
+        // Get selected category
+        const category = btn.getAttribute('data-category');
+        
+        // Filter portfolio items
+        portfolioItems.forEach(item => {
+          if (category === 'all' || item.getAttribute('data-category') === category) {
+            item.style.display = 'block';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    });
+  });
+</script>
+
+<style>
+  .portfolio-page {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .portfolio-hero {
+    text-align: center;
+    padding: 4rem 0 3rem;
+  }
+
+  .portfolio-hero h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+  }
+
+  .portfolio-hero .lead {
+    font-size: 1.25rem;
+    max-width: 700px;
+    margin: 0 auto;
+    color: var(--text-light);
+  }
+
+  .portfolio-filters {
+    margin-bottom: 3rem;
+  }
+
+  .filter-container {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .filter-btn {
+    background: white;
+    border: 1px solid var(--border-color);
+    padding: 0.5rem 1.25rem;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .filter-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+  }
+
+  .filter-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+  }
+
+  .portfolio-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 2.5rem;
+    margin-bottom: 4rem;
+  }
+
+  .portfolio-item {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .portfolio-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .portfolio-image {
+    height: 220px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .placeholder-image {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.5rem;
+  }
+
+  .portfolio-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .portfolio-item:hover .portfolio-overlay {
+    opacity: 1;
+  }
+
+  .btn-white {
+    background: white;
+    color: var(--text-color);
+    padding: 0.6rem 1.25rem;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+
+  .btn-white:hover {
+    background: var(--primary-color);
+    color: white;
+  }
+
+  .portfolio-content {
+    padding: 1.5rem;
+  }
+
+  .portfolio-content h3 {
+    margin-bottom: 0.5rem;
+  }
+
+  .portfolio-category {
+    color: var(--primary-color);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 1rem;
+  }
+
+  .portfolio-content p {
+    margin-bottom: 1.2rem;
+    color: var(--text-light);
+    font-size: 0.95rem;
+  }
+
+  .portfolio-tech {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tech-tag {
+    background: var(--background-alt);
+    color: var(--text-light);
+    font-size: 0.8rem;
+    padding: 0.25rem 0.7rem;
+    border-radius: 4px;
+  }
+
+  .portfolio-cta {
+    margin: 4rem 0;
+  }
+
+  .cta-card {
+    background: white;
+    text-align: center;
+    padding: 3rem;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+  }
+
+  .cta-card h2 {
+    margin-bottom: 1rem;
+    color: var(--text-color);
+  }
+
+  .cta-card p {
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    color: var(--text-light);
+  }
+
+  @media (max-width: 768px) {
+    .portfolio-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .portfolio-hero h1 {
+      font-size: 2.5rem;
+    }
+
+    .cta-card {
+      padding: 2rem;
+    }
+  }
+</style>

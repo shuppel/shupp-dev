@@ -1,0 +1,433 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="About Me" description="Learn more about my professional background, skills, and experience">
+  <div class="about-page">
+    <section class="about-hero">
+      <div class="about-hero-content">
+        <h1>About Me</h1>
+        <p class="lead">Software engineer and product manager with a passion for building innovative solutions.</p>
+      </div>
+    </section>
+
+    <section class="about-section">
+      <div class="about-grid">
+        <div class="about-content">
+          <h2>My Story</h2>
+          <p>I'm a passionate software engineer and product manager with over 10 years of experience in the tech industry. I specialize in building scalable web applications and leading product development teams.</p>
+          
+          <p>Throughout my career, I've worked with startups and established companies to deliver user-centered products that solve real problems. I believe in the power of technology to transform businesses and improve people's lives.</p>
+          
+          <p>My approach combines technical expertise with strategic thinking and user empathy. I thrive in collaborative environments where I can leverage my skills to build products that users love.</p>
+          
+          <h3>Professional Philosophy</h3>
+          <p>I believe that great products come from a deep understanding of user needs, technical excellence, and thoughtful design. My goal is always to create solutions that are not only functional but also delightful to use.</p>
+        </div>
+        
+        <div class="profile-sidebar">
+          <div class="profile-image-placeholder">
+            <div class="placeholder-text">Profile Photo</div>
+          </div>
+          <div class="profile-details">
+            <h3>Quick Info</h3>
+            <ul class="profile-list">
+              <li><strong>Location:</strong> San Francisco, CA</li>
+              <li><strong>Experience:</strong> 10+ Years</li>
+              <li><strong>Education:</strong> BS in Computer Science</li>
+              <li><strong>Interests:</strong> Technology, Design, Innovation</li>
+            </ul>
+            
+            <div class="profile-cta">
+              <a href="/portfolio" class="btn btn-primary">View Portfolio</a>
+              <a href="/resume.pdf" class="btn btn-secondary">Download Resume</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="skills-section">
+      <h2>Skills & Expertise</h2>
+      
+      <div class="skills-categories">
+        <div class="skill-category">
+          <h3>Technical Skills</h3>
+          <ul class="skills-list">
+            <li>Full-Stack Development</li>
+            <li>JavaScript/TypeScript</li>
+            <li>React & Vue</li>
+            <li>Node.js & Express</li>
+            <li>Python & Django</li>
+            <li>AWS & Cloud Architecture</li>
+            <li>RESTful APIs</li>
+            <li>Database Design</li>
+          </ul>
+        </div>
+        
+        <div class="skill-category">
+          <h3>Product Management</h3>
+          <ul class="skills-list">
+            <li>Product Strategy</li>
+            <li>Roadmap Planning</li>
+            <li>User Research</li>
+            <li>Agile Methodologies</li>
+            <li>Market Analysis</li>
+            <li>Feature Prioritization</li>
+            <li>A/B Testing</li>
+            <li>Product Analytics</li>
+          </ul>
+        </div>
+        
+        <div class="skill-category">
+          <h3>Leadership</h3>
+          <ul class="skills-list">
+            <li>Team Management</li>
+            <li>Technical Leadership</li>
+            <li>Mentoring</li>
+            <li>Cross-functional Collaboration</li>
+            <li>Project Management</li>
+            <li>Stakeholder Communication</li>
+            <li>Process Improvement</li>
+            <li>Resource Planning</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="experience-section">
+      <h2>Professional Experience</h2>
+      
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <div class="timeline-date">2021 - Present</div>
+            <h3>Senior Product Manager</h3>
+            <div class="timeline-company">Tech Innovation Inc.</div>
+            <p>Leading product strategy and development for a SaaS platform with over 100,000 users. Coordinating cross-functional teams and driving product roadmap to increase user engagement and revenue.</p>
+          </div>
+        </div>
+        
+        <div class="timeline-item">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <div class="timeline-date">2018 - 2021</div>
+            <h3>Lead Software Engineer</h3>
+            <div class="timeline-company">WebSolutions Co.</div>
+            <p>Spearheaded development of multiple web applications using React, Node.js, and AWS. Managed a team of 5 engineers and implemented CI/CD pipelines to improve deployment efficiency.</p>
+          </div>
+        </div>
+        
+        <div class="timeline-item">
+          <div class="timeline-marker"></div>
+          <div class="timeline-content">
+            <div class="timeline-date">2015 - 2018</div>
+            <h3>Full-Stack Developer</h3>
+            <div class="timeline-company">Digital Ventures</div>
+            <p>Developed and maintained web applications for clients in various industries. Implemented responsive design principles and optimized application performance.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="contact-section">
+      <h2>Let's Connect</h2>
+      <p>I'm always open to discussing new projects, opportunities, and partnerships. Feel free to reach out!</p>
+      
+      <div class="contact-options">
+        <a href="mailto:contact@shupp.dev" class="contact-option">
+          <div class="contact-icon">✉️</div>
+          <div class="contact-label">Email</div>
+        </a>
+        
+        <a href="https://linkedin.com/in/" target="_blank" rel="noopener noreferrer" class="contact-option">
+          <div class="contact-icon">🔗</div>
+          <div class="contact-label">LinkedIn</div>
+        </a>
+        
+        <a href="https://github.com/" target="_blank" rel="noopener noreferrer" class="contact-option">
+          <div class="contact-icon">🐙</div>
+          <div class="contact-label">GitHub</div>
+        </a>
+        
+        <a href="https://twitter.com/" target="_blank" rel="noopener noreferrer" class="contact-option">
+          <div class="contact-icon">🐦</div>
+          <div class="contact-label">Twitter</div>
+        </a>
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<style>
+  .about-page {
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
+  .about-hero {
+    text-align: center;
+    padding: 4rem 0 3rem;
+    margin-bottom: 3rem;
+  }
+
+  .about-hero h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+  }
+
+  .about-hero .lead {
+    font-size: 1.25rem;
+    max-width: 700px;
+    margin: 0 auto;
+    color: var(--text-light);
+  }
+
+  .about-section {
+    margin-bottom: 4rem;
+  }
+
+  .about-grid {
+    display: grid;
+    grid-template-columns: 3fr 2fr;
+    gap: 3rem;
+  }
+
+  .about-content h2 {
+    color: var(--text-color);
+    margin-bottom: 1.5rem;
+  }
+
+  .about-content h3 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  .about-content p {
+    margin-bottom: 1.2rem;
+    line-height: 1.7;
+  }
+
+  .profile-sidebar {
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+  }
+
+  .profile-image-placeholder {
+    height: 300px;
+    background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.25rem;
+  }
+
+  .profile-details {
+    padding: 2rem;
+  }
+
+  .profile-list {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0;
+  }
+
+  .profile-list li {
+    margin-bottom: 0.75rem;
+  }
+
+  .profile-cta {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-top: 1.5rem;
+  }
+
+  .skills-section, .experience-section, .contact-section {
+    margin-bottom: 4rem;
+  }
+
+  .skills-section h2, .experience-section h2, .contact-section h2 {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    position: relative;
+  }
+
+  .skills-section h2::after, .experience-section h2::after, .contact-section h2::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 3px;
+  }
+
+  .skills-categories {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+
+  .skill-category {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+  }
+
+  .skill-category h3 {
+    color: var(--primary-color);
+    margin-bottom: 1.2rem;
+    text-align: center;
+  }
+
+  .skills-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .skills-list li {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .skills-list li:last-child {
+    border-bottom: none;
+  }
+
+  .timeline {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    width: 2px;
+    background-color: var(--border-color);
+    top: 0;
+    bottom: 0;
+    left: 50px;
+    margin-left: -1px;
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 2.5rem;
+    display: flex;
+  }
+
+  .timeline-marker {
+    min-width: 25px;
+    height: 25px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    position: absolute;
+    left: 50px;
+    transform: translateX(-50%);
+    z-index: 1;
+  }
+
+  .timeline-content {
+    margin-left: 80px;
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    flex: 1;
+  }
+
+  .timeline-date {
+    font-weight: 600;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+  }
+
+  .timeline-company {
+    font-style: italic;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+  }
+
+  .contact-section {
+    text-align: center;
+  }
+
+  .contact-section p {
+    max-width: 600px;
+    margin: 0 auto 2rem;
+    color: var(--text-light);
+  }
+
+  .contact-options {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .contact-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    transition: transform 0.3s ease;
+  }
+
+  .contact-option:hover {
+    transform: translateY(-5px);
+  }
+
+  .contact-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .contact-label {
+    color: var(--text-color);
+    font-weight: 500;
+  }
+
+  @media (max-width: 900px) {
+    .about-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .skills-categories {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .timeline::before {
+      left: 30px;
+    }
+
+    .timeline-marker {
+      left: 30px;
+    }
+
+    .timeline-content {
+      margin-left: 60px;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .contact-options {
+      gap: 1.5rem;
+    }
+
+    .about-hero h1 {
+      font-size: 2.5rem;
+    }
+  }
+</style>
