@@ -1,0 +1,990 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Development Roadmap" description="My future plans and development roadmap">
+  <div class="roadmap-page">
+    <section class="roadmap-hero">
+      <h1>Development Roadmap</h1>
+      <p class="lead">A glimpse into my journey and future plans</p>
+    </section>
+
+    <section class="roadmap-visualization">
+      <div class="liquid-roadmap">
+        <div class="roadmap-stream">
+          <!-- Liquid SVG animation -->
+          <svg class="liquid-wave" viewBox="0 0 1200 120" preserveAspectRatio="none">
+            <path d="M0,0 C300,90 600,30 900,90 L1200,30 L1200,120 L0,120 Z" fill="url(#gradient)"></path>
+            <defs>
+              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:var(--color-tertiary);stop-opacity:0.7" />
+                <stop offset="50%" style="stop-color:var(--color-accent);stop-opacity:0.5" />
+                <stop offset="100%" style="stop-color:var(--color-light);stop-opacity:0.7" />
+              </linearGradient>
+            </defs>
+          </svg>
+          
+          <!-- Roadmap items floating on the liquid -->
+          <div class="roadmap-items">
+            <div class="roadmap-item" data-phase="current">
+              <div class="roadmap-node"></div>
+              <div class="roadmap-content">
+                <h3>Content Management System</h3>
+                <p>Establishing a robust CMS to streamline content creation and management processes.</p>
+                <ul class="roadmap-features">
+                  <li>Seamless content editing</li>
+                  <li>Flexible content types</li>
+                  <li>Media management</li>
+                  <li>Publishing workflow</li>
+                </ul>
+                <div class="roadmap-status now">Now</div>
+              </div>
+            </div>
+            
+            <div class="roadmap-item" data-phase="upcoming">
+              <div class="roadmap-node"></div>
+              <div class="roadmap-content">
+                <h3>Local-First Demo</h3>
+                <p>Creating a demonstration of local-first technology that prioritizes user data ownership and offline functionality.</p>
+                <ul class="roadmap-features">
+                  <li>Offline capability</li>
+                  <li>Data synchronization</li>
+                  <li>Privacy-focused architecture</li>
+                  <li>Decentralized storage</li>
+                </ul>
+                <div class="roadmap-status next">Next</div>
+              </div>
+            </div>
+            
+            <div class="roadmap-item" data-phase="upcoming">
+              <div class="roadmap-node"></div>
+              <div class="roadmap-content">
+                <h3>Portfolio Integration</h3>
+                <p>Bringing together all my professional work into a cohesive portfolio showcasing my capabilities and achievements.</p>
+                <ul class="roadmap-features">
+                  <li>Project showcases</li>
+                  <li>Interactive demos</li>
+                  <li>Case studies</li>
+                  <li>Testimonials</li>
+                </ul>
+                <div class="roadmap-status next">Next</div>
+              </div>
+            </div>
+            
+            <div class="roadmap-item" data-phase="future">
+              <div class="roadmap-node"></div>
+              <div class="roadmap-content">
+                <h3>Liquid v2 Animations</h3>
+                <p>Enhancing the visual experience with advanced liquid animations that create a unique, immersive interface.</p>
+                <ul class="roadmap-features">
+                  <li>WebGL fluid simulations</li>
+                  <li>Interactive particle effects</li>
+                  <li>Scroll-based transformations</li>
+                  <li>Liquid cursor effects</li>
+                </ul>
+                <div class="roadmap-status later">Later</div>
+              </div>
+            </div>
+
+            <div class="roadmap-item" data-phase="future">
+              <div class="roadmap-node"></div>
+              <div class="roadmap-content">
+                <h3>Interactive Case Studies</h3>
+                <p>Creating immersive, interactive case studies that showcase project details with depth and engagement.</p>
+                <ul class="roadmap-features">
+                  <li>Interactive prototypes</li>
+                  <li>Process visualizations</li>
+                  <li>Before/after comparisons</li>
+                  <li>User feedback integration</li>
+                </ul>
+                <div class="roadmap-status later">Later</div>
+              </div>
+            </div>
+
+            <div class="roadmap-item" data-phase="future">
+              <div class="roadmap-node"></div>
+              <div class="roadmap-content">
+                <h3>AI-Enhanced Content Creation</h3>
+                <p>Leveraging AI tools to streamline and enhance the content creation process while maintaining a personal touch.</p>
+                <ul class="roadmap-features">
+                  <li>AI-assisted writing workflows</li>
+                  <li>Smart content recommendations</li>
+                  <li>Automated image generation</li>
+                  <li>Content personalization</li>
+                </ul>
+                <div class="roadmap-status exploring">Exploring</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="roadmap-details">
+      <h2>The Vision</h2>
+      <p>My development roadmap is guided by a philosophy of creating engaging, user-centric experiences that push the boundaries of web technology. Each phase builds upon the last, creating a cohesive ecosystem that reflects my growth and direction as a developer and innovator.</p>
+
+      <div class="roadmap-principles">
+        <div class="principle-card">
+          <h3>User-Centered Design</h3>
+          <p>Prioritizing intuitive experiences that delight users while solving real problems.</p>
+        </div>
+
+        <div class="principle-card">
+          <h3>Technical Excellence</h3>
+          <p>Building with modern, performant technologies that create robust, scalable solutions.</p>
+        </div>
+
+        <div class="principle-card">
+          <h3>Continuous Innovation</h3>
+          <p>Embracing new technologies and approaches to stay at the forefront of digital experiences.</p>
+        </div>
+
+        <div class="principle-card">
+          <h3>Thoughtful Implementation</h3>
+          <p>Taking a considered approach to each feature, ensuring it adds genuine value.</p>
+        </div>
+      </div>
+      
+      <div class="roadmap-phases">
+        <div class="phase-card">
+          <div class="phase-header">
+            <h3>Phase 1: Content Foundation</h3>
+            <div class="phase-indicator now">Now</div>
+          </div>
+          <p>Establishing a solid foundation with a flexible content management system that will power all aspects of my online presence.</p>
+          <div class="phase-goals">
+            <h4>Key Goals:</h4>
+            <ul>
+              <li>Implement headless CMS architecture</li>
+              <li>Create intuitive editing interfaces</li>
+              <li>Establish content relationships and structure</li>
+              <li>Build content delivery pipelines</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="phase-card">
+          <div class="phase-header">
+            <h3>Phase 2: Local-First Technology</h3>
+            <div class="phase-indicator next">Next</div>
+          </div>
+          <p>Developing demos and implementations that showcase the power of local-first development patterns, prioritizing user data control and offline functionality.</p>
+          <div class="phase-goals">
+            <h4>Key Goals:</h4>
+            <ul>
+              <li>Create demo applications with offline-first architecture</li>
+              <li>Implement CRDT-based synchronization</li>
+              <li>Develop data persistence strategies</li>
+              <li>Build user-friendly conflict resolution</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="phase-card">
+          <div class="phase-header">
+            <h3>Phase 3: Portfolio Expansion</h3>
+            <div class="phase-indicator next">Next</div>
+          </div>
+          <p>Integrating my diverse work into a comprehensive portfolio that effectively communicates my skills, vision, and capabilities to potential clients and collaborators.</p>
+          <div class="phase-goals">
+            <h4>Key Goals:</h4>
+            <ul>
+              <li>Curate and organize past projects</li>
+              <li>Create detailed case studies</li>
+              <li>Develop interactive project demonstrations</li>
+              <li>Integrate testimonials and results</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="phase-card">
+          <div class="phase-header">
+            <h3>Phase 4: Enhanced User Experience</h3>
+            <div class="phase-indicator later">Later</div>
+          </div>
+          <p>Elevating the visual and interactive experience with advanced animations and effects that embody the "liquid" design philosophy.</p>
+          <div class="phase-goals">
+            <h4>Key Goals:</h4>
+            <ul>
+              <li>Implement WebGL fluid simulations</li>
+              <li>Create responsive, physics-based interactions</li>
+              <li>Develop custom scroll experiences</li>
+              <li>Build liquid-inspired UI components</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="phase-card">
+          <div class="phase-header">
+            <h3>Phase 5: Interactive Storytelling</h3>
+            <div class="phase-indicator later">Later</div>
+          </div>
+          <p>Transforming traditional case studies into immersive stories that engage visitors and showcase project journeys in compelling ways.</p>
+          <div class="phase-goals">
+            <h4>Key Goals:</h4>
+            <ul>
+              <li>Create interactive project timelines</li>
+              <li>Develop visual design process walkthroughs</li>
+              <li>Implement interactive before/after comparisons</li>
+              <li>Integrate client testimonials with media</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="phase-card">
+          <div class="phase-header">
+            <h3>Phase 6: AI Integration</h3>
+            <div class="phase-indicator exploring">Exploring</div>
+          </div>
+          <p>Exploring the potential of AI to enhance both the development process and user experience while maintaining authenticity.</p>
+          <div class="phase-goals">
+            <h4>Key Goals:</h4>
+            <ul>
+              <li>Research ethical AI content generation</li>
+              <li>Develop personalized content delivery</li>
+              <li>Create AI-assisted design tools</li>
+              <li>Implement smart content recommendations</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="roadmap-timeline">
+      <h2>Development Timeline</h2>
+      <div class="timeline">
+        <div class="timeline-progress-bar">
+          <div class="timeline-progress" style="width: 14%"></div>
+        </div>
+        
+        <div class="timeline-markers">
+          <div class="timeline-marker active">
+            <div class="marker-dot"></div>
+            <div class="marker-label">Q2 2025</div>
+            <div class="marker-title">CMS Implementation</div>
+          </div>
+          
+          <div class="timeline-marker">
+            <div class="marker-dot"></div>
+            <div class="marker-label">Q3 2025</div>
+            <div class="marker-title">Local-First Demo</div>
+          </div>
+          
+          <div class="timeline-marker">
+            <div class="marker-dot"></div>
+            <div class="marker-label">Q4 2025</div>
+            <div class="marker-title">Portfolio Integration</div>
+          </div>
+          
+          <div class="timeline-marker">
+            <div class="marker-dot"></div>
+            <div class="marker-label">Q1 2026</div>
+            <div class="marker-title">Liquid v2 Animations</div>
+          </div>
+
+          <div class="timeline-marker">
+            <div class="marker-dot"></div>
+            <div class="marker-label">Q2 2026</div>
+            <div class="marker-title">Interactive Stories</div>
+          </div>
+
+          <div class="timeline-marker">
+            <div class="marker-dot"></div>
+            <div class="marker-label">Q3-Q4 2026</div>
+            <div class="marker-title">AI Integration</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="roadmap-cta">
+      <div class="cta-card">
+        <h2>Want to collaborate?</h2>
+        <p>I'm always open to interesting collaboration opportunities that align with my roadmap. If you have a project that fits with my vision, let's discuss how we might work together.</p>
+        <div class="cta-buttons">
+          <a href="mailto:contact@shupp.dev" class="btn btn-primary">Email Me</a>
+          <a href="https://github.com/shuppel" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">GitHub</a>
+          <a href="https://www.linkedin.com/in/shupp-erikk" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">LinkedIn</a>
+        </div>
+      </div>
+    </section>
+  </div>
+</Layout>
+
+<script>
+  // Animate roadmap items on scroll
+  document.addEventListener('DOMContentLoaded', () => {
+    const roadmapItems = document.querySelectorAll('.roadmap-item');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('animate');
+        }
+      });
+    }, {
+      threshold: 0.2
+    });
+    
+    roadmapItems.forEach(item => {
+      observer.observe(item);
+    });
+    
+    // Liquid wave animation
+    const liquidWave = document.querySelector('.liquid-wave path');
+    let waveOffset = 0;
+    
+    function animateWave() {
+      waveOffset += 0.5;
+      
+      // Create a dynamic wavy path
+      const path = `M0,0 C300,${Math.sin(waveOffset * 0.017) * 30 + 60} 600,${Math.sin(waveOffset * 0.02 + 1) * 30 + 60} 900,${Math.sin(waveOffset * 0.017 + 2) * 30 + 60} L1200,30 L1200,120 L0,120 Z`;
+      
+      if (liquidWave) {
+        liquidWave.setAttribute('d', path);
+      }
+      
+      requestAnimationFrame(animateWave);
+    }
+    
+    animateWave();
+  });
+</script>
+
+<style>
+  /* Roadmap Page Styles */
+  .roadmap-page {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .roadmap-hero {
+    text-align: center;
+    padding: 4rem 0 3rem;
+    margin-bottom: 2rem;
+  }
+
+  .roadmap-hero h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    background: linear-gradient(45deg, var(--color-dark), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    position: relative;
+  }
+
+  .roadmap-hero h1::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(to right, var(--color-tertiary), var(--color-accent));
+    border-radius: 3px;
+  }
+
+  .roadmap-hero .lead {
+    font-size: 1.25rem;
+    max-width: 700px;
+    margin: 0 auto;
+    color: var(--text-light);
+  }
+
+  /* Liquid Roadmap Visualization */
+  .roadmap-visualization {
+    margin: 5rem 0;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .liquid-roadmap {
+    position: relative;
+    min-height: 800px;
+    padding: 2rem 0;
+  }
+
+  .roadmap-stream {
+    position: relative;
+    min-height: 600px;
+    overflow: hidden;
+  }
+
+  .liquid-wave {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 120px;
+    transform: rotate(180deg);
+    filter: drop-shadow(0 10px 20px rgba(20, 8, 14, 0.1));
+  }
+
+  .roadmap-items {
+    position: relative;
+    padding: 3rem 1rem;
+    z-index: 2;
+  }
+
+  .roadmap-item {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 8rem;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  .roadmap-item.animate {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .roadmap-item:nth-child(odd) {
+    flex-direction: row;
+    padding-right: 20%;
+  }
+
+  .roadmap-item:nth-child(even) {
+    flex-direction: row-reverse;
+    padding-left: 20%;
+  }
+
+  .roadmap-node {
+    width: 30px;
+    height: 30px;
+    background: linear-gradient(135deg, var(--color-tertiary), var(--color-accent));
+    border-radius: 50%;
+    margin: 0 2rem;
+    position: relative;
+    box-shadow: 0 6px 15px rgba(20, 8, 14, 0.1);
+    z-index: 2;
+  }
+
+  .roadmap-node::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: -5px;
+    right: -5px;
+    bottom: -5px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-tertiary), var(--color-accent));
+    opacity: 0.3;
+    z-index: -1;
+    animation: pulse 3s infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      transform: scale(1);
+      opacity: 0.3;
+    }
+    50% {
+      transform: scale(1.5);
+      opacity: 0.1;
+    }
+    100% {
+      transform: scale(1);
+      opacity: 0.3;
+    }
+  }
+
+  .roadmap-content {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--card-shadow);
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  .roadmap-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--color-tertiary), var(--color-accent));
+    opacity: 0.7;
+  }
+
+  .roadmap-content:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 15px rgba(20, 8, 14, 0.05);
+  }
+
+  .roadmap-content h3 {
+    margin-bottom: 1rem;
+    color: var(--color-dark);
+  }
+
+  .roadmap-content p {
+    margin-bottom: 1.5rem;
+    color: var(--text-light);
+  }
+
+  .roadmap-features {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem 0;
+  }
+
+  .roadmap-features li {
+    padding-left: 1.5rem;
+    position: relative;
+    margin-bottom: 0.5rem;
+  }
+
+  .roadmap-features li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--color-tertiary);
+    font-size: 1.2rem;
+  }
+
+  .roadmap-status {
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.3rem 0.8rem;
+    border-radius: 30px;
+    display: inline-block;
+    margin-top: 0.5rem;
+  }
+
+  .roadmap-status {
+    font-weight: 600;
+    padding: 0.3rem 0.8rem;
+    border-radius: 30px;
+    display: inline-block;
+    font-size: 0.9rem;
+  }
+
+  .roadmap-status.now {
+    background-color: rgba(121, 148, 150, 0.2);
+    color: var(--color-tertiary);
+  }
+
+  .roadmap-status.next {
+    background-color: rgba(172, 193, 150, 0.2);
+    color: var(--color-accent);
+  }
+
+  .roadmap-status.later {
+    background-color: rgba(233, 235, 158, 0.2);
+    color: var(--color-secondary);
+  }
+
+  .roadmap-status.exploring {
+    background-color: rgba(110, 125, 200, 0.2);
+    color: #6e7dc8;
+  }
+
+  /* Phases Section */
+  .roadmap-details {
+    margin: 6rem 0;
+  }
+
+  .roadmap-details h2 {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    position: relative;
+  }
+
+  .roadmap-details h2::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 3px;
+  }
+
+  .roadmap-details > p {
+    max-width: 800px;
+    margin: 0 auto 3rem;
+    text-align: center;
+    color: var(--text-light);
+    font-size: 1.1rem;
+    line-height: 1.7;
+  }
+
+  .roadmap-principles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .principle-card {
+    background: white;
+    border-radius: 10px;
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+    text-align: center;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .principle-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(to right, var(--color-tertiary), var(--color-accent));
+    opacity: 0.7;
+  }
+
+  .principle-card h3 {
+    margin-bottom: 0.8rem;
+    color: var(--color-dark);
+  }
+
+  .principle-card p {
+    color: var(--text-light);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .principle-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(20, 8, 14, 0.1);
+  }
+
+  .roadmap-phases {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+  }
+
+  .phase-card {
+    background: white;
+    border-radius: 12px;
+    padding: 2.5rem;
+    box-shadow: var(--card-shadow);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .phase-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(to right, var(--color-tertiary), var(--color-accent));
+    opacity: 0.7;
+  }
+
+  .phase-card:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 15px rgba(20, 8, 14, 0.05);
+  }
+
+  .phase-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .phase-header h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: var(--color-dark);
+  }
+
+  .phase-indicator {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.8rem;
+    border-radius: 30px;
+  }
+
+  .phase-indicator.now {
+    background-color: rgba(121, 148, 150, 0.2);
+    color: var(--color-tertiary);
+  }
+
+  .phase-indicator.next {
+    background-color: rgba(172, 193, 150, 0.2);
+    color: var(--color-accent);
+  }
+
+  .phase-indicator.later {
+    background-color: rgba(233, 235, 158, 0.2);
+    color: var(--color-secondary);
+  }
+
+  .phase-indicator.exploring {
+    background-color: rgba(110, 125, 200, 0.2);
+    color: #6e7dc8;
+  }
+
+  .phase-card p {
+    margin-bottom: 1.5rem;
+    color: var(--text-light);
+    line-height: 1.6;
+  }
+
+  .phase-goals h4 {
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+    color: var(--color-secondary);
+  }
+
+  .phase-goals ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .phase-goals li {
+    padding: 0.5rem 0 0.5rem 1.5rem;
+    position: relative;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .phase-goals li:last-child {
+    border-bottom: none;
+  }
+
+  .phase-goals li::before {
+    content: '→';
+    position: absolute;
+    left: 0;
+    color: var(--color-tertiary);
+  }
+
+  /* Timeline Section */
+  .roadmap-timeline {
+    margin: 6rem 0;
+  }
+
+  .roadmap-timeline h2 {
+    text-align: center;
+    margin-bottom: 4rem;
+    position: relative;
+  }
+
+  .roadmap-timeline h2::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 3px;
+  }
+
+  .timeline {
+    position: relative;
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  .timeline-progress-bar {
+    position: relative;
+    height: 4px;
+    background-color: var(--background-alt);
+    border-radius: 4px;
+    margin-bottom: 2.5rem;
+  }
+
+  .timeline-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: linear-gradient(to right, var(--color-tertiary), var(--color-accent));
+    border-radius: 4px;
+  }
+
+  .timeline-markers {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+  }
+
+  .timeline-marker {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 120px;
+  }
+
+  .marker-dot {
+    width: 16px;
+    height: 16px;
+    background-color: var(--background-alt);
+    border: 3px solid white;
+    border-radius: 50%;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 5px rgba(20, 8, 14, 0.1);
+    transition: all 0.3s ease;
+  }
+
+  .timeline-marker.active .marker-dot {
+    background: linear-gradient(135deg, var(--color-tertiary), var(--color-accent));
+    transform: scale(1.2);
+    box-shadow: 0 3px 8px rgba(20, 8, 14, 0.2);
+  }
+
+  .marker-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+  }
+
+  .marker-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-secondary);
+    transition: color 0.3s ease;
+  }
+
+  .timeline-marker.active .marker-title {
+    color: var(--color-dark);
+  }
+
+  /* CTA Section */
+  .roadmap-cta {
+    margin: 6rem 0 2rem;
+  }
+
+  .cta-card {
+    background: linear-gradient(135deg, rgba(121, 148, 150, 0.1), white, rgba(172, 193, 150, 0.1));
+    text-align: center;
+    padding: 4rem 2rem;
+    border-radius: 16px;
+    box-shadow: var(--card-shadow);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-card::before, .cta-card::after {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+  }
+
+  .cta-card::before {
+    background: radial-gradient(circle, rgba(121, 148, 150, 0.1) 0%, rgba(121, 148, 150, 0) 70%);
+    top: -150px;
+    right: -150px;
+  }
+
+  .cta-card::after {
+    background: radial-gradient(circle, rgba(172, 193, 150, 0.1) 0%, rgba(172, 193, 150, 0) 70%);
+    bottom: -150px;
+    left: -150px;
+  }
+
+  .cta-card h2 {
+    margin-bottom: 1.5rem;
+    color: var(--color-dark);
+  }
+
+  .cta-card p {
+    max-width: 600px;
+    margin: 0 auto 2.5rem;
+    color: var(--text-light);
+    font-size: 1.1rem;
+  }
+
+  .cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 900px) {
+    .roadmap-item {
+      flex-direction: column !important;
+      padding: 0 !important;
+      margin-bottom: 5rem;
+      align-items: center;
+    }
+
+    .roadmap-node {
+      margin-bottom: 2rem;
+    }
+
+    .phase-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+
+    .timeline-markers {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 2.5rem;
+    }
+
+    .timeline-marker {
+      width: 100%;
+      flex-direction: row;
+      align-items: center;
+      text-align: left;
+      gap: 1rem;
+    }
+
+    .marker-dot {
+      margin-bottom: 0;
+    }
+
+    .roadmap-item:nth-child(odd) .roadmap-content::before,
+    .roadmap-item:nth-child(even) .roadmap-content::before {
+      left: 0;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .roadmap-hero h1 {
+      font-size: 2.5rem;
+    }
+
+    .roadmap-phases {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+
+    .roadmap-content {
+      padding: 1.5rem;
+    }
+
+    .cta-buttons {
+      flex-direction: column;
+      width: 100%;
+      max-width: 300px;
+      margin: 0 auto;
+    }
+  }
+</style>
