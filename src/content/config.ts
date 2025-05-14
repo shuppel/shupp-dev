@@ -14,6 +14,7 @@ const blogCollection = defineCollection({
     tags: z.array(z.string()).optional(),
     readTime: z.string().optional(),
     featuredImage: z.string().optional(),
+    featured: z.boolean().default(false), // Added featured flag for promoting posts
   }),
 });
 

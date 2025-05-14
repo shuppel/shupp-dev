@@ -7,6 +7,7 @@ categories: ["AI", "Product Management"]
 tags: ["Artificial Intelligence", "Product Management", "Innovation", "Technology Trends"]
 readTime: "6 min read"
 featuredImage: "ai-product-management"
+featured: true
 ---
 
 ## Introduction
