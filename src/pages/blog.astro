@@ -1,63 +1,28 @@
 ---
+import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 
-// Sample blog post data
-const blogPosts = [
-  {
-    id: 'ai-in-product-management',
-    title: 'The Future of AI in Product Management',
-    date: 'May 10, 2025',
-    excerpt: 'Exploring how artificial intelligence is reshaping product development and creating new opportunities for innovation.',
-    categories: ['AI', 'Product Management'],
-    readTime: '6 min read'
-  },
-  {
-    id: 'better-user-experiences',
-    title: 'Building Better User Experiences',
-    date: 'April 25, 2025',
-    excerpt: 'Insights and best practices for designing user experiences that delight customers while driving business results.',
-    categories: ['UX Design', 'Frontend Development'],
-    readTime: '5 min read'
-  },
-  {
-    id: 'scaling-tech-teams',
-    title: 'Scaling Engineering Teams: Lessons Learned',
-    date: 'April 12, 2025',
-    excerpt: 'Key insights from my experience growing engineering teams from 5 to 50+ while maintaining productivity and culture.',
-    categories: ['Leadership', 'Engineering'],
-    readTime: '8 min read'
-  },
-  {
-    id: 'react-performance',
-    title: 'Advanced React Performance Optimization Techniques',
-    date: 'March 30, 2025',
-    excerpt: 'Practical strategies to improve the performance of your React applications and provide a smoother user experience.',
-    categories: ['React', 'Performance', 'Frontend'],
-    readTime: '10 min read'
-  },
-  {
-    id: 'data-driven-product-decisions',
-    title: 'Making Data-Driven Product Decisions',
-    date: 'March 15, 2025',
-    excerpt: 'How to effectively use data to inform your product decisions and create features that users actually want.',
-    categories: ['Product Management', 'Data'],
-    readTime: '7 min read'
-  },
-  {
-    id: 'microservices-architecture',
-    title: 'Microservices vs Monoliths: Making the Right Choice',
-    date: 'February 28, 2025',
-    excerpt: 'An analysis of when to choose microservices over monolithic architecture, with real-world case studies and lessons.',
-    categories: ['Architecture', 'Backend'],
-    readTime: '9 min read'
-  }
-];
+// Get all blog posts
+const allPosts = await getCollection('blog');
 
-// Get all unique categories
-const allCategories = [...new Set(blogPosts.flatMap(post => post.categories))];
+// Sort posts by date (newest first)
+const posts = allPosts.sort((a, b) => {
+  return new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime();
+});
+
+// Get unique categories
+const categories = [...new Set(allPosts.flatMap(post => post.data.categories))];
+
+// Get unique tags
+const tags = [...new Set(allPosts.flatMap(post => post.data.tags || []))];
+
+// Pagination configuration
+const postsPerPage = 5;
+const totalPages = Math.ceil(posts.length / postsPerPage);
+const currentPage = 1; // We'll update this via client-side JS
 ---
 
-<Layout title="Blog" description="Read my latest thoughts on product management, software development, and technology trends">
+<Layout title="Blog" description="Articles and insights on product management, software development, UX design, and more">
   <div class="blog-page">
     <section class="blog-hero">
       <h1>My Blog</h1>
@@ -73,21 +38,29 @@ const allCategories = [...new Set(blogPosts.flatMap(post => post.categories))];
         </div>
 
         <div class="blog-grid">
-          {blogPosts.map(post => (
+          {posts.map(post => (
             <article class="blog-card">
-              <a href={`/blog/${post.id}`} class="blog-card-link">
+              <a href={`/blog/${post.slug}`} class="blog-card-link">
                 <div class="blog-card-image">
-                  <div class="placeholder-image"></div>
+                  <div class="placeholder-image">
+                    {post.data.featuredImage && (
+                      <div class="placeholder-text">{post.data.featuredImage}</div>
+                    )}
+                  </div>
                 </div>
                 <div class="blog-card-content">
                   <div class="blog-card-meta">
-                    <span class="blog-date">{post.date}</span>
-                    <span class="blog-read-time">{post.readTime}</span>
+                    <span class="blog-date">{new Date(post.data.pubDate).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
+                    })}</span>
+                    <span class="blog-read-time">{post.data.readTime}</span>
                   </div>
-                  <h2 class="blog-title">{post.title}</h2>
-                  <p class="blog-excerpt">{post.excerpt}</p>
+                  <h2 class="blog-title">{post.data.title}</h2>
+                  <p class="blog-excerpt">{post.data.description}</p>
                   <div class="blog-categories">
-                    {post.categories.map(category => (
+                    {post.data.categories.map(category => (
                       <span class="blog-category">{category}</span>
                     ))}
                   </div>
@@ -97,22 +70,29 @@ const allCategories = [...new Set(blogPosts.flatMap(post => post.categories))];
           ))}
         </div>
 
-        <div class="blog-pagination">
-          <button class="pagination-btn active">1</button>
-          <button class="pagination-btn">2</button>
-          <button class="pagination-btn">3</button>
-          <span class="pagination-ellipsis">...</span>
-          <button class="pagination-btn">Next →</button>
-        </div>
+        {totalPages > 1 && (
+          <div class="blog-pagination">
+            {Array.from({ length: totalPages }).map((_, index) => (
+              <button class={`pagination-btn ${index === 0 ? 'active' : ''}`} data-page={index + 1}>
+                {index + 1}
+              </button>
+            ))}
+            {totalPages > 1 && (
+              <button class="pagination-btn pagination-next" data-page="2">
+                Next →
+              </button>
+            )}
+          </div>
+        )}
       </main>
 
       <aside class="blog-sidebar">
         <div class="sidebar-widget">
           <h3 class="widget-title">Categories</h3>
           <ul class="category-list">
-            {allCategories.map(category => (
+            {categories.map(category => (
               <li class="category-item">
-                <a href="#" class="category-link" data-category={category}>{category}</a>
+                <a href={`/blog?category=${category}`} class="category-link" data-category={category}>{category}</a>
               </li>
             ))}
           </ul>
@@ -121,24 +101,18 @@ const allCategories = [...new Set(blogPosts.flatMap(post => post.categories))];
         <div class="sidebar-widget">
           <h3 class="widget-title">Popular Posts</h3>
           <ul class="popular-posts">
-            <li class="popular-post">
-              <a href="/blog/ai-in-product-management">
-                <span class="popular-post-title">The Future of AI in Product Management</span>
-                <span class="popular-post-date">May 10, 2025</span>
-              </a>
-            </li>
-            <li class="popular-post">
-              <a href="/blog/scaling-tech-teams">
-                <span class="popular-post-title">Scaling Engineering Teams: Lessons Learned</span>
-                <span class="popular-post-date">April 12, 2025</span>
-              </a>
-            </li>
-            <li class="popular-post">
-              <a href="/blog/data-driven-product-decisions">
-                <span class="popular-post-title">Making Data-Driven Product Decisions</span>
-                <span class="popular-post-date">March 15, 2025</span>
-              </a>
-            </li>
+            {posts.slice(0, 3).map(post => (
+              <li class="popular-post">
+                <a href={`/blog/${post.slug}`}>
+                  <span class="popular-post-title">{post.data.title}</span>
+                  <span class="popular-post-date">{new Date(post.data.pubDate).toLocaleDateString('en-US', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}</span>
+                </a>
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -162,53 +136,153 @@ const allCategories = [...new Set(blogPosts.flatMap(post => post.categories))];
     // Search functionality
     const searchInput = document.getElementById('blog-search');
     const blogCards = document.querySelectorAll('.blog-card');
-    
+    const blogGrid = document.querySelector('.blog-grid');
+    const paginationButtons = document.querySelectorAll('.pagination-btn');
+
+    // Number of posts per page
+    const postsPerPage = 5;
+    let currentPage = 1;
+    let filteredPosts = [...blogCards]; // Store all posts for filtering/pagination
+
+    // Function to update post visibility based on pagination
+    const updatePostsDisplay = () => {
+      if (filteredPosts.length === 0) {
+        // No matching posts
+        if (blogGrid) {
+          blogGrid.innerHTML = '<div class="no-results">No posts match your search criteria.</div>';
+        }
+        return;
+      }
+
+      // Calculate pagination
+      const startIndex = (currentPage - 1) * postsPerPage;
+      const endIndex = startIndex + postsPerPage;
+
+      // Hide all filtered posts first
+      filteredPosts.forEach(post => {
+        post.style.display = 'none';
+      });
+
+      // Show only posts for current page
+      filteredPosts.slice(startIndex, endIndex).forEach(post => {
+        post.style.display = 'block';
+      });
+
+      // Update pagination buttons
+      if (paginationButtons.length) {
+        updatePaginationButtons();
+      }
+    };
+
+    // Update pagination buttons active state
+    const updatePaginationButtons = () => {
+      const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+
+      // Update page number buttons
+      paginationButtons.forEach(button => {
+        if (button.classList.contains('pagination-next')) {
+          // Update next button
+          const nextPage = Math.min(currentPage + 1, totalPages);
+          button.setAttribute('data-page', nextPage.toString());
+          button.style.display = currentPage < totalPages ? 'block' : 'none';
+        } else {
+          // Regular page buttons
+          const buttonPage = parseInt(button.getAttribute('data-page'));
+          if (buttonPage) {
+            button.classList.toggle('active', buttonPage === currentPage);
+            // Hide page buttons beyond total pages
+            button.style.display = buttonPage <= totalPages ? 'block' : 'none';
+          }
+        }
+      });
+    };
+
+    // Search functionality
     if (searchInput) {
       searchInput.addEventListener('input', () => {
         const searchTerm = searchInput.value.toLowerCase();
-        
-        blogCards.forEach(card => {
-          const title = card.querySelector('.blog-title').textContent.toLowerCase();
-          const excerpt = card.querySelector('.blog-excerpt').textContent.toLowerCase();
+
+        // Filter posts based on search term
+        filteredPosts = [...blogCards].filter(card => {
+          const title = card.querySelector('.blog-title')?.textContent.toLowerCase() || '';
+          const excerpt = card.querySelector('.blog-excerpt')?.textContent.toLowerCase() || '';
           const categories = Array.from(card.querySelectorAll('.blog-category')).map(cat => cat.textContent.toLowerCase());
-          
-          const match = title.includes(searchTerm) || 
-                        excerpt.includes(searchTerm) || 
-                        categories.some(cat => cat.includes(searchTerm));
-          
-          card.style.display = match ? 'block' : 'none';
+
+          return title.includes(searchTerm) ||
+                 excerpt.includes(searchTerm) ||
+                 categories.some(cat => cat.includes(searchTerm));
         });
+
+        // Reset to first page when search changes
+        currentPage = 1;
+        updatePostsDisplay();
       });
     }
-    
+
+    // Pagination click handlers
+    paginationButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const newPage = parseInt(button.getAttribute('data-page'));
+        if (newPage && newPage !== currentPage) {
+          currentPage = newPage;
+          updatePostsDisplay();
+          // Scroll back to top of blog section
+          document.querySelector('.blog-container')?.scrollIntoView({ behavior: 'smooth' });
+        }
+      });
+    });
+
     // Category filtering
     const categoryLinks = document.querySelectorAll('.category-link');
-    
+
     categoryLinks.forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
-        
+
         const selectedCategory = link.getAttribute('data-category').toLowerCase();
-        
-        blogCards.forEach(card => {
-          const cardCategories = Array.from(card.querySelectorAll('.blog-category')).map(cat => cat.textContent.toLowerCase());
-          
-          const match = cardCategories.includes(selectedCategory);
-          card.style.display = match ? 'block' : 'none';
+
+        // Filter posts based on category
+        filteredPosts = [...blogCards].filter(card => {
+          const cardCategories = Array.from(card.querySelectorAll('.blog-category')).map(cat =>
+            cat.textContent.toLowerCase()
+          );
+          return cardCategories.includes(selectedCategory);
         });
-        
+
+        // Reset to first page and update display
+        currentPage = 1;
+        updatePostsDisplay();
+
         // Update active state for category links
         categoryLinks.forEach(catLink => {
           catLink.classList.remove('active');
         });
         link.classList.add('active');
-        
+
         // Reset search input
         if (searchInput) {
           searchInput.value = '';
         }
       });
     });
+
+    // Handle URL query parameters for filtering
+    const urlParams = new URLSearchParams(window.location.search);
+    const categoryParam = urlParams.get('category');
+
+    if (categoryParam) {
+      // Find the corresponding category link and click it to apply filter
+      const categoryLink = Array.from(categoryLinks).find(link =>
+        link.getAttribute('data-category').toLowerCase() === categoryParam.toLowerCase()
+      );
+
+      if (categoryLink) {
+        categoryLink.click();
+      }
+    } else {
+      // Initial pagination setup if no category filter
+      updatePostsDisplay();
+    }
   });
 </script>
 
@@ -300,6 +374,15 @@ const allCategories = [...new Set(blogPosts.flatMap(post => post.categories))];
     width: 100%;
     height: 100%;
     background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+  }
+
+  .placeholder-text {
+    font-size: 1.5rem;
   }
 
   .blog-card-content {
@@ -504,6 +587,13 @@ const allCategories = [...new Set(blogPosts.flatMap(post => post.categories))];
       position: static;
       margin-top: 3rem;
     }
+  }
+
+  .no-results {
+    padding: 3rem 1rem;
+    text-align: center;
+    color: var(--text-light);
+    font-size: 1.1rem;
   }
 
   @media (max-width: 768px) {

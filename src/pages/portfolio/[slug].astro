@@ -1,0 +1,369 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import { type CollectionEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const projectEntries = await getCollection('projects');
+  return projectEntries.map(entry => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+type Props = {
+  entry: CollectionEntry<'projects'>;
+};
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+// Format the date
+const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+});
+---
+
+<Layout title={entry.data.title} description={entry.data.description}>
+  <div class="project-page">
+    <article class="project-content">
+      <div class="project-header">
+        <h1 class="project-title">{entry.data.title}</h1>
+        <div class="project-meta">
+          <span class="project-date">{formattedDate}</span>
+          <span class="project-status">{entry.data.completed ? 'Completed' : 'In Progress'}</span>
+        </div>
+        <div class="project-links">
+          {entry.data.projectUrl && (
+            <a href={entry.data.projectUrl} target="_blank" rel="noopener noreferrer" class="project-link">
+              <span class="link-icon">🔗</span>
+              <span class="link-text">Live Project</span>
+            </a>
+          )}
+          {entry.data.githubUrl && (
+            <a href={entry.data.githubUrl} target="_blank" rel="noopener noreferrer" class="project-link">
+              <span class="link-icon">📁</span>
+              <span class="link-text">GitHub Repository</span>
+            </a>
+          )}
+        </div>
+      </div>
+
+      <div class="project-featured-image">
+        <div class="featured-image-placeholder">
+          <div class="placeholder-text">{entry.data.projectImage}</div>
+        </div>
+      </div>
+
+      <div class="project-body">
+        <Content />
+      </div>
+
+      <div class="project-technologies">
+        <h3 class="technologies-title">Technologies Used</h3>
+        <div class="technologies-list">
+          {entry.data.technologies.map(tech => (
+            <span class="technology-tag">{tech}</span>
+          ))}
+        </div>
+      </div>
+    </article>
+
+    <aside class="project-sidebar">
+      <div class="sidebar-widget project-info">
+        <h3 class="widget-title">Project Information</h3>
+        <div class="info-item">
+          <span class="info-label">Status:</span>
+          <span class="info-value">{entry.data.completed ? 'Completed' : 'In Progress'}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Date:</span>
+          <span class="info-value">{formattedDate}</span>
+        </div>
+        <div class="info-item">
+          <span class="info-label">Type:</span>
+          <span class="info-value">Portfolio Project</span>
+        </div>
+      </div>
+
+      <div class="sidebar-widget related-projects">
+        <h3 class="widget-title">Related Projects</h3>
+        <div class="related-projects-list">
+          <a href="/portfolio/project-1" class="related-project">
+            <div class="related-project-title">Project Title 1</div>
+            <div class="related-project-tech">Astro, React, TypeScript</div>
+          </a>
+          <a href="/portfolio/project-2" class="related-project">
+            <div class="related-project-title">Project Title 2</div>
+            <div class="related-project-tech">Node.js, Express, MongoDB</div>
+          </a>
+        </div>
+      </div>
+
+      <div class="sidebar-widget contact-cta">
+        <h3 class="widget-title">Interested in working together?</h3>
+        <p>I'm always open to discussing product design or partnership opportunities.</p>
+        <a href="/contact" class="btn btn-primary">Get in Touch</a>
+      </div>
+    </aside>
+  </div>
+</Layout>
+
+<style>
+  .project-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 3rem;
+    padding-top: 2rem;
+  }
+
+  /* Project Content Styles */
+  .project-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+  }
+
+  .project-header {
+    padding: 2.5rem 2.5rem 2rem;
+  }
+
+  .project-title {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+  }
+
+  .project-meta {
+    display: flex;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    gap: 1.5rem;
+  }
+
+  .project-links {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .project-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--background-alt);
+    color: var(--text-color);
+    padding: 0.5rem 1rem;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .project-link:hover {
+    background: var(--primary-color);
+    color: white;
+  }
+
+  .project-featured-image {
+    height: 400px;
+    overflow: hidden;
+  }
+
+  .featured-image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.5rem;
+  }
+
+  .project-body {
+    padding: 2.5rem;
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+
+  .project-body h2 {
+    font-size: 1.8rem;
+    margin: 2.5rem 0 1.5rem;
+    color: var(--text-color);
+  }
+
+  .project-body h3 {
+    font-size: 1.4rem;
+    margin: 2rem 0 1rem;
+    color: var(--text-color);
+  }
+
+  .project-body p {
+    margin-bottom: 1.5rem;
+  }
+
+  .project-body ul, .project-body ol {
+    margin-bottom: 1.5rem;
+    padding-left: 2rem;
+  }
+
+  .project-body li {
+    margin-bottom: 0.5rem;
+  }
+
+  .project-technologies {
+    padding: 1.5rem 2.5rem;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .technologies-title {
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+
+  .technologies-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .technology-tag {
+    background: var(--background-alt);
+    color: var(--text-light);
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+  }
+
+  /* Sidebar Styles */
+  .project-sidebar {
+    position: sticky;
+    top: 2rem;
+    align-self: start;
+  }
+
+  .sidebar-widget {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
+  }
+
+  .widget-title {
+    margin-bottom: 1.25rem;
+    position: relative;
+    padding-bottom: 0.75rem;
+    font-size: 1.25rem;
+  }
+
+  .widget-title::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 3px;
+  }
+
+  .info-item {
+    margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .info-label {
+    font-weight: 600;
+    color: var(--text-light);
+  }
+
+  .related-projects-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .related-project {
+    display: block;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .related-project:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .related-project:hover .related-project-title {
+    color: var(--primary-color);
+  }
+
+  .related-project-title {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    transition: color 0.2s ease;
+  }
+
+  .related-project-tech {
+    font-size: 0.85rem;
+    color: var(--text-light);
+  }
+
+  .contact-cta p {
+    margin-bottom: 1.5rem;
+    color: var(--text-light);
+  }
+
+  .contact-cta .btn {
+    width: 100%;
+    text-align: center;
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 1100px) {
+    .project-page {
+      grid-template-columns: 1fr;
+    }
+
+    .project-sidebar {
+      position: static;
+      order: -1;
+    }
+
+    .project-info {
+      position: sticky;
+      top: 2rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .project-header, .project-body, .project-technologies {
+      padding: 1.5rem;
+    }
+
+    .project-title {
+      font-size: 2rem;
+    }
+
+    .project-featured-image {
+      height: 250px;
+    }
+
+    .project-links {
+      flex-direction: column;
+    }
+  }
+</style>

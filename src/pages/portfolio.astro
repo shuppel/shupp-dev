@@ -1,58 +1,20 @@
 ---
+import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 
-const projects = [
-  {
-    id: 'project-1',
-    title: 'E-commerce Platform',
-    category: 'Web Development',
-    description: 'A fully responsive e-commerce platform built with React, Node.js, and MongoDB. Features include user authentication, product search, shopping cart, and payment integration.',
-    technologies: ['React', 'Node.js', 'Express', 'MongoDB', 'Stripe API'],
-    image: 'project1'
-  },
-  {
-    id: 'project-2',
-    title: 'Task Management App',
-    category: 'Web Application',
-    description: 'A productivity application designed to help teams manage tasks and projects efficiently. Includes features like task assignment, due dates, progress tracking, and collaboration tools.',
-    technologies: ['Vue.js', 'Firebase', 'Tailwind CSS', 'RESTful API'],
-    image: 'project2'
-  },
-  {
-    id: 'project-3',
-    title: 'Analytics Dashboard',
-    category: 'Data Visualization',
-    description: 'An interactive analytics dashboard that helps businesses visualize and understand their data. Includes customizable charts, filters, and reporting features.',
-    technologies: ['React', 'D3.js', 'AWS', 'TypeScript', 'GraphQL'],
-    image: 'project3'
-  },
-  {
-    id: 'project-4',
-    title: 'Mobile Fitness App',
-    category: 'Mobile Development',
-    description: 'A fitness tracking application that helps users monitor their workouts, nutrition, and progress. Features include workout plans, progress tracking, and social sharing.',
-    technologies: ['React Native', 'Redux', 'Node.js', 'MongoDB', 'Health API'],
-    image: 'project4'
-  },
-  {
-    id: 'project-5',
-    title: 'Content Management System',
-    category: 'Web Development',
-    description: 'A custom CMS built for a media company to manage their digital content. Includes features for content creation, scheduling, and distribution across multiple platforms.',
-    technologies: ['Next.js', 'GraphQL', 'PostgreSQL', 'AWS S3', 'CI/CD'],
-    image: 'project5'
-  },
-  {
-    id: 'project-6',
-    title: 'AI Recommendation Engine',
-    category: 'Machine Learning',
-    description: 'An AI-powered recommendation system that suggests products based on user behavior and preferences. Implemented for an e-commerce client to increase sales and user engagement.',
-    technologies: ['Python', 'TensorFlow', 'AWS', 'API Development', 'Data Analysis'],
-    image: 'project6'
-  }
-];
+// Get all projects from the collection
+const allProjects = await getCollection('projects');
 
-const categories = [...new Set(projects.map(project => project.category))];
+// Sort projects by date (newest first)
+const projects = allProjects.sort((a, b) => {
+  return new Date(b.data.projectDate).getTime() - new Date(a.data.projectDate).getTime();
+});
+
+// Create technology list (flattened)
+const allTechnologies = projects.flatMap(project => project.data.technologies);
+
+// Get unique technology categories for filtering
+const technologies = [...new Set(allTechnologies)];
 ---
 
 <Layout title="Portfolio" description="Explore my portfolio of software development and product management projects">
@@ -65,27 +27,36 @@ const categories = [...new Set(projects.map(project => project.category))];
     <section class="portfolio-filters">
       <div class="filter-container">
         <button class="filter-btn active" data-category="all">All Projects</button>
-        {categories.map(category => (
-          <button class="filter-btn" data-category={category}>{category}</button>
+        {technologies.map(tech => (
+          <button class="filter-btn" data-category={tech}>{tech}</button>
         ))}
       </div>
     </section>
 
     <section class="portfolio-grid">
       {projects.map(project => (
-        <div class="portfolio-item" data-category={project.category}>
+        <div class="portfolio-item" data-technologies={project.data.technologies.join(',')}>
           <div class="portfolio-image">
-            <div class="placeholder-image">{project.image}</div>
+            <div class="placeholder-image">
+              {project.data.projectImage && (
+                <div class="placeholder-text">{project.data.projectImage}</div>
+              )}
+            </div>
             <div class="portfolio-overlay">
-              <a href={`/portfolio/${project.id}`} class="btn btn-white">View Details</a>
+              <a href={`/portfolio/${project.slug}`} class="btn btn-white">View Details</a>
             </div>
           </div>
           <div class="portfolio-content">
-            <h3>{project.title}</h3>
-            <div class="portfolio-category">{project.category}</div>
-            <p>{project.description}</p>
+            <h3>{project.data.title}</h3>
+            <div class="portfolio-date">
+              {new Date(project.data.projectDate).toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'long'
+              })}
+            </div>
+            <p>{project.data.description}</p>
             <div class="portfolio-tech">
-              {project.technologies.map(tech => (
+              {project.data.technologies.map(tech => (
                 <span class="tech-tag">{tech}</span>
               ))}
             </div>
@@ -105,7 +76,7 @@ const categories = [...new Set(projects.map(project => project.category))];
 </Layout>
 
 <script>
-  // Filter portfolio items by category
+  // Filter portfolio items by technology
   document.addEventListener('DOMContentLoaded', () => {
     const filterBtns = document.querySelectorAll('.filter-btn');
     const portfolioItems = document.querySelectorAll('.portfolio-item');
@@ -123,7 +94,9 @@ const categories = [...new Set(projects.map(project => project.category))];
         
         // Filter portfolio items
         portfolioItems.forEach(item => {
-          if (category === 'all' || item.getAttribute('data-category') === category) {
+          const technologies = item.getAttribute('data-technologies').split(',');
+          
+          if (category === 'all' || technologies.includes(category)) {
             item.style.display = 'block';
           } else {
             item.style.display = 'none';
@@ -268,7 +241,7 @@ const categories = [...new Set(projects.map(project => project.category))];
     margin-bottom: 0.5rem;
   }
 
-  .portfolio-category {
+  .portfolio-date {
     color: var(--primary-color);
     font-size: 0.9rem;
     font-weight: 500;

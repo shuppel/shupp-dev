@@ -9,12 +9,41 @@
         <li class="nav-item"><a href="/" class="nav-link">Home</a></li>
         <li class="nav-item"><a href="/about" class="nav-link">About</a></li>
         <li class="nav-item"><a href="/portfolio" class="nav-link">Portfolio</a></li>
-        <li class="nav-item"><a href="/blog" class="nav-link">Blog</a></li>
+        <li class="nav-item dropdown">
+          <a href="/blog" class="nav-link">Blog</a>
+          <div class="dropdown-content">
+            <a href="/blog" class="dropdown-link">List View</a>
+            <a href="/blog-bento" class="dropdown-link">Bento Grid</a>
+          </div>
+        </li>
         <li class="nav-item"><a href="/roadmap" class="nav-link">Roadmap</a></li>
       </ul>
     </nav>
   </div>
 </header>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Handle mobile dropdown toggle
+    const isMobile = window.innerWidth <= 768;
+
+    if (isMobile) {
+      const dropdowns = document.querySelectorAll('.dropdown');
+
+      dropdowns.forEach(dropdown => {
+        const link = dropdown.querySelector('.nav-link');
+
+        link.addEventListener('click', (e) => {
+          // If on mobile, prevent navigation and toggle dropdown
+          if (window.innerWidth <= 768) {
+            e.preventDefault();
+            dropdown.classList.toggle('active');
+          }
+        });
+      });
+    }
+  });
+</script>
 
 <style>
   .header {
@@ -132,6 +161,80 @@
   .nav-link:hover::before {
     transform: scaleX(1);
     transform-origin: left;
+  }
+
+  /* Dropdown styles */
+  .dropdown {
+    position: relative;
+  }
+
+  .dropdown-content {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    min-width: 150px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    visibility: hidden;
+    transform-origin: top center;
+    transform: translateX(-50%) translateY(10px) scale(0.95);
+    transition: all 0.2s cubic-bezier(0.5, 0, 0.3, 1.5);
+    z-index: 10;
+    padding: 0.5rem 0;
+    margin-top: 0.5rem;
+    overflow: hidden;
+  }
+
+  .dropdown:hover .dropdown-content {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0) scale(1);
+  }
+
+  .dropdown-link {
+    display: block;
+    padding: 0.75rem 1.25rem;
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+  }
+
+  .dropdown-link:hover {
+    background-color: var(--background-alt);
+    color: var(--primary-color);
+  }
+
+  /* Responsive dropdown */
+  @media (max-width: 768px) {
+    .dropdown-content {
+      position: static;
+      transform: none;
+      box-shadow: none;
+      opacity: 1;
+      visibility: visible;
+      background: transparent;
+      margin-top: 0.5rem;
+      padding-left: 1rem;
+      border-left: 2px solid var(--border-color);
+      display: none;
+    }
+
+    .dropdown.active .dropdown-content {
+      display: block;
+    }
+
+    .dropdown-link {
+      padding: 0.5rem 1rem;
+    }
+
+    .dropdown-link:hover {
+      background-color: transparent;
+    }
   }
 
   @media (max-width: 768px) {

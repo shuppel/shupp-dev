@@ -1,0 +1,569 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import { type CollectionEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const blogEntries = await getCollection('blog');
+  return blogEntries.map(entry => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+type Props = {
+  entry: CollectionEntry<'blog'>;
+};
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+// Format the date
+const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<Layout title={entry.data.title} description={entry.data.description}>
+  <div class="blog-post">
+    <article class="post-content">
+      <div class="post-header">
+        <div class="post-meta">
+          <span class="post-date">{formattedDate}</span>
+          <span class="post-readtime">{entry.data.readTime}</span>
+        </div>
+        <h1 class="post-title">{entry.data.title}</h1>
+        <div class="post-categories">
+          {entry.data.categories.map(category => (
+            <a href={`/blog?category=${category}`} class="post-category">{category}</a>
+          ))}
+        </div>
+        <div class="post-author">
+          <div class="author-avatar">
+            <div class="avatar-placeholder"></div>
+          </div>
+          <div class="author-info">
+            <span class="author-name">{entry.data.author}</span>
+            <span class="author-title">Product Manager & Software Engineer</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="post-featured-image">
+        <div class="featured-image-placeholder">
+          <div class="placeholder-text">{entry.data.featuredImage}</div>
+        </div>
+      </div>
+
+      <div class="post-body">
+        <Content />
+      </div>
+
+      <div class="post-tags">
+        <span class="tags-title">Tags:</span>
+        <div class="tags-list">
+          {entry.data.tags && entry.data.tags.map(tag => (
+            <a href={`/blog?tag=${tag.toLowerCase().replace(/\s+/g, '-')}`} class="post-tag">{tag}</a>
+          ))}
+        </div>
+      </div>
+
+      <div class="post-share">
+        <span class="share-title">Share this article:</span>
+        <div class="share-buttons">
+          <a href="#" class="share-button" aria-label="Share on Twitter">𝕏</a>
+          <a href="#" class="share-button" aria-label="Share on LinkedIn">in</a>
+          <a href="#" class="share-button" aria-label="Share on Facebook">f</a>
+        </div>
+      </div>
+    </article>
+
+    <aside class="post-sidebar">
+      <div class="sidebar-widget table-of-contents">
+        <h3 class="widget-title">Table of Contents</h3>
+        <nav class="toc-nav">
+          <ul class="toc-list">
+            <li class="toc-item">
+              <a href="#" class="toc-link">Introduction</a>
+            </li>
+            <!-- Table of contents will be added via JavaScript -->
+          </ul>
+        </nav>
+      </div>
+
+      <div class="sidebar-widget related-posts">
+        <h3 class="widget-title">Related Posts</h3>
+        <div class="related-posts-list">
+          <a href="/blog/data-driven-product-decisions" class="related-post">
+            <div class="related-post-title">Making Data-Driven Product Decisions</div>
+            <div class="related-post-date">March 15, 2025</div>
+          </a>
+          <a href="/blog/better-user-experiences" class="related-post">
+            <div class="related-post-title">Building Better User Experiences</div>
+            <div class="related-post-date">April 25, 2025</div>
+          </a>
+        </div>
+      </div>
+
+      <div class="sidebar-widget newsletter-signup">
+        <h3 class="widget-title">Subscribe to my newsletter</h3>
+        <p>Get the latest articles and insights delivered to your inbox.</p>
+        <div class="newsletter-form">
+          <input type="email" placeholder="Your email address" class="form-input">
+          <button class="btn btn-primary">Subscribe</button>
+        </div>
+      </div>
+    </aside>
+  </div>
+</Layout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Generate table of contents from h2 and h3 elements
+    const headings = document.querySelectorAll('.post-body h2, .post-body h3');
+    const tocList = document.querySelector('.toc-list');
+    
+    if (tocList) {
+      // Clear any existing items
+      tocList.innerHTML = '';
+      
+      headings.forEach((heading, index) => {
+        // Add IDs to headings if they don't have them
+        if (!heading.id) {
+          heading.id = `heading-${index}`;
+        }
+        
+        const listItem = document.createElement('li');
+        listItem.className = 'toc-item';
+        if (heading.tagName === 'H3') {
+          listItem.style.paddingLeft = '1rem';
+        }
+        
+        const link = document.createElement('a');
+        link.href = `#${heading.id}`;
+        link.className = 'toc-link';
+        link.textContent = heading.textContent;
+        
+        listItem.appendChild(link);
+        tocList.appendChild(listItem);
+      });
+    }
+    
+    // Smooth scroll for TOC links
+    const tocLinks = document.querySelectorAll('.toc-link');
+    
+    tocLinks.forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        
+        const targetId = link.getAttribute('href');
+        const targetElement = document.querySelector(targetId);
+        
+        if (targetElement) {
+          window.scrollTo({
+            top: targetElement.offsetTop - 80,
+            behavior: 'smooth'
+          });
+          
+          // Update URL without scrolling
+          history.pushState(null, null, targetId);
+        }
+      });
+    });
+    
+    // Highlight TOC item based on scroll position
+    const sections = document.querySelectorAll('.post-body h2, .post-body h3');
+    
+    const highlightToc = () => {
+      let scrollY = window.pageYOffset;
+      
+      sections.forEach(section => {
+        const sectionHeight = section.offsetHeight;
+        const sectionTop = section.offsetTop - 100;
+        const sectionId = section.getAttribute('id');
+        
+        if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
+          tocLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href') === `#${sectionId}`) {
+              link.classList.add('active');
+            }
+          });
+        }
+      });
+    };
+    
+    window.addEventListener('scroll', highlightToc);
+  });
+</script>
+
+<style>
+  .blog-post {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 3rem;
+    padding-top: 2rem;
+  }
+
+  /* Post Content Styles */
+  .post-content {
+    background: white;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+  }
+
+  .post-header {
+    padding: 2.5rem 2.5rem 2rem;
+  }
+
+  .post-meta {
+    display: flex;
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    gap: 1.5rem;
+  }
+
+  .post-title {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    line-height: 1.2;
+  }
+
+  .post-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .post-category {
+    display: inline-block;
+    background: var(--primary-color);
+    color: white;
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.2s ease;
+  }
+
+  .post-category:hover {
+    background: var(--primary-dark);
+  }
+
+  .post-author {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .author-avatar {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-right: 1rem;
+  }
+
+  .avatar-placeholder {
+    width: 100%;
+    height: 100%;
+    background: var(--primary-color);
+  }
+
+  .author-info {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .author-name {
+    font-weight: 600;
+  }
+
+  .author-title {
+    font-size: 0.85rem;
+    color: var(--text-light);
+  }
+
+  .post-featured-image {
+    height: 400px;
+    overflow: hidden;
+  }
+
+  .featured-image-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 1.5rem;
+  }
+
+  .post-body {
+    padding: 2.5rem;
+    font-size: 1.05rem;
+    line-height: 1.7;
+  }
+
+  .post-body h2 {
+    font-size: 1.8rem;
+    margin: 2.5rem 0 1.5rem;
+    color: var(--text-color);
+  }
+
+  .post-body h3 {
+    font-size: 1.4rem;
+    margin: 2rem 0 1rem;
+    color: var(--text-color);
+  }
+
+  .post-body p {
+    margin-bottom: 1.5rem;
+  }
+
+  .post-body ul, .post-body ol {
+    margin-bottom: 1.5rem;
+    padding-left: 2rem;
+  }
+
+  .post-body li {
+    margin-bottom: 0.5rem;
+  }
+
+  .post-body blockquote {
+    border-left: 4px solid var(--primary-color);
+    padding: 1rem 0 1rem 1.5rem;
+    margin: 2rem 0;
+    font-style: italic;
+    background: var(--background-alt);
+  }
+
+  .post-body blockquote p {
+    margin-bottom: 0;
+  }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    padding: 1.5rem 2.5rem;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .tags-title {
+    font-weight: 600;
+    margin-right: 1rem;
+  }
+
+  .tags-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .post-tag {
+    background: var(--background-alt);
+    color: var(--text-light);
+    padding: 0.25rem 0.75rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .post-tag:hover {
+    background: var(--primary-color);
+    color: white;
+  }
+
+  .post-share {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem 2.5rem;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .share-title {
+    font-weight: 600;
+    margin-right: 1rem;
+  }
+
+  .share-buttons {
+    display: flex;
+    gap: 0.75rem;
+  }
+
+  .share-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--background-alt);
+    color: var(--text-light);
+    text-decoration: none;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .share-button:hover {
+    background: var(--primary-color);
+    color: white;
+  }
+
+  /* Sidebar Styles */
+  .post-sidebar {
+    position: sticky;
+    top: 2rem;
+    align-self: start;
+  }
+
+  .sidebar-widget {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 2rem;
+  }
+
+  .widget-title {
+    margin-bottom: 1.25rem;
+    position: relative;
+    padding-bottom: 0.75rem;
+    font-size: 1.25rem;
+  }
+
+  .widget-title::after {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 3px;
+  }
+
+  .toc-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .toc-item {
+    margin-bottom: 0.75rem;
+  }
+
+  .toc-link {
+    display: block;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    padding: 0.25rem 0;
+    border-left: 2px solid transparent;
+    padding-left: 0.75rem;
+  }
+
+  .toc-link:hover, .toc-link.active {
+    color: var(--primary-color);
+    border-left-color: var(--primary-color);
+  }
+
+  .related-posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .related-post {
+    display: block;
+    color: var(--text-color);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .related-post:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .related-post:hover .related-post-title {
+    color: var(--primary-color);
+  }
+
+  .related-post-title {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+    transition: color 0.2s ease;
+  }
+
+  .related-post-date {
+    font-size: 0.85rem;
+    color: var(--text-light);
+  }
+
+  .newsletter-signup p {
+    margin-bottom: 1.5rem;
+    color: var(--text-light);
+  }
+
+  .newsletter-form {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .form-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    font-size: 0.9rem;
+  }
+
+  .form-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+  }
+
+  /* Responsive Adjustments */
+  @media (max-width: 1100px) {
+    .blog-post {
+      grid-template-columns: 1fr;
+    }
+
+    .post-sidebar {
+      position: static;
+      order: -1;
+    }
+
+    .table-of-contents {
+      position: sticky;
+      top: 2rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .post-header, .post-body, .post-tags, .post-share {
+      padding: 1.5rem;
+    }
+
+    .post-title {
+      font-size: 2rem;
+    }
+
+    .post-featured-image {
+      height: 250px;
+    }
+  }
+</style>

@@ -1,0 +1,287 @@
+---
+// Define a structure for timeline items
+interface TimelineItem {
+  date: string;
+  title: string;
+  description: string;
+  status: 'now' | 'next' | 'later' | 'exploring';
+  features: string[];
+}
+
+// Get the timeline items from props
+const { items } = Astro.props;
+---
+
+<div class="stacked-cards-wrapper">
+  <div class="stacked-cards-container">
+    {items.map((item: TimelineItem, index: number) => (
+      <section class="card-section" data-index={index}>
+        <div class="card" data-status={item.status}>
+          <div class="card-header">
+            <span class="card-date">{item.date}</span>
+            <div class={`card-status ${item.status}`}>{item.status}</div>
+          </div>
+          <h3 class="card-title">{item.title}</h3>
+          <p class="card-description">{item.description}</p>
+          <ul class="card-features">
+            {item.features.map((feature: string) => (
+              <li>{feature}</li>
+            ))}
+          </ul>
+        </div>
+      </section>
+    ))}
+  </div>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const sections = document.querySelectorAll('.card-section');
+    const container = document.querySelector('.stacked-cards-container');
+    
+    if (!sections.length || !container) return;
+    
+    // Set each section's height to the viewport height to create scroll space
+    const viewportHeight = window.innerHeight;
+    
+    sections.forEach((section, index) => {
+      const sectionEl = section as HTMLElement;
+      sectionEl.style.height = `${viewportHeight}px`;
+      sectionEl.style.zIndex = `${100 - index}`;
+    });
+    
+    // Set the observer options - we want to know when sections are in the middle of the viewport
+    const observerOptions = {
+      root: null,
+      rootMargin: '0px',
+      threshold: buildThresholdList() // Create many thresholds for smoother transitions
+    };
+    
+    // Create an array of thresholds from 0 to 1.0
+    function buildThresholdList() {
+      let thresholds = [];
+      let numSteps = 100;
+      for (let i = 0; i <= numSteps; i++) {
+        thresholds.push(i / numSteps);
+      }
+      return thresholds;
+    }
+    
+    // Keep track of which sections have passed the threshold
+    const activeSections = new Set();
+    
+    // Create intersection observer
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        const { target, isIntersecting, intersectionRatio } = entry;
+        const index = parseInt(target.getAttribute('data-index') || '0', 10);
+        const card = target.querySelector('.card') as HTMLElement;
+        
+        if (!card) return;
+        
+        // When a section is at least 30% visible, make its card sticky
+        if (intersectionRatio > 0.3) {
+          // Add this section to active sections
+          activeSections.add(index);
+          
+          // Make the card sticky
+          card.classList.add('sticky');
+          
+          // For cards that should be in the stack (previous cards)
+          if (Math.max(...Array.from(activeSections)) > index) {
+            // Calculate its position in the stack (0 = topmost previous card)
+            const stackPosition = Math.max(...Array.from(activeSections)) - index - 1;
+            
+            // Apply stacking effect - move up slightly and scale down as it gets deeper in the stack
+            const translateY = -20 - (stackPosition * 8); // px - smaller offset for better stacking
+            const scale = 1 - (stackPosition * 0.03); // subtler scaling
+            const opacity = 1 - (stackPosition * 0.15); // keep more opacity
+            const zIndex = 90 - stackPosition; // higher z-index to ensure stacking above header
+            
+            card.style.transform = `translateY(${translateY}px) scale(${scale})`;
+            card.style.opacity = String(Math.max(0.6, opacity));
+            card.style.zIndex = String(zIndex);
+            card.classList.add('in-stack');
+          } else {
+            // Current active card - full size
+            card.style.transform = 'translateY(0) scale(1)';
+            card.style.opacity = '1';
+            card.style.zIndex = '100';
+            card.classList.remove('in-stack');
+          }
+        } else {
+          // Section is less than 30% visible
+          activeSections.delete(index);
+          card.classList.remove('sticky');
+          card.classList.remove('in-stack');
+          card.style.transform = '';
+          card.style.opacity = '';
+          card.style.zIndex = '';
+        }
+      });
+    }, observerOptions);
+    
+    // Observe all sections
+    sections.forEach(section => {
+      observer.observe(section);
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', () => {
+      const newViewportHeight = window.innerHeight;
+      
+      sections.forEach(section => {
+        (section as HTMLElement).style.height = `${newViewportHeight}px`;
+      });
+    });
+  });
+</script>
+
+<style>
+  .stacked-cards-wrapper {
+    width: 100%;
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    position: relative;
+  }
+  
+  .stacked-cards-container {
+    position: relative;
+    width: 100%;
+  }
+  
+  .card-section {
+    width: 100%;
+    position: relative;
+    padding: 1rem;
+  }
+  
+  .card {
+    background: white;
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: var(--card-shadow);
+    position: relative;
+    width: 100%;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    will-change: transform, opacity;
+  }
+  
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 5px;
+    height: 100%;
+    background: linear-gradient(to bottom, var(--color-tertiary), var(--color-accent));
+    opacity: 0.7;
+    border-top-left-radius: 16px;
+    border-bottom-left-radius: 16px;
+  }
+  
+  /* Sticky cards are fixed to the top of the viewport */
+  .card.sticky {
+    position: sticky;
+    top: 170px; /* Distance from the top - adjust for your header */
+  }
+  
+  /* Cards in the stack get a more pronounced shadow */
+  .card.in-stack {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+  }
+  
+  .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .card-date {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-light);
+  }
+  
+  .card-status {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.25rem 0.8rem;
+    border-radius: 30px;
+  }
+  
+  .card-status.now {
+    background-color: rgba(121, 148, 150, 0.2);
+    color: var(--color-tertiary);
+  }
+  
+  .card-status.next {
+    background-color: rgba(172, 193, 150, 0.2);
+    color: var(--color-accent);
+  }
+  
+  .card-status.later {
+    background-color: rgba(233, 235, 158, 0.2);
+    color: var(--color-secondary);
+  }
+  
+  .card-status.exploring {
+    background-color: rgba(110, 125, 200, 0.2);
+    color: #6e7dc8;
+  }
+  
+  .card-title {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--color-dark);
+  }
+  
+  .card-description {
+    margin-bottom: 1.5rem;
+    color: var(--text-light);
+    line-height: 1.6;
+  }
+  
+  .card-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  
+  .card-features li {
+    padding-left: 1.5rem;
+    position: relative;
+    margin-bottom: 0.5rem;
+    color: var(--text-light);
+  }
+  
+  .card-features li::before {
+    content: '•';
+    position: absolute;
+    left: 0;
+    color: var(--color-tertiary);
+    font-size: 1.2rem;
+  }
+
+  /* Responsive styles */
+  @media (max-width: 768px) {
+    .card {
+      padding: 1.5rem;
+    }
+    
+    .card-title {
+      font-size: 1.25rem;
+    }
+    
+    .card.sticky {
+      top: 120px; /* Adjusted for mobile header */
+    }
+  }
+
+  /* Dark mode support */
+  :global(html.dark) .card {
+    background: var(--background-alt);
+  }
+</style>

@@ -9,6 +9,7 @@
     "astro": "astro"
   },
   "dependencies": {
+    "aceternity": "^1.0.1",
     "astro": "^5.7.12"
   }
 }

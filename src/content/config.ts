@@ -1,0 +1,126 @@
+// Import utilities from `astro:content`
+import { z, defineCollection } from 'astro:content';
+
+// Define a `type` and `schema` for blog posts
+const blogCollection = defineCollection({
+  type: 'content', // v2.5.0 and later
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    pubDate: z.date(),
+    updatedDate: z.date().optional(),
+    author: z.string(),
+    categories: z.array(z.string()),
+    tags: z.array(z.string()).optional(),
+    readTime: z.string().optional(),
+    featuredImage: z.string().optional(),
+  }),
+});
+
+// Define a schema for project items
+const projectCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    projectDate: z.date(),
+    completed: z.boolean().default(true),
+    technologies: z.array(z.string()),
+    featured: z.boolean().default(false),
+    projectImage: z.string().optional(),
+    projectUrl: z.string().url().optional(),
+    githubUrl: z.string().url().optional(),
+  }),
+});
+
+// Define a schema for resume sections
+const resumeCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    order: z.number(), // To control display order
+    icon: z.string().optional(), // Icon name for the section
+    visible: z.boolean().default(true), // Whether to display this section
+  }),
+});
+
+// Define a schema for experience entries
+const experienceCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    company: z.string(),
+    position: z.string(),
+    location: z.string(),
+    startDate: z.date(),
+    endDate: z.date().optional(), // Optional for current positions
+    current: z.boolean().default(false),
+    description: z.string(),
+    achievements: z.array(z.string()),
+    technologies: z.array(z.string()).optional(),
+    order: z.number(), // To control display order
+    visible: z.boolean().default(true),
+  }),
+});
+
+// Define a schema for education entries
+const educationCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    institution: z.string(),
+    degree: z.string(),
+    field: z.string(),
+    location: z.string(),
+    startDate: z.date(),
+    endDate: z.date().optional(),
+    current: z.boolean().default(false),
+    description: z.string().optional(),
+    achievements: z.array(z.string()).optional(),
+    order: z.number(),
+    visible: z.boolean().default(true),
+  }),
+});
+
+// Define a schema for credential badges
+const credentialCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(), // Name of the credential
+    organization: z.string(), // Issuing organization
+    issueDate: z.date(),
+    expirationDate: z.date().optional().nullable(),
+    description: z.string(),
+    credentialId: z.string().optional(),
+    credentialUrl: z.string().url().optional(),
+    badgeImage: z.string(), // Path to badge image
+    featured: z.boolean().default(false),
+    skills: z.array(z.string()).optional(),
+    category: z.string(), // Certification category
+    visible: z.boolean().default(true),
+  }),
+});
+
+// Define a schema for skills
+const skillCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    name: z.string(),
+    category: z.string(), // Technical, Soft, etc.
+    level: z.number().min(1).max(5).optional(), // Skill level from 1-5
+    yearsOfExperience: z.number().optional(),
+    featured: z.boolean().default(false),
+    icon: z.string().optional(),
+    order: z.number(),
+    visible: z.boolean().default(true),
+  }),
+});
+
+// Export a single `collections` object to register your collections
+export const collections = {
+  'blog': blogCollection,
+  'projects': projectCollection,
+  'resume': resumeCollection,
+  'experience': experienceCollection,
+  'education': educationCollection,
+  'credentials': credentialCollection,
+  'skills': skillCollection,
+};
