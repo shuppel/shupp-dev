@@ -2,6 +2,7 @@
 import { getCollection, getEntry } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import { type CollectionEntry } from 'astro:content';
+import RelatedProjects from '../../components/RelatedProjects.astro';
 
 export async function getStaticPaths() {
   const blogEntries = await getCollection('blog');
@@ -78,6 +79,10 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
           <a href="#" class="share-button" aria-label="Share on Facebook">f</a>
         </div>
       </div>
+
+      {entry.data.relatedProjects && entry.data.relatedProjects.length > 0 && (
+        <RelatedProjects projectSlugs={entry.data.relatedProjects} />
+      )}
     </article>
 
     <aside class="post-sidebar">

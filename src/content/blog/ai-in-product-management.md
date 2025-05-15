@@ -8,6 +8,7 @@ tags: ["Artificial Intelligence", "Product Management", "Innovation", "Technolog
 readTime: "6 min read"
 featuredImage: "ai-product-management"
 featured: true
+relatedProjects: ["portfolio-website"]
 ---
 
 ## Introduction

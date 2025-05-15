@@ -8,6 +8,7 @@ featured: true
 projectImage: "portfolio-website"
 projectUrl: "https://shupp.dev"
 githubUrl: "https://github.com/user/portfolio-website"
+relatedBlogPosts: ["ai-in-product-management", "better-user-experiences", "deployment-netlify-toml"]
 ---
 
 This is my personal portfolio website built using Astro, a modern static site generator. The site features a clean, responsive design with fluid animations and a dark mode toggle.

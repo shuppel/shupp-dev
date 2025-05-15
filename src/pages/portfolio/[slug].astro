@@ -2,6 +2,7 @@
 import { getCollection, getEntry } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import { type CollectionEntry } from 'astro:content';
+import RelatedBlogPosts from '../../components/RelatedBlogPosts.astro';
 
 export async function getStaticPaths() {
   const projectEntries = await getCollection('projects');
@@ -68,6 +69,10 @@ const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US
           ))}
         </div>
       </div>
+
+      {entry.data.relatedBlogPosts && entry.data.relatedBlogPosts.length > 0 && (
+        <RelatedBlogPosts blogSlugs={entry.data.relatedBlogPosts} />
+      )}
     </article>
 
     <aside class="project-sidebar">

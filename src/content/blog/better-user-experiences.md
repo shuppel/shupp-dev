@@ -7,6 +7,7 @@ categories: ["UX/UI Design", "Product Management"]
 tags: ["User Experience", "Design", "Product Strategy", "Customer Satisfaction"]
 readTime: "5 min read"
 featuredImage: "better-ux"
+relatedProjects: ["portfolio-website"]
 ---
 
 ## What Makes a Great User Experience?
