@@ -1,11 +1,11 @@
 ---
 title: "De-Big7: My Linux Mint Journey on a ThinkPad"
-description: "Switching from Windows to Linux Mint on my old Lenovo ThinkPad, and the radical upgrades that transformed my computing experience."
+description: "Switching from Windows to Linux Mint on my old Lenovo ThinkPad, and the radical upgrades that transformed my computing experience. Let's get schwifty with the aftermarket add-ons bb!"
 pubDate: 2024-06-07
-author: "Your Name"
-categories: ["Linux", "Personal Journey"]
+author: "E L Shupp"
+categories: ["Linux", "OS"]
 tags: ["Linux Mint", "ThinkPad", "Customization", "Open Source", "Productivity", "System Optimization"]
-readTime: "9 min read"
+readTime: "7 min read"
 featuredImage: "linux-mint-thinkpad"
 featured: true
 relatedProjects: ["portfolio-website"]
@@ -21,21 +21,21 @@ A coworker mentioned Cinnamon was working off an older visual distro from the 80
 
 First thing I do is look up what I can add. Here's what I did:
 
-- **Installed preload** to increase load time for frequently used apps. Duuude, this thing is EPIC! It's like having your favorite surf break permanently scouted - preload learns which apps you use the most and loads them into RAM before you even click. Your system becomes totally PSYCHIC, brah! Apps launching 2-3x faster is like catching that perfect barrel wave without waiting.
+- **Installed preload** to increase load time for frequently used apps. This cool utility learns which applications you use most often and loads them into RAM proactively. Apps launch 2-3x faster because they're ready before you even click. It's like your computer anticipating what you need next.
 
-- **Enabled fstrim.timer** for my SSD. Brooo, SSDs are like the shortboards of storage - fast and responsive, but they need proper maintenance! Fstrim tells your SSD which blocks are free to use, preventing write amplification that would totally wipe you out performance-wise. It's like waxing your board regularly - keeps everything smooth and fast!
+- **Enabled fstrim.timer** for my SSD. SSDs need regular maintenance to keep performing at their best. Fstrim tells your SSD which blocks are free to use, preventing write amplification and extending the drive's lifespan. Regular trimming keeps everything running smoothly with minimal performance degradation over time.
 
-- **Boosted vm.swappiness to 10** for better memory management. So check it out, dude - the default setting is like 60, which means your system gets all sketchy and starts swapping RAM to disk way too early. Cranking it down to 10 tells Linux "Hey brah, only swap when absolutely necessary!" It's like telling your buddy not to paddle for every wave - only go for the epic ones! My ThinkPad now shreds through heavy workloads without bogging down.
+- **Boosted vm.swappiness to 10** for better memory management. The default setting of 60 makes Linux swap RAM to disk too aggressively. Lowering it to 10 tells the system to keep data in RAM longer and only use swap when absolutely necessary. My ThinkPad now handles heavy workloads much more smoothly without constant disk thrashing.
 
-- **Installed Plank** to get the Mac OS experience I never had. Gnarly dock, man! It sits at the bottom of your screen with bouncy animations when you click stuff. Mac users pay big $$$ for this experience, but I'm getting it for FREE! Added bonus: it stays out of the way when you're catching big computational waves, then pops right back when you need it.
+- **Installed Plank** to get the Mac OS experience I never had. This sleek dock sits at the bottom of your screen with smooth animations when you interact with it. Mac users pay a premium for this kind of UI, but on Linux it's free. It stays out of the way when you're working, then pops up exactly when you need it.
 
-- **Installed tree** and **linux-lowlatency** for better terminal navigation and performance. Tree is like having a bird's eye view of your file system, brah - it shows directories as branching trees! And that low-latency kernel? INSANE for audio work - it's like going from a soft learner board to a pro performance thruster. No more audio dropouts during my GarageBand sessions!
+- **Installed tree** and **linux-lowlatency** for better terminal navigation and performance. Tree gives you a visual representation of your directory structure right in the terminal, making file system navigation intuitive. The low-latency kernel is perfect for audio work - I no longer get dropouts or stuttering during audio production.
 
-- For monitoring, I grabbed **glances**, **nethogs**, and **htop**. These tools are like having a weather report, tide chart, and surf cam all in one for your computer! Glances shows CPU, RAM, network, disk, sensors - everything! Nethogs tells you which apps are hogging your bandwidth (total kooks!). And htop? Interactive process viewer that lets you sort and kill processes that are being total barneys. Righteous!
+- For monitoring, I grabbed **glances**, **nethogs**, and **htop**. These tools give you real-time insights into what's happening on your system. Glances shows comprehensive system stats, nethogs tracks network usage by application, and htop provides an interactive process viewer that makes it easy to identify and kill problematic processes.
 
-- Tried out **i3 window manager** for tiling. Dude, this is like going from longboarding to shortboarding - steep learning curve but TOTALLY worth it! Your windows automatically tile without overlapping, and you control everything with keyboard shortcuts. No more mouse wipeouts! You can even set up workspaces for different activities - coding, browsing, chat - and flip between them like changing beaches on a surf trip.
+- Tried out **i3 window manager** for tiling. There's definitely a learning curve, but the productivity boost is worth it. Your windows automatically tile without overlapping, maximizing screen real estate, and you control everything via keyboard shortcuts. You can create separate workspaces for different activities - coding, browsing, communication - and switch between them instantly.
 
-- Upgraded my shell: **zsh + oh-my-zsh + powerlevel10k** style. This combo is the ULTIMATE terminal pipeline, brah! Zsh gives you auto-completion that reads your MIND. Oh-my-zsh adds theme support and plugins galore. And powerlevel10k? The most customizable prompt in the universe, dude! It shows git status, Python environments, error codes - all color-coded so you know exactly what's happening. My terminal went from kook to Kelly Slater in like 20 minutes!
+- Upgraded my shell: **zsh + oh-my-zsh + powerlevel10k**. This combination transforms your terminal experience. Zsh offers intelligent auto-completion and spelling correction. Oh-my-zsh adds plugins and themes to enhance functionality. Powerlevel10k provides a highly customizable prompt that shows git status, Python environments, and error codes - all color-coded for easy reading. My terminal workflow is now twice as efficient.
 
 ## Daily Driver Experience
 
