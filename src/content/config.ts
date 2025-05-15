@@ -15,7 +15,7 @@ const blogCollection = defineCollection({
     readTime: z.string().optional(),
     featuredImage: z.string().optional(),
     featured: z.boolean().default(false), // Added featured flag for promoting posts
-    relatedProjects: z.array(z.string()).optional(), // Related project slugs
+    relatedProjects: z.union([z.array(z.string()), z.null()]).optional(), // Related project slugs or null if N/A
   }),
 });
 
@@ -32,7 +32,7 @@ const projectCollection = defineCollection({
     projectImage: z.string().optional(),
     projectUrl: z.string().url().optional(),
     githubUrl: z.string().url().optional(),
-    relatedBlogPosts: z.array(z.string()).optional(), // Related blog post slugs
+    relatedBlogPosts: z.union([z.array(z.string()), z.null()]).optional(), // Related blog post slugs or null if N/A
   }),
 });
 

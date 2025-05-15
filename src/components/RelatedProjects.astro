@@ -2,21 +2,27 @@
 import { getCollection } from 'astro:content';
 
 interface Props {
-  projectSlugs: string[];
+  projectSlugs: string[] | null;
 }
 
 const { projectSlugs } = Astro.props;
+
+// If projectSlugs is null or empty, don't show anything
+if (!projectSlugs || projectSlugs.length === 0) {
+  // Return early - nothing to render
+  return;
+}
 
 // Get all projects
 const allProjects = await getCollection('projects');
 
 // Filter to only get the related projects
-const relatedProjects = allProjects.filter(project => 
+const relatedProjects = allProjects.filter(project =>
   projectSlugs.includes(project.slug)
 );
 
 // Sort by date (newest first)
-relatedProjects.sort((a, b) => 
+relatedProjects.sort((a, b) =>
   new Date(b.data.projectDate).getTime() - new Date(a.data.projectDate).getTime()
 );
 ---

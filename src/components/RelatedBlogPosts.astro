@@ -2,21 +2,27 @@
 import { getCollection } from 'astro:content';
 
 interface Props {
-  blogSlugs: string[];
+  blogSlugs: string[] | null;
 }
 
 const { blogSlugs } = Astro.props;
+
+// If blogSlugs is null or empty, don't show anything
+if (!blogSlugs || blogSlugs.length === 0) {
+  // Return early - nothing to render
+  return;
+}
 
 // Get all blog posts
 const allPosts = await getCollection('blog');
 
 // Filter to only get the related posts
-const relatedPosts = allPosts.filter(post => 
+const relatedPosts = allPosts.filter(post =>
   blogSlugs.includes(post.slug)
 );
 
 // Sort by date
-relatedPosts.sort((a, b) => 
+relatedPosts.sort((a, b) =>
   new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime()
 );
 ---

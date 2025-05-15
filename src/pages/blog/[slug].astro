@@ -80,9 +80,7 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
         </div>
       </div>
 
-      {entry.data.relatedProjects && entry.data.relatedProjects.length > 0 && (
-        <RelatedProjects projectSlugs={entry.data.relatedProjects} />
-      )}
+      <RelatedProjects projectSlugs={entry.data.relatedProjects} />
     </article>
 
     <aside class="post-sidebar">

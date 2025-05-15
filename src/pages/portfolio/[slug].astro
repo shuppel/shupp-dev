@@ -70,9 +70,7 @@ const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US
         </div>
       </div>
 
-      {entry.data.relatedBlogPosts && entry.data.relatedBlogPosts.length > 0 && (
-        <RelatedBlogPosts blogSlugs={entry.data.relatedBlogPosts} />
-      )}
+      <RelatedBlogPosts blogSlugs={entry.data.relatedBlogPosts} />
     </article>
 
     <aside class="project-sidebar">
