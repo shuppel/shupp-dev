@@ -1,14 +1,14 @@
 ---
 title: "De-Big7: My Linux Mint Journey on a ThinkPad"
 description: "Switching from Windows to Linux Mint on my old Lenovo ThinkPad, and the radical upgrades that transformed my computing experience. Let's get schwifty with the aftermarket add-ons bb!"
-pubDate: 2024-06-07
+pubDate: 2024-05-14
 author: "E L Shupp"
 categories: ["Linux", "OS"]
-tags: ["Linux Mint", "ThinkPad", "Customization", "Open Source", "Productivity", "System Optimization"]
+tags: ["Linux Mint", "Repurposed Hardware", "Customization", "Open Source", "Productivity", "System Optimization"]
 readTime: "7 min read"
-featuredImage: "linux-mint-thinkpad"
+featuredImage: "linux-mint-on-ye-olde-thinkpad"
 featured: true
-relatedProjects: ["portfolio-website"]
+relatedProjects: null
 ---
 
 ## Why I Left Windows
