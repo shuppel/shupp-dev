@@ -36,6 +36,43 @@ const projectCollection = defineCollection({
   }),
 });
 
+// Define a schema for roadmap items
+const roadmapCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    phase: z.enum(['current', 'upcoming', 'future']),
+    status: z.enum(['now', 'next', 'later', 'exploring']),
+    order: z.number(),
+    features: z.array(z.string()),
+    completedItems: z.array(z.string()).default([]),
+  }),
+});
+
+// Define a schema for author bio
+const authorCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    name: z.string(),
+    title: z.string(),
+    email: z.string().email(),
+    location: z.string(),
+    avatar: z.string().optional(),
+    shortBio: z.string(),
+    longBio: z.string(),
+    socialLinks: z.object({
+      github: z.string().url().optional(),
+      linkedin: z.string().url().optional(),
+      twitter: z.string().url().optional(),
+      bluesky: z.string().url().optional(),
+      website: z.string().url().optional(),
+    }),
+    skills: z.array(z.string()).optional(),
+    interests: z.array(z.string()).optional(),
+  }),
+});
+
 // Define a schema for resume sections
 const resumeCollection = defineCollection({
   type: 'content',
@@ -121,6 +158,8 @@ const skillCollection = defineCollection({
 export const collections = {
   'blog': blogCollection,
   'projects': projectCollection,
+  'roadmap': roadmapCollection,
+  'authors': authorCollection,
   'resume': resumeCollection,
   'experience': experienceCollection,
   'education': educationCollection,

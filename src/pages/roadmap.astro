@@ -1,5 +1,29 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+// Get all roadmap items
+const roadmapItems = await getCollection('roadmap');
+
+// Sort by order number
+const sortedRoadmapItems = roadmapItems.sort((a, b) => a.data.order - b.data.order);
+
+// Current progress percentage for timeline
+const totalItems = roadmapItems.length;
+const completedCMSItems = roadmapItems
+  .filter(item => item.slug === 'content-management-system')[0]?.data.completedItems.length || 0;
+
+// Calculate progress percentage for the CMS phase
+const cmsInitialProgress = 0;
+const cmsMaxProgress = 14; // Represents 14% when CMS is complete
+let progressPercentage = cmsInitialProgress;
+
+if (completedCMSItems > 0) {
+  // There are 4 total CMS items to complete
+  const cmsExpectedTotal = 4;
+  progressPercentage = cmsInitialProgress + 
+    (cmsMaxProgress - cmsInitialProgress) * (completedCMSItems / cmsExpectedTotal);
+}
 ---
 
 <Layout title="Development Roadmap" description="My future plans and development roadmap">
@@ -26,110 +50,31 @@ import Layout from '../layouts/Layout.astro';
           
           <!-- Roadmap items floating on the liquid -->
           <div class="roadmap-items">
-            <div class="roadmap-item" data-phase="current">
-              <div class="roadmap-node"></div>
-              <div class="roadmap-content">
-                <h3>Content Management System</h3>
-                <p>Establishing a robust CMS to streamline content creation and management processes.</p>
-                <ul class="roadmap-features">
-                  <li>Seamless content editing</li>
-                  <li>Flexible content types</li>
-                  <li>Media management</li>
-                  <li>Publishing workflow</li>
-                </ul>
-                <div class="roadmap-status now">Now</div>
+            {sortedRoadmapItems.map((item, index) => (
+              <div class="roadmap-item" data-phase={item.data.phase}>
+                <div class="roadmap-node"></div>
+                <div class="roadmap-content">
+                  <h3>{item.data.title}</h3>
+                  <p>{item.data.description}</p>
+                  <ul class="roadmap-features">
+                    {item.data.features.map(feature => (
+                      <li>{feature}</li>
+                    ))}
+                  </ul>
+                  {item.data.completedItems && item.data.completedItems.length > 0 && (
+                    <div class="roadmap-completed">
+                      <h4>Completed:</h4>
+                      <ul class="completed-features">
+                        {item.data.completedItems.map(completed => (
+                          <li class="completed">{completed}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  <div class={`roadmap-status ${item.data.status}`}>{item.data.status}</div>
+                </div>
               </div>
-            </div>
-            
-            <div class="roadmap-item" data-phase="upcoming">
-              <div class="roadmap-node"></div>
-              <div class="roadmap-content">
-                <h3>SVG Playground for Kids</h3>
-                <p>Building an interactive SVG-based learning tool to help children develop motor skills on touchscreen devices.</p>
-                <ul class="roadmap-features">
-                  <li>Touch-responsive shapes and elements</li>
-                  <li>Progressive difficulty levels</li>
-                  <li>Engaging animations and feedback</li>
-                  <li>Accessible design for all abilities</li>
-                </ul>
-                <div class="roadmap-status next">Next</div>
-              </div>
-            </div>
-            
-            <div class="roadmap-item" data-phase="upcoming">
-              <div class="roadmap-node"></div>
-              <div class="roadmap-content">
-                <h3>Local-First Demo</h3>
-                <p>Creating a demonstration of local-first technology that prioritizes user data ownership and offline functionality.</p>
-                <ul class="roadmap-features">
-                  <li>Offline capability</li>
-                  <li>Data synchronization</li>
-                  <li>Privacy-focused architecture</li>
-                  <li>Decentralized storage</li>
-                </ul>
-                <div class="roadmap-status next">Next</div>
-              </div>
-            </div>
-            
-            <div class="roadmap-item" data-phase="upcoming">
-              <div class="roadmap-node"></div>
-              <div class="roadmap-content">
-                <h3>Portfolio Integration</h3>
-                <p>Bringing together all my professional work into a cohesive portfolio showcasing my capabilities and achievements.</p>
-                <ul class="roadmap-features">
-                  <li>Project showcases</li>
-                  <li>Interactive demos</li>
-                  <li>Case studies</li>
-                  <li>Testimonials</li>
-                </ul>
-                <div class="roadmap-status next">Next</div>
-              </div>
-            </div>
-            
-            <div class="roadmap-item" data-phase="future">
-              <div class="roadmap-node"></div>
-              <div class="roadmap-content">
-                <h3>Liquid v2 Animations</h3>
-                <p>Enhancing the visual experience with advanced liquid animations that create a unique, immersive interface.</p>
-                <ul class="roadmap-features">
-                  <li>WebGL fluid simulations</li>
-                  <li>Interactive particle effects</li>
-                  <li>Scroll-based transformations</li>
-                  <li>Liquid cursor effects</li>
-                </ul>
-                <div class="roadmap-status later">Later</div>
-              </div>
-            </div>
-
-            <div class="roadmap-item" data-phase="future">
-              <div class="roadmap-node"></div>
-              <div class="roadmap-content">
-                <h3>Interactive Case Studies</h3>
-                <p>Creating immersive, interactive case studies that showcase project details with depth and engagement.</p>
-                <ul class="roadmap-features">
-                  <li>Interactive prototypes</li>
-                  <li>Process visualizations</li>
-                  <li>Before/after comparisons</li>
-                  <li>User feedback integration</li>
-                </ul>
-                <div class="roadmap-status later">Later</div>
-              </div>
-            </div>
-
-            <div class="roadmap-item" data-phase="future">
-              <div class="roadmap-node"></div>
-              <div class="roadmap-content">
-                <h3>AI-Enhanced Content Creation</h3>
-                <p>Leveraging AI tools to streamline and enhance the content creation process while maintaining a personal touch.</p>
-                <ul class="roadmap-features">
-                  <li>AI-assisted writing workflows</li>
-                  <li>Smart content recommendations</li>
-                  <li>Automated image generation</li>
-                  <li>Content personalization</li>
-                </ul>
-                <div class="roadmap-status exploring">Exploring</div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </div>
@@ -287,7 +232,7 @@ import Layout from '../layouts/Layout.astro';
       <h2>Development Timeline</h2>
       <div class="timeline">
         <div class="timeline-progress-bar">
-          <div class="timeline-progress" style="width: 14%"></div>
+          <div class="timeline-progress" style={`width: ${progressPercentage}%`}></div>
         </div>
         
         <div class="timeline-markers">
@@ -432,6 +377,14 @@ import Layout from '../layouts/Layout.astro';
     color: var(--text-light);
   }
 
+  html.dark .roadmap-hero h1 {
+    background: linear-gradient(45deg, var(--color-light), var(--color-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+  }
+
   /* Liquid Roadmap Visualization */
   .roadmap-visualization {
     margin: 5rem 0;
@@ -543,6 +496,10 @@ import Layout from '../layouts/Layout.astro';
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   }
 
+  html.dark .roadmap-content {
+    background: #23232b;
+  }
+
   .roadmap-content::before {
     content: '';
     position: absolute;
@@ -564,9 +521,17 @@ import Layout from '../layouts/Layout.astro';
     color: var(--color-dark);
   }
 
+  html.dark .roadmap-content h3 {
+    color: #f3f4f6;
+  }
+
   .roadmap-content p {
     margin-bottom: 1.5rem;
     color: var(--text-light);
+  }
+
+  html.dark .roadmap-content p {
+    color: #c5c5d2;
   }
 
   .roadmap-features {
@@ -587,6 +552,40 @@ import Layout from '../layouts/Layout.astro';
     left: 0;
     color: var(--color-tertiary);
     font-size: 1.2rem;
+  }
+
+  .roadmap-completed {
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-top: 1px dashed var(--border-color);
+    padding-top: 1rem;
+  }
+
+  .roadmap-completed h4 {
+    color: var(--color-tertiary);
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+  }
+
+  .completed-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .completed-features li {
+    padding-left: 1.5rem;
+    position: relative;
+    margin-bottom: 0.5rem;
+    color: var(--color-tertiary);
+  }
+
+  .completed-features li.completed::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--color-tertiary);
+    font-weight: bold;
   }
 
   .roadmap-status {
@@ -619,6 +618,11 @@ import Layout from '../layouts/Layout.astro';
   .roadmap-status.later {
     background-color: rgba(233, 235, 158, 0.2);
     color: var(--color-secondary);
+  }
+
+  html.dark .roadmap-status.later {
+    background-color: rgba(233, 235, 158, 0.2);
+    color: var(--color-light);
   }
 
   .roadmap-status.exploring {
@@ -676,6 +680,10 @@ import Layout from '../layouts/Layout.astro';
     overflow: hidden;
   }
 
+  html.dark .principle-card {
+    background: #23232b;
+  }
+
   .principle-card::before {
     content: '';
     position: absolute;
@@ -692,10 +700,18 @@ import Layout from '../layouts/Layout.astro';
     color: var(--color-dark);
   }
 
+  html.dark .principle-card h3 {
+    color: #f3f4f6;
+  }
+
   .principle-card p {
     color: var(--text-light);
     font-size: 0.95rem;
     line-height: 1.5;
+  }
+
+  html.dark .principle-card p {
+    color: #c5c5d2;
   }
 
   .principle-card:hover {
@@ -717,6 +733,10 @@ import Layout from '../layouts/Layout.astro';
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     position: relative;
     overflow: hidden;
+  }
+
+  html.dark .phase-card {
+    background: #23232b;
   }
 
   .phase-card::before {
@@ -748,6 +768,10 @@ import Layout from '../layouts/Layout.astro';
     color: var(--color-dark);
   }
 
+  html.dark .phase-header h3 {
+    color: #f3f4f6;
+  }
+
   .phase-indicator {
     font-size: 0.75rem;
     font-weight: 600;
@@ -775,16 +799,31 @@ import Layout from '../layouts/Layout.astro';
     color: #6e7dc8;
   }
 
+  html.dark .phase-indicator.now,
+  html.dark .phase-indicator.next,
+  html.dark .phase-indicator.later,
+  html.dark .phase-indicator.exploring {
+    color: var(--color-light);
+  }
+
   .phase-card p {
     margin-bottom: 1.5rem;
     color: var(--text-light);
     line-height: 1.6;
   }
 
+  html.dark .phase-card p {
+    color: #c5c5d2;
+  }
+
   .phase-goals h4 {
     margin-bottom: 1rem;
     font-size: 1.1rem;
     color: var(--color-secondary);
+  }
+
+  html.dark .phase-goals h4 {
+    color: var(--color-accent);
   }
 
   .phase-goals ul {
@@ -907,6 +946,10 @@ import Layout from '../layouts/Layout.astro';
     color: var(--color-dark);
   }
 
+  html.dark .timeline-marker.active .marker-title {
+    color: var(--color-light);
+  }
+
   /* CTA Section */
   .roadmap-cta {
     margin: 6rem 0 2rem;
@@ -920,6 +963,10 @@ import Layout from '../layouts/Layout.astro';
     box-shadow: var(--card-shadow);
     position: relative;
     overflow: hidden;
+  }
+
+  html.dark .cta-card {
+    background: linear-gradient(135deg, rgba(44, 44, 56, 0.8), rgba(30, 32, 40, 0.9));
   }
 
   .cta-card::before, .cta-card::after {
@@ -947,11 +994,19 @@ import Layout from '../layouts/Layout.astro';
     color: var(--color-dark);
   }
 
+  html.dark .cta-card h2 {
+    color: #f3f4f6;
+  }
+
   .cta-card p {
     max-width: 600px;
     margin: 0 auto 2.5rem;
     color: var(--text-light);
     font-size: 1.1rem;
+  }
+
+  html.dark .cta-card p {
+    color: #c5c5d2;
   }
 
   .cta-buttons {

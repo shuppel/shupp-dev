@@ -1,13 +1,14 @@
 # Shupp.Dev - Professional Portfolio & Blog
 
-A professional portfolio and blog website built with Astro, featuring a playful FollowingBear SVG animation that follows cursor movements.
+A professional portfolio and blog website built with Astro, featuring a content management system for dynamic content and a modern, responsive design.
 
 ## Features
 
 - Responsive design for all devices
-- Interactive FollowingBear SVG animation
+- Content Management System (CMS) using Astro Content Collections
 - Professional portfolio showcase
-- Blog with category filtering
+- Dynamic blog with category filtering
+- Interactive roadmap page
 - Modern UI with clean design
 
 ## Project Structure
@@ -18,11 +19,23 @@ A professional portfolio and blog website built with Astro, featuring a playful 
 │   └── favicon.svg
 ├── src/
 │   ├── components/
-│   │   ├── FollowingBear.astro     # Interactive bear SVG animation
+│   │   ├── BentoGrid.astro
+│   │   ├── CredentialBadge.astro
+│   │   ├── CredentialsGrid.astro
+│   │   ├── RelatedBlogPosts.astro
+│   │   ├── RelatedProjects.astro
+│   │   ├── StackedCards.astro
 │   │   ├── Header/
 │   │   │   └── Navigation.astro    # Site navigation
 │   │   └── Footer/
 │   │       └── Footer.astro        # Site footer
+│   ├── content/                    # Content Collections (CMS)
+│   │   ├── authors/                # Author profiles
+│   │   ├── blog/                   # Blog posts
+│   │   ├── credentials/            # Certifications and credentials
+│   │   ├── projects/               # Portfolio projects
+│   │   ├── roadmap/                # Roadmap items
+│   │   └── config.ts               # Content schema definitions
 │   ├── layouts/
 │   │   └── Layout.astro            # Main layout template
 │   └── pages/
@@ -30,8 +43,10 @@ A professional portfolio and blog website built with Astro, featuring a playful 
 │       ├── about.astro             # About page
 │       ├── portfolio.astro         # Portfolio page
 │       ├── blog.astro              # Blog listing page
+│       ├── blog-bento.astro        # Alternative blog layout
+│       ├── roadmap.astro           # Roadmap/future plans
 │       └── blog/
-│           └── ai-in-product-management.astro  # Sample blog post
+│           └── [slug].astro        # Dynamic blog post page
 └── package.json
 ```
 
@@ -50,8 +65,99 @@ All commands are run from the root of the project, from a terminal:
 ## Technologies
 
 - [Astro](https://astro.build) - The web framework for content-driven websites
+- [Astro Content Collections](https://docs.astro.build/en/guides/content-collections/) - For content management
 - CSS - Custom styling with modern CSS features
-- JavaScript - For interactive elements like the FollowingBear
+- JavaScript - For interactive elements
+
+## Content Management System (CMS)
+
+This site uses Astro Content Collections as a headless CMS for managing content. Here's how to use it:
+
+### Content Types
+
+The site supports the following content types:
+
+1. **Blog Posts** (`/src/content/blog/`)
+   - Markdown files for blog posts with frontmatter for metadata
+   - Supported fields include title, description, publication date, categories, tags, etc.
+
+2. **Projects** (`/src/content/projects/`)
+   - Showcase your professional projects
+   - Include details like technologies used, project dates, and links
+
+3. **Author Profiles** (`/src/content/authors/`)
+   - Store information about content authors (bio, social links, etc.)
+   - Used across the site for attribution and about pages
+
+4. **Roadmap Items** (`/src/content/roadmap/`)
+   - Define future plans and track progress
+   - Items can be marked as current, upcoming, or future
+
+5. **Credentials** (`/src/content/credentials/`)
+   - Store professional certifications and credentials
+   - Display badges and certifications on relevant pages
+
+### Adding New Content
+
+To add new content, create a Markdown file in the appropriate directory with the required frontmatter fields. Examples:
+
+#### Blog Post Example:
+
+```md
+---
+title: My New Blog Post
+description: A brief description of the post
+pubDate: 2025-05-15
+updatedDate: 2025-05-16
+author: Erikk Shupp
+categories: [Technology, Web Development]
+tags: [Astro, CMS]
+featured: true
+---
+
+Your blog post content goes here, written in Markdown format.
+```
+
+#### Project Example:
+
+```md
+---
+title: My Portfolio Project
+description: A brief description of the project
+projectDate: 2025-04-01
+completed: true
+technologies: [Astro, CSS, JavaScript]
+featured: true
+projectUrl: https://example.com
+githubUrl: https://github.com/username/project
+---
+
+Detailed description of the project goes here. This can include challenges, solutions, and outcomes.
+```
+
+#### Roadmap Item Example:
+
+```md
+---
+title: New Feature
+description: Detailed description of the planned feature
+phase: upcoming  # current, upcoming, or future
+status: next     # now, next, later, or exploring
+order: 3
+features:
+  - Feature point one
+  - Feature point two
+  - Feature point three
+completedItems:
+  - Already completed sub-item
+---
+
+Additional details about the roadmap item can go here.
+```
+
+### Schema Validation
+
+All content uses Zod schema validation defined in `/src/content/config.ts` to ensure data integrity. Refer to this file for the complete schema of each content type.
 
 ## Getting Started
 
@@ -62,14 +168,15 @@ All commands are run from the root of the project, from a terminal:
 
 ## Customization
 
-- Update personal information in the website content
-- Replace placeholder images with your own project images
-- Add your own blog posts in the `src/pages/blog/` directory
+- Update author information in the `/src/content/authors/` directory
+- Add your own projects in the `/src/content/projects/` directory
+- Add blog posts in the `/src/content/blog/` directory
+- Update your roadmap in the `/src/content/roadmap/` directory
 - Modify colors and styling in the CSS variables in `src/layouts/Layout.astro`
 
 ## Deployment
 
-This site can be deployed on any static hosting service like Netlify, Vercel, or GitHub Pages.
+This site can be deployed on any static hosting service like Netlify, Vercel, or GitHub Pages. The site includes a `netlify.toml` file for easy deployment on Netlify.
 
 ## License
 

@@ -670,6 +670,11 @@ const featuredProjects = allProjects
     position: relative;
     overflow: hidden;
     will-change: transform, box-shadow;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  html.dark .post-card {
+    background: #23232b;
   }
 
   .post-card::before {
@@ -700,6 +705,10 @@ const featuredProjects = allProjects
     transition: color 0.3s ease;
   }
 
+  html.dark .post-date {
+    color: var(--color-accent);
+  }
+
   .post-card:hover .post-date {
     color: var(--color-tertiary);
   }
@@ -710,6 +719,10 @@ const featuredProjects = allProjects
     transition: color 0.3s ease;
     position: relative;
     display: inline-block;
+  }
+
+  html.dark .post-title {
+    color: #f3f4f6;
   }
 
   .post-title::after {
@@ -734,6 +747,10 @@ const featuredProjects = allProjects
     line-height: 1.7;
   }
 
+  html.dark .post-excerpt {
+    color: #c5c5d2;
+  }
+
   .read-more {
     font-weight: 600;
     color: var(--color-tertiary);
@@ -741,6 +758,10 @@ const featuredProjects = allProjects
     position: relative;
     padding-right: 20px;
     font-family: var(--font-secondary-header);
+  }
+
+  html.dark .read-more {
+    color: var(--color-accent);
   }
 
   .read-more::after {
@@ -873,36 +894,38 @@ const featuredProjects = allProjects
   }
 
   /* Button text fixes for dark mode */
-  html.dark .btn,
-  html.dark .btn-primary,
-  html.dark .btn-secondary,
-  html.dark .btn-small {
-    color: #23232b !important;
+  html.dark .btn {
+    background-color: rgba(233, 235, 158, 0.15);
+    color: #f3f4f6 !important;
+    border-color: var(--color-accent);
   }
 
-  html.dark .btn-secondary,
-  html.dark .btn-small {
-    background: transparent;
-  }
-
-  html.dark .btn-primary,
-  html.dark .btn-primary:hover,
-  html.dark .btn-secondary:hover,
-  html.dark .btn-small:hover {
+  html.dark .btn-primary {
+    background-color: var(--color-accent);
     color: #23232b !important;
-    background: var(--color-accent);
     border-color: var(--color-accent);
   }
 
   html.dark .btn-secondary,
   html.dark .btn-small {
+    background-color: rgba(233, 235, 158, 0.1);
+    color: var(--color-accent) !important;
     border-color: var(--color-accent);
+  }
+
+  html.dark .btn-primary:hover {
+    background-color: var(--color-accent);
+    color: #23232b !important;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 12px rgba(233, 235, 158, 0.5);
   }
 
   html.dark .btn-secondary:hover,
   html.dark .btn-small:hover {
-    background: var(--color-accent);
+    background-color: var(--color-accent);
     color: #23232b !important;
+    border-color: var(--color-accent);
+    box-shadow: 0 0 12px rgba(233, 235, 158, 0.5);
   }
 
   /* Empty state styling */

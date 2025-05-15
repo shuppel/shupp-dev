@@ -1,5 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+// Get the author data
+const authorEntries = await getCollection('authors');
+const author = authorEntries[0]; // Using the first author as this is a personal site
 ---
 
 <Layout title="About Me" description="Learn more about my professional background, skills, and experience">
@@ -7,7 +12,7 @@ import Layout from '../layouts/Layout.astro';
     <section class="about-hero">
       <div class="about-hero-content">
         <h1>About Me</h1>
-        <p class="lead">Software engineer and product manager with a passion for building innovative solutions.</p>
+        <p class="lead">{author.data.shortBio}</p>
       </div>
     </section>
 
@@ -15,11 +20,9 @@ import Layout from '../layouts/Layout.astro';
       <div class="about-grid">
         <div class="about-content">
           <h2>My Story</h2>
-          <p>I'm a passionate software engineer and product manager with over 10 years of experience in the tech industry. I specialize in building scalable web applications and leading product development teams.</p>
-          
-          <p>Throughout my career, I've worked with startups and established companies to deliver user-centered products that solve real problems. I believe in the power of technology to transform businesses and improve people's lives.</p>
-          
-          <p>My approach combines technical expertise with strategic thinking and user empathy. I thrive in collaborative environments where I can leverage my skills to build products that users love.</p>
+          {author.data.longBio.split('\n\n').map(paragraph => (
+            <p>{paragraph}</p>
+          ))}
           
           <h3>Professional Philosophy</h3>
           <p>I believe that great products come from a deep understanding of user needs, technical excellence, and thoughtful design. My goal is always to create solutions that are not only functional but also delightful to use.</p>
@@ -32,10 +35,10 @@ import Layout from '../layouts/Layout.astro';
           <div class="profile-details">
             <h3>Quick Info</h3>
             <ul class="profile-list">
-              <li><strong>Location:</strong> San Francisco, CA</li>
-              <li><strong>Experience:</strong> 10+ Years</li>
-              <li><strong>Education:</strong> BS in Computer Science</li>
-              <li><strong>Interests:</strong> Technology, Design, Innovation</li>
+              <li><strong>Name:</strong> {author.data.name}</li>
+              <li><strong>Title:</strong> {author.data.title}</li>
+              <li><strong>Location:</strong> {author.data.location}</li>
+              <li><strong>Email:</strong> <a href={`mailto:${author.data.email}`}>{author.data.email}</a></li>
             </ul>
             
             <div class="profile-cta">
@@ -54,79 +57,34 @@ import Layout from '../layouts/Layout.astro';
         <div class="skill-category">
           <h3>Technical Skills</h3>
           <ul class="skills-list">
-            <li>Full-Stack Development</li>
-            <li>JavaScript/TypeScript</li>
-            <li>React & Vue</li>
-            <li>Node.js & Express</li>
-            <li>Python & Django</li>
-            <li>AWS & Cloud Architecture</li>
-            <li>RESTful APIs</li>
-            <li>Database Design</li>
+            {author.data.skills
+              .filter(skill => ['Software Development', 'Web Development', 'AI Prompt Engineering'].includes(skill))
+              .map(skill => (
+                <li>{skill}</li>
+              ))
+            }
           </ul>
         </div>
         
         <div class="skill-category">
           <h3>Product Management</h3>
           <ul class="skills-list">
-            <li>Product Strategy</li>
-            <li>Roadmap Planning</li>
-            <li>User Research</li>
-            <li>Agile Methodologies</li>
-            <li>Market Analysis</li>
-            <li>Feature Prioritization</li>
-            <li>A/B Testing</li>
-            <li>Product Analytics</li>
+            {author.data.skills
+              .filter(skill => ['Product Management', 'UX/UI Design'].includes(skill))
+              .map(skill => (
+                <li>{skill}</li>
+              ))
+            }
           </ul>
         </div>
         
         <div class="skill-category">
-          <h3>Leadership</h3>
+          <h3>Interests</h3>
           <ul class="skills-list">
-            <li>Team Management</li>
-            <li>Technical Leadership</li>
-            <li>Mentoring</li>
-            <li>Cross-functional Collaboration</li>
-            <li>Project Management</li>
-            <li>Stakeholder Communication</li>
-            <li>Process Improvement</li>
-            <li>Resource Planning</li>
+            {author.data.interests.map(interest => (
+              <li>{interest}</li>
+            ))}
           </ul>
-        </div>
-      </div>
-    </section>
-
-    <section class="experience-section">
-      <h2>Professional Experience</h2>
-      
-      <div class="timeline">
-        <div class="timeline-item">
-          <div class="timeline-marker"></div>
-          <div class="timeline-content">
-            <div class="timeline-date">2021 - Present</div>
-            <h3>Senior Product Manager</h3>
-            <div class="timeline-company">Tech Innovation Inc.</div>
-            <p>Leading product strategy and development for a SaaS platform with over 100,000 users. Coordinating cross-functional teams and driving product roadmap to increase user engagement and revenue.</p>
-          </div>
-        </div>
-        
-        <div class="timeline-item">
-          <div class="timeline-marker"></div>
-          <div class="timeline-content">
-            <div class="timeline-date">2018 - 2021</div>
-            <h3>Lead Software Engineer</h3>
-            <div class="timeline-company">WebSolutions Co.</div>
-            <p>Spearheaded development of multiple web applications using React, Node.js, and AWS. Managed a team of 5 engineers and implemented CI/CD pipelines to improve deployment efficiency.</p>
-          </div>
-        </div>
-        
-        <div class="timeline-item">
-          <div class="timeline-marker"></div>
-          <div class="timeline-content">
-            <div class="timeline-date">2015 - 2018</div>
-            <h3>Full-Stack Developer</h3>
-            <div class="timeline-company">Digital Ventures</div>
-            <p>Developed and maintained web applications for clients in various industries. Implemented responsive design principles and optimized application performance.</p>
-          </div>
         </div>
       </div>
     </section>
@@ -136,25 +94,40 @@ import Layout from '../layouts/Layout.astro';
       <p>I'm always open to discussing new projects, opportunities, and partnerships. Feel free to reach out!</p>
       
       <div class="contact-options">
-        <a href="mailto:contact@shupp.dev" class="contact-option">
-          <div class="contact-icon">✉️</div>
-          <div class="contact-label">Email</div>
-        </a>
+        {author.data.email && (
+          <a href={`mailto:${author.data.email}`} class="contact-option">
+            <div class="contact-icon">✉️</div>
+            <div class="contact-label">Email</div>
+          </a>
+        )}
         
-        <a href="https://www.linkedin.com/in/shupp-erikk" target="_blank" rel="noopener noreferrer" class="contact-option">
-          <div class="contact-icon">🔗</div>
-          <div class="contact-label">LinkedIn</div>
-        </a>
+        {author.data.socialLinks.linkedin && (
+          <a href={author.data.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" class="contact-option">
+            <div class="contact-icon">🔗</div>
+            <div class="contact-label">LinkedIn</div>
+          </a>
+        )}
         
-        <a href="https://github.com/shuppel" target="_blank" rel="noopener noreferrer" class="contact-option">
-          <div class="contact-icon">🐙</div>
-          <div class="contact-label">GitHub</div>
-        </a>
+        {author.data.socialLinks.github && (
+          <a href={author.data.socialLinks.github} target="_blank" rel="noopener noreferrer" class="contact-option">
+            <div class="contact-icon">🐙</div>
+            <div class="contact-label">GitHub</div>
+          </a>
+        )}
 
-        <a href="https://bsky.app/profile/shupp.dev" target="_blank" rel="noopener noreferrer" class="contact-option">
-          <div class="contact-icon">🌅</div>
-          <div class="contact-label">Bluesky</div>
-        </a>
+        {author.data.socialLinks.bluesky && (
+          <a href={author.data.socialLinks.bluesky} target="_blank" rel="noopener noreferrer" class="contact-option">
+            <div class="contact-icon">🌅</div>
+            <div class="contact-label">Bluesky</div>
+          </a>
+        )}
+
+        {author.data.socialLinks.twitter && (
+          <a href={author.data.socialLinks.twitter} target="_blank" rel="noopener noreferrer" class="contact-option">
+            <div class="contact-icon">🐦</div>
+            <div class="contact-label">Twitter</div>
+          </a>
+        )}
       </div>
     </section>
   </div>
@@ -232,6 +205,15 @@ import Layout from '../layouts/Layout.astro';
     padding: 2rem;
   }
 
+  .profile-details a {
+    color: var(--primary-color);
+    text-decoration: none;
+  }
+
+  .profile-details a:hover {
+    text-decoration: underline;
+  }
+
   .profile-list {
     list-style: none;
     padding: 0;
@@ -304,61 +286,6 @@ import Layout from '../layouts/Layout.astro';
     border-bottom: none;
   }
 
-  .timeline {
-    position: relative;
-    max-width: 800px;
-    margin: 0 auto;
-  }
-
-  .timeline::before {
-    content: '';
-    position: absolute;
-    width: 2px;
-    background-color: var(--border-color);
-    top: 0;
-    bottom: 0;
-    left: 50px;
-    margin-left: -1px;
-  }
-
-  .timeline-item {
-    position: relative;
-    margin-bottom: 2.5rem;
-    display: flex;
-  }
-
-  .timeline-marker {
-    min-width: 25px;
-    height: 25px;
-    background-color: var(--primary-color);
-    border-radius: 50%;
-    position: absolute;
-    left: 50px;
-    transform: translateX(-50%);
-    z-index: 1;
-  }
-
-  .timeline-content {
-    margin-left: 80px;
-    background: white;
-    padding: 1.5rem;
-    border-radius: 8px;
-    box-shadow: var(--card-shadow);
-    flex: 1;
-  }
-
-  .timeline-date {
-    font-weight: 600;
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-  }
-
-  .timeline-company {
-    font-style: italic;
-    color: var(--text-light);
-    margin-bottom: 1rem;
-  }
-
   .contact-section {
     text-align: center;
   }
@@ -407,18 +334,6 @@ import Layout from '../layouts/Layout.astro';
       grid-template-columns: 1fr;
       gap: 1.5rem;
     }
-
-    .timeline::before {
-      left: 30px;
-    }
-
-    .timeline-marker {
-      left: 30px;
-    }
-
-    .timeline-content {
-      margin-left: 60px;
-    }
   }
 
   @media (max-width: 600px) {
@@ -444,5 +359,13 @@ import Layout from '../layouts/Layout.astro';
   html.dark .skills-list li {
     color: var(--text-light);
     border-bottom: 1px solid var(--border-color);
+  }
+
+  html.dark .profile-sidebar {
+    background: var(--background-alt);
+  }
+
+  html.dark .profile-details a {
+    color: var(--color-accent);
   }
 </style>
