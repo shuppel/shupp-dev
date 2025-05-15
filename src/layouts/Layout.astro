@@ -142,6 +142,37 @@ const { title, description = "Professional Portfolio and Blog for Software Engin
     border-top: 1px solid #27272a;
   }
 
+  html.dark .btn,
+  html.dark .btn-primary,
+  html.dark .btn-secondary,
+  html.dark .btn-small {
+    color: #f3f4f6 !important;
+    border-color: var(--color-accent);
+  }
+
+  html.dark .btn-primary {
+    background-color: var(--color-accent);
+  }
+
+  html.dark .btn-primary:hover,
+  html.dark .btn-primary:active {
+    background-color: var(--color-accent);
+    color: #f3f4f6 !important;
+  }
+
+  html.dark .btn-secondary,
+  html.dark .btn-small {
+    background-color: rgba(233, 235, 158, 0.1);
+  }
+
+  html.dark .btn-secondary:hover,
+  html.dark .btn-secondary:active,
+  html.dark .btn-small:hover,
+  html.dark .btn-small:active {
+    background-color: var(--color-accent);
+    color: #f3f4f6 !important;
+  }
+
   * {
     box-sizing: border-box;
     margin: 0;

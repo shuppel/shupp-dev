@@ -45,7 +45,10 @@ const roadmapCollection = defineCollection({
     phase: z.enum(['current', 'upcoming', 'future']),
     status: z.enum(['now', 'next', 'later', 'exploring']),
     order: z.number(),
-    features: z.array(z.string()),
+    features: z.array(z.string()).optional(),
+    goals: z.array(z.string()).optional(),
+    timeframe: z.string().optional(),
+    relatedRoadmapItems: z.array(z.string()).optional(),
     completedItems: z.array(z.string()).default([]),
   }),
 });
@@ -154,6 +157,16 @@ const skillCollection = defineCollection({
   }),
 });
 
+// Define a schema for principles
+const principleCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    order: z.number(),
+  }),
+});
+
 // Export a single `collections` object to register your collections
 export const collections = {
   'blog': blogCollection,
@@ -165,4 +178,5 @@ export const collections = {
   'education': educationCollection,
   'credentials': credentialCollection,
   'skills': skillCollection,
+  'principles': principleCollection,
 };

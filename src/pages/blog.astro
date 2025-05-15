@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
+import CardStyles from '../components/CardStyles.astro';
 
 // Get all blog posts
 const allPosts = await getCollection('blog');
@@ -39,17 +40,17 @@ const currentPage = 1; // We'll update this via client-side JS
 
         <div class="blog-grid">
           {posts.map(post => (
-            <article class="blog-card">
+            <article class="blog-card card-base card-gradient-border">
               <a href={`/blog/${post.slug}`} class="blog-card-link">
-                <div class="blog-card-image">
+                <div class="card-image">
                   <div class="placeholder-image">
                     {post.data.featuredImage && (
                       <div class="placeholder-text">{post.data.featuredImage}</div>
                     )}
                   </div>
                 </div>
-                <div class="blog-card-content">
-                  <div class="blog-card-meta">
+                <div class="card-content">
+                  <div class="card-meta">
                     <span class="blog-date">{new Date(post.data.pubDate).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
@@ -57,12 +58,15 @@ const currentPage = 1; // We'll update this via client-side JS
                     })}</span>
                     <span class="blog-read-time">{post.data.readTime}</span>
                   </div>
-                  <h2 class="blog-title">{post.data.title}</h2>
-                  <p class="blog-excerpt">{post.data.description}</p>
-                  <div class="blog-categories">
+                  <h2 class="card-title">{post.data.title}</h2>
+                  <p class="card-description">{post.data.description}</p>
+                  <div class="card-tags">
                     {post.data.categories.map(category => (
-                      <span class="blog-category">{category}</span>
+                      <span class="card-tag">{category}</span>
                     ))}
+                  </div>
+                  <div class="read-more-container">
+                    <span class="read-more">Read Article</span>
                   </div>
                 </div>
               </a>
@@ -604,5 +608,11 @@ const currentPage = 1; // We'll update this via client-side JS
     .blog-card-image {
       height: 180px;
     }
+  }
+
+  html.dark .blog-card,
+  html.dark .sidebar-widget {
+    background: var(--background-alt);
+    color: var(--text-color);
   }
 </style>

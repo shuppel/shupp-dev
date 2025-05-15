@@ -2,14 +2,23 @@
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
 
-// Get all roadmap items
+// Get all roadmap items and principles
 const roadmapItems = await getCollection('roadmap');
+const principles = await getCollection('principles');
+const phaseItems = await getCollection('roadmap', entry => entry.id.startsWith('phase-'));
 
-// Sort by order number
-const sortedRoadmapItems = roadmapItems.sort((a, b) => a.data.order - b.data.order);
+// Sort roadmap items by order
+const sortedRoadmapItems = roadmapItems
+  .filter(item => !item.id.startsWith('phase-'))
+  .sort((a, b) => a.data.order - b.data.order);
+
+// Sort phases by order
+const sortedPhases = phaseItems.sort((a, b) => a.data.order - b.data.order);
+
+// Sort principles by order
+const sortedPrinciples = principles.sort((a, b) => a.data.order - b.data.order);
 
 // Current progress percentage for timeline
-const totalItems = roadmapItems.length;
 const completedCMSItems = roadmapItems
   .filter(item => item.slug === 'content-management-system')[0]?.data.completedItems.length || 0;
 
@@ -19,11 +28,42 @@ const cmsMaxProgress = 14; // Represents 14% when CMS is complete
 let progressPercentage = cmsInitialProgress;
 
 if (completedCMSItems > 0) {
-  // There are 4 total CMS items to complete
-  const cmsExpectedTotal = 4;
-  progressPercentage = cmsInitialProgress + 
+  // There are 5 total CMS items to complete (4 initial + 1 new completed item)
+  const cmsExpectedTotal = 5;
+  progressPercentage = cmsInitialProgress +
     (cmsMaxProgress - cmsInitialProgress) * (completedCMSItems / cmsExpectedTotal);
 }
+
+// Ensure we have the phase data for the timeline
+console.log(`Phases found: ${phaseItems.length}`);
+phaseItems.forEach(phase => console.log(`Phase: ${phase.data.title}, Order: ${phase.data.order}`));
+
+// Use phase data to create timeline markers
+// Sort the phase files by order
+const sortedTimelinePhases = sortedPhases;
+
+// Create timeline markers from phases with fallback to hardcoded values if needed
+const timelineMarkers = (sortedTimelinePhases.length > 0) ?
+  sortedTimelinePhases.map(phase => {
+    // Handle phase titles with or without "Phase X:" prefix
+    const titleParts = phase.data.title.split(':');
+    const displayTitle = titleParts.length > 1 ? titleParts[1].trim() : phase.data.title;
+
+    return {
+      title: displayTitle,
+      timeframe: phase.data.timeframe || 'TBD',
+      active: phase.data.phase === 'current'
+    };
+  }) :
+  [
+    { title: 'Content Foundation', timeframe: 'Q2 2025', active: true },
+    { title: 'SVG Playground', timeframe: 'Q3 2025', active: false },
+    { title: 'Local-First Demo', timeframe: 'Q3 2025', active: false },
+    { title: 'Portfolio Integration', timeframe: 'Q4 2025', active: false },
+    { title: 'Liquid v2 Animations', timeframe: 'Q1 2026', active: false },
+    { title: 'Interactive Stories', timeframe: 'Q2 2026', active: false },
+    { title: 'AI Integration', timeframe: 'Q3-Q4 2026', active: false },
+  ];
 ---
 
 <Layout title="Development Roadmap" description="My future plans and development roadmap">
@@ -57,7 +97,7 @@ if (completedCMSItems > 0) {
                   <h3>{item.data.title}</h3>
                   <p>{item.data.description}</p>
                   <ul class="roadmap-features">
-                    {item.data.features.map(feature => (
+                    {item.data.features && item.data.features.map(feature => (
                       <li>{feature}</li>
                     ))}
                   </ul>
@@ -85,146 +125,39 @@ if (completedCMSItems > 0) {
       <p>My development roadmap is guided by a philosophy of creating engaging, user-centric experiences that push the boundaries of web technology. Each phase builds upon the last, creating a cohesive ecosystem that reflects my growth and direction as a developer and innovator.</p>
 
       <div class="roadmap-principles">
-        <div class="principle-card">
-          <h3>User-Centered Design</h3>
-          <p>Prioritizing intuitive experiences that delight users while solving real problems.</p>
-        </div>
-
-        <div class="principle-card">
-          <h3>Technical Excellence</h3>
-          <p>Building with modern, performant technologies that create robust, scalable solutions.</p>
-        </div>
-
-        <div class="principle-card">
-          <h3>Continuous Innovation</h3>
-          <p>Embracing new technologies and approaches to stay at the forefront of digital experiences.</p>
-        </div>
-
-        <div class="principle-card">
-          <h3>Thoughtful Implementation</h3>
-          <p>Taking a considered approach to each feature, ensuring it adds genuine value.</p>
-        </div>
+        {sortedPrinciples.map(principle => (
+          <div class="principle-card">
+            <h3>{principle.data.title}</h3>
+            <p>{principle.data.description}</p>
+          </div>
+        ))}
       </div>
       
       <div class="roadmap-phases">
-        <div class="phase-card">
-          <div class="phase-header">
-            <h3>Phase 1: Content Foundation</h3>
-            <div class="phase-indicator now">Now</div>
+        {sortedPhases.length > 0 ? (
+          sortedPhases.map(phase => (
+            <div class="phase-card">
+              <div class="phase-header">
+                <h3>{phase.data.title}</h3>
+                <div class={`phase-indicator ${phase.data.status}`}>{phase.data.status}</div>
+              </div>
+              <p>{phase.data.description}</p>
+              <div class="phase-goals">
+                <h4>Key Goals:</h4>
+                <ul>
+                  {phase.data.goals && phase.data.goals.map(goal => (
+                    <li>{goal}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          ))
+        ) : (
+          <div class="phase-card empty-state">
+            <h3>Development Phases Coming Soon</h3>
+            <p>The site development is organized into strategic phases. Check back soon for detailed information about each phase.</p>
           </div>
-          <p>Establishing a solid foundation with a flexible content management system that will power all aspects of my online presence.</p>
-          <div class="phase-goals">
-            <h4>Key Goals:</h4>
-            <ul>
-              <li>Implement headless CMS architecture</li>
-              <li>Create intuitive editing interfaces</li>
-              <li>Establish content relationships and structure</li>
-              <li>Build content delivery pipelines</li>
-            </ul>
-          </div>
-        </div>
-        
-        <div class="phase-card">
-          <div class="phase-header">
-            <h3>Phase 2: Educational Tools</h3>
-            <div class="phase-indicator next">Next</div>
-          </div>
-          <p>Creating interactive, educational experiences that help children develop skills through engaging digital interfaces.</p>
-          <div class="phase-goals">
-            <h4>Key Goals:</h4>
-            <ul>
-              <li>Build SVG Playground for touchscreen motor skills development</li>
-              <li>Design accessible, inclusive interfaces for all abilities</li>
-              <li>Create engaging feedback mechanisms and rewards</li>
-              <li>Implement progressive difficulty levels</li>
-            </ul>
-          </div>
-        </div>
-        
-        <div class="phase-card">
-          <div class="phase-header">
-            <h3>Phase 3: Local-First Technology</h3>
-            <div class="phase-indicator next">Next</div>
-          </div>
-          <p>Developing demos and implementations that showcase the power of local-first development patterns, prioritizing user data control and offline functionality.</p>
-          <div class="phase-goals">
-            <h4>Key Goals:</h4>
-            <ul>
-              <li>Create demo applications with offline-first architecture</li>
-              <li>Implement CRDT-based synchronization</li>
-              <li>Develop data persistence strategies</li>
-              <li>Build user-friendly conflict resolution</li>
-            </ul>
-          </div>
-        </div>
-        
-        <div class="phase-card">
-          <div class="phase-header">
-            <h3>Phase 4: Portfolio Expansion</h3>
-            <div class="phase-indicator next">Next</div>
-          </div>
-          <p>Integrating my diverse work into a comprehensive portfolio that effectively communicates my skills, vision, and capabilities to potential clients and collaborators.</p>
-          <div class="phase-goals">
-            <h4>Key Goals:</h4>
-            <ul>
-              <li>Curate and organize past projects</li>
-              <li>Create detailed case studies</li>
-              <li>Develop interactive project demonstrations</li>
-              <li>Integrate testimonials and results</li>
-            </ul>
-          </div>
-        </div>
-        
-        <div class="phase-card">
-          <div class="phase-header">
-            <h3>Phase 5: Enhanced User Experience</h3>
-            <div class="phase-indicator later">Later</div>
-          </div>
-          <p>Elevating the visual and interactive experience with advanced animations and effects that embody the "liquid" design philosophy.</p>
-          <div class="phase-goals">
-            <h4>Key Goals:</h4>
-            <ul>
-              <li>Implement WebGL fluid simulations</li>
-              <li>Create responsive, physics-based interactions</li>
-              <li>Develop custom scroll experiences</li>
-              <li>Build liquid-inspired UI components</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="phase-card">
-          <div class="phase-header">
-            <h3>Phase 6: Interactive Storytelling</h3>
-            <div class="phase-indicator later">Later</div>
-          </div>
-          <p>Transforming traditional case studies into immersive stories that engage visitors and showcase project journeys in compelling ways.</p>
-          <div class="phase-goals">
-            <h4>Key Goals:</h4>
-            <ul>
-              <li>Create interactive project timelines</li>
-              <li>Develop visual design process walkthroughs</li>
-              <li>Implement interactive before/after comparisons</li>
-              <li>Integrate client testimonials with media</li>
-            </ul>
-          </div>
-        </div>
-
-        <div class="phase-card">
-          <div class="phase-header">
-            <h3>Phase 7: AI Integration</h3>
-            <div class="phase-indicator exploring">Exploring</div>
-          </div>
-          <p>Exploring the potential of AI to enhance both the development process and user experience while maintaining authenticity.</p>
-          <div class="phase-goals">
-            <h4>Key Goals:</h4>
-            <ul>
-              <li>Research ethical AI content generation</li>
-              <li>Develop personalized content delivery</li>
-              <li>Create AI-assisted design tools</li>
-              <li>Implement smart content recommendations</li>
-            </ul>
-          </div>
-        </div>
+        )}
       </div>
     </section>
 
@@ -234,49 +167,21 @@ if (completedCMSItems > 0) {
         <div class="timeline-progress-bar">
           <div class="timeline-progress" style={`width: ${progressPercentage}%`}></div>
         </div>
-        
+
         <div class="timeline-markers">
-          <div class="timeline-marker active">
-            <div class="marker-dot"></div>
-            <div class="marker-label">Q2 2025</div>
-            <div class="marker-title">CMS Implementation</div>
-          </div>
-          
-          <div class="timeline-marker">
-            <div class="marker-dot"></div>
-            <div class="marker-label">Q3 2025</div>
-            <div class="marker-title">SVG Playground</div>
-          </div>
-          
-          <div class="timeline-marker">
-            <div class="marker-dot"></div>
-            <div class="marker-label">Q3 2025</div>
-            <div class="marker-title">Local-First Demo</div>
-          </div>
-          
-          <div class="timeline-marker">
-            <div class="marker-dot"></div>
-            <div class="marker-label">Q4 2025</div>
-            <div class="marker-title">Portfolio Integration</div>
-          </div>
-          
-          <div class="timeline-marker">
-            <div class="marker-dot"></div>
-            <div class="marker-label">Q1 2026</div>
-            <div class="marker-title">Liquid v2 Animations</div>
-          </div>
-
-          <div class="timeline-marker">
-            <div class="marker-dot"></div>
-            <div class="marker-label">Q2 2026</div>
-            <div class="marker-title">Interactive Stories</div>
-          </div>
-
-          <div class="timeline-marker">
-            <div class="marker-dot"></div>
-            <div class="marker-label">Q3-Q4 2026</div>
-            <div class="marker-title">AI Integration</div>
-          </div>
+          {timelineMarkers && timelineMarkers.length > 0 ? (
+            timelineMarkers.map(marker => (
+              <div class={`timeline-marker ${marker.active ? 'active' : ''}`}>
+                <div class="marker-dot"></div>
+                <div class="marker-label">{marker.timeframe}</div>
+                <div class="marker-title">{marker.title}</div>
+              </div>
+            ))
+          ) : (
+            <div class="timeline-empty-state">
+              <p>Timeline information is currently being updated. Check back soon for a detailed development schedule.</p>
+            </div>
+          )}
         </div>
       </div>
     </section>
@@ -1057,6 +962,27 @@ if (completedCMSItems > 0) {
     .roadmap-item:nth-child(even) .roadmap-content::before {
       left: 0;
     }
+  }
+
+  /* Empty state styles */
+  .phase-card.empty-state,
+  .timeline-empty-state {
+    text-align: center;
+    padding: 3rem;
+    background: linear-gradient(135deg, rgba(121, 148, 150, 0.05), rgba(172, 193, 150, 0.05));
+    border: 1px dashed var(--border-color);
+  }
+
+  .timeline-empty-state {
+    width: 100%;
+    padding: 2rem;
+    margin: 2rem 0;
+    border-radius: 8px;
+  }
+
+  .timeline-empty-state p {
+    color: var(--text-light);
+    font-style: italic;
   }
 
   @media (max-width: 768px) {

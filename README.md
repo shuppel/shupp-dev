@@ -92,10 +92,25 @@ The site supports the following content types:
 4. **Roadmap Items** (`/src/content/roadmap/`)
    - Define future plans and track progress
    - Items can be marked as current, upcoming, or future
+   - Basic items vs. phase items for different sections
 
-5. **Credentials** (`/src/content/credentials/`)
+5. **Principles** (`/src/content/principles/`)
+   - Core guiding principles for development
+   - Displayed on the roadmap page
+
+6. **Credentials** (`/src/content/credentials/`)
    - Store professional certifications and credentials
    - Display badges and certifications on relevant pages
+
+### Content Relationships
+
+The CMS implements content relationships to create a cohesive information architecture:
+
+- Roadmap items can be connected to phases via the `relatedRoadmapItems` field
+- Blog posts can be connected to projects via the `relatedProjects` field
+- Projects can link to related blog posts via the `relatedBlogPosts` field
+
+These relationships allow for dynamic generation of related content sections throughout the site.
 
 ### Adding New Content
 
@@ -113,6 +128,7 @@ author: Erikk Shupp
 categories: [Technology, Web Development]
 tags: [Astro, CMS]
 featured: true
+relatedProjects: [portfolio-website]  # Optional related project slugs
 ---
 
 Your blog post content goes here, written in Markdown format.
@@ -130,12 +146,13 @@ technologies: [Astro, CSS, JavaScript]
 featured: true
 projectUrl: https://example.com
 githubUrl: https://github.com/username/project
+relatedBlogPosts: [my-blog-post-slug]  # Optional related blog post slugs
 ---
 
 Detailed description of the project goes here. This can include challenges, solutions, and outcomes.
 ```
 
-#### Roadmap Item Example:
+#### Basic Roadmap Item Example:
 
 ```md
 ---
@@ -153,6 +170,53 @@ completedItems:
 ---
 
 Additional details about the roadmap item can go here.
+```
+
+#### Roadmap Phase Example:
+
+```md
+---
+title: Phase 1: Feature Name
+description: Detailed description of this development phase
+phase: current  # current, upcoming, or future
+status: now     # now, next, later, or exploring
+order: 1
+timeframe: Q2 2025
+goals:
+  - Goal one
+  - Goal two
+  - Goal three
+relatedRoadmapItems:
+  - feature-item-slug  # Connects to specific roadmap items
+---
+
+Details about this phase and its significance in the development roadmap.
+```
+
+#### Author Profile Example:
+
+```md
+---
+name: Full Name
+title: Professional Title
+email: email@example.com
+location: City, State
+shortBio: Brief tagline or description
+longBio: |
+  Detailed biography with multiple paragraphs.
+
+  This can span multiple lines and paragraphs.
+socialLinks:
+  github: https://github.com/username
+  linkedin: https://linkedin.com/in/username
+  twitter: https://twitter.com/username
+skills:
+  - Skill One
+  - Skill Two
+interests:
+  - Interest One
+  - Interest Two
+---
 ```
 
 ### Schema Validation
