@@ -74,9 +74,14 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
       <div class="post-share">
         <span class="share-title">Share this article:</span>
         <div class="share-buttons">
-          <a href="#" class="share-button" aria-label="Share on Twitter">𝕏</a>
-          <a href="#" class="share-button" aria-label="Share on LinkedIn">in</a>
-          <a href="#" class="share-button" aria-label="Share on Facebook">f</a>
+          <a href="#" id="share-twitter" class="share-button" aria-label="Share on Twitter" title="Share on X/Twitter">𝕏</a>
+          <a href="#" id="share-linkedin" class="share-button" aria-label="Share on LinkedIn" title="Share on LinkedIn">in</a>
+          <a href="#" id="share-facebook" class="share-button" aria-label="Share on Facebook" title="Share on Facebook">f</a>
+          <a href="#" id="share-bluesky" class="share-button" aria-label="Share on Bluesky" title="Share on Bluesky">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+              <path d="M12 2.25c-5.376 0-9.75 4.374-9.75 9.75s4.374 9.75 9.75 9.75 9.75-4.374 9.75-9.75S17.376 2.25 12 2.25zm2.259 5.748c.113-.042.241.023.295.131.434.887.758 1.547 1.075 2.242.162.355.298.723.356 1.11.218 1.438-.021 2.71-.872 3.823-.923 1.245-2.234 1.834-3.843 1.906-.14.006-.26-.097-.274-.236-.013-.14.098-.259.239-.265 1.396-.064 2.516-.566 3.329-1.647.699-.941.91-2.021.701-3.262-.048-.312-.161-.613-.301-.909-.321-.687-.637-1.338-1.057-2.197-.052-.106-.007-.232.104-.28l.243-.088c-.001 0 .001 0 .005-.029zm-5.555 1.21c.155-.016.29.097.313.25.024.152-.083.294-.237.31-.398.043-.71.217-.942.492-.227.27-.357.583-.388.928a1.53 1.53 0 0 0 .034.494c.15.127.218.288.179.441-.5.196-.214.304-.41.266-.184-.035-.312-.205-.315-.394-.008-.443.108-.861.346-1.245.358-.581.845-.949 1.481-1.027-.021-.015-.04-.3.061-.515zm4.634.39c.414-.006.818.091 1.2.293.108.057.14.192.073.296-.67.104-.201.133-.308.065-.656-.349-1.312-.382-1.966-.053a1.963 1.963 0 0 0-.747.744c-.127.226-.302.404-.514.555-.153.11-.34.044-.445-.085-.113-.14-.109-.317.008-.435.204-.204.378-.427.501-.684.374-.784 1.046-1.262 1.885-1.368.099-.15.199-.24.314-.028zm-2.601.836c.145-.049.305.029.348.17.044.14-.037.288-.179.339-.307.109-.534.296-.643.586a.928.928 0 0 0-.57.499c.008.062.02.124.041.184.42.122.04.255-.104.336-.14.079-.28.039-.354-.089-.087-.15-.104-.308-.11-.474-.01-.277.092-.529.221-.767.222-.409.576-.664 1.038-.755-.014-.009-.027-.018-.181-.029zM7.939 11.6c.031-.14.169-.23.309-.195.141.035.228.175.194.313-.112.455-.081.908.061 1.344.107.332.277.64.508.909.455.528 1.059.83 1.731.868a3.11 3.11 0 0 0 1.177-.147c.143-.52.292.025.345.171.053.147-.02.3-.16.35-.457.164-.923.217-1.394.203-.792-.025-1.516-.354-2.083-1.009a3.075 3.075 0 0 1-.688-1.293 3.865 3.865 0 0 1 0-2.515zm4.405.315c.137.053.207.206.158.345-.049.14-.197.21-.335.154-.305-.123-.619-.148-.934-.091a.75.75 0 0 0-.19.071.27.27 0 0 0-.15.358c.63.141.225.177.365.132.28-.09.567-.11.848-.069a.82.82 0 0 1 .637.419c.139.235.175.492.156.763a1.983 1.983 0 0 1-.428 1.144c-.281.35-.645.561-1.064.688-.429.13-.866.143-1.307.066a2.806 2.806 0 0 1-1.06-.445c-.122-.082-.147-.236-.061-.352.087-.117.246-.14.366-.05.31.237.659.354 1.029.39.319.031.636.008.941-.087.297-.093.541-.249.719-.508.153-.225.21-.472.18-.737-.03-.265-.158-.471-.394-.61-.235-.138-.5-.167-.773-.142-.285.025-.559.094-.822.195-.122.046-.27-.004-.339-.118-.069-.114-.042-.258.068-.343a.898.898 0 0 1 .172-.098c.336-.147.689-.19 1.05-.149.157.017.313.054.47.101a1.08 1.08 0 0 1-.153-.03c-.16-.043-.257-.186-.215-.348.042-.16.188-.257.347-.214.048.012.095.033.144.053.3.117.613.181.935.189.141.004.258.126.254.269s-.123.257-.267.255c-.403-.01-.795-.09-1.168-.233a1.152 1.152 0 0 0-.17-.064z"/>
+            </svg>
+          </a>
         </div>
       </div>
 
@@ -127,66 +132,66 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
     // Generate table of contents from h2 and h3 elements
     const headings = document.querySelectorAll('.post-body h2, .post-body h3');
     const tocList = document.querySelector('.toc-list');
-    
+
     if (tocList) {
       // Clear any existing items
       tocList.innerHTML = '';
-      
+
       headings.forEach((heading, index) => {
         // Add IDs to headings if they don't have them
         if (!heading.id) {
           heading.id = `heading-${index}`;
         }
-        
+
         const listItem = document.createElement('li');
         listItem.className = 'toc-item';
         if (heading.tagName === 'H3') {
           listItem.style.paddingLeft = '1rem';
         }
-        
+
         const link = document.createElement('a');
         link.href = `#${heading.id}`;
         link.className = 'toc-link';
         link.textContent = heading.textContent;
-        
+
         listItem.appendChild(link);
         tocList.appendChild(listItem);
       });
     }
-    
+
     // Smooth scroll for TOC links
     const tocLinks = document.querySelectorAll('.toc-link');
-    
+
     tocLinks.forEach(link => {
       link.addEventListener('click', e => {
         e.preventDefault();
-        
+
         const targetId = link.getAttribute('href');
         const targetElement = document.querySelector(targetId);
-        
+
         if (targetElement) {
           window.scrollTo({
             top: targetElement.offsetTop - 80,
             behavior: 'smooth'
           });
-          
+
           // Update URL without scrolling
           history.pushState(null, null, targetId);
         }
       });
     });
-    
+
     // Highlight TOC item based on scroll position
     const sections = document.querySelectorAll('.post-body h2, .post-body h3');
-    
+
     const highlightToc = () => {
       let scrollY = window.pageYOffset;
-      
+
       sections.forEach(section => {
         const sectionHeight = section.offsetHeight;
         const sectionTop = section.offsetTop - 100;
         const sectionId = section.getAttribute('id');
-        
+
         if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
           tocLinks.forEach(link => {
             link.classList.remove('active');
@@ -197,8 +202,52 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
         }
       });
     };
-    
+
     window.addEventListener('scroll', highlightToc);
+
+    // Social sharing functionality
+    const pageUrl = encodeURIComponent(window.location.href);
+    const pageTitle = encodeURIComponent(document.title);
+    const siteName = encodeURIComponent('shupp.dev');
+    const shareText = encodeURIComponent(`${document.title} ${window.location.href}`);
+
+    // Twitter sharing
+    const twitterBtn = document.getElementById('share-twitter');
+    if (twitterBtn) {
+      twitterBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.open(`https://twitter.com/intent/tweet?text=${shareText}`, 'Share on Twitter', 'width=550,height=520');
+      });
+    }
+
+    // LinkedIn sharing
+    const linkedinBtn = document.getElementById('share-linkedin');
+    if (linkedinBtn) {
+      linkedinBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.open(`https://www.linkedin.com/shareArticle?mini=true&url=${pageUrl}&title=${pageTitle}&summary=${encodeURIComponent('Check out this article from shupp.dev')}`, 'Share on LinkedIn', 'width=550,height=520');
+      });
+    }
+
+    // Facebook sharing
+    const facebookBtn = document.getElementById('share-facebook');
+    if (facebookBtn) {
+      facebookBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        window.open(`https://www.facebook.com/sharer/sharer.php?u=${pageUrl}&quote=${shareText}`, 'Share on Facebook', 'width=550,height=520');
+      });
+    }
+
+    // Bluesky sharing - Opens composer with pre-filled text
+    const blueskyBtn = document.getElementById('share-bluesky');
+    if (blueskyBtn) {
+      blueskyBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        // Bluesky doesn't have a direct sharing API, so we use the compose screen
+        window.open(`https://bsky.app/intent/compose?text=${shareText}`, 'Share on Bluesky', 'width=550,height=520');
+      });
+    }
   });
 </script>
 
@@ -416,12 +465,27 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
     background: var(--background-alt);
     color: var(--text-light);
     text-decoration: none;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: all 0.2s ease;
+    font-size: 1rem;
+    position: relative;
+    overflow: hidden;
   }
 
   .share-button:hover {
     background: var(--primary-color);
     color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .share-button:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .share-button svg {
+    width: 18px;
+    height: 18px;
   }
 
   /* Sidebar Styles */

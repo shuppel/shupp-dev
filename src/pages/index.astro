@@ -1,12 +1,29 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+// Get all blog posts
+const allPosts = await getCollection('blog');
+
+// Sort posts by date (newest first)
+const latestPosts = allPosts
+  .sort((a, b) => new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime())
+  .slice(0, 2); // Get only the two most recent posts
+
+// Get all projects
+const allProjects = await getCollection('projects');
+
+// Get featured projects
+const featuredProjects = allProjects
+  .filter(project => project.data.featured)
+  .slice(0, 2); // Limit to 2 featured projects
 ---
 
 <Layout title="Home">
   <section class="hero">
     <div class="hero-content">
-      <h1>Software Engineer & Product Manager</h1>
-      <p class="hero-subtitle">Building innovative solutions that shape the future</p>
+      <h1>Chief Vibe Officer</h1>
+      <p class="hero-subtitle">product. design. prompt guru. vibe coder.</p>
       <div class="hero-buttons">
         <a href="/portfolio" class="btn btn-primary">View Portfolio</a>
         <a href="/about" class="btn btn-secondary">About Me</a>
@@ -39,26 +56,24 @@ import Layout from '../layouts/Layout.astro';
   <section class="section featured-projects">
     <h2 class="section-title">Featured Projects</h2>
     <div class="projects-grid">
-      <div class="project-card">
-        <div class="project-image">
-          <div class="placeholder-image">Project 1</div>
+      {featuredProjects.length > 0 ? (
+        featuredProjects.map(project => (
+          <div class="project-card">
+            <div class="project-image">
+              <div class="placeholder-image">{project.data.title}</div>
+            </div>
+            <div class="project-content">
+              <h3>{project.data.title}</h3>
+              <p>{project.data.description}</p>
+              <a href={`/portfolio/${project.slug}`} class="btn btn-small">View Project</a>
+            </div>
+          </div>
+        ))
+      ) : (
+        <div class="empty-state">
+          <p>No featured projects available yet. Check back soon!</p>
         </div>
-        <div class="project-content">
-          <h3>Project Title</h3>
-          <p>A brief description of this amazing project and the technologies used.</p>
-          <a href="/portfolio/project-1" class="btn btn-small">View Project</a>
-        </div>
-      </div>
-      <div class="project-card">
-        <div class="project-image">
-          <div class="placeholder-image">Project 2</div>
-        </div>
-        <div class="project-content">
-          <h3>Project Title</h3>
-          <p>A brief description of this amazing project and the technologies used.</p>
-          <a href="/portfolio/project-2" class="btn btn-small">View Project</a>
-        </div>
-      </div>
+      )}
     </div>
     <div class="section-footer">
       <a href="/portfolio" class="btn">View All Projects</a>
@@ -68,18 +83,24 @@ import Layout from '../layouts/Layout.astro';
   <section class="section latest-posts">
     <h2 class="section-title">Latest Blog Posts</h2>
     <div class="posts-grid">
-      <article class="post-card">
-        <div class="post-date">May 10, 2025</div>
-        <h3 class="post-title">The Future of AI in Product Management</h3>
-        <p class="post-excerpt">Exploring how artificial intelligence is reshaping product development and creating new opportunities for innovation.</p>
-        <a href="/blog/ai-in-product-management" class="read-more">Read More →</a>
-      </article>
-      <article class="post-card">
-        <div class="post-date">April 25, 2025</div>
-        <h3 class="post-title">Building Better User Experiences</h3>
-        <p class="post-excerpt">Insights and best practices for designing user experiences that delight customers while driving business results.</p>
-        <a href="/blog/better-user-experiences" class="read-more">Read More →</a>
-      </article>
+      {latestPosts.length > 0 ? (
+        latestPosts.map(post => (
+          <article class="post-card">
+            <div class="post-date">{new Date(post.data.pubDate).toLocaleDateString('en-US', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric'
+            })}</div>
+            <h3 class="post-title">{post.data.title}</h3>
+            <p class="post-excerpt">{post.data.description}</p>
+            <a href={`/blog/${post.slug}`} class="read-more">Read More →</a>
+          </article>
+        ))
+      ) : (
+        <div class="empty-state">
+          <p>No blog posts available yet. Check back soon!</p>
+        </div>
+      )}
     </div>
     <div class="section-footer">
       <a href="/blog" class="btn">View All Posts</a>
@@ -882,5 +903,29 @@ import Layout from '../layouts/Layout.astro';
   html.dark .btn-small:hover {
     background: var(--color-accent);
     color: #23232b !important;
+  }
+
+  /* Empty state styling */
+  .empty-state {
+    background: rgba(233, 235, 158, 0.1);
+    padding: 2rem;
+    border-radius: 12px;
+    text-align: center;
+    grid-column: 1 / -1;
+    border: 1px dashed var(--color-tertiary);
+  }
+
+  .empty-state p {
+    color: var(--color-secondary);
+    font-style: italic;
+  }
+
+  html.dark .empty-state {
+    background: rgba(44, 44, 56, 0.2);
+    border-color: var(--color-accent);
+  }
+
+  html.dark .empty-state p {
+    color: #e9eb9e;
   }
 </style>
