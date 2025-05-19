@@ -58,10 +58,10 @@ const author = authorEntries[0]; // Using the first author as this is a personal
           <h3>Technical Skills</h3>
           <ul class="skills-list">
             {author.data.skills
-              .filter(skill => ['Software Development', 'Web Development', 'AI Prompt Engineering'].includes(skill))
+              ?.filter(skill => ['Software Development', 'Web Development', 'AI Prompt Engineering'].includes(skill))
               .map(skill => (
                 <li>{skill}</li>
-              ))
+              )) || []
             }
           </ul>
         </div>
@@ -70,10 +70,10 @@ const author = authorEntries[0]; // Using the first author as this is a personal
           <h3>Product Management</h3>
           <ul class="skills-list">
             {author.data.skills
-              .filter(skill => ['Product Management', 'UX/UI Design'].includes(skill))
+              ?.filter(skill => ['Product Management', 'UX/UI Design'].includes(skill))
               .map(skill => (
                 <li>{skill}</li>
-              ))
+              )) || []
             }
           </ul>
         </div>
@@ -81,9 +81,9 @@ const author = authorEntries[0]; // Using the first author as this is a personal
         <div class="skill-category">
           <h3>Interests</h3>
           <ul class="skills-list">
-            {author.data.interests.map(interest => (
+            {author.data.interests?.map(interest => (
               <li>{interest}</li>
-            ))}
+            )) || []}
           </ul>
         </div>
       </div>
@@ -101,31 +101,24 @@ const author = authorEntries[0]; // Using the first author as this is a personal
           </a>
         )}
         
-        {author.data.socialLinks.linkedin && (
+        {author.data.socialLinks?.linkedin && (
           <a href={author.data.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" class="contact-option">
             <div class="contact-icon">🔗</div>
             <div class="contact-label">LinkedIn</div>
           </a>
         )}
-        
-        {author.data.socialLinks.github && (
+
+        {author.data.socialLinks?.github && (
           <a href={author.data.socialLinks.github} target="_blank" rel="noopener noreferrer" class="contact-option">
             <div class="contact-icon">🐙</div>
             <div class="contact-label">GitHub</div>
           </a>
         )}
 
-        {author.data.socialLinks.bluesky && (
+        {author.data.socialLinks?.bluesky && (
           <a href={author.data.socialLinks.bluesky} target="_blank" rel="noopener noreferrer" class="contact-option">
-            <div class="contact-icon">🌅</div>
+            <div class="contact-icon">🦋</div>
             <div class="contact-label">Bluesky</div>
-          </a>
-        )}
-
-        {author.data.socialLinks.twitter && (
-          <a href={author.data.socialLinks.twitter} target="_blank" rel="noopener noreferrer" class="contact-option">
-            <div class="contact-icon">🐦</div>
-            <div class="contact-label">Twitter</div>
           </a>
         )}
       </div>
@@ -143,12 +136,81 @@ const author = authorEntries[0]; // Using the first author as this is a personal
     text-align: center;
     padding: 4rem 0 3rem;
     margin-bottom: 3rem;
+    background: linear-gradient(135deg, rgba(121, 148, 150, 0.2), rgba(172, 193, 150, 0.3), rgba(233, 235, 158, 0.2));
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  html.dark .about-hero {
+    background: linear-gradient(135deg, rgba(44, 44, 56, 0.8), rgba(30, 32, 40, 0.9));
+  }
+
+  .about-hero::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(233, 235, 158, 0), rgba(233, 235, 158, 0.2));
+    opacity: 0.7;
+    animation: liquid-wave 15s ease-in-out infinite alternate;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  @keyframes liquid-wave {
+    0% {
+      transform: translate(-10%, -10%) rotate(0deg);
+    }
+    100% {
+      transform: translate(10%, 10%) rotate(360deg);
+    }
+  }
+
+  .about-hero-content {
+    position: relative;
+    z-index: 2;
   }
 
   .about-hero h1 {
     font-size: 3rem;
     margin-bottom: 1rem;
-    color: var(--primary-color);
+    background: linear-gradient(45deg, var(--color-dark), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+    position: relative;
+    letter-spacing: 0.15em;
+    text-transform: lowercase;
+  }
+
+  html.dark .about-hero h1 {
+    background: linear-gradient(45deg, #f3f4f6, #e9eb9e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
+  }
+
+  .about-hero h1::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 3px;
+    background: linear-gradient(to right, var(--color-tertiary), var(--color-accent));
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  .about-hero:hover h1::after {
+    width: 120px;
   }
 
   .about-hero .lead {
@@ -156,6 +218,12 @@ const author = authorEntries[0]; // Using the first author as this is a personal
     max-width: 700px;
     margin: 0 auto;
     color: var(--text-light);
+    position: relative;
+    z-index: 2;
+  }
+
+  html.dark .about-hero .lead {
+    color: #f3f4f6;
   }
 
   .about-section {
@@ -184,15 +252,21 @@ const author = authorEntries[0]; // Using the first author as this is a personal
   }
 
   .profile-sidebar {
-    background: white;
-    border-radius: 8px;
+    border-radius: 12px;
     box-shadow: var(--card-shadow);
     overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    will-change: transform, box-shadow;
+  }
+
+  .profile-sidebar:hover {
+    transform: translateY(-7px) scale(1.01);
+    box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 10px rgba(20, 8, 14, 0.05);
   }
 
   .profile-image-placeholder {
     height: 300px;
-    background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+    background: linear-gradient(45deg, var(--color-tertiary), var(--color-secondary));
     display: flex;
     align-items: center;
     justify-content: center;
@@ -201,8 +275,43 @@ const author = authorEntries[0]; // Using the first author as this is a personal
     font-size: 1.25rem;
   }
 
+  html.dark .profile-image-placeholder {
+    background: linear-gradient(45deg, #2c2c38, #3a3a46);
+    position: relative;
+    overflow: hidden;
+  }
+
+  html.dark .profile-image-placeholder::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(172, 193, 150, 0.2), transparent 70%);
+    animation: pulse-dark 4s ease-in-out infinite alternate;
+  }
+
+  @keyframes pulse-dark {
+    0% {
+      opacity: 0.1;
+      transform: scale(0.8);
+    }
+    100% {
+      opacity: 0.3;
+      transform: scale(1.2);
+    }
+  }
+
   .profile-details {
     padding: 2rem;
+    background: white;
+    border-top: 1px solid rgba(121, 148, 150, 0.1);
+  }
+
+  html.dark .profile-details {
+    background: #23232b;
+    border-top: 1px solid rgba(172, 193, 150, 0.1);
   }
 
   .profile-details a {
@@ -260,30 +369,78 @@ const author = authorEntries[0]; // Using the first author as this is a personal
   }
 
   .skill-category {
-    background: white;
-    padding: 2rem;
-    border-radius: 8px;
+    border-radius: 12px;
     box-shadow: var(--card-shadow);
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  .skill-category:hover {
+    transform: translateY(-7px) scale(1.01);
+    box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 10px rgba(20, 8, 14, 0.05);
   }
 
   .skill-category h3 {
-    color: var(--primary-color);
-    margin-bottom: 1.2rem;
+    background: linear-gradient(45deg, var(--color-tertiary), var(--color-secondary));
+    color: white;
+    margin-bottom: 0;
+    padding: 1.5rem;
     text-align: center;
+  }
+
+  html.dark .skill-category h3 {
+    background: linear-gradient(45deg, #2c2c38, #3a3a46);
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+
+  html.dark .skill-category h3::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(172, 193, 150, 0.1) 0%, rgba(233, 235, 158, 0.2) 50%, rgba(172, 193, 150, 0.1) 100%);
+    opacity: 0.6;
+    z-index: 0;
   }
 
   .skills-list {
     list-style: none;
-    padding: 0;
+    padding: 1.5rem;
+    background: white;
+  }
+
+  html.dark .skills-list {
+    background: #23232b;
   }
 
   .skills-list li {
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--border-color);
+    padding: 0.75rem 0;
+    border-bottom: 1px solid rgba(121, 148, 150, 0.1);
+    display: flex;
+    align-items: center;
+  }
+
+  html.dark .skills-list li {
+    border-bottom: 1px solid rgba(172, 193, 150, 0.1);
   }
 
   .skills-list li:last-child {
     border-bottom: none;
+  }
+
+  .skills-list li::before {
+    content: '•';
+    color: var(--color-tertiary);
+    margin-right: 0.5rem;
+    font-size: 1.2rem;
+  }
+
+  html.dark .skills-list li::before {
+    color: var(--color-accent);
   }
 
   .contact-section {
@@ -308,21 +465,46 @@ const author = authorEntries[0]; // Using the first author as this is a personal
     flex-direction: column;
     align-items: center;
     text-decoration: none;
-    transition: transform 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+    width: 120px;
+  }
+
+  html.dark .contact-option {
+    background: #23232b;
   }
 
   .contact-option:hover {
-    transform: translateY(-5px);
+    transform: translateY(-7px);
+    box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 10px rgba(20, 8, 14, 0.05);
   }
 
   .contact-icon {
     font-size: 2rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
+    background: linear-gradient(45deg, var(--color-tertiary), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  html.dark .contact-icon {
+    background: linear-gradient(45deg, var(--color-accent), var(--color-light));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .contact-label {
     color: var(--text-color);
     font-weight: 500;
+  }
+
+  html.dark .contact-label {
+    color: #f3f4f6;
   }
 
   @media (max-width: 900px) {
@@ -344,25 +526,6 @@ const author = authorEntries[0]; // Using the first author as this is a personal
     .about-hero h1 {
       font-size: 2.5rem;
     }
-  }
-
-  html.dark .skill-category {
-    background: var(--background-alt);
-    color: var(--text-color);
-    box-shadow: var(--card-shadow);
-  }
-
-  html.dark .skill-category h3 {
-    color: var(--color-accent);
-  }
-
-  html.dark .skills-list li {
-    color: var(--text-light);
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  html.dark .profile-sidebar {
-    background: var(--background-alt);
   }
 
   html.dark .profile-details a {

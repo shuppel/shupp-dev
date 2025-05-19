@@ -125,53 +125,108 @@ const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US
 
   /* Project Content Styles */
   .project-content {
-    background: white;
-    border-radius: 8px;
+    border-radius: 12px;
     box-shadow: var(--card-shadow);
     overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    will-change: transform, box-shadow;
+  }
+
+  html.dark .project-content {
+    background: #23232b;
+    color: #f3f4f6;
   }
 
   .project-header {
     padding: 2.5rem 2.5rem 2rem;
+    background: linear-gradient(45deg, var(--color-tertiary), var(--color-secondary));
+    color: white;
+  }
+
+  html.dark .project-header {
+    background: linear-gradient(45deg, #2c2c38, #3a3a46);
+    position: relative;
+    overflow: hidden;
+  }
+
+  html.dark .project-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(172, 193, 150, 0.1) 0%, rgba(233, 235, 158, 0.2) 50%, rgba(172, 193, 150, 0.1) 100%);
+    opacity: 0.6;
+    z-index: 0;
   }
 
   .project-title {
     font-size: 2.5rem;
     margin-bottom: 1.5rem;
     line-height: 1.2;
+    color: white;
+    position: relative;
+    z-index: 1;
+    letter-spacing: 0.15em;
+    text-transform: lowercase;
+  }
+
+  html.dark .project-title {
+    color: white;
   }
 
   .project-meta {
     display: flex;
-    color: var(--text-light);
+    color: rgba(255, 255, 255, 0.8);
     font-size: 0.9rem;
     margin-bottom: 1.5rem;
     gap: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  html.dark .project-meta {
+    color: rgba(255, 255, 255, 0.8);
   }
 
   .project-links {
     display: flex;
     gap: 1rem;
     margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
   }
 
   .project-link {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    background: var(--background-alt);
-    color: var(--text-color);
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
     padding: 0.5rem 1rem;
-    border-radius: 4px;
+    border-radius: 6px;
     font-size: 0.9rem;
     font-weight: 500;
     text-decoration: none;
-    transition: background-color 0.2s ease, color 0.2s ease;
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    backdrop-filter: blur(5px);
+  }
+
+  html.dark .project-link {
+    background: rgba(233, 235, 158, 0.15);
+    color: white;
   }
 
   .project-link:hover {
-    background: var(--primary-color);
-    color: white;
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  html.dark .project-link:hover {
+    background: rgba(233, 235, 158, 0.25);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   }
 
   .project-featured-image {
@@ -182,19 +237,54 @@ const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US
   .featured-image-placeholder {
     width: 100%;
     height: 100%;
-    background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
+    background: linear-gradient(45deg, var(--color-tertiary), var(--color-secondary));
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     font-weight: bold;
     font-size: 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  html.dark .featured-image-placeholder {
+    background: linear-gradient(45deg, #2c2c38, #3a3a46);
+    position: relative;
+  }
+
+  html.dark .featured-image-placeholder::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(172, 193, 150, 0.2), transparent 70%);
+    animation: pulse-dark 4s ease-in-out infinite alternate;
+  }
+
+  @keyframes pulse-dark {
+    0% {
+      opacity: 0.1;
+      transform: scale(0.8);
+    }
+    100% {
+      opacity: 0.3;
+      transform: scale(1.2);
+    }
   }
 
   .project-body {
     padding: 2.5rem;
     font-size: 1.05rem;
     line-height: 1.7;
+    background: white;
+  }
+
+  html.dark .project-body {
+    background: #23232b;
+    color: #f3f4f6;
   }
 
   .project-body h2 {
@@ -203,19 +293,37 @@ const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US
     color: var(--text-color);
   }
 
+  html.dark .project-body h2 {
+    color: #f3f4f6;
+  }
+
   .project-body h3 {
     font-size: 1.4rem;
     margin: 2rem 0 1rem;
     color: var(--text-color);
   }
 
+  html.dark .project-body h3 {
+    color: #f3f4f6;
+  }
+
   .project-body p {
     margin-bottom: 1.5rem;
+    color: var(--text-color);
+  }
+
+  html.dark .project-body p {
+    color: #c5c5d2;
   }
 
   .project-body ul, .project-body ol {
     margin-bottom: 1.5rem;
     padding-left: 2rem;
+  }
+
+  html.dark .project-body ul,
+  html.dark .project-body ol {
+    color: #c5c5d2;
   }
 
   .project-body li {
@@ -224,12 +332,23 @@ const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US
 
   .project-technologies {
     padding: 1.5rem 2.5rem;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid rgba(121, 148, 150, 0.1);
+    background: white;
+  }
+
+  html.dark .project-technologies {
+    background: #23232b;
+    border-top: 1px solid rgba(172, 193, 150, 0.1);
   }
 
   .technologies-title {
     font-weight: 600;
     margin-bottom: 1rem;
+    color: var(--text-color);
+  }
+
+  html.dark .technologies-title {
+    color: #f3f4f6;
   }
 
   .technologies-list {
@@ -244,6 +363,12 @@ const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US
     padding: 0.25rem 0.75rem;
     border-radius: 4px;
     font-size: 0.8rem;
+    transition: all 0.3s ease;
+  }
+
+  html.dark .technology-tag {
+    background: rgba(233, 235, 158, 0.1);
+    color: var(--color-accent);
   }
 
   /* Sidebar Styles */
@@ -254,35 +379,73 @@ const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US
   }
 
   .sidebar-widget {
-    background: white;
-    padding: 1.5rem;
-    border-radius: 8px;
+    border-radius: 12px;
     box-shadow: var(--card-shadow);
     margin-bottom: 2rem;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  .sidebar-widget:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 15px rgba(20, 8, 14, 0.05);
+  }
+
+  html.dark .sidebar-widget {
+    background: #23232b;
+    color: #f3f4f6;
   }
 
   .widget-title {
     margin-bottom: 1.25rem;
     position: relative;
-    padding-bottom: 0.75rem;
+    padding: 1.25rem 1.5rem;
+    padding-bottom: 1rem;
     font-size: 1.25rem;
+    background: linear-gradient(45deg, var(--color-tertiary), var(--color-secondary));
+    color: white;
+  }
+
+  html.dark .widget-title {
+    background: linear-gradient(45deg, #2c2c38, #3a3a46);
+    position: relative;
+    overflow: hidden;
+  }
+
+  html.dark .widget-title::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(172, 193, 150, 0.1) 0%, rgba(233, 235, 158, 0.2) 50%, rgba(172, 193, 150, 0.1) 100%);
+    opacity: 0.6;
+    z-index: 0;
   }
 
   .widget-title::after {
     content: "";
     position: absolute;
     bottom: 0;
-    left: 0;
+    left: 1.5rem;
     width: 40px;
     height: 3px;
-    background: var(--primary-color);
+    background: rgba(255, 255, 255, 0.5);
     border-radius: 3px;
+    z-index: 1;
   }
 
   .info-item {
     margin-bottom: 0.75rem;
     display: flex;
     justify-content: space-between;
+    padding: 0.5rem 1.5rem;
+    background: white;
+  }
+
+  html.dark .info-item {
+    background: #23232b;
   }
 
   .info-label {
@@ -290,19 +453,38 @@ const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US
     color: var(--text-light);
   }
 
+  html.dark .info-label {
+    color: var(--color-accent);
+  }
+
+  html.dark .info-value {
+    color: #c5c5d2;
+  }
+
   .related-projects-list {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    padding: 0 1.5rem 1.5rem;
+    background: white;
+  }
+
+  html.dark .related-projects-list {
+    background: #23232b;
   }
 
   .related-project {
     display: block;
     color: var(--text-color);
     text-decoration: none;
-    transition: color 0.2s ease;
+    transition: all 0.3s ease;
     padding-bottom: 1rem;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 1px solid rgba(121, 148, 150, 0.1);
+  }
+
+  html.dark .related-project {
+    color: #f3f4f6;
+    border-bottom: 1px solid rgba(172, 193, 150, 0.1);
   }
 
   .related-project:last-child {
@@ -310,14 +492,22 @@ const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US
     border-bottom: none;
   }
 
+  .related-project:hover {
+    transform: translateX(5px);
+  }
+
   .related-project:hover .related-project-title {
-    color: var(--primary-color);
+    color: var(--color-tertiary);
+  }
+
+  html.dark .related-project:hover .related-project-title {
+    color: var(--color-accent);
   }
 
   .related-project-title {
     font-weight: 500;
     margin-bottom: 0.25rem;
-    transition: color 0.2s ease;
+    transition: color 0.3s ease;
   }
 
   .related-project-tech {
@@ -325,14 +515,49 @@ const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US
     color: var(--text-light);
   }
 
+  html.dark .related-project-tech {
+    color: #c5c5d2;
+  }
+
   .contact-cta p {
     margin-bottom: 1.5rem;
     color: var(--text-light);
+    padding: 0 1.5rem;
+    background: white;
+  }
+
+  html.dark .contact-cta p {
+    color: #c5c5d2;
+    background: #23232b;
   }
 
   .contact-cta .btn {
-    width: 100%;
+    width: calc(100% - 3rem);
+    margin: 0 1.5rem 1.5rem;
     text-align: center;
+    background: var(--color-tertiary);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .contact-cta .btn:hover {
+    background: var(--color-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(121, 148, 150, 0.2);
+  }
+
+  html.dark .contact-cta .btn {
+    background: var(--color-accent);
+    color: #23232b;
+  }
+
+  html.dark .contact-cta .btn:hover {
+    background: var(--color-light);
+    box-shadow: 0 4px 8px rgba(172, 193, 150, 0.3);
   }
 
   /* Responsive Adjustments */

@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import CardStyles from '../components/CardStyles.astro';
 
 // Get all roadmap items and principles
 const roadmapItems = await getCollection('roadmap');
@@ -93,25 +94,29 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
             {sortedRoadmapItems.map((item, index) => (
               <div class="roadmap-item" data-phase={item.data.phase}>
                 <div class="roadmap-node"></div>
-                <div class="roadmap-content">
-                  <h3>{item.data.title}</h3>
-                  <p>{item.data.description}</p>
-                  <ul class="roadmap-features">
-                    {item.data.features && item.data.features.map(feature => (
-                      <li>{feature}</li>
-                    ))}
-                  </ul>
-                  {item.data.completedItems && item.data.completedItems.length > 0 && (
-                    <div class="roadmap-completed">
-                      <h4>Completed:</h4>
-                      <ul class="completed-features">
-                        {item.data.completedItems.map(completed => (
-                          <li class="completed">{completed}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  <div class={`roadmap-status ${item.data.status}`}>{item.data.status}</div>
+                <div class="roadmap-content two-tone-card">
+                  <div class="roadmap-card-header">
+                    <h3 class="roadmap-card-title">{item.data.title}</h3>
+                  </div>
+                  <div class="roadmap-card-body">
+                    <p class="roadmap-card-description">{item.data.description}</p>
+                    <ul class="roadmap-features">
+                      {item.data.features && item.data.features.map(feature => (
+                        <li>{feature}</li>
+                      ))}
+                    </ul>
+                    {item.data.completedItems && item.data.completedItems.length > 0 && (
+                      <div class="roadmap-completed">
+                        <h4>Completed:</h4>
+                        <ul class="completed-features">
+                          {item.data.completedItems.map(completed => (
+                            <li class="completed">{completed}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    <div class={`roadmap-status ${item.data.status}`}>{item.data.status}</div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -126,9 +131,9 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
 
       <div class="roadmap-principles">
         {sortedPrinciples.map(principle => (
-          <div class="principle-card">
-            <h3>{principle.data.title}</h3>
-            <p>{principle.data.description}</p>
+          <div class="principle-card card-base card-glow">
+            <h3 class="card-title">{principle.data.title}</h3>
+            <p class="card-description">{principle.data.description}</p>
           </div>
         ))}
       </div>
@@ -136,26 +141,32 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
       <div class="roadmap-phases">
         {sortedPhases.length > 0 ? (
           sortedPhases.map(phase => (
-            <div class="phase-card">
-              <div class="phase-header">
-                <h3>{phase.data.title}</h3>
+            <div class="phase-card two-tone-card">
+              <div class="phase-card-header">
+                <h3 class="phase-card-title">{phase.data.title}</h3>
                 <div class={`phase-indicator ${phase.data.status}`}>{phase.data.status}</div>
               </div>
-              <p>{phase.data.description}</p>
-              <div class="phase-goals">
-                <h4>Key Goals:</h4>
-                <ul>
-                  {phase.data.goals && phase.data.goals.map(goal => (
-                    <li>{goal}</li>
-                  ))}
-                </ul>
+              <div class="phase-card-body">
+                <p class="phase-card-description">{phase.data.description}</p>
+                <div class="phase-goals">
+                  <h4>Key Goals:</h4>
+                  <ul>
+                    {phase.data.goals && phase.data.goals.map(goal => (
+                      <li>{goal}</li>
+                    ))}
+                  </ul>
+                </div>
               </div>
             </div>
           ))
         ) : (
-          <div class="phase-card empty-state">
-            <h3>Development Phases Coming Soon</h3>
-            <p>The site development is organized into strategic phases. Check back soon for detailed information about each phase.</p>
+          <div class="phase-card two-tone-card empty-state">
+            <div class="phase-card-header">
+              <h3 class="phase-card-title">Development Phases Coming Soon</h3>
+            </div>
+            <div class="phase-card-body">
+              <p class="phase-card-description">The site development is organized into strategic phases. Check back soon for detailed information about each phase.</p>
+            </div>
           </div>
         )}
       </div>
@@ -187,7 +198,7 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
     </section>
 
     <section class="roadmap-cta">
-      <div class="cta-card">
+      <div class="cta-card card-base card-glow">
         <h2>Want to collaborate?</h2>
         <p>I'm always open to interesting collaboration opportunities that align with my roadmap. If you have a project that fits with my vision, let's discuss how we might work together.</p>
         <div class="cta-buttons">
@@ -249,7 +260,30 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
   .roadmap-hero {
     text-align: center;
     padding: 4rem 0 3rem;
+    background: linear-gradient(135deg, rgba(121, 148, 150, 0.2), rgba(172, 193, 150, 0.3), rgba(233, 235, 158, 0.2));
+    border-radius: 12px;
     margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+    transition: background 0.3s, color 0.3s;
+  }
+
+  html.dark .roadmap-hero {
+    background: linear-gradient(135deg, rgba(44, 44, 56, 0.8), rgba(30, 32, 40, 0.9));
+  }
+
+  .roadmap-hero::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at center, rgba(233, 235, 158, 0), rgba(233, 235, 158, 0.2));
+    opacity: 0.7;
+    animation: liquid-wave 15s ease-in-out infinite alternate;
+    z-index: 0;
+    pointer-events: none;
   }
 
   .roadmap-hero h1 {
@@ -261,6 +295,17 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
     background-clip: text;
     text-fill-color: transparent;
     position: relative;
+    z-index: 2;
+    letter-spacing: 0.15em;
+    text-transform: lowercase;
+  }
+
+  html.dark .roadmap-hero h1 {
+    background: linear-gradient(45deg, #f3f4f6, #e9eb9e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-fill-color: transparent;
   }
 
   .roadmap-hero h1::after {
@@ -280,6 +325,12 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
     max-width: 700px;
     margin: 0 auto;
     color: var(--text-light);
+    position: relative;
+    z-index: 2;
+  }
+
+  html.dark .roadmap-hero .lead {
+    color: #f3f4f6;
   }
 
   html.dark .roadmap-hero h1 {
@@ -391,29 +442,33 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
   }
 
   .roadmap-content {
-    background: white;
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: var(--card-shadow);
     flex: 1;
     position: relative;
     overflow: hidden;
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
   }
 
-  html.dark .roadmap-content {
+  .roadmap-card-header {
+    background: linear-gradient(45deg, var(--color-tertiary), var(--color-secondary));
+    padding: 1.5rem 2rem;
+    color: white;
+  }
+
+  html.dark .roadmap-card-header {
+    background: linear-gradient(45deg, #1c1c24, #2a2a36);
+  }
+
+  .roadmap-card-body {
+    background: white;
+    padding: 2rem;
+    border-top: 1px solid rgba(121, 148, 150, 0.1);
+  }
+
+  html.dark .roadmap-card-body {
     background: #23232b;
-  }
-
-  .roadmap-content::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 5px;
-    height: 100%;
-    background: linear-gradient(to bottom, var(--color-tertiary), var(--color-accent));
-    opacity: 0.7;
+    border-top: 1px solid rgba(172, 193, 150, 0.1);
   }
 
   .roadmap-content:hover {
@@ -421,21 +476,22 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
     box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 15px rgba(20, 8, 14, 0.05);
   }
 
-  .roadmap-content h3 {
-    margin-bottom: 1rem;
-    color: var(--color-dark);
+  .roadmap-card-title {
+    margin-bottom: 0;
+    color: white;
+    font-weight: 600;
   }
 
-  html.dark .roadmap-content h3 {
-    color: #f3f4f6;
+  html.dark .roadmap-card-title {
+    color: white;
   }
 
-  .roadmap-content p {
+  .roadmap-card-description {
     margin-bottom: 1.5rem;
     color: var(--text-light);
   }
 
-  html.dark .roadmap-content p {
+  html.dark .roadmap-card-description {
     color: #c5c5d2;
   }
 
@@ -631,28 +687,34 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
   }
 
   .phase-card {
-    background: white;
     border-radius: 12px;
-    padding: 2.5rem;
     box-shadow: var(--card-shadow);
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     position: relative;
     overflow: hidden;
   }
 
-  html.dark .phase-card {
-    background: #23232b;
+  .phase-card-header {
+    background: linear-gradient(45deg, var(--color-tertiary), var(--color-secondary));
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
-  .phase-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 5px;
-    background: linear-gradient(to right, var(--color-tertiary), var(--color-accent));
-    opacity: 0.7;
+  html.dark .phase-card-header {
+    background: linear-gradient(45deg, #1c1c24, #2a2a36);
+  }
+
+  .phase-card-body {
+    background: white;
+    padding: 2rem;
+    border-top: 1px solid rgba(121, 148, 150, 0.1);
+  }
+
+  html.dark .phase-card-body {
+    background: #23232b;
+    border-top: 1px solid rgba(172, 193, 150, 0.1);
   }
 
   .phase-card:hover {
@@ -660,21 +722,15 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
     box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 15px rgba(20, 8, 14, 0.05);
   }
 
-  .phase-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-  }
-
-  .phase-header h3 {
+  .phase-card-title {
     margin: 0;
     font-size: 1.3rem;
-    color: var(--color-dark);
+    color: white;
+    font-weight: 600;
   }
 
-  html.dark .phase-header h3 {
-    color: #f3f4f6;
+  html.dark .phase-card-title {
+    color: white;
   }
 
   .phase-indicator {
@@ -711,13 +767,13 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
     color: var(--color-light);
   }
 
-  .phase-card p {
+  .phase-card-description {
     margin-bottom: 1.5rem;
     color: var(--text-light);
     line-height: 1.6;
   }
 
-  html.dark .phase-card p {
+  html.dark .phase-card-description {
     color: #c5c5d2;
   }
 
@@ -965,7 +1021,14 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
   }
 
   /* Empty state styles */
-  .phase-card.empty-state,
+  .phase-card.empty-state .phase-card-header {
+    text-align: center;
+  }
+
+  .phase-card.empty-state .phase-card-body {
+    text-align: center;
+  }
+
   .timeline-empty-state {
     text-align: center;
     padding: 3rem;
