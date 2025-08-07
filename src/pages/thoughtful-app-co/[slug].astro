@@ -1,0 +1,904 @@
+---
+import { getCollection, getEntry } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import { type CollectionEntry } from 'astro:content';
+import LyketVote from '../../components/LyketVote.astro';
+import GiscusComments from '../../components/GiscusComments.astro';
+
+export async function getStaticPaths() {
+  const appEntries = await getCollection('thoughtful-apps');
+  return appEntries.map(entry => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+type Props = {
+  entry: CollectionEntry<'thoughtful-apps'>;
+};
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+// Status configuration
+const statusConfig = {
+  concept: { emoji: '🔵', label: 'Concept', color: '#3b82f6' },
+  exploring: { emoji: '🟡', label: 'Exploring', color: '#eab308' },
+  prototyping: { emoji: '🟢', label: 'Prototyping', color: '#22c55e' },
+  shelved: { emoji: '⚫', label: 'Shelved', color: '#6b7280' }
+};
+
+const status = statusConfig[entry.data.status];
+
+// Format the date
+const formattedDate = new Date(entry.data.lastUpdated).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<Layout title={`${entry.data.title} - Thoughtful App Co.`} description={entry.data.oneLiner}>
+  <div class="app-detail-page">
+    <article class="app-content">
+      <div class="app-header">
+        <div class="app-meta">
+          <div class="status-badge" style={`background-color: ${status.color}`}>
+            <span class="status-emoji">{status.emoji}</span>
+            {status.label}
+          </div>
+          <span class="category-badge">{entry.data.category}</span>
+          <span class="last-updated">Updated {formattedDate}</span>
+        </div>
+        
+        <h1 class="app-title">{entry.data.title}</h1>
+        <p class="app-tagline">{entry.data.oneLiner}</p>
+        
+        <div class="app-ratings">
+          <div class="rating-item">
+            <span class="rating-label">Feasibility:</span>
+            <div class="rating-stars">
+              {[...Array(5)].map((_, i) => (
+                <span class={`star ${i < entry.data.feasibility ? 'filled' : ''}`}>⭐</span>
+              ))}
+            </div>
+          </div>
+          <div class="rating-item">
+            <span class="rating-label">Excitement:</span>
+            <div class="rating-stars">
+              {[...Array(5)].map((_, i) => (
+                <span class={`star ${i < entry.data.excitement ? 'filled' : ''}`}>⭐</span>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <section class="app-section">
+        <h2>The Problem</h2>
+        <p class="problem-statement">{entry.data.problem}</p>
+      </section>
+
+      {entry.data.mainMockup && (
+        <section class="app-section">
+          <h2>Core Concept</h2>
+          <div class="mockup-container">
+            <iframe 
+              src={entry.data.mainMockup} 
+              class="tldraw-embed"
+              title="Main app mockup"
+              frameborder="0"
+              allowfullscreen>
+            </iframe>
+          </div>
+        </section>
+      )}
+
+      <section class="app-section">
+        <h2>Key Features</h2>
+        <div class="features-list">
+          {entry.data.features.map((feature, index) => (
+            <div class="feature-item">
+              <h3>{index + 1}. {feature.name}</h3>
+              <div class="feature-details">
+                <p><strong>What:</strong> {feature.what}</p>
+                <p><strong>Why:</strong> {feature.why}</p>
+                {feature.mockup && (
+                  <div class="feature-mockup">
+                    <iframe 
+                      src={feature.mockup} 
+                      class="tldraw-embed-small"
+                      title={`${feature.name} mockup`}
+                      frameborder="0"
+                      allowfullscreen>
+                    </iframe>
+                  </div>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="app-section">
+        <h2>User Journey</h2>
+        <ol class="user-journey">
+          {entry.data.userJourney.map((step, index) => (
+            <li class="journey-step">
+              <span class="step-number">{index + 1}</span>
+              <span class="step-text">{step}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
+      <section class="app-section">
+        <h2>Technical Architecture</h2>
+        <div class="tech-grid">
+          <div class="tech-item">
+            <h4>Frontend</h4>
+            <p>{entry.data.technicalArchitecture.frontend}</p>
+          </div>
+          <div class="tech-item">
+            <h4>Backend</h4>
+            <p>{entry.data.technicalArchitecture.backend}</p>
+          </div>
+          <div class="tech-item">
+            <h4>Data</h4>
+            <p>{entry.data.technicalArchitecture.data}</p>
+          </div>
+          <div class="tech-item">
+            <h4>APIs</h4>
+            <ul>
+              {entry.data.technicalArchitecture.apis.map(api => (
+                <li>{api}</li>
+              ))}
+            </ul>
+          </div>
+          <div class="tech-item">
+            <h4>Hosting</h4>
+            <p>{entry.data.technicalArchitecture.hosting}</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="app-section">
+        <h2>Moonshot Features (v2.0)</h2>
+        <ul class="moonshot-list">
+          {entry.data.moonshotFeatures.map(feature => (
+            <li class="moonshot-item">
+              <span class="moonshot-checkbox">☐</span>
+              {feature}
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section class="app-section">
+        <h2>Market Research</h2>
+        <div class="market-research">
+          <p><strong>Similar to:</strong> {entry.data.marketResearch.similarTo.join(', ')}</p>
+          <p><strong>Different because:</strong> {entry.data.marketResearch.differentBecause}</p>
+          <p><strong>Target users:</strong> {entry.data.marketResearch.targetUsers}</p>
+        </div>
+      </section>
+
+      <section class="app-section">
+        <h2>Open Questions</h2>
+        <ul class="questions-list">
+          {entry.data.openQuestions.map(question => (
+            <li>{question}</li>
+          ))}
+        </ul>
+      </section>
+
+      {entry.data.resources && entry.data.resources.length > 0 && (
+        <section class="app-section">
+          <h2>Resources & Inspiration</h2>
+          <ul class="resources-list">
+            {entry.data.resources.map(resource => (
+              <li>
+                <a href={resource.url} target="_blank" rel="noopener noreferrer">
+                  {resource.title} →
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      <div class="app-engagement">
+        <div class="engagement-card vote-card">
+          <h3>Want to see this built?</h3>
+          <p>Vote to show your interest!</p>
+          <LyketVote appId={entry.slug} />
+        </div>
+
+        <div class="engagement-card notify-card">
+          <h3>Get notified if this gets built</h3>
+          <form class="notify-form" id="notify-form">
+            <input 
+              type="email" 
+              placeholder="your@email.com" 
+              class="email-input"
+              required
+            />
+            <button type="submit" class="btn btn-primary notify-btn">Notify Me</button>
+          </form>
+        </div>
+
+        <div class="engagement-card pay-card">
+          <h3>Would you pay for this?</h3>
+          <div class="pay-buttons">
+            <button class="pay-btn" data-amount="low">$</button>
+            <button class="pay-btn" data-amount="medium">$$</button>
+            <button class="pay-btn" data-amount="high">$$$</button>
+          </div>
+          <p class="pay-hint">Click to indicate price range</p>
+        </div>
+      </div>
+
+      <section class="app-section comments-section">
+        <h2>Discussion</h2>
+        <GiscusComments />
+      </section>
+    </article>
+
+    <aside class="app-sidebar">
+      <div class="sidebar-widget">
+        <h3>Quick Actions</h3>
+        <a href="/thoughtful-app-co" class="btn btn-secondary">← Back to All Apps</a>
+        <button class="btn btn-secondary" id="share-btn">Share This Idea</button>
+      </div>
+
+      <div class="sidebar-widget">
+        <h3>Developer Interest</h3>
+        <p>Are you a developer interested in building this?</p>
+        <a href={`mailto:erik@shupp.dev?subject=I want to help build ${entry.data.title}`} class="btn btn-primary">
+          I Could Help Build This
+        </a>
+      </div>
+
+      <div class="sidebar-widget stats-widget">
+        <h3>Stats</h3>
+        <div class="stat-item">
+          <span class="stat-label">Category</span>
+          <span class="stat-value">{entry.data.category}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Status</span>
+          <span class="stat-value">{status.label}</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Last Updated</span>
+          <span class="stat-value">{formattedDate}</span>
+        </div>
+      </div>
+    </aside>
+  </div>
+</Layout>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    // Handle notify form
+    const notifyForm = document.getElementById('notify-form');
+    notifyForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const email = (e.target as HTMLFormElement).querySelector('input')?.value;
+      if (email) {
+        // In production, you'd send this to your backend
+        alert(`Thanks! We'll notify you at ${email} if this app gets built.`);
+        (e.target as HTMLFormElement).reset();
+      }
+    });
+    
+    // Handle pay buttons
+    const payButtons = document.querySelectorAll('.pay-btn');
+    payButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        payButtons.forEach(b => b.classList.remove('selected'));
+        btn.classList.add('selected');
+        const amount = btn.dataset.amount;
+        // In production, you'd track this preference
+        console.log(`User would pay: ${amount}`);
+      });
+    });
+    
+    // Share functionality
+    const shareBtn = document.getElementById('share-btn');
+    shareBtn?.addEventListener('click', async () => {
+      const shareData = {
+        title: document.title,
+        text: `Check out this app idea: ${document.title}`,
+        url: window.location.href
+      };
+      
+      try {
+        if (navigator.share) {
+          await navigator.share(shareData);
+        } else {
+          // Fallback to copying URL
+          await navigator.clipboard.writeText(window.location.href);
+          alert('Link copied to clipboard!');
+        }
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    });
+  });
+</script>
+
+<style>
+  .app-detail-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 3rem;
+  }
+
+  .app-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+  }
+
+  html.dark .app-content {
+    background: #23232b;
+  }
+
+  .app-header {
+    padding: 2.5rem;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  html.dark .app-header {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+  }
+
+  .app-meta {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .status-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 20px;
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .category-badge {
+    padding: 0.25rem 0.75rem;
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+    border-radius: 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  html.dark .category-badge {
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+  }
+
+  .last-updated {
+    color: var(--text-light);
+    font-size: 0.9rem;
+  }
+
+  .app-title {
+    font-size: 2.5rem;
+    margin-bottom: 0.75rem;
+    color: var(--text-color);
+  }
+
+  .app-tagline {
+    font-size: 1.25rem;
+    color: var(--text-light);
+    margin-bottom: 1.5rem;
+  }
+
+  .app-ratings {
+    display: flex;
+    gap: 2rem;
+  }
+
+  .rating-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .rating-label {
+    font-weight: 500;
+    color: var(--text-color);
+  }
+
+  .rating-stars {
+    display: flex;
+    gap: 0.1rem;
+  }
+
+  .star {
+    font-size: 1rem;
+    opacity: 0.2;
+    filter: grayscale(1);
+  }
+
+  .star.filled {
+    opacity: 1;
+    filter: grayscale(0);
+  }
+
+  /* App Sections */
+  .app-section {
+    padding: 2.5rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .app-section:last-of-type {
+    border-bottom: none;
+  }
+
+  .app-section h2 {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-color);
+  }
+
+  .problem-statement {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: var(--text-color);
+  }
+
+  /* Mockup Containers */
+  .mockup-container {
+    margin-top: 1.5rem;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  .tldraw-embed {
+    width: 100%;
+    height: 600px;
+    border: none;
+  }
+
+  .tldraw-embed-small {
+    width: 100%;
+    height: 400px;
+    border: none;
+  }
+
+  /* Features */
+  .features-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .feature-item {
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 8px;
+  }
+
+  html.dark .feature-item {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .feature-item h3 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+  }
+
+  .feature-details p {
+    margin-bottom: 0.75rem;
+    line-height: 1.6;
+  }
+
+  .feature-mockup {
+    margin-top: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  /* User Journey */
+  .user-journey {
+    list-style: none;
+    padding: 0;
+    counter-reset: step-counter;
+  }
+
+  .journey-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 8px;
+    position: relative;
+  }
+
+  html.dark .journey-step {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .step-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    background: #3b82f6;
+    color: white;
+    border-radius: 50%;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .step-text {
+    flex: 1;
+    line-height: 1.6;
+  }
+
+  /* Technical Architecture */
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .tech-item {
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.02);
+    border-radius: 8px;
+  }
+
+  html.dark .tech-item {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .tech-item h4 {
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+    color: #3b82f6;
+  }
+
+  .tech-item ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .tech-item li {
+    padding: 0.25rem 0;
+  }
+
+  /* Moonshot Features */
+  .moonshot-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .moonshot-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(139, 92, 246, 0.05);
+    border-radius: 8px;
+  }
+
+  html.dark .moonshot-item {
+    background: rgba(139, 92, 246, 0.1);
+  }
+
+  .moonshot-checkbox {
+    font-size: 1.2rem;
+    color: #8b5cf6;
+  }
+
+  /* Market Research */
+  .market-research p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+
+  .market-research strong {
+    color: var(--text-color);
+  }
+
+  /* Questions */
+  .questions-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .questions-list li {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .questions-list li:last-child {
+    border-bottom: none;
+  }
+
+  /* Resources */
+  .resources-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .resources-list li {
+    margin-bottom: 0.5rem;
+  }
+
+  .resources-list a {
+    color: #3b82f6;
+    text-decoration: none;
+    transition: all 0.3s ease;
+  }
+
+  .resources-list a:hover {
+    color: #2563eb;
+    transform: translateX(5px);
+  }
+
+  /* Engagement Section */
+  .app-engagement {
+    padding: 2.5rem;
+    background: rgba(0, 0, 0, 0.02);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+
+  html.dark .app-engagement {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+  .engagement-card {
+    padding: 1.5rem;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+
+  html.dark .engagement-card {
+    background: #1a1a22;
+  }
+
+  .engagement-card h3 {
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+  }
+
+  .engagement-card p {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+  }
+
+  .vote-button {
+    padding: 0.75rem 1.5rem;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .vote-button:hover {
+    background: #2563eb;
+    transform: translateY(-2px);
+  }
+
+  .vote-button.voted {
+    background: #22c55e;
+    cursor: default;
+  }
+
+  .vote-display {
+    margin-top: 1rem;
+  }
+
+  .vote-count {
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  .vote-label {
+    display: block;
+    font-size: 0.9rem;
+    color: var(--text-light);
+  }
+
+  .notify-form {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .email-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 30px;
+    font-size: 0.9rem;
+  }
+
+  html.dark .email-input {
+    background: #23232b;
+    color: #f3f4f6;
+  }
+
+  .notify-btn {
+    width: 100%;
+  }
+
+  .pay-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .pay-btn {
+    padding: 0.5rem 1.5rem;
+    border: 2px solid #22c55e;
+    background: white;
+    color: #22c55e;
+    border-radius: 30px;
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  html.dark .pay-btn {
+    background: #1a1a22;
+  }
+
+  .pay-btn:hover {
+    background: #22c55e;
+    color: white;
+  }
+
+  .pay-btn.selected {
+    background: #22c55e;
+    color: white;
+  }
+
+  .pay-hint {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    margin: 0;
+  }
+
+  /* Comments Section */
+  .comments-section {
+    padding: 2.5rem;
+  }
+
+  #giscus-container {
+    margin-top: 1.5rem;
+  }
+
+  /* Sidebar */
+  .app-sidebar {
+    position: sticky;
+    top: 2rem;
+    align-self: start;
+  }
+
+  .sidebar-widget {
+    background: white;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 1.5rem;
+  }
+
+  html.dark .sidebar-widget {
+    background: #23232b;
+  }
+
+  .sidebar-widget h3 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+  }
+
+  .sidebar-widget p {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+  }
+
+  .sidebar-widget .btn {
+    width: 100%;
+    margin-bottom: 0.5rem;
+  }
+
+  .stats-widget .stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .stats-widget .stat-item:last-child {
+    border-bottom: none;
+  }
+
+  .stat-label {
+    font-weight: 500;
+    color: var(--text-light);
+  }
+
+  .stat-value {
+    color: var(--text-color);
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .app-detail-page {
+      grid-template-columns: 1fr;
+    }
+
+    .app-sidebar {
+      position: static;
+    }
+
+    .tech-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .app-engagement {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .app-header,
+    .app-section,
+    .app-engagement {
+      padding: 1.5rem;
+    }
+
+    .app-title {
+      font-size: 2rem;
+    }
+
+    .tldraw-embed {
+      height: 400px;
+    }
+
+    .tldraw-embed-small {
+      height: 300px;
+    }
+  }
+</style>

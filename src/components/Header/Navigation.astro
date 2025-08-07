@@ -1,4 +1,9 @@
 ---
+import { getCollection } from 'astro:content';
+
+// Get all thoughtful apps for the dropdown
+const apps = await getCollection('thoughtful-apps');
+const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title));
 ---
 
 <header class="header">
@@ -14,6 +19,19 @@
           <div class="dropdown-content">
             <a href="/blog" class="dropdown-link">List View</a>
             <a href="/blog-bento" class="dropdown-link">Bento Grid</a>
+          </div>
+        </li>
+        <li class="nav-item dropdown apps-dropdown">
+          <a href="/thoughtful-app-co" class="nav-link">🧠 Apps Co.</a>
+          <div class="dropdown-content">
+            <a href="/thoughtful-app-co" class="dropdown-link">View All Apps</a>
+            <div class="dropdown-divider"></div>
+            {sortedApps.map(app => (
+              <a href={`/thoughtful-app-co/${app.slug}`} class="dropdown-link app-link">
+                <span class="app-status-dot" data-status={app.data.status}></span>
+                {app.data.title}
+              </a>
+            ))}
           </div>
         </li>
         <li class="nav-item"><a href="/roadmap" class="nav-link">Roadmap</a></li>
@@ -192,7 +210,7 @@
     top: 100%;
     left: 50%;
     transform: translateX(-50%);
-    min-width: 150px;
+    min-width: 200px;
     background: white;
     border-radius: 8px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
@@ -205,6 +223,13 @@
     padding: 0.5rem 0;
     margin-top: 0.5rem;
     overflow: hidden;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  /* Wider dropdown for apps */
+  .apps-dropdown .dropdown-content {
+    min-width: 250px;
   }
 
   html.dark .dropdown-content {
@@ -240,6 +265,43 @@
   html.dark .dropdown-link:hover {
     background-color: rgba(233, 235, 158, 0.1);
     color: #f3f4f6;
+  }
+
+  /* Dropdown divider */
+  .dropdown-divider {
+    height: 1px;
+    background: var(--border-color);
+    margin: 0.5rem 0;
+  }
+
+  /* App link styles */
+  .app-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .app-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .app-status-dot[data-status="concept"] {
+    background-color: #3b82f6;
+  }
+
+  .app-status-dot[data-status="exploring"] {
+    background-color: #eab308;
+  }
+
+  .app-status-dot[data-status="prototyping"] {
+    background-color: #22c55e;
+  }
+
+  .app-status-dot[data-status="shelved"] {
+    background-color: #6b7280;
   }
 
   /* Responsive dropdown */

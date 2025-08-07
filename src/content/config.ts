@@ -167,6 +167,48 @@ const principleCollection = defineCollection({
   }),
 });
 
+// Define a schema for Thoughtful App Co. concepts
+const thoughtfulAppsCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    oneLiner: z.string(),
+    status: z.enum(['concept', 'exploring', 'prototyping', 'shelved']),
+    category: z.string(),
+    problem: z.string(),
+    mainMockup: z.string().optional(), // TLDraw embed URL
+    features: z.array(z.object({
+      name: z.string(),
+      what: z.string(),
+      why: z.string(),
+      mockup: z.string().optional(),
+    })),
+    userJourney: z.array(z.string()),
+    technicalArchitecture: z.object({
+      frontend: z.string(),
+      backend: z.string(),
+      data: z.string(),
+      apis: z.array(z.string()),
+      hosting: z.string(),
+    }),
+    moonshotFeatures: z.array(z.string()),
+    marketResearch: z.object({
+      similarTo: z.array(z.string()),
+      differentBecause: z.string(),
+      targetUsers: z.string(),
+    }),
+    openQuestions: z.array(z.string()),
+    resources: z.array(z.object({
+      title: z.string(),
+      url: z.string().url(),
+    })).optional(),
+    lastUpdated: z.date(),
+    feasibility: z.number().min(1).max(5),
+    excitement: z.number().min(1).max(5),
+    voteCount: z.number().default(0), // Will be updated dynamically
+  }),
+});
+
 // Export a single `collections` object to register your collections
 export const collections = {
   'blog': blogCollection,
@@ -179,4 +221,5 @@ export const collections = {
   'credentials': credentialCollection,
   'skills': skillCollection,
   'principles': principleCollection,
+  'thoughtful-apps': thoughtfulAppsCollection,
 };

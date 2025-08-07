@@ -1,0 +1,161 @@
+---
+export interface Props {
+  appId: string;
+  namespace?: string;
+}
+
+const { appId, namespace = 'thoughtful-apps' } = Astro.props;
+---
+
+<div class="lyket-vote-container" data-app-id={appId} data-namespace={namespace}>
+  <button class="lyket-vote-button" id={`vote-btn-${appId}`}>
+    <span class="vote-icon">👍</span>
+    <span class="vote-text">Vote</span>
+  </button>
+  <div class="vote-count-display">
+    <span class="vote-count" id={`vote-count-${appId}`}>0</span>
+    <span class="vote-label">votes</span>
+  </div>
+</div>
+
+<script>
+  // Lyket configuration
+  const LYKET_API_KEY = 'pt_YOUR_LYKET_PUBLIC_KEY'; // Replace with your actual Lyket public key
+  
+  // Initialize all Lyket vote buttons on the page
+  document.addEventListener('DOMContentLoaded', () => {
+    const voteContainers = document.querySelectorAll('.lyket-vote-container');
+    
+    voteContainers.forEach(container => {
+      const appId = container.getAttribute('data-app-id');
+      const namespace = container.getAttribute('data-namespace');
+      const button = container.querySelector('.lyket-vote-button');
+      const countElement = container.querySelector('.vote-count');
+      
+      if (!appId || !button || !countElement) return;
+      
+      // For now, use localStorage as fallback
+      // In production, replace this with actual Lyket API calls
+      const voteKey = `${namespace}-votes-${appId}`;
+      const hasVotedKey = `${namespace}-voted-${appId}`;
+      
+      // Load current vote count
+      const currentVotes = parseInt(localStorage.getItem(voteKey) || '0');
+      countElement.textContent = currentVotes.toString();
+      
+      // Check if user has already voted
+      const hasVoted = localStorage.getItem(hasVotedKey) === 'true';
+      if (hasVoted) {
+        button.classList.add('voted');
+        button.querySelector('.vote-text').textContent = 'Voted';
+      }
+      
+      // Handle vote click
+      button.addEventListener('click', async () => {
+        if (hasVoted) return;
+        
+        try {
+          // In production, make API call to Lyket here
+          // const response = await fetch(`https://api.lyket.dev/v1/like-buttons/${namespace}/${appId}/like`, {
+          //   method: 'POST',
+          //   headers: {
+          //     'Authorization': `Bearer ${LYKET_API_KEY}`,
+          //     'Content-Type': 'application/json'
+          //   }
+          // });
+          
+          // For now, use localStorage
+          const newCount = currentVotes + 1;
+          localStorage.setItem(voteKey, newCount.toString());
+          localStorage.setItem(hasVotedKey, 'true');
+          
+          // Update UI
+          countElement.textContent = newCount.toString();
+          button.classList.add('voted');
+          button.querySelector('.vote-text').textContent = 'Voted';
+          
+          // Add animation
+          button.classList.add('vote-animation');
+          setTimeout(() => button.classList.remove('vote-animation'), 600);
+          
+        } catch (error) {
+          console.error('Error voting:', error);
+        }
+      });
+    });
+  });
+</script>
+
+<style>
+  .lyket-vote-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .lyket-vote-button {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: #3b82f6;
+    color: white;
+    border: none;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .lyket-vote-button:hover:not(.voted) {
+    background: #2563eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+  }
+
+  .lyket-vote-button.voted {
+    background: #22c55e;
+    cursor: default;
+  }
+
+  .lyket-vote-button.vote-animation {
+    animation: voteSuccess 0.6s ease;
+  }
+
+  @keyframes voteSuccess {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+  }
+
+  .vote-icon {
+    font-size: 1.2rem;
+  }
+
+  .vote-count-display {
+    text-align: center;
+  }
+
+  .vote-count {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  .vote-label {
+    font-size: 0.9rem;
+    color: var(--text-light);
+  }
+
+  html.dark .vote-count {
+    color: #f3f4f6;
+  }
+
+  html.dark .vote-label {
+    color: #9ca3af;
+  }
+</style>
