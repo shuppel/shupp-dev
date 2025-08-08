@@ -1,8 +1,9 @@
 ---
 title: "Tempo"
 oneLiner: "AI-powered task timer that transforms your to-do list into a perfectly scheduled day"
-status: "concept"
+status: "prototyping"
 category: "Productivity"
+githubUrl: "https://github.com/shuppel/tempo"
 problem: "To-do lists don't account for time. People underestimate task duration and overcommit, leading to stress and incomplete work. Traditional time-blocking is too rigid."
 mainMockup: "https://www.tldraw.com/s/v2_c_example"
 features:
@@ -27,19 +28,21 @@ userJourney:
   - "Timer guides through each task"
   - "Learns and improves estimates over time"
 technicalArchitecture:
-  frontend: "Vue.js with PWA capabilities"
-  backend: "Django with ML time prediction"
-  data: "PostgreSQL with user pattern storage"
+  frontend: "Next.js with TypeScript and PWA capabilities"
+  backend: "Client-side only (local storage for data persistence)"
+  data: "Browser localStorage for task and timing data"
   apis:
-    - "Calendar integration APIs"
-    - "NLP for task analysis"
-    - "Time tracking webhooks"
-  hosting: "Vercel with edge functions"
+    - "Claude API for AI time estimation and task analysis"
+    - "Browser APIs for notifications and timers"
+  hosting: "Vercel static deployment"
 moonshotFeatures:
+  - "Backend API with user accounts and cloud sync"
   - "Team time coordination for meetings"
+  - "Calendar integration (Google, Outlook, Apple)"
   - "Energy level optimization scheduling"
   - "Integration with biometric data"
   - "Procrastination pattern intervention"
+  - "Advanced ML models for personalized time prediction"
 marketResearch:
   similarTo: ["Toggl", "Clockify", "Motion"]
   differentBecause: "AI-first approach to time estimation"

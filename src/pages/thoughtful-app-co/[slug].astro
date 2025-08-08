@@ -20,6 +20,9 @@ type Props = {
 const { entry } = Astro.props;
 const { Content } = await entry.render();
 
+// Check if app has GitHub repository
+const hasGitHub = entry.data.githubUrl;
+
 // Status configuration
 const statusConfig = {
   concept: { emoji: '🔵', label: 'Concept', color: '#3b82f6' },
@@ -43,9 +46,14 @@ const formattedDate = new Date(entry.data.lastUpdated).toLocaleDateString('en-US
     <article class="app-content">
       <div class="app-header">
         <div class="app-meta">
-          <div class="status-badge" style={`background-color: ${status.color}`}>
+          <div class={`status-badge ${entry.data.status}`} style={`background-color: ${status.color}`}>
             <span class="status-emoji">{status.emoji}</span>
             {status.label}
+            {entry.data.status === 'prototyping' && hasGitHub && (
+              <a href={entry.data.githubUrl} target="_blank" rel="noopener noreferrer" class="github-badge">
+                <span class="github-icon">⭐</span>
+              </a>
+            )}
           </div>
           <span class="category-badge">{entry.data.category}</span>
           <span class="last-updated">Updated {formattedDate}</span>
@@ -208,34 +216,72 @@ const formattedDate = new Date(entry.data.lastUpdated).toLocaleDateString('en-US
       )}
 
       <div class="app-engagement">
-        <div class="engagement-card vote-card">
-          <h3>Want to see this built?</h3>
-          <p>Vote to show your interest!</p>
-          <LyketVote appId={entry.slug} />
-        </div>
+        {entry.data.status === 'prototyping' && hasGitHub ? (
+          <>
+            <div class="engagement-card github-card">
+              <h3>🚀 In Development</h3>
+              <p>This app is actively being built!</p>
+              <div class="github-actions">
+                <a href={entry.data.githubUrl} target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                  <span class="github-icon">⭐</span> View on GitHub
+                </a>
+                <a href={`${entry.data.githubUrl}/issues`} target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+                  Report Issues
+                </a>
+              </div>
+            </div>
 
-        <div class="engagement-card notify-card">
-          <h3>Get notified if this gets built</h3>
-          <form class="notify-form" id="notify-form">
-            <input 
-              type="email" 
-              placeholder="your@email.com" 
-              class="email-input"
-              required
-            />
-            <button type="submit" class="btn btn-primary notify-btn">Notify Me</button>
-          </form>
-        </div>
+            <div class="engagement-card contribute-card">
+              <h3>Want to contribute?</h3>
+              <p>Help build this app with the community!</p>
+              <div class="contribute-actions">
+                <a href={`${entry.data.githubUrl}/fork`} target="_blank" rel="noopener noreferrer" class="btn btn-success">
+                  Fork & Contribute
+                </a>
+                <a href={`${entry.data.githubUrl}/discussions`} target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+                  Join Discussion
+                </a>
+              </div>
+            </div>
 
-        <div class="engagement-card pay-card">
-          <h3>Would you pay for this?</h3>
-          <div class="pay-buttons">
-            <button class="pay-btn" data-amount="low">$</button>
-            <button class="pay-btn" data-amount="medium">$$</button>
-            <button class="pay-btn" data-amount="high">$$$</button>
-          </div>
-          <p class="pay-hint">Click to indicate price range</p>
-        </div>
+            <div class="engagement-card vote-card">
+              <h3>Show your support</h3>
+              <p>Star the repo and vote for features!</p>
+              <LyketVote appId={entry.slug} />
+            </div>
+          </>
+        ) : (
+          <>
+            <div class="engagement-card vote-card">
+              <h3>Want to see this built?</h3>
+              <p>Vote to show your interest!</p>
+              <LyketVote appId={entry.slug} />
+            </div>
+
+            <div class="engagement-card notify-card">
+              <h3>Get notified if this gets built</h3>
+              <form class="notify-form" id="notify-form">
+                <input 
+                  type="email" 
+                  placeholder="your@email.com" 
+                  class="email-input"
+                  required
+                />
+                <button type="submit" class="btn btn-primary">Notify Me</button>
+              </form>
+            </div>
+
+            <div class="engagement-card pay-card">
+              <h3>Would you pay for this?</h3>
+              <div class="pay-buttons">
+                <button class="btn pay-btn" data-amount="low">$</button>
+                <button class="btn pay-btn" data-amount="medium">$$</button>
+                <button class="btn pay-btn" data-amount="high">$$$</button>
+              </div>
+              <p class="pay-hint">Click to indicate price range</p>
+            </div>
+          </>
+        )}
       </div>
 
       <section class="app-section comments-section">
@@ -252,11 +298,30 @@ const formattedDate = new Date(entry.data.lastUpdated).toLocaleDateString('en-US
       </div>
 
       <div class="sidebar-widget">
-        <h3>Developer Interest</h3>
-        <p>Are you a developer interested in building this?</p>
-        <a href={`mailto:erik@shupp.dev?subject=I want to help build ${entry.data.title}`} class="btn btn-primary">
-          I Could Help Build This
-        </a>
+        {entry.data.status === 'prototyping' && hasGitHub ? (
+          <>
+            <h3>🔧 Development</h3>
+            <div class="dev-actions">
+              <a href={entry.data.githubUrl} target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                <span class="github-icon">📂</span> Repository
+              </a>
+              <a href={`${entry.data.githubUrl}/issues/new`} target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+                <span class="github-icon">🐛</span> Report Bug
+              </a>
+              <a href={`${entry.data.githubUrl}/pulls`} target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+                <span class="github-icon">🔀</span> Pull Requests
+              </a>
+            </div>
+          </>
+        ) : (
+          <>
+            <h3>Developer Interest</h3>
+            <p>Are you a developer interested in building this?</p>
+            <a href={`mailto:erik@shupp.dev?subject=I want to help build ${entry.data.title}`} class="btn btn-primary">
+              I Could Help Build This
+            </a>
+          </>
+        )}
       </div>
 
       <div class="sidebar-widget stats-widget">
@@ -698,26 +763,34 @@ const formattedDate = new Date(entry.data.lastUpdated).toLocaleDateString('en-US
     margin-bottom: 1rem;
   }
 
-  .vote-button {
-    padding: 0.75rem 1.5rem;
-    background: #3b82f6;
+  .btn-primary {
+    background-color: #3b82f6;
     color: white;
-    border: none;
-    border-radius: 30px;
-    font-size: 1rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
   }
 
-  .vote-button:hover {
-    background: #2563eb;
-    transform: translateY(-2px);
+  .btn-primary:hover {
+    background-color: #2563eb;
   }
 
-  .vote-button.voted {
-    background: #22c55e;
-    cursor: default;
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--text-color);
+    border: 2px solid var(--border-color);
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+  }
+
+  .btn-success {
+    background-color: #22c55e;
+    color: white;
+  }
+
+  .btn-success:hover {
+    background-color: #16a34a;
   }
 
   .vote-display {
@@ -755,9 +828,7 @@ const formattedDate = new Date(entry.data.lastUpdated).toLocaleDateString('en-US
     color: #f3f4f6;
   }
 
-  .notify-btn {
-    width: 100%;
-  }
+
 
   .pay-buttons {
     display: flex;
@@ -767,35 +838,98 @@ const formattedDate = new Date(entry.data.lastUpdated).toLocaleDateString('en-US
   }
 
   .pay-btn {
-    padding: 0.5rem 1.5rem;
-    border: 2px solid #22c55e;
-    background: white;
-    color: #22c55e;
-    border-radius: 30px;
     font-size: 1.2rem;
     font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-
-  html.dark .pay-btn {
-    background: #1a1a22;
+    border: 2px solid #22c55e;
+    background: transparent;
+    color: #22c55e;
   }
 
   .pay-btn:hover {
-    background: #22c55e;
+    background-color: #22c55e;
     color: white;
+    border-color: #22c55e;
   }
 
   .pay-btn.selected {
-    background: #22c55e;
+    background-color: #22c55e;
     color: white;
+    border-color: #22c55e;
+  }
+
+  html.dark .pay-btn {
+    background: transparent;
+    color: #22c55e;
+    border-color: #22c55e;
   }
 
   .pay-hint {
     font-size: 0.8rem;
     color: var(--text-light);
     margin: 0;
+  }
+
+  /* GitHub-specific styles */
+  .github-card {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(59, 130, 246, 0.1));
+    border-left: 4px solid #3b82f6;
+  }
+
+  html.dark .github-card {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.15));
+  }
+
+  .contribute-card {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.05), rgba(34, 197, 94, 0.1));
+    border-left: 4px solid #22c55e;
+  }
+
+  html.dark .contribute-card {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1), rgba(34, 197, 94, 0.15));
+  }
+
+  .github-actions,
+  .contribute-actions,
+  .dev-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .github-icon {
+    margin-right: 0.5rem;
+  }
+
+  .dev-actions .btn {
+    justify-content: flex-start;
+    text-align: left;
+  }
+
+  /* Status indicator in header */
+  .status-badge.prototyping {
+    background: linear-gradient(135deg, #22c55e, #16a34a);
+    animation: pulse-green 2s infinite;
+  }
+
+  @keyframes pulse-green {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+  }
+
+  .github-badge {
+    margin-left: 0.5rem;
+    padding: 0.2rem 0.4rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 12px;
+    color: white;
+    text-decoration: none;
+    font-size: 0.8rem;
+    transition: all 0.3s ease;
+  }
+
+  .github-badge:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
   }
 
   /* Comments Section */

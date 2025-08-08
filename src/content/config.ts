@@ -202,6 +202,7 @@ const thoughtfulAppsCollection = defineCollection({
       title: z.string(),
       url: z.string().url(),
     })).optional(),
+    githubUrl: z.string().url().optional(), // GitHub repository URL for prototyping apps
     lastUpdated: z.date(),
     feasibility: z.number().min(1).max(5),
     excitement: z.number().min(1).max(5),

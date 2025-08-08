@@ -1,135 +1,135 @@
 ---
-title: "The Technology World's Bard: What I Learned About Myself at Product School's PMC Class (and Didn't)"
-description: "My critical reflection on Product School's Product Management course, which confirmed some practices but introduced unnecessary formality to a role that thrives on adaptability."
+title: "Product Manager by Nature: Reflections on Product School's PM Course"
+description: "How Product School's Product Management course confirmed what I already knew through experience and filled in the gaps in my product management knowledge."
 pubDate: 2025-05-16
 author: "E L Shupp"
 categories: ["Product Management", "Career Development"]
-tags: ["Product School", "Design Sprints", "AARRR Framework", "Product Market Fit", "Hero's Journey", "Professional Development"]
+tags: ["Product School", "Literary", "Interleaving"]
 readTime: "8 min read"
 featuredImage: "product-school-reflections"
 featured: true
 relatedProjects: null
 ---
 
-## The Everyman Role: When Formality Meets Intuition
+## Validation Through Education
 
-After seven years on my open source journey, I recently completed Product School's Product Management course with mixed feelings. On a scale of 1-10, I'd rate the experience around a 4 – it confirmed some practices I've developed naturally, but the excessive formality felt at odds with the fluid, adaptable nature of effective product management.
+After seven years on my open source journey, I recently completed Product School's Product Management course and had a striking realization: TLDR: I was Product Manager all along and people who told me to specialize in one thing, they can go fuck themselves. That advice  The course confirmed what my varied background hinted at—I'm someone who's a bit good at everything, which turns out to be exactly what product management requires.
 
-The course refreshed concepts I'd encountered in my 2019 Masters in Tech Management, my 2021 Nielsen Norman Group UX courses, and my 2020 SAFE Agile training. What I found most interesting wasn't what I learned, but the confirmation that much of what makes a good product manager is absorbed through osmosis while actually doing the work.
+The material refreshed concepts I'd encountered in my 2019 Masters in Tech Management, my 2021 Nielsen Norman Group UX courses, and my 2020 SAFE Agile training, but with the added lens of my hands-on experience. What struck me most was how much I'd absorbed through osmosis while working on various projects.
 
-## The Product Manager as Technology's Bard
+## Key Frameworks That Resonated
 
-If software development were a medieval guild, product managers would be the bards – able to speak the language of multiple disciplines, translate between specialists, and tell the story that weaves various elements together. Like the bard, we're not the deepest experts in any single craft, but our value comes from breadth rather than depth.
+The course covered numerous frameworks and methodologies, but several stood out as particularly valuable confirmations of best practices. Here are the major examples that resonated with my experience:
 
-The course confirmed this "jack of all trades" nature of the role, but perhaps overcompensated by attempting to formalize what is inherently an adaptive, context-sensitive position. The rigidity of some frameworks seemed to miss the fluid, improvisational aspects that make product management effective in the real world.
+### The Design Sprint: From Concept to Testing in Five Days
 
-## Frameworks: Useful Templates or Unnecessary Bureaucracy?
+Google Ventures' Design Sprint methodology provides a structured approach to rapidly prototype and test solutions. The course broke down the process in a way that crystallized its value for efficient product development:
 
-The course covered several frameworks that, while intellectually interesting, often felt like they formalized common sense rather than providing genuinely new insights. Here's my take on some of the major examples:
+#### Preparation Is Everything
 
-### Design Sprints: Structure for Creativity or Creativity in Spite of Structure?
+Before the sprint even begins, several critical elements need to be in place:
 
-Google Ventures' Design Sprint methodology offers a five-day process for rapidly prototyping and testing solutions:
+- **Problem Selection**: Choose a substantial problem worth solving
+- **Team Composition**: Assemble the right people, ensuring each person contributes roughly 1/*n* % of the time (with 4 people, each contributes about 25%)
+- **User Studies**: Schedule participants for testing in advance
+- **Facilitation**: Designate a neutral facilitator who can guide the process
+- **Tools**: Prepare all necessary materials (whiteboards, sticky notes, prototyping tools)
 
-#### Preparation:
-- Select a substantial problem
-- Assemble diverse team members
-- Schedule user testing participants
-- Designate a facilitator
-- Prepare necessary materials
+#### Day 1: Define and Understand
 
-#### The Five-Day Process:
-- **Day 1**: Define challenge and context
-- **Day 2**: Generate solutions (lightning demos, "Crazy Eights")
-- **Day 3**: Vote on promising concepts
-- **Day 4**: Build a prototype
-- **Day 5**: Test with users
+The first day focuses on creating clarity and shared understanding:
+- Define the sprint challenge in concrete terms
+- Identify a clear, tangible deliverable
+- Map the current context and user journey
+- Document what exists now and where the gaps are
 
-While this structure can be helpful, especially for teams without established processes, it sometimes felt like it added administrative overhead to what successful teams do organically. The best product teams I've worked with achieve the same outcomes without necessarily following such a rigid timeline.
+#### Day 2: Divergent Thinking
 
-### AARRR: Pirate Metrics or Obvious Progression?
+The second day is about generating as many potential solutions as possible:
+- Conduct lightning demos of inspiring examples
+- Brainstorm solutions individually and collectively
+- Use the "Crazy Eights" technique (fold paper, 8 concepts in 8 minutes)
+- Maintain individual work time to prevent groupthink
+- Keep ideas anonymous to reduce bias
 
-Dave McClure's AARRR framework outlines a sequence for growing products:
+#### Day 3: Convergent Thinking
+
+The third day narrows down to the most promising approaches:
+- Vote on the strongest concepts (dot voting + anonymous cards)
+- Discuss what makes certain ideas compelling
+- Use "super votes" from key stakeholders to break ties
+- Create a storyboard of the winning solution
+
+#### Day 4: Prototyping
+
+The fourth day transforms concepts into something testable:
+- Focus on creating the facade, not the actual product
+- Build only what's needed for user testing
+- Create a realistic enough experience to get genuine feedback
+
+#### Day 5: User Testing
+
+The final day validates the concept with real users:
+- Show the prototype to actual humans
+- Document both positive reactions and pain points
+- Identify patterns across multiple user sessions
+- Determine next steps based on feedback
+
+This structured approach to innovation struck me as the perfect balance between creativity and discipline—something I've intuitively developed in my own work but never formalized so effectively.
+
+### AARRR: The Pirate Metrics Framework
+
+Another framework that resonated was Dave McClure's AARRR framework (aptly nicknamed "Pirate Metrics"). This simple yet powerful model provides a clear sequence for growing and measuring product success:
 
 - **Acquisition**: How users discover your product
 - **Activation**: Their first meaningful experience
-- **Retention**: How often they return
-- **Referral**: Whether they tell others
+- **Retention**: How often they return and engage
+- **Referral**: Whether they tell others about it
 - **Revenue**: How the product monetizes
 
-While logically sound, this framework essentially codifies an obvious progression. Most product people intuitively understand that users need to find your product before they can use it, and need to use it before they'll pay for it. The framework provides a helpful acronym but doesn't offer particularly profound insights beyond common sense.
+What I appreciated most about AARRR is how it creates a logical progression of priorities. Too often, I've seen teams jump straight to revenue considerations before ensuring users can even discover and meaningfully engage with the product.
 
-### Product-Market Fit (PMF) Funnel: Quantifying the Qualitative
+### Product-Market Fit (PMF) Funnel
 
-The PMF funnel approach suggests:
-1. **Define** what PMF looks like
-2. **Quantify** indicators of PMF
-3. **Threshold**: Set targets
-4. **Roadmap**: Plan features to hit thresholds
+Perhaps the most valuable framework was the systematic approach to achieving product-market fit:
 
-This framework attempts to make PMF more concrete, which is valuable in theory. However, it sometimes risks reducing a nuanced, qualitative achievement to mere metrics. The best product managers I know sense PMF through a combination of quantitative and qualitative signals that resist such neat categorization.
+1. **Define**: Clearly articulate what PMF looks like for your specific product
+2. **Quantify**: Establish measurable indicators of PMF
+3. **Threshold**: Set concrete targets for each indicator
+4. **Roadmap**: Plan features specifically designed to hit those thresholds
+
+This structured approach transforms PMF from a vague concept into an actionable goal with clear metrics—something I wish I'd formalized earlier in my career.
 
 ### The Hero's Journey in Product Development
 
-Applying Joseph Campbell's narrative structure to product development:
-- **Call to Adventure**: The initial problem
-- **Supernatural Aid**: Tools and resources
-- **Threshold Crossing**: Commitment to using the product
-- **Transformation**: Enhanced user capabilities
+The course also explored how Joseph Campbell's Hero's Journey narrative structure applies to product development and user experience:
 
-This metaphorical framework was actually one of the more valuable concepts, as it provides a lens for understanding the emotional journey users take. Yet even here, the course presented it as more formulaic than the fluid, user-centered approach that effective product managers develop through experience.
+- **Call to Adventure**: The initial problem or opportunity
+- **Supernatural Aid**: Tools and resources that help users overcome challenges
+- **Threshold Crossing**: The decision to fully commit to using the product
+- **Transformation**: How the product changes the user's capabilities
 
-### MVC Architecture: Engineering Meets Product
+This framework provides a powerful lens for understanding the emotional journey users take with products, not just the functional aspects.
 
-The course revisited the Model-View-Controller architectural pattern as a way for product managers to understand software structure. While this pattern is fundamental to software engineering, the presentation felt more like a Computer Science 101 lecture than practical product management knowledge.
+## Confirmation Through Retrospection
 
-The breakdown was thorough but didn't bridge the gap between technical architecture and product thinking in a meaningful way. For someone already familiar with technical concepts, it was redundant; for non-technical PMs, it might have been too abstract without clearer connections to daily product work.
+What I found most valuable about the course wasn't necessarily new information, but rather the confirmation that many practices I'd developed through experience align with industry best practices. It was validating to see that my intuitive approaches to problem-solving and product development have theoretical underpinnings.
 
-### API-First Prototyping: The Objective-Mode-Prototype Loop
+The course helped me understand that my background—a mix of technical knowledge, design thinking, and business acumen—isn't just a collection of random skills but actually the ideal foundation for product management. Being "a bit good at everything" isn't a lack of specialization; it's precisely what makes for effective product leadership.
 
-Another framework introduced was the API-thinking prototyping cycle:
-1. **Objective**: Define what you need to learn
-2. **Mode**: Choose the appropriate prototyping method
-3. **Prototype**: Create the minimal viable test
-4. **Learn**: Gather insights from testing
-5. **Iterate**: Refine based on learnings
+## The Value of Formal Education in an Experience-Driven Field
 
-This approach has merit, especially for tech products, but again presented as overly formalized what experienced product people do naturally. It's essentially the scientific method repackaged for product development, which is useful conceptually but hardly revolutionary.
+While experience has been my primary teacher, I found tremendous value in formalizing that knowledge through education. The course helped me:
 
-## What I Actually Learned About Myself
+1. **Fill language gaps**: I now have proper terminology for concepts I've been applying intuitively
+2. **Identify blind spots**: Areas where my self-taught approach could be more structured
+3. **Validate approaches**: Confirmation that my instincts align with best practices
+4. **Build confidence**: Assurance that my generalist tendencies are an asset, not a liability
 
-The most valuable takeaway wasn't from the course content itself, but from my reaction to it. I realized that after years of hands-on product work, I've developed a more organic, adaptive approach that sometimes conflicts with overly formalized methodologies.
+## Looking Forward
 
-What made me a "4 out of 10" product manager in the course's eyes might actually be strengths in the real world:
-- Flexibility over rigid frameworks
-- Intuition informed by experience
-- Comfort with ambiguity
-- Ability to adapt approaches to context
-- Preference for simplicity over process-for-process-sake
+Armed with this formal framework to complement my practical experience, I'm excited to apply these structured approaches more intentionally. The Design Sprint methodology, in particular, offers a clear path to more efficient innovation and validation.
 
-### The Product Manager as a Multidisciplinary Force
+For others on a similar journey, I'd recommend finding the balance between hands-on experience and formal education. Each enhances the other, creating a more complete product manager than either could produce alone.
 
-One concept that did resonate was the multidisciplinary nature of the product role. The idea that a PM stands at the intersection of design, engineering, marketing, business development, and customer experience rings true. However, rather than being a jack-of-all-trades-master-of-none, successful PMs develop enough fluency in each discipline to facilitate effective collaboration and decision-making.
-
-### DIY Retro Tools: Practical Applications Missing
-
-The course sparked one practical idea: creating my own retrospective tool. Having needed facilitated retrospectives twice at my company but finding the cost prohibitive, I realized I could develop a shared session format that would achieve similar outcomes without the expense.
-
-Interestingly, this practical application wasn't directly taught in the course but emerged from my own problem-solving approach to real-world challenges. This highlights a key limitation of formalized PM education – the most valuable solutions often come from creative adaptation to specific contexts rather than applying pre-packaged frameworks.
-
-## The Value of Formality vs. The Cost of Bureaucracy
-
-While there's certainly value in formalizing knowledge and creating shared vocabularies, the course sometimes crossed into what felt like unnecessary bureaucracy. Effective product management often requires:
-
-1. **Rapid adaptation** rather than slavish adherence to frameworks
-2. **Contextual judgment** over one-size-fits-all approaches
-3. **Elegant simplicity** instead of process complexity
-4. **Practical outcomes** over methodological purity
-
-## Looking Forward: The Bard's Path
-
-Moving forward, I'll take the useful vocabulary and structured thinking from the course while maintaining the adaptive, intuitive approach that has served me well. The technology world needs its bards – generalists who can speak multiple languages, adapt to changing contexts, and weave coherent narratives from diverse inputs.
-
-For others considering formal product management education, I'd suggest viewing frameworks as tools in your toolkit rather than rigid rules to follow. The most effective product managers I know use formal methodologies as starting points, then adapt based on context and experience.
-
-In the end, product management might be one field where too much formality can actually hinder success. Like the medieval bard, the best product managers combine structured knowledge with improvisation, adaptability, and a keen sense of their audience's needs – qualities that resist complete formalization, no matter how comprehensive the course.
+Product management may be a field where you're always "a bit good at everything," but with intentional education and reflective practice, that breadth becomes your greatest strength rather than a sign of indecision.

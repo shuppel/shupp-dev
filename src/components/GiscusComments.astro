@@ -11,10 +11,10 @@ export interface Props {
 }
 
 const {
-  repo = 'your-username/your-repo', // Replace with your GitHub repo
-  repoId = 'your-repo-id', // Replace with your repo ID
-  category = 'App Ideas',
-  categoryId = 'your-category-id', // Replace with your category ID
+  repo = import.meta.env.PUBLIC_GISCUS_REPO || 'shuppel/shupp-dev',
+  repoId = import.meta.env.PUBLIC_GISCUS_REPO_ID || 'R_kgDOOo6GIw',
+  category = import.meta.env.PUBLIC_GISCUS_CATEGORY || 'Ideas',
+  categoryId = import.meta.env.PUBLIC_GISCUS_CATEGORY_ID || 'DIC_kwDOOo6GI84Ct6QT',
   mapping = 'pathname',
   term,
   reactionsEnabled = true,
@@ -37,7 +37,7 @@ const {
   script.setAttribute('data-strict', '0');
   script.setAttribute('data-reactions-enabled', reactionsEnabled ? '1' : '0');
   script.setAttribute('data-emit-metadata', '0');
-  script.setAttribute('data-input-position', 'top');
+  script.setAttribute('data-input-position', 'bottom');
   script.setAttribute('data-theme', theme);
   script.setAttribute('data-lang', 'en');
   script.setAttribute('data-loading', 'lazy');
