@@ -1,7 +1,7 @@
 ---
 title: "Nurture"
 oneLiner: "Relationship management app that analyzes your social interactions to help grow, sustain, and prune relationships across different friendship strata"
-status: "prototype"
+status: "prototyping"
 category: "Social"
 problem: "We struggle to maintain healthy relationships across different social circles. Without understanding the natural layers of friendship, we either neglect important connections or invest energy in relationships that don't align with our capacity or values."
 mainMockup: "https://www.tldraw.com/s/v2_c_example"

@@ -34,6 +34,9 @@ const statusConfig = {
       <h1>Thoughtful App Co.</h1>
       <p class="lead">A collection of app concepts and ideas. Some practical, some moonshots, all thoughtfully designed.</p>
       <p class="sub-lead">Vote for the ideas you'd like to see built!</p>
+      <div class="legal-notice">
+        <p>⚖️ All app concepts are protected intellectual property. <a href="/legal-notice">View Legal Notice</a></p>
+      </div>
     </section>
 
     <section class="apps-filters">
@@ -642,6 +645,40 @@ const statusConfig = {
     max-width: 600px;
     margin-left: auto;
     margin-right: auto;
+  }
+
+  /* Legal Notice */
+  .legal-notice {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    position: relative;
+    z-index: 1;
+  }
+
+  html.dark .legal-notice {
+    background: rgba(0, 0, 0, 0.2);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .legal-notice p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--text-color);
+    font-weight: 500;
+  }
+
+  .legal-notice a {
+    color: #3b82f6;
+    text-decoration: underline;
+    transition: color 0.3s ease;
+  }
+
+  .legal-notice a:hover {
+    color: #8b5cf6;
   }
 
   /* Responsive */
