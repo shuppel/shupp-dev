@@ -1,28 +1,29 @@
 ---
 title: "Nurture"
-oneLiner: "Relationship management app that trades screen time for quality time with loved ones"
-status: "concept"
+oneLiner: "Relationship management app that analyzes your social interactions to help grow, sustain, and prune relationships across different friendship strata"
+status: "prototype"
 category: "Social"
-problem: "We spend too much time on screens and not enough time nurturing real relationships. It's easy to lose touch with friends, family, and colleagues when we're caught up in digital distractions."
+problem: "We struggle to maintain healthy relationships across different social circles. Without understanding the natural layers of friendship, we either neglect important connections or invest energy in relationships that don't align with our capacity or values."
 mainMockup: "https://www.tldraw.com/s/v2_c_example"
 features:
-  - name: "Screen Time Trading"
-    what: "Converts saved screen time into relationship time credits"
-    why: "Creates tangible incentive to reduce device usage"
+  - name: "Relationship Strata Analysis"
+    what: "Analyzes calls, texts, and social media to categorize relationships into layers: 250 acquaintances, herd, friends, close friends, inner circle, and intimate partners/offspring"
+    why: "Understanding relationship layers helps allocate emotional energy appropriately"
     mockup: "https://www.tldraw.com/s/v2_c_example"
-  - name: "Smart Reminders"
-    what: "Push notifications with guilt-inducing messages when you haven't connected"
-    why: "Accountability helps maintain relationships"
+  - name: "Growth Techniques"
+    what: "Personalized strategies to deepen relationships based on current strata position"
+    why: "Different relationship levels require different nurturing approaches"
     mockup: "https://www.tldraw.com/s/v2_c_example"
-  - name: "Quick Connect Options"
-    what: "One-tap suggestions for calls, coffee, or quick messages"
-    why: "Reduces friction in reaching out"
+  - name: "Sustain & Prune Tools"
+    what: "Recommendations for maintaining healthy boundaries and letting go of draining relationships"
+    why: "Emotional capacity is limited - pruning creates space for meaningful connections"
 userJourney:
-  - "User spends 3 hours on social media"
-  - "App shows they could have had 6 coffee chats"
-  - "Guilt notification: 'You haven't called Mom in 2 weeks'"
-  - "User taps to schedule a call"
-  - "App tracks relationship health improvement"
+  - "User connects app to phone/social media for initial analysis"
+  - "App categorizes all relationships into strata layers"
+  - "User sees visual map of their social ecosystem"
+  - "App suggests moving friend from 'herd' to 'close friends' with specific actions"
+  - "User receives techniques for pruning energy-draining acquaintances"
+  - "Dashboard shows relationship health across all strata"
 technicalArchitecture:
   frontend: "React Native for mobile"
   backend: "Node.js with Express"
@@ -33,19 +34,22 @@ technicalArchitecture:
     - "Push notification services"
   hosting: "AWS for scalability"
 moonshotFeatures:
-  - "AI-powered conversation starters based on shared history"
-  - "Group relationship tracking for friend circles"
-  - "Relationship health score with predictive alerts"
-  - "Integration with wearables for in-person time tracking"
+  - "AI-powered strata migration predictions based on interaction patterns"
+  - "Dunbar number optimization - maintaining exactly 150 meaningful connections"
+  - "Relationship energy ROI calculator"
+  - "Automated relationship pruning suggestions with graceful exit strategies"
+  - "Push notifications tailored to each strata's communication frequency"
 marketResearch:
   similarTo: ["Monica CRM", "Dex", "Clay"]
-  differentBecause: "Focuses on guilt and screen time trade-offs"
-  targetUsers: "Busy professionals who value relationships but struggle with time"
+  differentBecause: "Uses scientific friendship strata model and focuses on individual's relationship capacity management"
+  targetUsers: "People who want to be intentional about their social energy and relationship investments"
 openQuestions:
   - "How to measure relationship quality objectively?"
   - "Balance between helpful and annoying notifications?"
   - "Privacy concerns with relationship tracking?"
 resources:
+  - title: "GitHub Repository"
+    url: "https://github.com/shuppel/nurture"
   - title: "The Loneliness Epidemic"
     url: "https://www.health.harvard.edu/blog/the-loneliness-epidemic"
   - title: "Screen Time Statistics"
@@ -58,4 +62,4 @@ voteCount: 0
 
 # Nurture
 
-Transform your screen time into meaningful connections with the people who matter most.
+Understand and optimize your relationship ecosystem through scientific friendship strata analysis.
