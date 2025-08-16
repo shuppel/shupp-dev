@@ -27,9 +27,9 @@ socialLinks:
   website: https://shupp.dev
 skills:
   - Full-Stack Development
-  - TypeScript
-  - React
-  - Cron Jobs & Scripts
+  - TypeScript & React
+  - Machine Optimized Prompt Engineering
+  - O(n) Scoping
   - Cloud Architecture
   - API Development
   - Automation & Scripting

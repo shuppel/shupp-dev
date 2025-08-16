@@ -1,7 +1,7 @@
 ---
-import { getCollection, getEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
-import { type CollectionEntry } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
 import RelatedProjects from '../../components/RelatedProjects.astro';
 
 export async function getStaticPaths() {
@@ -12,9 +12,9 @@ export async function getStaticPaths() {
   }));
 }
 
-type Props = {
+interface Props {
   entry: CollectionEntry<'blog'>;
-};
+}
 
 const { entry } = Astro.props;
 const { Content } = await entry.render();

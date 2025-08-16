@@ -315,6 +315,12 @@ const { title, description = "Professional Portfolio and Blog for Software Engin
     will-change: transform, box-shadow;
   }
 
+  /* Better contrast for primary buttons in light mode */
+  .btn-primary {
+    background-color: var(--color-secondary);
+    color: var(--color-light);
+  }
+
   .btn::before {
     content: '';
     position: absolute;
@@ -332,6 +338,11 @@ const { title, description = "Professional Portfolio and Blog for Software Engin
     transform: translateY(-2px) scale(1.03);
     box-shadow: 0 7px 14px rgba(20, 8, 14, 0.2), 0 3px 6px rgba(20, 8, 14, 0.1);
     color: white;
+  }
+
+  .btn-primary:hover {
+    background-color: var(--color-dark);
+    color: var(--color-light);
   }
 
   .btn:hover::before {

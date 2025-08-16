@@ -13,10 +13,10 @@ export async function getStaticPaths() {
   }));
 }
 
-type Props = {
+interface Props {
   entry: CollectionEntry<'projects'>;
   allProjects: CollectionEntry<'projects'>[];
-};
+}
 
 const { entry, allProjects } = Astro.props;
 const { Content } = await entry.render();

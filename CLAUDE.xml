@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-config>
+  <metadata>
+    <name>shupp.dev</name>
+    <description>Personal portfolio and blog website for Erikk Shupp</description>
+    <framework>Astro</framework>
+    <version>0.0.3</version>
+    <lastUpdated>2025-08-15</lastUpdated>
+  </metadata>
+  
+  <configuration>
+    <contact>
+      <email primary="true">erikk@shupp.dev</email>
+      <configLocation>/src/config/site.ts</configLocation>
+    </contact>
+    
+    <owner>
+      <name>Erikk Shupp</name>
+      <title>Product Manager &amp; Software Engineer</title>
+      <location>Arlington, Virginia</location>
+      <tagline>building apps for hoomans</tagline>
+    </owner>
+    
+    <social>
+      <github>https://github.com/shuppel</github>
+      <linkedin>https://www.linkedin.com/in/shupp-erikk/</linkedin>
+      <bluesky>https://bsky.app/profile/shupp.dev</bluesky>
+    </social>
+  </configuration>
+  
+  <architecture>
+    <structure>
+      <item type="framework">Astro with Content Collections</item>
+      <item type="styling">CSS with dark mode support</item>
+      <item type="hosting">Netlify</item>
+      <item type="content">Markdown with frontmatter</item>
+    </structure>
+    
+    <features>
+      <feature>Portfolio showcase with project previews (thum.io integration)</feature>
+      <feature>Blog with categories and tags</feature>
+      <feature>Thoughtful App Co. - App idea showcase</feature>
+      <feature>Development roadmap</feature>
+      <feature>Dark mode toggle</feature>
+      <feature>SEO optimized</feature>
+    </features>
+    
+    <contentCollections>
+      <collection name="authors" schema="strict" />
+      <collection name="blog" schema="strict" />
+      <collection name="credentials" schema="strict" />
+      <collection name="education" schema="strict" />
+      <collection name="experience" schema="strict" />
+      <collection name="principles" schema="strict" />
+      <collection name="projects" schema="strict" />
+      <collection name="resume" schema="strict" />
+      <collection name="roadmap" schema="strict" />
+      <collection name="skills" schema="strict" />
+      <collection name="thoughtful-apps" schema="strict" />
+    </contentCollections>
+  </architecture>
+  
+  <development>
+    <scripts>
+      <script name="dev" command="astro dev" description="Start development server" />
+      <script name="build" command="astro build" description="Build for production" />
+      <script name="preview" command="astro preview" description="Preview production build" />
+      <script name="lint" command="eslint . --ext .ts,.tsx,.astro" description="Run ESLint" />
+      <script name="lint:fix" command="eslint . --ext .ts,.tsx,.astro --fix" description="Fix ESLint issues" />
+      <script name="typecheck" command="astro check &amp;&amp; tsc --noEmit" description="Type check" />
+    </scripts>
+    
+    <linting>
+      <tool>ESLint with TypeScript and Astro plugins</tool>
+      <rules>
+        <rule name="@typescript-eslint/no-explicit-any" level="error" />
+        <rule name="@typescript-eslint/explicit-function-return-type" level="warn" />
+        <rule name="@typescript-eslint/strict-boolean-expressions" level="error" />
+      </rules>
+    </linting>
+    
+    <environmentVariables>
+      <variable name="ENABLE_TLDRAW" default="false" description="Feature flag for TLDraw integration" />
+    </environmentVariables>
+  </development>
+  
+  <skills>
+    <technical>
+      <skill>Full-Stack Development</skill>
+      <skill>TypeScript &amp; React</skill>
+      <skill>Machine Optimized Prompt Engineering</skill>
+      <skill>O(n) Scoping</skill>
+      <skill>Cloud Architecture</skill>
+      <skill>API Development</skill>
+      <skill>Automation &amp; Scripting</skill>
+      <skill>SEO Optimization</skill>
+    </technical>
+    
+    <soft>
+      <skill>Product Management</skill>
+      <skill>Marketing &amp; Branding</skill>
+      <skill>User Experience</skill>
+      <skill>UI Design</skill>
+      <skill>UX Management</skill>
+      <skill>IT Architecture</skill>
+      <skill>Scrum Master</skill>
+      <skill>Business Development</skill>
+    </soft>
+    
+    <interests>
+      <interest>Barefoot Running</interest>
+      <interest>Digital Wellness</interest>
+      <interest>Community Building</interest>
+      <interest>Open Source Learning</interest>
+      <interest>Mental Health Technology</interest>
+      <interest>Local-First Software</interest>
+      <interest>Human-Centered Design</interest>
+      <interest>Rugby (Union)</interest>
+    </interests>
+  </skills>
+  
+  <recentUpdates>
+    <update date="2025-08-15">Added ESLint configuration with strict TypeScript rules</update>
+    <update date="2025-08-15">Fixed primary button contrast in light mode</update>
+    <update date="2025-08-15">Updated skills: combined TypeScript/React, added Machine Optimized Prompt Engineering and O(n) Scoping</update>
+    <update date="2025-08-14">Added Washington Rugby project with thum.io preview</update>
+    <update date="2025-08-14">Fixed dark mode styling issues</update>
+    <update date="2025-08-14">Created centralized site configuration</update>
+    <update date="2025-08-14">Updated About page with authentic bio and Arlington, VA location</update>
+  </recentUpdates>
+  
+  <guidelines>
+    <guideline priority="high">
+      <rule>Never use type 'any' - always use precise types</rule>
+      <enforcement>ESLint rule @typescript-eslint/no-explicit-any set to error</enforcement>
+    </guideline>
+    
+    <guideline priority="high">
+      <rule>All email links must use erikk@shupp.dev</rule>
+      <location>/src/config/site.ts</location>
+    </guideline>
+    
+    <guideline priority="medium">
+      <rule>Maintain dark mode support for all new components</rule>
+      <pattern>Use CSS variables defined in Layout.astro</pattern>
+    </guideline>
+    
+    <guideline priority="medium">
+      <rule>Follow existing code conventions and patterns</rule>
+      <description>Check neighboring files and existing components before creating new ones</description>
+    </guideline>
+  </guidelines>
+</project-config>

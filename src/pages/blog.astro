@@ -1,7 +1,6 @@
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
-import CardStyles from '../components/CardStyles.astro';
 
 // Get all blog posts
 const allPosts = await getCollection('blog');
@@ -14,13 +13,9 @@ const posts = allPosts.sort((a, b) => {
 // Get unique categories
 const categories = [...new Set(allPosts.flatMap(post => post.data.categories))];
 
-// Get unique tags
-const tags = [...new Set(allPosts.flatMap(post => post.data.tags || []))];
-
 // Pagination configuration
 const postsPerPage = 5;
 const totalPages = Math.ceil(posts.length / postsPerPage);
-const currentPage = 1; // We'll update this via client-side JS
 ---
 
 <Layout title="Blog" description="Articles and insights on product management, software development, UX design, and more">

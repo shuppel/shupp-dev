@@ -14,9 +14,9 @@ export async function getStaticPaths() {
   }));
 }
 
-type Props = {
+interface Props {
   entry: CollectionEntry<'thoughtful-apps'>;
-};
+}
 
 const { entry } = Astro.props;
 const { Content } = await entry.render();
@@ -321,7 +321,7 @@ const showTLDraw = isFeatureEnabled('enableTLDraw');
           <>
             <h3>Developer Interest</h3>
             <p>Are you a developer interested in building this?</p>
-            <a href={`mailto:erik@shupp.dev?subject=I want to help build ${entry.data.title}`} class="btn btn-primary">
+            <a href={`mailto:erikk@shupp.dev?subject=I want to help build ${entry.data.title}`} class="btn btn-primary">
               I Could Help Build This
             </a>
           </>
