@@ -25,7 +25,13 @@ const author = authorEntries[0]; // Using the first author as this is a personal
           ))}
           
           <h3>Professional Philosophy</h3>
-          <p>I believe that great products come from a deep understanding of user needs, technical excellence, and thoughtful design. My goal is always to create solutions that are not only functional but also delightful to use.</p>
+          <ul class="philosophy-list">
+            <li><strong>Fitts Optimizing</strong> - Making the important things easy to reach</li>
+            <li><strong>Kotter × Parkinson's Law²</strong> - Create urgency to fill the day</li>
+            <li><strong>Optimize For Outcomes</strong> - Results over process, always</li>
+            <li><strong>All Meetings are F(x)'s</strong> - Every meeting must have inputs and outputs</li>
+            <li><strong>XML Prompt Chain Shotting</strong> - Structured thinking for complex problems</li>
+          </ul>
         </div>
         
         <div class="profile-sidebar">
@@ -243,6 +249,36 @@ const author = authorEntries[0]; // Using the first author as this is a personal
   .about-content p {
     margin-bottom: 1.2rem;
     line-height: 1.7;
+  }
+
+  .philosophy-list {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0;
+  }
+
+  .philosophy-list li {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--border-color);
+    line-height: 1.6;
+  }
+
+  html.dark .philosophy-list li {
+    border-bottom-color: #374151;
+  }
+
+  .philosophy-list li:last-child {
+    border-bottom: none;
+  }
+
+  .philosophy-list strong {
+    color: var(--color-tertiary);
+    display: inline-block;
+    margin-right: 0.5rem;
+  }
+
+  html.dark .philosophy-list strong {
+    color: var(--color-accent);
   }
 
   .profile-sidebar {
