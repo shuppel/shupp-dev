@@ -1,11 +1,10 @@
 ---
 title: "Portfolio Website"
 description: "A modern, responsive portfolio website built with Astro to showcase my skills and projects"
-projectDate: 2025-02-15
+projectDate: 2025-06-01
 completed: true
 technologies: ["Astro", "TypeScript", "CSS", "HTML"]
 featured: true
-projectImage: "portfolio-website"
 projectUrl: "https://shupp.dev"
 githubUrl: "https://github.com/user/portfolio-website"
 relatedBlogPosts: ["ai-in-product-management", "better-user-experiences", "deployment-netlify-toml"]

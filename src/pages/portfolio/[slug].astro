@@ -3,21 +3,26 @@ import { getCollection, getEntry } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import { type CollectionEntry } from 'astro:content';
 import RelatedBlogPosts from '../../components/RelatedBlogPosts.astro';
+import { siteConfig } from '../../config/site';
 
 export async function getStaticPaths() {
   const projectEntries = await getCollection('projects');
   return projectEntries.map(entry => ({
     params: { slug: entry.slug },
-    props: { entry },
+    props: { entry, allProjects: projectEntries },
   }));
 }
 
 type Props = {
   entry: CollectionEntry<'projects'>;
+  allProjects: CollectionEntry<'projects'>[];
 };
 
-const { entry } = Astro.props;
+const { entry, allProjects } = Astro.props;
 const { Content } = await entry.render();
+
+// Get other projects for the sidebar (exclude current project)
+const otherProjects = allProjects.filter(project => project.slug !== entry.slug);
 
 // Format the date
 const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US', {
@@ -90,24 +95,24 @@ const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US
         </div>
       </div>
 
-      <div class="sidebar-widget related-projects">
-        <h3 class="widget-title">Related Projects</h3>
-        <div class="related-projects-list">
-          <a href="/portfolio/project-1" class="related-project">
-            <div class="related-project-title">Project Title 1</div>
-            <div class="related-project-tech">Astro, React, TypeScript</div>
-          </a>
-          <a href="/portfolio/project-2" class="related-project">
-            <div class="related-project-title">Project Title 2</div>
-            <div class="related-project-tech">Node.js, Express, MongoDB</div>
-          </a>
+      {otherProjects.length > 0 && (
+        <div class="sidebar-widget related-projects">
+          <h3 class="widget-title">Other Projects</h3>
+          <div class="related-projects-list">
+            {otherProjects.map(project => (
+              <a href={`/portfolio/${project.slug}`} class="related-project">
+                <div class="related-project-title">{project.data.title}</div>
+                <div class="related-project-tech">{project.data.technologies.slice(0, 3).join(', ')}</div>
+              </a>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
 
       <div class="sidebar-widget contact-cta">
         <h3 class="widget-title">Interested in working together?</h3>
         <p>I'm always open to discussing product design or partnership opportunities.</p>
-        <a href="/contact" class="btn btn-primary">Get in Touch</a>
+        <a href={`mailto:${siteConfig.email}`} class="btn btn-primary">Get in Touch</a>
       </div>
     </aside>
   </div>
@@ -287,10 +292,30 @@ const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US
     color: #f3f4f6;
   }
 
+  /* Markdown Typography */
   .project-body h2 {
     font-size: 1.8rem;
     margin: 2.5rem 0 1.5rem;
+    padding-top: 2rem;
     color: var(--text-color);
+    font-weight: 700;
+    position: relative;
+    padding-bottom: 0.5rem;
+  }
+
+  .project-body h2::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background: linear-gradient(to right, var(--color-tertiary), var(--color-secondary));
+    border-radius: 3px;
+  }
+
+  .project-body h2:first-child {
+    margin-top: 0;
   }
 
   html.dark .project-body h2 {
@@ -300,16 +325,38 @@ const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US
   .project-body h3 {
     font-size: 1.4rem;
     margin: 2rem 0 1rem;
+    padding-top: 1.5rem;
     color: var(--text-color);
+    font-weight: 600;
+  }
+
+  .project-body h3:first-child {
+    margin-top: 0;
   }
 
   html.dark .project-body h3 {
     color: #f3f4f6;
   }
 
-  .project-body p {
-    margin-bottom: 1.5rem;
+  .project-body h4 {
+    font-size: 1.1rem;
+    margin: 1.5rem 0 0.75rem;
+    padding-top: 1rem;
     color: var(--text-color);
+    font-weight: 600;
+  }
+
+  html.dark .project-body h4 {
+    color: #f3f4f6;
+  }
+
+  .project-body p {
+    margin-bottom: 1.25rem;
+    color: var(--text-color);
+  }
+
+  .project-body p:last-child {
+    margin-bottom: 0;
   }
 
   html.dark .project-body p {
@@ -317,8 +364,8 @@ const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US
   }
 
   .project-body ul, .project-body ol {
-    margin-bottom: 1.5rem;
-    padding-left: 2rem;
+    margin: 1rem 0 1.5rem;
+    padding-left: 1.5rem;
   }
 
   html.dark .project-body ul,
@@ -328,6 +375,94 @@ const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US
 
   .project-body li {
     margin-bottom: 0.5rem;
+    line-height: 1.6;
+  }
+
+  .project-body li:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Nested lists */
+  .project-body li ul,
+  .project-body li ol {
+    margin-top: 0.5rem;
+    margin-bottom: 0;
+  }
+
+  /* Strong text */
+  .project-body strong {
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  html.dark .project-body strong {
+    color: #f3f4f6;
+  }
+
+  /* Links */
+  .project-body a {
+    color: var(--primary-color);
+    text-decoration: underline;
+    transition: color 0.2s ease;
+  }
+
+  .project-body a:hover {
+    color: var(--primary-dark);
+  }
+
+  /* Code blocks */
+  .project-body code {
+    background: var(--background-alt);
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    font-size: 0.9em;
+    font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+  }
+
+  html.dark .project-body code {
+    background: rgba(255, 255, 255, 0.1);
+  }
+
+  .project-body pre {
+    background: var(--background-alt);
+    padding: 1rem;
+    border-radius: 6px;
+    overflow-x: auto;
+    margin: 1.5rem 0;
+  }
+
+  html.dark .project-body pre {
+    background: rgba(0, 0, 0, 0.3);
+  }
+
+  .project-body pre code {
+    background: transparent;
+    padding: 0;
+  }
+
+  /* Blockquotes */
+  .project-body blockquote {
+    border-left: 4px solid var(--color-tertiary);
+    padding-left: 1.5rem;
+    margin: 1.5rem 0;
+    font-style: italic;
+    color: var(--text-light);
+  }
+
+  html.dark .project-body blockquote {
+    border-left-color: var(--color-accent);
+    color: #9ca3af;
+  }
+
+  /* Horizontal rules */
+  .project-body hr {
+    border: none;
+    border-top: 1px solid var(--border-color);
+    margin: 2rem 0;
+  }
+
+  html.dark .project-body hr {
+    border-top-color: #374151;
   }
 
   .project-technologies {

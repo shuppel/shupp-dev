@@ -2,9 +2,13 @@
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import CardStyles from '../components/CardStyles.astro';
+import { isFeatureEnabled } from '../config/features';
 
 // Get all thoughtful apps
 const allApps = await getCollection('thoughtful-apps');
+
+// Check if TLDraw is enabled
+const showTLDraw = isFeatureEnabled('enableTLDraw');
 
 // Sort apps by excitement and feasibility (for default view)
 const apps = allApps.sort((a, b) => {
@@ -32,8 +36,8 @@ const statusConfig = {
   <div class="thoughtful-apps-page">
     <section class="apps-hero">
       <h1>Thoughtful App Co.</h1>
-      <p class="lead">A collection of app concepts and ideas. Some practical, some moonshots, all thoughtfully designed.</p>
-      <p class="sub-lead">Vote for the ideas you'd like to see built!</p>
+      <p class="lead">Building apps for hoomans. A collection of thoughtful concepts and ideas.</p>
+      <p class="sub-lead">Some practical, some moonshots, all designed with real people in mind.</p>
       <div class="legal-notice">
         <p>⚖️ All app concepts are protected intellectual property. <a href="/legal-notice">View Legal Notice</a></p>
       </div>

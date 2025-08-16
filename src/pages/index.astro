@@ -22,8 +22,9 @@ const featuredProjects = allProjects
 <Layout title="Home">
   <section class="hero">
     <div class="hero-content">
-      <h1>Chief Vibe Officer</h1>
-      <p class="hero-subtitle">product. design. prompt guru. vibe coder.</p>
+      <h1>Erikk Shupp</h1>
+      <p class="hero-subtitle">building apps for hoomans</p>
+      <p class="hero-description">Product Manager & Software Engineer in Arlington, VA</p>
       <div class="hero-buttons">
         <a href="/portfolio" class="btn btn-primary">View Portfolio</a>
         <a href="/about" class="btn btn-secondary">About Me</a>
@@ -36,18 +37,18 @@ const featuredProjects = allProjects
     <div class="skills-grid">
       <div class="skill-card">
         <h3>Software Development</h3>
-        <p>Experienced in full-stack development with modern frameworks and languages.</p>
+        <p>Full-stack expertise in TypeScript, React, and modern web technologies.</p>
       </div>
       <div class="skill-card">
         <h3>Product Management</h3>
-        <p>Strategic planning, roadmapping, and bringing products from concept to market.</p>
+        <p>Building thoughtful products that solve real hooman problems.</p>
       </div>
       <div class="skill-card">
-        <h3>Technical Leadership</h3>
-        <p>Leading engineering teams and technical initiatives with a focus on results.</p>
+        <h3>Automation & Scripting</h3>
+        <p>Cron jobs, webhooks, and custom scripts that make life easier.</p>
       </div>
       <div class="skill-card">
-        <h3>UX/UI Design</h3>
+        <h3>Human-Centered Design</h3>
         <p>Creating intuitive user experiences and visually appealing interfaces.</p>
       </div>
     </div>
@@ -221,17 +222,31 @@ const featuredProjects = allProjects
   }
 
   .hero-subtitle {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     color: var(--text-light);
-    margin-bottom: 2.5rem;
+    margin-bottom: 0.5rem;
     opacity: 0;
     animation: subtitle-fade 0.8s 0.3s forwards cubic-bezier(0.25, 0.8, 0.25, 1);
     transition: color 0.3s ease;
+    font-weight: 500;
   }
 
   html.dark .hero-subtitle {
     color: #f3f4f6;
     text-shadow: 0 1px 4px rgba(20,8,14,0.5);
+  }
+
+  .hero-description {
+    font-size: 1.1rem;
+    color: var(--text-light);
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: subtitle-fade 0.8s 0.5s forwards cubic-bezier(0.25, 0.8, 0.25, 1);
+    transition: color 0.3s ease;
+  }
+
+  html.dark .hero-description {
+    color: #d1d5db;
   }
 
   @keyframes subtitle-fade {

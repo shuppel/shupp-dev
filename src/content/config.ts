@@ -72,6 +72,7 @@ const authorCollection = defineCollection({
       website: z.string().url().optional(),
     }),
     skills: z.array(z.string()).optional(),
+    softSkills: z.array(z.string()).optional(),
     interests: z.array(z.string()).optional(),
   }),
 });

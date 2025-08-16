@@ -227,8 +227,22 @@ All content uses Zod schema validation defined in `/src/content/config.ts` to en
 
 1. Clone this repository
 2. Install dependencies with `npm install`
-3. Start the development server with `npm run dev`
-4. Navigate to `localhost:4321` in your browser
+3. (Optional) Copy `.env.example` to `.env` and configure feature flags
+4. Start the development server with `npm run dev`
+5. Navigate to `localhost:4321` in your browser
+
+## Feature Flags
+
+The site includes feature flags for controlling various features:
+
+- **`ENABLE_TLDRAW`** - Enable/disable TLDraw mockup embeds in Thoughtful App Co. pages (default: `false`)
+  - When disabled, mockup sections are completely hidden
+  - Set to `true` to show interactive TLDraw mockups
+
+To enable feature flags:
+1. Copy `.env.example` to `.env`
+2. Set the desired flag values
+3. Restart the development server
 
 ## Customization
 

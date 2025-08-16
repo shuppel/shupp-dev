@@ -269,6 +269,10 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
     overflow: hidden;
   }
 
+  html.dark .post-content {
+    background: #23232b;
+  }
+
   .post-header {
     padding: 2.5rem 2.5rem 2rem;
   }
@@ -281,10 +285,18 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
     gap: 1.5rem;
   }
 
+  html.dark .post-meta {
+    color: #9ca3af;
+  }
+
   .post-title {
     font-size: 2.5rem;
     margin-bottom: 1.5rem;
     line-height: 1.2;
+  }
+
+  html.dark .post-title {
+    color: #f3f4f6;
   }
 
   .post-categories {
@@ -339,9 +351,17 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
     font-weight: 600;
   }
 
+  html.dark .author-name {
+    color: #f3f4f6;
+  }
+
   .author-title {
     font-size: 0.85rem;
     color: var(--text-light);
+  }
+
+  html.dark .author-title {
+    color: #9ca3af;
   }
 
   .post-featured-image {
@@ -367,16 +387,30 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
     line-height: 1.7;
   }
 
+  html.dark .post-body {
+    color: #e5e7eb;
+  }
+
   .post-body h2 {
     font-size: 1.8rem;
     margin: 2.5rem 0 1.5rem;
+    padding-top: 2rem;
     color: var(--text-color);
+  }
+
+  html.dark .post-body h2 {
+    color: #f3f4f6;
   }
 
   .post-body h3 {
     font-size: 1.4rem;
     margin: 2rem 0 1rem;
+    padding-top: 1.5rem;
     color: var(--text-color);
+  }
+
+  html.dark .post-body h3 {
+    color: #f3f4f6;
   }
 
   .post-body p {
@@ -412,9 +446,17 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
     border-top: 1px solid var(--border-color);
   }
 
+  html.dark .post-tags {
+    border-top-color: #374151;
+  }
+
   .tags-title {
     font-weight: 600;
     margin-right: 1rem;
+  }
+
+  html.dark .tags-title {
+    color: #f3f4f6;
   }
 
   .tags-list {
@@ -445,9 +487,17 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
     border-top: 1px solid var(--border-color);
   }
 
+  html.dark .post-share {
+    border-top-color: #374151;
+  }
+
   .share-title {
     font-weight: 600;
     margin-right: 1rem;
+  }
+
+  html.dark .share-title {
+    color: #f3f4f6;
   }
 
   .share-buttons {
@@ -503,11 +553,19 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
     margin-bottom: 2rem;
   }
 
+  html.dark .sidebar-widget {
+    background: #23232b;
+  }
+
   .widget-title {
     margin-bottom: 1.25rem;
     position: relative;
     padding-bottom: 0.75rem;
     font-size: 1.25rem;
+  }
+
+  html.dark .widget-title {
+    color: #f3f4f6;
   }
 
   .widget-title::after {
@@ -540,6 +598,10 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
     padding-left: 0.75rem;
   }
 
+  html.dark .toc-link {
+    color: #e5e7eb;
+  }
+
   .toc-link:hover, .toc-link.active {
     color: var(--primary-color);
     border-left-color: var(--primary-color);
@@ -560,6 +622,11 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
     border-bottom: 1px solid var(--border-color);
   }
 
+  html.dark .related-post {
+    color: #e5e7eb;
+    border-bottom-color: #374151;
+  }
+
   .related-post:last-child {
     padding-bottom: 0;
     border-bottom: none;
@@ -575,14 +642,26 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
     transition: color 0.2s ease;
   }
 
+  html.dark .related-post-title {
+    color: #f3f4f6;
+  }
+
   .related-post-date {
     font-size: 0.85rem;
     color: var(--text-light);
   }
 
+  html.dark .related-post-date {
+    color: #9ca3af;
+  }
+
   .newsletter-signup p {
     margin-bottom: 1.5rem;
     color: var(--text-light);
+  }
+
+  html.dark .newsletter-signup p {
+    color: #9ca3af;
   }
 
   .newsletter-form {
@@ -596,6 +675,12 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
     border: 1px solid var(--border-color);
     border-radius: 6px;
     font-size: 0.9rem;
+  }
+
+  html.dark .form-input {
+    background: #1a1a22;
+    color: #f3f4f6;
+    border-color: #374151;
   }
 
   .form-input:focus {

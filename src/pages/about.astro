@@ -57,24 +57,18 @@ const author = authorEntries[0]; // Using the first author as this is a personal
         <div class="skill-category">
           <h3>Technical Skills</h3>
           <ul class="skills-list">
-            {author.data.skills
-              ?.filter(skill => ['Software Development', 'Web Development', 'AI Prompt Engineering'].includes(skill))
-              .map(skill => (
-                <li>{skill}</li>
-              )) || []
-            }
+            {author.data.skills?.map(skill => (
+              <li>{skill}</li>
+            )) || []}
           </ul>
         </div>
         
         <div class="skill-category">
-          <h3>Product Management</h3>
+          <h3>Soft Skills</h3>
           <ul class="skills-list">
-            {author.data.skills
-              ?.filter(skill => ['Product Management', 'UX/UI Design'].includes(skill))
-              .map(skill => (
-                <li>{skill}</li>
-              )) || []
-            }
+            {author.data.softSkills?.map(skill => (
+              <li>{skill}</li>
+            )) || []}
           </ul>
         </div>
         

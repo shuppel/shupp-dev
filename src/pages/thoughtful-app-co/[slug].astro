@@ -4,6 +4,7 @@ import Layout from '../../layouts/Layout.astro';
 import { type CollectionEntry } from 'astro:content';
 import LyketVote from '../../components/LyketVote.astro';
 import GiscusComments from '../../components/GiscusComments.astro';
+import { isFeatureEnabled } from '../../config/features';
 
 export async function getStaticPaths() {
   const appEntries = await getCollection('thoughtful-apps');
@@ -39,6 +40,9 @@ const formattedDate = new Date(entry.data.lastUpdated).toLocaleDateString('en-US
   month: 'long',
   day: 'numeric',
 });
+
+// Check if TLDraw is enabled
+const showTLDraw = isFeatureEnabled('enableTLDraw');
 ---
 
 <Layout title={`${entry.data.title} - Thoughtful App Co.`} description={entry.data.oneLiner}>
@@ -87,7 +91,7 @@ const formattedDate = new Date(entry.data.lastUpdated).toLocaleDateString('en-US
         <p class="problem-statement">{entry.data.problem}</p>
       </section>
 
-      {entry.data.mainMockup && (
+      {entry.data.mainMockup && showTLDraw && (
         <section class="app-section">
           <h2>Core Concept</h2>
           <div class="mockup-container">
@@ -111,7 +115,7 @@ const formattedDate = new Date(entry.data.lastUpdated).toLocaleDateString('en-US
               <div class="feature-details">
                 <p><strong>What:</strong> {feature.what}</p>
                 <p><strong>Why:</strong> {feature.why}</p>
-                {feature.mockup && (
+                {feature.mockup && showTLDraw && (
                   <div class="feature-mockup">
                     <iframe 
                       src={feature.mockup} 

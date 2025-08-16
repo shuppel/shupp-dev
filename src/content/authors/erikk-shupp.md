@@ -1,46 +1,55 @@
 ---
 name: Erikk Shupp
-title: Chief Vibe Officer
-email: contact@shupp.dev
-location: California
+title: Product Manager & Software Engineer
+email: erikk@shupp.dev
+location: Arlington, Virginia
 avatar: /images/avatar.jpg
-shortBio: product. design. prompt guru. vibe coder.
+shortBio: Building apps for hoomans. Product manager and software engineer passionate about thoughtful digital experiences.
 longBio: |
-  As a product-focused engineering leader, I specialize in creating engaging, 
-  user-centered digital experiences. My journey spans software development, 
-  technical leadership, and product management—all driven by a passion for 
-  solving complex problems with elegant solutions.
+  I did things the opposite way—maybe the wrong way, but AI has kind of saved my ass. English Creative Writing undergrad, Technology Management masters, and I've been open source learning all my most technical skills in the midsummer of my career. What a fever dream LLMs have been.
 
-  I thrive at the intersection of design and engineering, building tools and 
-  applications that not only work seamlessly but also feel intuitive and delightful 
-  to use. My approach combines technical excellence with a deep understanding of 
-  user needs and business objectives.
+  I'm somewhat of a unicorn in these spaces: a true product manager with technical aptitude, stopping short of a devtools PM (though I do strive for that). My unconventional path—from storytelling to technology—has given me a unique perspective on building products that actually matter to people.
 
-  With experience across various sectors including e-commerce, education, and SaaS, 
-  I bring a versatile perspective to each project. I'm particularly interested in 
-  building software that empowers people—whether they're creating content, learning 
-  new skills, or connecting with others.
+  Based in Arlington, VA, I work at the intersection of hooman needs and technical possibilities. My approach is pragmatic: I use cloud technologies when necessary (despite my vendetta against their complexity and vendor lock-in), automate everything that makes sense, and focus on building things that genuinely improve people's lives.
 
-  When I'm not coding or sketching out new product ideas, you'll find me exploring 
-  design systems, experimenting with new technologies, or contributing to the tech 
-  community through mentorship and knowledge sharing.
+  My work with Washington Rugby exemplifies this philosophy—transforming their digital infrastructure through strategic use of nonprofit resources, implementing zero-fee payment systems, and building automation that actually works. Not because it's technically impressive, but because it helps real people do real things better.
+
+  But as we evolve in an age where houses are luxury items, we should not let our morals get away from us. Technology should serve humanity, not the other way around. This drives my work on Thoughtful App Co., where I design apps that respect users' time, attention, and humanity.
+
+  The technical skills came later, learned through necessity and curiosity. The storytelling came first, and maybe that's why I can see through the tech industry's tendency to solve problems that don't exist while ignoring the ones that do.
+
+  When I'm not wrestling with code or pondering product decisions, you'll find me running barefoot through Arlington (yes, really), contributing to open source projects, or playing rugby—activities that remind me that the best solutions are often the simplest ones.
 socialLinks:
   github: https://github.com/shuppel
-  linkedin: https://www.linkedin.com/in/shupp-erikk
+  linkedin: https://www.linkedin.com/in/shupp-erikk/
   twitter: https://twitter.com/shuppdev
   bluesky: https://bsky.app/profile/shupp.dev
   website: https://shupp.dev
 skills:
+  - Full-Stack Development
+  - TypeScript
+  - React
+  - Cron Jobs & Scripts
+  - Cloud Architecture
+  - API Development
+  - Automation & Scripting
+  - SEO Optimization
+softSkills:
   - Product Management
-  - UX/UI Design
-  - Technical Leadership
-  - Software Development
-  - AI Prompt Engineering
-  - Web Development
+  - Marketing & Branding
+  - User Experience
+  - UI Design
+  - UX Management
+  - IT Architecture
+  - Scrum Master
+  - Business Development
 interests:
-  - Design Systems
+  - Barefoot Running
+  - Digital Wellness
+  - Community Building
+  - Open Source Learning
+  - Mental Health Technology
   - Local-First Software
-  - Interactive Data Visualization
-  - Education Technology
-  - AI Ethics & Applications
+  - Human-Centered Design
+  - Rugby (Union)
 ---
