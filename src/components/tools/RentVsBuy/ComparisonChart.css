@@ -1,0 +1,247 @@
+/* Comparison Chart - Liquid Design Implementation */
+
+.chart-container {
+  margin-top: 2rem;
+  padding: 2rem;
+  background: rgba(73, 71, 91, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(172, 193, 150, 0.1);
+  border-radius: 24px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chart-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--accent-sage),
+    var(--accent-light),
+    var(--accent-teal)
+  );
+  background-size: 200% 100%;
+  animation: liquidFlow 3s ease-in-out infinite;
+}
+
+.chart-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 32px rgba(14, 8, 14, 0.3),
+    0 2px 8px rgba(172, 193, 150, 0.1);
+}
+
+.chart-title {
+  font-family: var(--font-secondary);
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 1.5rem 0;
+  text-align: center;
+  background: linear-gradient(
+    135deg,
+    var(--text-primary),
+    var(--accent-sage)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.chart-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 400px;
+  padding: 1rem 0;
+}
+
+/* Chart customization for liquid theme */
+.recharts-cartesian-grid-horizontal line {
+  stroke: rgba(172, 193, 150, 0.1);
+}
+
+.recharts-legend-wrapper {
+  padding-top: 1rem !important;
+}
+
+.recharts-legend-item {
+  margin: 0 1rem !important;
+}
+
+.recharts-legend-item-text {
+  color: var(--text-primary) !important;
+  font-family: var(--font-secondary) !important;
+}
+
+.recharts-tooltip-wrapper {
+  filter: drop-shadow(0 4px 12px rgba(14, 8, 14, 0.3));
+}
+
+.recharts-default-tooltip {
+  background: rgba(73, 71, 91, 0.95) !important;
+  border: 1px solid rgba(172, 193, 150, 0.3) !important;
+  border-radius: 12px !important;
+  backdrop-filter: blur(10px) !important;
+  padding: 1rem !important;
+}
+
+.recharts-tooltip-label {
+  color: var(--text-primary) !important;
+  font-family: var(--font-secondary) !important;
+  font-weight: 600 !important;
+  margin-bottom: 0.5rem !important;
+}
+
+.recharts-tooltip-item {
+  color: var(--text-primary) !important;
+  font-family: var(--font-body) !important;
+  padding: 0.25rem 0 !important;
+}
+
+/* Chart insights section */
+.chart-insights {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  background: rgba(121, 148, 150, 0.1);
+  border-left: 3px solid var(--accent-sage);
+  border-radius: 12px;
+  animation: liquidSlideIn 0.6s ease;
+}
+
+.insight-text {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.insight-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+  animation: liquidPulse 2s ease-in-out infinite;
+}
+
+/* Chart type selector buttons */
+.chart-type-selector {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.chart-type-btn {
+  padding: 0.75rem 1.5rem;
+  background: rgba(73, 71, 91, 0.6);
+  border: 2px solid rgba(172, 193, 150, 0.2);
+  border-radius: 50px;
+  color: var(--text-secondary);
+  font-family: var(--font-secondary);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.chart-type-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(172, 193, 150, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.chart-type-btn:hover::before {
+  left: 100%;
+}
+
+.chart-type-btn:hover {
+  border-color: var(--accent-sage);
+  color: var(--text-primary);
+  transform: translateY(-2px);
+}
+
+.chart-type-btn.active {
+  background: linear-gradient(
+    135deg,
+    rgba(172, 193, 150, 0.2),
+    rgba(233, 235, 158, 0.1)
+  );
+  border-color: var(--accent-sage);
+  color: var(--text-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .chart-container {
+    padding: 1.5rem 1rem;
+  }
+  
+  .chart-wrapper {
+    min-height: 300px;
+  }
+  
+  .chart-title {
+    font-size: 1.25rem;
+  }
+  
+  .chart-type-selector {
+    flex-wrap: wrap;
+  }
+  
+  .chart-type-btn {
+    font-size: 0.9rem;
+    padding: 0.6rem 1.2rem;
+  }
+}
+
+/* Animation for chart entrance */
+.recharts-surface {
+  animation: liquidFadeIn 0.8s ease;
+}
+
+@keyframes liquidFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Loading state for charts */
+.chart-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  color: var(--text-secondary);
+}
+
+.chart-loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(172, 193, 150, 0.2);
+  border-top-color: var(--accent-sage);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 1rem;
+}

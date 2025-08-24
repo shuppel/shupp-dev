@@ -27,6 +27,13 @@ export interface RentVsBuyParams {
   homeAppreciationRate: number;
   rentInflationRate: number;
   investmentReturnRate: number;
+  
+  // User profile (optional for backward compatibility)
+  filingStatus?: 'single' | 'married';
+  currentHomeowner?: boolean;
+  sellingCurrentHome?: boolean;
+  marketOutlook?: 'hot' | 'stable' | 'cooling';
+  investmentConfidence?: 'conservative' | 'moderate' | 'aggressive';
 }
 
 export interface CalculationResult {
@@ -38,6 +45,10 @@ export interface CalculationResult {
   investmentValue: number;
   totalTaxBenefit: number;
   monthlyData: MonthlyComparison[];
+  totalInterestPaid: number;
+  effectiveRate: number; // After tax deductions
+  financialHealthScore: 'house-poor' | 'stretched' | 'comfortable' | 'golden-zone' | 'great-deal';
+  monthlyPaymentRatio: number; // Monthly payment as % of typical income
 }
 
 export interface MonthlyComparison {

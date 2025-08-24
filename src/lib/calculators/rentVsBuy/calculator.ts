@@ -97,25 +97,49 @@ export function calculateRentVsBuy(params: RentVsBuyParams): CalculationResult {
   const months = params.plannedYears * 12;
   const monthlyData: MonthlyComparison[] = [];
   
+  // Adjust parameters based on user profile
+  let adjustedParams = { ...params };
+  
+  // Adjust standard deduction based on filing status
+  if (params.filingStatus === 'married') {
+    adjustedParams.standardDeduction = Math.max(29200, params.standardDeduction);
+  } else if (params.filingStatus === 'single') {
+    adjustedParams.standardDeduction = Math.min(14600, params.standardDeduction);
+  }
+  
+  // Adjust appreciation rate based on market outlook
+  if (params.marketOutlook === 'hot') {
+    adjustedParams.homeAppreciationRate = Math.max(5, params.homeAppreciationRate);
+  } else if (params.marketOutlook === 'cooling') {
+    adjustedParams.homeAppreciationRate = Math.min(1, params.homeAppreciationRate);
+  }
+  
+  // Adjust investment return based on confidence
+  if (params.investmentConfidence === 'conservative') {
+    adjustedParams.investmentReturnRate = Math.min(5, params.investmentReturnRate);
+  } else if (params.investmentConfidence === 'aggressive') {
+    adjustedParams.investmentReturnRate = Math.max(10, params.investmentReturnRate);
+  }
+  
   // Convert to Decimal for precision
   const d = {
-    homePrice: new Decimal(params.homePrice),
-    downPaymentPercent: new Decimal(params.downPaymentPercent),
-    monthlyRent: new Decimal(params.monthlyRent),
-    mortgageRate: new Decimal(params.mortgageRate),
-    propertyTaxRate: new Decimal(params.propertyTaxRate),
-    maintenanceRate: new Decimal(params.maintenanceRate),
-    homeownersInsurance: new Decimal(params.homeownersInsurance),
-    hoaFees: new Decimal(params.hoaFees),
-    closingCostPercent: new Decimal(params.closingCostPercent),
-    sellingCostPercent: new Decimal(params.sellingCostPercent),
-    rentersInsurance: new Decimal(params.rentersInsurance),
-    securityDepositMonths: new Decimal(params.securityDepositMonths),
-    homeAppreciationRate: new Decimal(params.homeAppreciationRate),
-    rentInflationRate: new Decimal(params.rentInflationRate),
-    investmentReturnRate: new Decimal(params.investmentReturnRate),
-    marginalTaxRate: new Decimal(params.marginalTaxRate),
-    standardDeduction: new Decimal(params.standardDeduction),
+    homePrice: new Decimal(adjustedParams.homePrice),
+    downPaymentPercent: new Decimal(adjustedParams.downPaymentPercent),
+    monthlyRent: new Decimal(adjustedParams.monthlyRent),
+    mortgageRate: new Decimal(adjustedParams.mortgageRate),
+    propertyTaxRate: new Decimal(adjustedParams.propertyTaxRate),
+    maintenanceRate: new Decimal(adjustedParams.maintenanceRate),
+    homeownersInsurance: new Decimal(adjustedParams.homeownersInsurance),
+    hoaFees: new Decimal(adjustedParams.hoaFees),
+    closingCostPercent: new Decimal(adjustedParams.closingCostPercent),
+    sellingCostPercent: new Decimal(adjustedParams.sellingCostPercent),
+    rentersInsurance: new Decimal(adjustedParams.rentersInsurance),
+    securityDepositMonths: new Decimal(adjustedParams.securityDepositMonths),
+    homeAppreciationRate: new Decimal(adjustedParams.homeAppreciationRate),
+    rentInflationRate: new Decimal(adjustedParams.rentInflationRate),
+    investmentReturnRate: new Decimal(adjustedParams.investmentReturnRate),
+    marginalTaxRate: new Decimal(adjustedParams.marginalTaxRate),
+    standardDeduction: new Decimal(adjustedParams.standardDeduction),
   };
   
   // Calculate initial values
@@ -136,6 +160,7 @@ export function calculateRentVsBuy(params: RentVsBuyParams): CalculationResult {
   let investmentBalance = buyingCumulative; // What you'd have if you rented instead
   let breakEvenMonth: number | null = null;
   let totalTaxBenefit = 0;
+  let totalInterestPaid = 0;
   
   // Monthly rates
   const monthlyAppreciationRate = d.homeAppreciationRate.div(100).div(12).plus(1);
@@ -145,6 +170,9 @@ export function calculateRentVsBuy(params: RentVsBuyParams): CalculationResult {
   // Calculate month by month
   for (let month = 1; month <= months; month++) {
     const amortMonth = amortization[Math.min(month - 1, amortization.length - 1)];
+    
+    // Track total interest
+    totalInterestPaid += amortMonth.interest;
     
     // Current values
     const homeValue = d.homePrice.mul(monthlyAppreciationRate.pow(month));
@@ -219,6 +247,30 @@ export function calculateRentVsBuy(params: RentVsBuyParams): CalculationResult {
   const rentingNetWealth = investmentBalance - rentingCumulative;
   const netAdvantage = buyingNetWealth - rentingNetWealth;
   
+  // Calculate monthly payment and ratios
+  const monthlyPayment = amortization[0].payment;
+  const estimatedMonthlyIncome = params.homePrice / 4 / 12; // Rough estimate: home price = 4x annual income
+  const monthlyPaymentRatio = (monthlyPayment / estimatedMonthlyIncome) * 100;
+  
+  // Calculate effective interest rate after tax benefits
+  const nominalTotalInterest = totalInterestPaid;
+  const effectiveTotalInterest = totalInterestPaid - totalTaxBenefit;
+  const effectiveRate = params.mortgageRate * (effectiveTotalInterest / nominalTotalInterest);
+  
+  // Determine financial health score
+  let financialHealthScore: CalculationResult['financialHealthScore'];
+  if (monthlyPaymentRatio > 35) {
+    financialHealthScore = 'house-poor';
+  } else if (monthlyPaymentRatio > 28) {
+    financialHealthScore = 'stretched';
+  } else if (monthlyPaymentRatio > 20) {
+    financialHealthScore = 'comfortable';
+  } else if (monthlyPaymentRatio > 15) {
+    financialHealthScore = 'golden-zone';
+  } else {
+    financialHealthScore = 'great-deal';
+  }
+  
   return {
     totalBuyingCost: buyingCumulative,
     totalRentingCost: rentingCumulative,
@@ -228,5 +280,9 @@ export function calculateRentVsBuy(params: RentVsBuyParams): CalculationResult {
     investmentValue: investmentBalance,
     totalTaxBenefit,
     monthlyData,
+    totalInterestPaid,
+    effectiveRate,
+    financialHealthScore,
+    monthlyPaymentRatio,
   };
 }

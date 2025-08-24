@@ -1,0 +1,529 @@
+/* Rent vs Buy Calculator - Liquid Design Implementation */
+
+:root {
+  /* Design System Colors */
+  --primary-dark: #14080E;
+  --secondary-dark: #49475B;
+  --accent-teal: #799496;
+  --accent-sage: #ACC196;
+  --accent-light: #E9EB9E;
+  
+  /* Semantic Colors */
+  --surface-primary: #14080E;
+  --surface-secondary: rgba(73, 71, 91, 0.95);
+  --surface-tertiary: rgba(121, 148, 150, 0.1);
+  --surface-accent: rgba(172, 193, 150, 0.08);
+  --surface-highlight: rgba(233, 235, 158, 0.12);
+  
+  /* Text Colors */
+  --text-primary: #E9EB9E;
+  --text-secondary: #ACC196;
+  --text-muted: rgba(172, 193, 150, 0.7);
+  --text-accent: #799496;
+  
+  /* Interactive States */
+  --focus-color: #ACC196;
+  --hover-color: rgba(121, 148, 150, 0.2);
+  --active-color: #799496;
+  
+  /* Typography */
+  --font-header: 'Maitree', serif;
+  --font-secondary: 'Cairo', sans-serif;
+  --font-body: 'Hind', sans-serif;
+}
+
+/* Main Calculator Container */
+.rvb-calculator {
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(
+    135deg,
+    var(--primary-dark) 0%,
+    var(--secondary-dark) 50%,
+    var(--accent-teal) 100%
+  );
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  overflow-x: hidden;
+}
+
+/* Liquid Layout Grid */
+.calculator-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: clamp(1rem, 4vw, 3rem);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: clamp(1rem, 3vw, 2rem);
+  position: relative;
+}
+
+@media (min-width: 1024px) {
+  .calculator-layout {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+/* Flowing Background Elements */
+.calculator-layout::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle at 30% 70%,
+    rgba(172, 193, 150, 0.03) 0%,
+    transparent 50%
+  ),
+  radial-gradient(
+    circle at 80% 20%,
+    rgba(121, 148, 150, 0.05) 0%,
+    transparent 50%
+  ),
+  radial-gradient(
+    circle at 20% 20%,
+    rgba(233, 235, 158, 0.02) 0%,
+    transparent 50%
+  );
+  z-index: -1;
+  animation: liquidFlow 20s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes liquidFlow {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(1deg) scale(1.02); }
+  50% { transform: rotate(-1deg) scale(0.98); }
+  75% { transform: rotate(0.5deg) scale(1.01); }
+}
+
+/* Panel Base Styles */
+.input-panel,
+.results-panel {
+  background: rgba(73, 71, 91, 0.7);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  border: 1px solid rgba(172, 193, 150, 0.1);
+  padding: clamp(1.5rem, 4vw, 2.5rem);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform, box-shadow;
+}
+
+/* Liquid Panel Effects */
+.input-panel::before,
+.results-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent-sage),
+    var(--accent-light),
+    var(--accent-sage),
+    transparent
+  );
+  animation: liquidShimmer 3s ease-in-out infinite;
+}
+
+@keyframes liquidShimmer {
+  0%, 100% { opacity: 0.3; transform: translateX(-100%); }
+  50% { opacity: 0.7; transform: translateX(100%); }
+}
+
+.input-panel:hover,
+.results-panel:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 32px rgba(14, 8, 14, 0.3),
+    0 2px 8px rgba(172, 193, 150, 0.1);
+}
+
+/* Panel Headers */
+.panel-header {
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.panel-header h2 {
+  font-family: var(--font-header);
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+  background: linear-gradient(
+    135deg,
+    var(--text-primary),
+    var(--accent-sage),
+    var(--accent-light)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Form Styling */
+.input-form {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+/* Form Sections */
+.form-section {
+  position: relative;
+  padding: 1.5rem;
+  background: rgba(121, 148, 150, 0.05);
+  border-radius: 16px;
+  border: 1px solid rgba(172, 193, 150, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.form-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: 16px;
+  background: linear-gradient(
+    135deg,
+    rgba(172, 193, 150, 0.02),
+    rgba(233, 235, 158, 0.01)
+  );
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+}
+
+.form-section:hover::before {
+  opacity: 1;
+}
+
+.form-section h3 {
+  font-family: var(--font-secondary);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--accent-sage);
+  margin: 0 0 1.5rem 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.form-section h3::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: linear-gradient(
+    180deg,
+    var(--accent-sage),
+    var(--accent-light)
+  );
+  border-radius: 2px;
+  animation: liquidPulse 2s ease-in-out infinite;
+}
+
+@keyframes liquidPulse {
+  0%, 100% { height: 20px; opacity: 0.7; }
+  50% { height: 24px; opacity: 1; }
+}
+
+/* Input Field Styling */
+.input-field {
+  margin-bottom: 1.25rem;
+  position: relative;
+}
+
+.input-field label {
+  display: block;
+  font-family: var(--font-secondary);
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  font-size: 0.95rem;
+  transition: color 0.2s ease;
+}
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(14, 8, 14, 0.6);
+  border: 2px solid rgba(172, 193, 150, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(172, 193, 150, 0.05),
+    transparent
+  );
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+.input-wrapper:hover::before,
+.input-wrapper:focus-within::before {
+  transform: translateX(100%);
+}
+
+.input-wrapper:focus-within {
+  border-color: var(--focus-color);
+  box-shadow: 
+    0 0 0 3px rgba(172, 193, 150, 0.1),
+    0 4px 12px rgba(14, 8, 14, 0.2);
+  transform: translateY(-1px);
+}
+
+.input-wrapper input,
+.input-wrapper select {
+  flex: 1;
+  padding: 0.875rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.2s ease;
+}
+
+.input-wrapper input::placeholder {
+  color: var(--text-muted);
+}
+
+.prefix,
+.suffix {
+  padding: 0 0.75rem;
+  color: var(--text-accent);
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.prefix {
+  border-right: 1px solid rgba(172, 193, 150, 0.1);
+}
+
+.suffix {
+  border-left: 1px solid rgba(172, 193, 150, 0.1);
+}
+
+/* Tooltip */
+.tooltip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  margin-left: 0.5rem;
+  background: var(--accent-teal);
+  color: var(--primary-dark);
+  border-radius: 50%;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: help;
+  transition: all 0.2s ease;
+}
+
+.tooltip:hover {
+  transform: scale(1.1);
+  background: var(--accent-sage);
+}
+
+/* Error States */
+.input-field.has-error .input-wrapper {
+  border-color: #ff6b6b;
+  animation: liquidShake 0.4s ease-in-out;
+}
+
+@keyframes liquidShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.error-message {
+  color: #ff6b6b;
+  font-size: 0.875rem;
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  animation: liquidSlideIn 0.3s ease;
+}
+
+@keyframes liquidSlideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Form Actions */
+.form-actions {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+}
+
+.calculate-button {
+  position: relative;
+  padding: 1rem 3rem;
+  background: linear-gradient(
+    135deg,
+    var(--accent-sage),
+    var(--accent-light)
+  );
+  color: var(--primary-dark);
+  border: none;
+  border-radius: 50px;
+  font-family: var(--font-secondary);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+
+.calculate-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.calculate-button:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 
+    0 8px 25px rgba(172, 193, 150, 0.3),
+    0 4px 10px rgba(14, 8, 14, 0.2);
+}
+
+.calculate-button:hover::before {
+  left: 100%;
+}
+
+.calculate-button:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+.calculate-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.calculation-status {
+  margin-top: 1rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  font-style: italic;
+  animation: liquidFade 2s ease-in-out infinite;
+}
+
+/* Empty State */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+}
+
+.empty-state p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  max-width: 400px;
+}
+
+/* Error Banner */
+.error-banner {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  background: rgba(255, 107, 107, 0.9);
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  animation: liquidSlideInRight 0.3s ease;
+  z-index: 1000;
+}
+
+@keyframes liquidSlideInRight {
+  from { opacity: 0; transform: translateX(100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+/* Responsive Design - Fluid Breakpoints */
+@media (max-width: 768px) {
+  .calculator-layout {
+    grid-template-columns: 1fr;
+    padding: 1rem;
+    gap: 2rem;
+  }
+  
+  .input-panel,
+  .results-panel {
+    padding: 1.5rem;
+    border-radius: 20px;
+  }
+  
+  .form-section {
+    padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .calculate-button {
+    width: 100%;
+    padding: 1rem;
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .calculator-layout::before {
+    animation: none;
+  }
+}

@@ -203,13 +203,29 @@ const categoryEmoji = categoryEmojis[entry.data.category] || '🔧';
 </Layout>
 
 <script>
-  // Tool component loader will be implemented here
-  document.addEventListener('DOMContentLoaded', () => {
+  // Tool component loader and page initialization
+  document.addEventListener('DOMContentLoaded', async () => {
     const toolMount = document.getElementById('tool-mount');
     const componentName = toolMount?.dataset.component;
     
-    // This will be replaced with actual component loading logic
     console.log(`Loading component: ${componentName}`);
+    
+    try {
+      // Clear loading placeholder
+      toolMount.innerHTML = '';
+      
+      // Load the appropriate component
+      if (componentName === 'RentVsBuy') {
+        const { mount } = await import('../../components/tools/RentVsBuy/mount');
+        toolMount.innerHTML = '<div class="calculator-wrapper"></div>';
+        mount();
+      } else {
+        toolMount.innerHTML = `<div class="error-message">Component "${componentName}" not found.</div>`;
+      }
+    } catch (error) {
+      console.error('Failed to load component:', error);
+      toolMount.innerHTML = '<div class="error-message">Failed to load calculator. Please refresh the page.</div>';
+    }
     
     // Share functionality
     const shareBtn = document.getElementById('share-btn');
