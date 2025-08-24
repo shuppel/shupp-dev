@@ -211,6 +211,30 @@ const thoughtfulAppsCollection = defineCollection({
   }),
 });
 
+// Define a schema for Open Source Tools
+const toolsCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    category: z.enum(['Financial', 'Productivity', 'Health', 'Lifestyle', 'Analytics', 'Converter']),
+    status: z.enum(['active', 'beta', 'archived']).default('active'),
+    component: z.string(), // Component name to render (e.g., 'RentVsBuy')
+    githubUrl: z.string().url().optional(),
+    originalSource: z.object({
+      name: z.string(),
+      url: z.string().url(),
+    }).optional(), // Attribution if based on another tool
+    features: z.array(z.string()),
+    technologies: z.array(z.string()),
+    lastUpdated: z.date(),
+    popularity: z.number().default(0), // Usage metrics
+    embedEnabled: z.boolean().default(false), // Can be embedded on other sites
+    featured: z.boolean().default(false),
+    previewImage: z.string().optional(),
+  }),
+});
+
 // Export a single `collections` object to register your collections
 export const collections = {
   'blog': blogCollection,
@@ -224,4 +248,5 @@ export const collections = {
   'skills': skillCollection,
   'principles': principleCollection,
   'thoughtful-apps': thoughtfulAppsCollection,
+  'tools': toolsCollection,
 };

@@ -1,0 +1,767 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import type { CollectionEntry } from 'astro:content';
+
+export async function getStaticPaths() {
+  const toolEntries = await getCollection('tools');
+  return toolEntries.map(entry => ({
+    params: { slug: entry.slug },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<'tools'>;
+}
+
+const { entry } = Astro.props;
+const { Content } = await entry.render();
+
+// Status configuration
+const statusConfig = {
+  active: { emoji: '🟢', label: 'Active', color: '#22c55e' },
+  beta: { emoji: '🟡', label: 'Beta', color: '#eab308' },
+  archived: { emoji: '⚫', label: 'Archived', color: '#6b7280' }
+};
+
+const status = statusConfig[entry.data.status];
+
+// Format the date
+const formattedDate = new Date(entry.data.lastUpdated).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+// Category emoji
+const categoryEmojis = {
+  Financial: '💰',
+  Productivity: '⚡',
+  Health: '🏃',
+  Lifestyle: '🌟',
+  Analytics: '📊',
+  Converter: '🔄'
+} as const;
+
+const categoryEmoji = categoryEmojis[entry.data.category] || '🔧';
+---
+
+<Layout title={`${entry.data.title} - Open Source Tools`} description={entry.data.description}>
+  <div class="tool-detail-page">
+    <header class="tool-header">
+      <div class="tool-meta">
+        <div class="tool-badges">
+          <div class="status-badge" style={`background-color: ${status.color}`}>
+            <span class="status-emoji">{status.emoji}</span>
+            {status.label}
+          </div>
+          <div class="category-badge">
+            <span class="category-emoji">{categoryEmoji}</span>
+            {entry.data.category}
+          </div>
+          {entry.data.featured && (
+            <div class="featured-badge">
+              <span>⭐ Featured</span>
+            </div>
+          )}
+        </div>
+        {entry.data.githubUrl && (
+          <a href={entry.data.githubUrl} target="_blank" rel="noopener noreferrer" class="github-link">
+            <span class="github-icon">📦</span>
+            View Source
+          </a>
+        )}
+      </div>
+      
+      <h1 class="tool-title">{entry.data.title}</h1>
+      <p class="tool-description">{entry.data.description}</p>
+      
+      {entry.data.originalSource && (
+        <div class="attribution">
+          <span>Based on:</span>
+          <a href={entry.data.originalSource.url} target="_blank" rel="noopener noreferrer">
+            {entry.data.originalSource.name}
+          </a>
+        </div>
+      )}
+    </header>
+
+    <main class="tool-container">
+      <!-- Tool Component will be rendered here -->
+      <div id="tool-mount" class="tool-mount" data-component={entry.data.component}>
+        <div class="tool-placeholder">
+          <div class="placeholder-content">
+            <div class="loading-spinner"></div>
+            <p>Loading {entry.data.title}...</p>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <section class="tool-info">
+      <div class="info-grid">
+        <div class="info-section">
+          <h2>About This Tool</h2>
+          <div class="tool-content">
+            <Content />
+          </div>
+        </div>
+
+        <aside class="tool-sidebar">
+          <div class="sidebar-section">
+            <h3>Key Features</h3>
+            <ul class="features-list">
+              {entry.data.features.map(feature => (
+                <li class="feature-item">
+                  <span class="feature-check">✓</span>
+                  {feature}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div class="sidebar-section">
+            <h3>Built With</h3>
+            <div class="tech-tags">
+              {entry.data.technologies.map(tech => (
+                <span class="tech-tag">{tech}</span>
+              ))}
+            </div>
+          </div>
+
+          <div class="sidebar-section">
+            <h3>Tool Actions</h3>
+            <div class="action-buttons">
+              <button id="share-btn" class="action-btn">
+                <span class="action-icon">🔗</span>
+                Share Tool
+              </button>
+              {entry.data.embedEnabled && (
+                <button id="embed-btn" class="action-btn">
+                  <span class="action-icon">📋</span>
+                  Embed Code
+                </button>
+              )}
+              <button id="reset-btn" class="action-btn">
+                <span class="action-icon">🔄</span>
+                Reset Tool
+              </button>
+            </div>
+          </div>
+
+          <div class="sidebar-section stats-section">
+            <h3>Stats</h3>
+            <div class="stat-item">
+              <span class="stat-label">Last Updated</span>
+              <span class="stat-value">{formattedDate}</span>
+            </div>
+            <div class="stat-item">
+              <span class="stat-label">Times Used</span>
+              <span class="stat-value">{entry.data.popularity.toLocaleString()}</span>
+            </div>
+          </div>
+
+          {entry.data.githubUrl && (
+            <div class="sidebar-section">
+              <h3>Contribute</h3>
+              <p class="contribute-text">This tool is open source! Help improve it:</p>
+              <div class="github-actions">
+                <a href={entry.data.githubUrl} target="_blank" rel="noopener noreferrer" class="btn btn-primary">
+                  View on GitHub
+                </a>
+                <a href={`${entry.data.githubUrl}/issues`} target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+                  Report Issue
+                </a>
+              </div>
+            </div>
+          )}
+        </aside>
+      </div>
+    </section>
+  </div>
+
+  <!-- Embed Modal -->
+  <div id="embed-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Embed This Tool</h3>
+        <button class="modal-close">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p>Copy this code to embed the tool on your website:</p>
+        <pre class="embed-code"><code>&lt;iframe 
+  src="https://shupp.dev/tools/{entry.slug}/embed" 
+  width="100%" 
+  height="600" 
+  frameborder="0"&gt;
+&lt;/iframe&gt;</code></pre>
+        <button class="copy-btn">Copy Code</button>
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  // Tool component loader will be implemented here
+  document.addEventListener('DOMContentLoaded', () => {
+    const toolMount = document.getElementById('tool-mount');
+    const componentName = toolMount?.dataset.component;
+    
+    // This will be replaced with actual component loading logic
+    console.log(`Loading component: ${componentName}`);
+    
+    // Share functionality
+    const shareBtn = document.getElementById('share-btn');
+    shareBtn?.addEventListener('click', async () => {
+      const shareData = {
+        title: document.title,
+        text: `Check out this tool: ${document.title}`,
+        url: window.location.href
+      };
+      
+      try {
+        if (navigator.share) {
+          await navigator.share(shareData);
+        } else {
+          await navigator.clipboard.writeText(window.location.href);
+          alert('Link copied to clipboard!');
+        }
+      } catch (err) {
+        console.error('Error sharing:', err);
+      }
+    });
+    
+    // Embed modal
+    const embedBtn = document.getElementById('embed-btn');
+    const embedModal = document.getElementById('embed-modal');
+    const modalClose = embedModal?.querySelector('.modal-close');
+    const copyBtn = embedModal?.querySelector('.copy-btn');
+    
+    embedBtn?.addEventListener('click', () => {
+      embedModal?.classList.add('show');
+    });
+    
+    modalClose?.addEventListener('click', () => {
+      embedModal?.classList.remove('show');
+    });
+    
+    copyBtn?.addEventListener('click', async () => {
+      const embedCode = embedModal?.querySelector('.embed-code code')?.textContent;
+      if (embedCode) {
+        await navigator.clipboard.writeText(embedCode);
+        copyBtn.textContent = 'Copied!';
+        setTimeout(() => {
+          copyBtn.textContent = 'Copy Code';
+        }, 2000);
+      }
+    });
+    
+    // Reset tool
+    const resetBtn = document.getElementById('reset-btn');
+    resetBtn?.addEventListener('click', () => {
+      // This will be implemented per tool
+      window.location.reload();
+    });
+  });
+</script>
+
+<style>
+  .tool-detail-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem 1rem;
+  }
+
+  /* Header */
+  .tool-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+  }
+
+  .tool-meta {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  .tool-badges {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+  }
+
+  .status-badge,
+  .category-badge,
+  .featured-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.5rem 1rem;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: 500;
+  }
+
+  .status-badge {
+    color: white;
+  }
+
+  .category-badge {
+    background: rgba(139, 92, 246, 0.1);
+    color: #8b5cf6;
+  }
+
+  html.dark .category-badge {
+    background: rgba(139, 92, 246, 0.2);
+    color: #a78bfa;
+  }
+
+  .featured-badge {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: white;
+  }
+
+  .github-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: #24292e;
+    color: white;
+    text-decoration: none;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  html.dark .github-link {
+    background: #1a1a22;
+    border: 1px solid #444;
+  }
+
+  .github-link:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .tool-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+  }
+
+  .tool-description {
+    font-size: 1.25rem;
+    color: var(--text-light);
+    max-width: 800px;
+    margin: 0 auto 1.5rem;
+  }
+
+  .attribution {
+    font-size: 0.95rem;
+    color: var(--text-light);
+  }
+
+  .attribution a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+  }
+
+  .attribution a:hover {
+    text-decoration: underline;
+  }
+
+  /* Tool Container */
+  .tool-container {
+    background: var(--card-bg);
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    margin-bottom: 3rem;
+    overflow: hidden;
+  }
+
+  .tool-mount {
+    min-height: 600px;
+    position: relative;
+  }
+
+  .tool-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 600px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
+  }
+
+  html.dark .tool-placeholder {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+  }
+
+  .placeholder-content {
+    text-align: center;
+  }
+
+  .loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(59, 130, 246, 0.2);
+    border-top-color: #3b82f6;
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* Info Section */
+  .tool-info {
+    margin-top: 3rem;
+  }
+
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 350px;
+    gap: 3rem;
+  }
+
+  .info-section {
+    background: var(--card-bg);
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+  }
+
+  .info-section h2 {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    color: var(--text-color);
+  }
+
+  .tool-content {
+    color: var(--text-color);
+    line-height: 1.7;
+  }
+
+  .tool-content h3 {
+    font-size: 1.3rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+  }
+
+  .tool-content p {
+    margin-bottom: 1rem;
+  }
+
+  .tool-content ul,
+  .tool-content ol {
+    margin-bottom: 1rem;
+    padding-left: 2rem;
+  }
+
+  .tool-content li {
+    margin-bottom: 0.5rem;
+  }
+
+  /* Sidebar */
+  .tool-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .sidebar-section {
+    background: var(--card-bg);
+    padding: 1.5rem;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+  }
+
+  .sidebar-section h3 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+  }
+
+  .features-list {
+    list-style: none;
+    padding: 0;
+  }
+
+  .feature-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    font-size: 0.95rem;
+    color: var(--text-color);
+  }
+
+  .feature-check {
+    color: #22c55e;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  .tech-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tech-tag {
+    padding: 0.25rem 0.75rem;
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+
+  html.dark .tech-tag {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+  }
+
+  .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: transparent;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-color);
+    font-size: 0.95rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .action-btn:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    transform: translateY(-2px);
+  }
+
+  .action-icon {
+    font-size: 1.1rem;
+  }
+
+  .stats-section .stat-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .stats-section .stat-item:last-child {
+    border-bottom: none;
+  }
+
+  .stat-label {
+    font-weight: 500;
+    color: var(--text-light);
+    font-size: 0.9rem;
+  }
+
+  .stat-value {
+    color: var(--text-color);
+    font-weight: 500;
+    font-size: 0.9rem;
+  }
+
+  .contribute-text {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+  }
+
+  .github-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .btn {
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    text-decoration: none;
+    font-weight: 500;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary {
+    background: #24292e;
+    color: white;
+  }
+
+  html.dark .btn-primary {
+    background: #1a1a22;
+    border: 1px solid #444;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  }
+
+  .btn-secondary {
+    background: transparent;
+    color: var(--text-color);
+    border: 2px solid var(--border-color);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+  }
+
+  /* Modal */
+  .modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal.show {
+    display: flex;
+  }
+
+  .modal-content {
+    background: var(--card-bg);
+    padding: 2rem;
+    border-radius: 12px;
+    max-width: 600px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  }
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .modal-header h3 {
+    font-size: 1.5rem;
+    color: var(--text-color);
+  }
+
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: var(--text-light);
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-close:hover {
+    color: var(--text-color);
+  }
+
+  .modal-body p {
+    margin-bottom: 1rem;
+    color: var(--text-light);
+  }
+
+  .embed-code {
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+  }
+
+  .embed-code code {
+    font-family: monospace;
+    font-size: 0.9rem;
+    color: var(--text-color);
+  }
+
+  .copy-btn {
+    padding: 0.5rem 1.5rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .copy-btn:hover {
+    background: var(--primary-hover);
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .info-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .tool-sidebar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    }
+  }
+
+  @media (max-width: 768px) {
+    .tool-header {
+      padding-bottom: 1.5rem;
+    }
+
+    .tool-title {
+      font-size: 2rem;
+    }
+
+    .tool-description {
+      font-size: 1.1rem;
+    }
+
+    .info-section {
+      padding: 1.5rem;
+    }
+
+    .tool-sidebar {
+      grid-template-columns: 1fr;
+    }
+
+    .modal-content {
+      padding: 1.5rem;
+    }
+  }
+</style>
