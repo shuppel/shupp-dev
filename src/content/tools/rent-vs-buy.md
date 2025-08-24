@@ -27,8 +27,6 @@ featured: true
 previewImage: "/images/tools/rent-vs-buy-preview.png"
 ---
 
-## About This Tool
-
 The Rent vs Buy Calculator helps you make one of life's biggest financial decisions: whether to rent or buy a home. Based on the acclaimed New York Times calculator, this tool considers all the hidden costs and benefits of both options.
 
 ### How It Works

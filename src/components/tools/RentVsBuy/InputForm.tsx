@@ -3,10 +3,12 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { RentVsBuySchema, defaultParams } from '../../../lib/calculators/rentVsBuy/validation';
 import type { RentVsBuyParams } from '../../../lib/calculators/rentVsBuy/types';
+import type { OnboardingData } from './OnboardingFlow';
 
 interface InputFormProps {
   onSubmit: (data: RentVsBuyParams) => void;
   isCalculating?: boolean;
+  onboardingData?: OnboardingData | null;
 }
 
 interface InputFieldProps {
@@ -72,15 +74,53 @@ const InputField: React.FC<InputFieldProps> = ({
   </div>
 );
 
-export default function InputForm({ onSubmit, isCalculating = false }: InputFormProps) {
+export default function InputForm({ onSubmit, isCalculating = false, onboardingData }: InputFormProps) {
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setValue,
   } = useForm<RentVsBuyParams>({
     resolver: zodResolver(RentVsBuySchema),
     defaultValues: defaultParams,
   });
+
+  // Auto-populate economic assumptions based on onboarding data
+  React.useEffect(() => {
+    if (onboardingData) {
+      // Map market outlook to home appreciation rate
+      if (onboardingData.marketOutlook) {
+        const appreciationRates = {
+          'hot': 6,        // 6% for hot market
+          'stable': 3.5,   // 3.5% for stable market  
+          'cooling': 2,    // 2% for cooling market
+          'uncertain': 3   // 3% for uncertain
+        };
+        setValue('homeAppreciationRate', appreciationRates[onboardingData.marketOutlook] || 3.5);
+      }
+
+      // Map investment confidence to expected returns
+      if (onboardingData.investmentConfidence) {
+        const returnRates = {
+          'conservative': 4.5,  // 4.5% for conservative
+          'moderate': 7,        // 7% for moderate
+          'aggressive': 9.5     // 9.5% for aggressive
+        };
+        setValue('investmentReturnRate', returnRates[onboardingData.investmentConfidence] || 7);
+      }
+
+      // Set rent inflation based on market conditions
+      if (onboardingData.marketOutlook) {
+        const rentInflationRates = {
+          'hot': 4.5,      // Higher rent inflation in hot markets
+          'stable': 3,     // Normal inflation
+          'cooling': 2,    // Lower inflation in cooling markets
+          'uncertain': 3.5 // Slightly higher due to uncertainty
+        };
+        setValue('rentInflationRate', rentInflationRates[onboardingData.marketOutlook] || 3);
+      }
+    }
+  }, [onboardingData, setValue]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="input-form">
@@ -286,43 +326,65 @@ export default function InputForm({ onSubmit, isCalculating = false }: InputForm
         />
       </div>
 
-      <div className="form-section">
-        <h3>Economic Assumptions</h3>
-        
-        <InputField
-          label="Home Appreciation"
-          name="homeAppreciationRate"
-          register={register}
-          error={errors.homeAppreciationRate?.message}
-          suffix="% /year"
-          min={-10}
-          max={20}
-          step={0.5}
-        />
-        
-        <InputField
-          label="Rent Inflation"
-          name="rentInflationRate"
-          register={register}
-          error={errors.rentInflationRate?.message}
-          suffix="% /year"
-          min={-5}
-          max={15}
-          step={0.5}
-        />
-        
-        <InputField
-          label="Investment Return"
-          name="investmentReturnRate"
-          register={register}
-          error={errors.investmentReturnRate?.message}
-          suffix="% /year"
-          min={-10}
-          max={30}
-          step={0.5}
-          tooltip="Expected return if you invested instead"
-        />
-      </div>
+      {!onboardingData && (
+        <div className="form-section">
+          <h3>Economic Assumptions</h3>
+          
+          <InputField
+            label="Home Appreciation"
+            name="homeAppreciationRate"
+            register={register}
+            error={errors.homeAppreciationRate?.message}
+            suffix="% /year"
+            min={-10}
+            max={20}
+            step={0.5}
+          />
+          
+          <InputField
+            label="Rent Inflation"
+            name="rentInflationRate"
+            register={register}
+            error={errors.rentInflationRate?.message}
+            suffix="% /year"
+            min={-5}
+            max={15}
+            step={0.5}
+          />
+          
+          <InputField
+            label="Investment Return"
+            name="investmentReturnRate"
+            register={register}
+            error={errors.investmentReturnRate?.message}
+            suffix="% /year"
+            min={-10}
+            max={30}
+            step={0.5}
+            tooltip="Expected return if you invested instead"
+          />
+        </div>
+      )}
+      
+      {onboardingData && (
+        <div className="form-section economic-summary">
+          <h3>Economic Assumptions</h3>
+          <p className="summary-note">Based on your profile:</p>
+          <div className="assumption-display">
+            <div className="assumption-item">
+              <span className="label">Market Outlook:</span>
+              <span className="value">{onboardingData.marketOutlook}</span>
+            </div>
+            <div className="assumption-item">
+              <span className="label">Investment Style:</span>
+              <span className="value">{onboardingData.investmentConfidence}</span>
+            </div>
+            <div className="assumption-item">
+              <span className="label">Auto-calculated rates applied</span>
+            </div>
+          </div>
+        </div>
+      )}
       
       <div className="form-actions">
         <button 

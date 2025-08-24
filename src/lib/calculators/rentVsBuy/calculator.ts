@@ -93,7 +93,10 @@ function calculateTaxBenefit(
 /**
  * Main calculator function
  */
-export function calculateRentVsBuy(params: RentVsBuyParams): CalculationResult {
+export function calculateRentVsBuy(
+  params: RentVsBuyParams, 
+  financialInfo?: { annualIncome: number; monthlyDebts: number; currentSavings: number }
+): CalculationResult {
   const months = params.plannedYears * 12;
   const monthlyData: MonthlyComparison[] = [];
   
@@ -249,8 +252,11 @@ export function calculateRentVsBuy(params: RentVsBuyParams): CalculationResult {
   
   // Calculate monthly payment and ratios
   const monthlyPayment = amortization[0].payment;
-  const estimatedMonthlyIncome = params.homePrice / 4 / 12; // Rough estimate: home price = 4x annual income
-  const monthlyPaymentRatio = (monthlyPayment / estimatedMonthlyIncome) * 100;
+  const monthlyIncome = financialInfo?.annualIncome 
+    ? financialInfo.annualIncome / 12 
+    : params.homePrice / 4 / 12; // Fallback estimate: home price = 4x annual income
+  const totalMonthlyDebt = (financialInfo?.monthlyDebts || 0) + monthlyPayment;
+  const monthlyPaymentRatio = (totalMonthlyDebt / monthlyIncome) * 100;
   
   // Calculate effective interest rate after tax benefits
   const nominalTotalInterest = totalInterestPaid;
