@@ -1,0 +1,54 @@
+---
+import LiquidHeroComponent from './LiquidHero/LiquidHero.tsx';
+
+export interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+<div class={`liquid-hero-container ${className || ''}`} data-liquid-hero>
+  <LiquidHeroComponent client:load />
+</div>
+
+<script>
+  // Pass dark mode state to React component
+  const liquidContainer = document.querySelector('[data-liquid-hero]');
+  
+  if (liquidContainer) {
+    const updateDarkMode = () => {
+      const isDarkMode = document.documentElement.classList.contains('dark');
+      const event = new CustomEvent('darkModeChange', { detail: { isDarkMode } });
+      liquidContainer.dispatchEvent(event);
+    };
+    
+    // Watch for dark mode changes
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.attributeName === 'class') {
+          updateDarkMode();
+        }
+      });
+    });
+    
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+    
+    // Initial update
+    updateDarkMode();
+  }
+</script>
+
+<style>
+  .liquid-hero-container {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+  }
+</style>
