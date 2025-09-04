@@ -15,6 +15,8 @@ completedItems:
   - Credentials management
   - Dynamic homepage featured content
   - Roadmap content management
+  - Tools documentation system
+  - Thoughtful apps showcase
 ---
 
-Implementing a full-featured content management system using Astro's content collections to organize and manage all site content efficiently. This foundation will power all aspects of the site including blog posts, projects, credentials, and the roadmap itself.
+Nearly complete! The content management system using Astro's content collections is successfully organizing and managing all site content. This foundation now powers blog posts, projects, credentials, tools documentation, thoughtful apps, and the roadmap itself. Final touches include refining the publishing workflow and creating templates for new tool types.

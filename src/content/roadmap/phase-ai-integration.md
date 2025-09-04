@@ -1,17 +1,17 @@
 ---
-title: "Phase 7: AI Integration"
-description: "Exploring the integration of AI-powered features to enhance content creation, personalization, and user interactions across the site."
+title: "Phase 5: Multi-Modal AI Integration"
+description: "Enhance tools and platform with cutting-edge AI including voice, vision, and personalized insights."
 phase: future
 status: exploring
-order: 7
-timeframe: "Q3-Q4 2026"
+order: 5
+timeframe: "Q1-Q2 2026"
 goals:
-  - "Research AI content enhancement possibilities"
-  - "Experiment with personalized experiences"
-  - "Develop AI-assisted creation tools"
-  - "Implement responsible AI practices"
+  - "Implement voice interfaces for accessibility"
+  - "Add computer vision for document analysis"
+  - "Create personalized recommendations"
+  - "Build smart defaults and predictions"
 relatedRoadmapItems:
-  - ai-enhanced-content
+  - multi-modal-ai
 ---
 
-This experimental phase explores how AI technologies can enhance the site experience, focusing on thoughtful integrations that provide genuine value rather than gimmicks, with careful attention to ethical considerations and user privacy.
+Integrating advanced AI capabilities to create more intelligent and accessible experiences. This includes voice interfaces for hands-free operation, computer vision for analyzing receipts and documents, and machine learning for personalized insights. The focus is on practical AI that enhances user experience while maintaining privacy and control.

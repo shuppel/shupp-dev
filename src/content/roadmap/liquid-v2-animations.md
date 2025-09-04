@@ -1,15 +1,18 @@
 ---
 title: Liquid v2 Animations
 description: Enhancing the visual experience with advanced liquid animations that create a unique, immersive interface.
-phase: future
-status: later
-order: 5
+phase: upcoming
+status: next
+order: 6
 features:
   - WebGL fluid simulations
   - Interactive particle effects
   - Scroll-based transformations
   - Liquid cursor effects
-completedItems: []
+completedItems:
+  - Basic liquid theme established
+  - CSS animations implemented
+  - Glassmorphism effects
 ---
 
-Elevating the visual and interactive experience with advanced animations and effects that embody the "liquid" design philosophy. This project will leverage WebGL for fluid simulations, create responsive physics-based interactions, and develop custom scroll experiences.
+Building on the established liquid design system to create next-level visual experiences. This initiative will leverage WebGL for realistic fluid simulations, implement physics-based interactions, and develop a signature animation library that differentiates the platform while maintaining optimal performance.
