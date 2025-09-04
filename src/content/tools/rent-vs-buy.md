@@ -4,10 +4,7 @@ description: "Calculate whether it's better to rent or buy a home based on your 
 category: "Financial"
 status: "active"
 component: "RentVsBuy"
-githubUrl: "https://github.com/shupp-dev/rent-vs-buy-calculator"
-originalSource:
-  name: "NYT Rent vs Buy Calculator"
-  url: "https://www.nytimes.com/interactive/2014/upshot/buy-rent-calculator.html"
+githubUrl: "https://github.com/shuppel/shupp.dev"
 features:
   - "Compare total costs of renting vs buying over time"
   - "Adjustable mortgage rates and down payment"
@@ -27,7 +24,7 @@ featured: true
 previewImage: "/images/tools/rent-vs-buy-preview.png"
 ---
 
-The Rent vs Buy Calculator helps you make one of life's biggest financial decisions: whether to rent or buy a home. Based on the acclaimed New York Times calculator, this tool considers all the hidden costs and benefits of both options.
+The Rent vs Buy Calculator helps you make one of life's biggest financial decisions: whether to rent or buy a home. This tool considers all the hidden costs and benefits of both options.
 
 ### How It Works
 
@@ -51,6 +48,6 @@ This calculator makes several assumptions that you can adjust:
 - Inflation rate
 - Length of time you plan to stay
 
-### About the Original
+### Similar To
 
-This calculator is inspired by the New York Times' excellent Buy vs. Rent Calculator, reimplemented as an open-source tool with modern web technologies.
+This calculator is similar to other rent vs buy calculators like the one from the New York Times, but implemented with modern web technologies and tailored for today's market conditions.

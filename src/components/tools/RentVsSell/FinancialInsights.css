@@ -1,0 +1,350 @@
+/* Financial Insights - Liquid Design Implementation */
+
+/* Import shared theme */
+@import '../shared/liquid-theme.css';
+
+.financial-insights {
+  margin-top: 3rem;
+  padding: 2rem;
+  background: rgba(73, 71, 91, 0.6);
+  backdrop-filter: blur(20px);
+  border-radius: 24px;
+  border: 1px solid rgba(172, 193, 150, 0.15);
+  box-shadow: 
+    0 8px 24px rgba(14, 8, 14, 0.3),
+    0 2px 8px rgba(172, 193, 150, 0.1);
+  position: relative;
+  overflow: hidden;
+}
+
+.financial-insights::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(
+    90deg,
+    var(--accent-sage),
+    var(--accent-light),
+    var(--accent-teal)
+  );
+  animation: liquidShimmer 3s ease-in-out infinite;
+}
+
+.financial-insights h3 {
+  font-size: 1.75rem;
+  margin-bottom: 2rem;
+  color: var(--text-primary);
+  text-align: center;
+  font-family: var(--font-header);
+  background: linear-gradient(
+    135deg,
+    var(--text-primary),
+    var(--accent-sage)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.insights-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.insight-card {
+  background: rgba(14, 8, 14, 0.4);
+  padding: 1.5rem;
+  border-radius: 16px;
+  border: 1px solid rgba(172, 193, 150, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.insight-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent-sage),
+    var(--accent-light),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: liquidSweep 6s ease-in-out infinite;
+}
+
+.insight-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(14, 8, 14, 0.2);
+  border-color: var(--accent-sage);
+}
+
+.insight-icon {
+  font-size: 2rem;
+  margin-bottom: 0.75rem;
+  display: block;
+}
+
+.insight-card h4 {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+  font-family: var(--font-secondary);
+}
+
+.insight-card p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.insight-card strong {
+  color: var(--accent-sage);
+  font-weight: 600;
+}
+
+.cash-flow-indicator {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(172, 193, 150, 0.1);
+}
+
+.indicator {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.indicator.positive {
+  background: rgba(172, 193, 150, 0.15);
+  color: var(--accent-sage);
+}
+
+.indicator.negative {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.tax-breakdown {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(172, 193, 150, 0.1);
+}
+
+.tax-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  padding: 0.25rem 0;
+}
+
+.tax-item span:first-child {
+  color: var(--text-muted);
+}
+
+.tax-item span:last-child {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.roi-metric {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  background: rgba(172, 193, 150, 0.1);
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 500;
+  color: var(--accent-sage);
+}
+
+/* Risk Analysis */
+.risk-analysis {
+  background: rgba(14, 8, 14, 0.4);
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px solid rgba(172, 193, 150, 0.1);
+  margin-bottom: 2rem;
+}
+
+.risk-analysis h4 {
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  font-family: var(--font-secondary);
+}
+
+.risk-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+}
+
+.risk-item {
+  padding: 1.25rem;
+  background: rgba(73, 71, 91, 0.3);
+  border-radius: 12px;
+  border: 1px solid rgba(172, 193, 150, 0.1);
+  transition: all 0.3s ease;
+}
+
+.risk-item:hover {
+  background: rgba(73, 71, 91, 0.5);
+  transform: translateY(-2px);
+}
+
+.risk-item h5 {
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.risk-level {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 15px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.risk-level.low {
+  background: rgba(172, 193, 150, 0.15);
+  color: var(--accent-sage);
+}
+
+.risk-level.medium {
+  background: rgba(233, 235, 158, 0.15);
+  color: var(--accent-light);
+}
+
+.risk-level.high {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+
+.risk-item p {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Scenario Analysis */
+.scenario-analysis {
+  background: rgba(14, 8, 14, 0.4);
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px solid rgba(172, 193, 150, 0.1);
+  margin-bottom: 2rem;
+}
+
+.scenario-analysis h4 {
+  font-size: 1.3rem;
+  margin-bottom: 1.5rem;
+  color: var(--text-primary);
+  font-family: var(--font-secondary);
+}
+
+.scenarios {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.scenario {
+  flex: 1;
+  min-width: 150px;
+  padding: 1rem;
+  background: rgba(73, 71, 91, 0.3);
+  border-radius: 8px;
+  border: 1px solid rgba(172, 193, 150, 0.1);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.scenario:hover {
+  background: rgba(73, 71, 91, 0.5);
+  transform: translateY(-2px);
+}
+
+.scenario-label {
+  display: block;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent-sage);
+  margin-bottom: 0.5rem;
+}
+
+.scenario p {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+/* Next Steps */
+.next-steps {
+  background: linear-gradient(135deg, rgba(172, 193, 150, 0.1), rgba(233, 235, 158, 0.05));
+  padding: 2rem;
+  border-radius: 16px;
+  border: 1px solid rgba(172, 193, 150, 0.3);
+}
+
+.next-steps h4 {
+  font-size: 1.3rem;
+  margin-bottom: 1rem;
+  color: var(--text-primary);
+  font-family: var(--font-secondary);
+}
+
+.next-steps ol {
+  padding-left: 1.5rem;
+}
+
+.next-steps li {
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .financial-insights {
+    padding: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .financial-insights h3 {
+    font-size: 1.5rem;
+  }
+
+  .insights-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .risk-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .scenarios {
+    flex-direction: column;
+  }
+
+  .scenario {
+    width: 100%;
+  }
+}

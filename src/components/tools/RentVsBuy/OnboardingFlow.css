@@ -1,5 +1,9 @@
 /* Onboarding Flow - Liquid Design with Proper Spacing */
 
+/* Import shared theme */
+@import '../shared/liquid-theme.css';
+@import '../shared/components.css';
+
 .onboarding-container {
   width: 100%;
   min-height: 100vh;
@@ -221,6 +225,7 @@
   grid-template-columns: 1fr;
 }
 
+/* Option Buttons - Critical for proper styling */
 .option-button {
   display: flex;
   align-items: center;
@@ -374,6 +379,7 @@
   border-top: 1px solid rgba(172, 193, 150, 0.1);
 }
 
+/* Action Buttons - Critical for proper styling */
 .action-button {
   padding: 1rem 2.5rem;
   border-radius: 50px;
@@ -472,5 +478,190 @@
   
   .step-content {
     min-height: auto;
+  }
+}
+
+/* V2 Onboarding Styles - 2-Tier Category System */
+.onboarding-container.v2 .category-indicators {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2rem;
+  gap: 1rem;
+}
+
+.category-indicator {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(14, 8, 14, 0.4);
+  border: 2px solid rgba(172, 193, 150, 0.2);
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0.6;
+}
+
+.category-indicator:hover {
+  background: rgba(14, 8, 14, 0.6);
+  border-color: rgba(172, 193, 150, 0.3);
+  transform: translateY(-2px);
+}
+
+.category-indicator.active,
+.category-indicator.completed {
+  opacity: 1;
+}
+
+.category-indicator.active {
+  background: linear-gradient(
+    135deg,
+    rgba(172, 193, 150, 0.2),
+    rgba(233, 235, 158, 0.1)
+  );
+  border-color: var(--accent-sage);
+  box-shadow: 0 4px 12px rgba(172, 193, 150, 0.2);
+}
+
+.category-icon {
+  font-size: 2rem;
+  animation: liquidBounce 2s ease-in-out infinite;
+}
+
+.category-indicator.active .category-icon {
+  animation: none;
+  transform: scale(1.1);
+}
+
+.category-label {
+  font-family: var(--font-secondary);
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.category-indicator.active .category-label {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Breadcrumb Navigation */
+.content-header {
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  font-family: var(--font-secondary);
+}
+
+.breadcrumb-category {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.breadcrumb-separator {
+  color: var(--text-muted);
+  font-size: 1.2rem;
+}
+
+.breadcrumb-section {
+  font-weight: 500;
+  color: var(--accent-sage);
+}
+
+.section-description {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* Section wrapper */
+.section-wrapper {
+  min-height: 350px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.section-content {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Section dots */
+.section-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.section-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(172, 193, 150, 0.2);
+  transition: all 0.3s ease;
+}
+
+.section-dot.active {
+  width: 24px;
+  border-radius: 4px;
+  background: var(--accent-sage);
+}
+
+.section-dot.completed {
+  background: var(--accent-sage);
+  opacity: 0.5;
+}
+
+/* Compact button styles for v2 */
+.button-group.compact {
+  gap: 0.75rem;
+}
+
+.option-button.compact {
+  padding: 0.875rem 1.25rem;
+}
+
+.option-button.compact .option-icon {
+  font-size: 1.5rem;
+}
+
+.option-button.compact .option-text strong {
+  font-size: 0.95rem;
+}
+
+.option-button.compact .option-text small {
+  font-size: 0.8rem;
+}
+
+/* V2 Responsive */
+@media (max-width: 768px) {
+  .onboarding-container.v2 .category-indicators {
+    flex-direction: column;
+  }
+  
+  .category-indicator {
+    flex-direction: row;
+    padding: 0.75rem;
+  }
+  
+  .category-icon {
+    font-size: 1.5rem;
   }
 }

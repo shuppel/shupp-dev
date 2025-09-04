@@ -3,6 +3,14 @@
 /* Import shared theme */
 @import '../shared/liquid-theme.css';
 
+.rvs-results {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(1.5rem, 3vw, 2rem);
+  height: 100%;
+  width: 100%;
+}
+
 .results-display {
   display: flex;
   flex-direction: column;
@@ -99,13 +107,13 @@
   50% { transform: scale(1.05); }
 }
 
-.recommendation-badge.buy {
+.recommendation-badge.rent {
   background: linear-gradient(135deg, var(--accent-sage), var(--accent-light));
   color: var(--primary-dark);
   box-shadow: 0 8px 25px rgba(172, 193, 150, 0.3);
 }
 
-.recommendation-badge.rent {
+.recommendation-badge.sell {
   background: linear-gradient(135deg, var(--accent-teal), var(--accent-sage));
   color: var(--text-primary);
   box-shadow: 0 8px 25px rgba(121, 148, 150, 0.3);
@@ -186,49 +194,41 @@
   line-height: 1.2;
 }
 
-/* Wealth Comparison Section */
-.wealth-comparison {
+/* Financial Breakdown Section */
+.financial-breakdown {
   margin-top: 1rem;
 }
 
-.wealth-comparison h4 {
+.financial-breakdown h4 {
   font-family: var(--font-secondary);
   font-size: 1.3rem;
   font-weight: 600;
   color: var(--accent-sage);
   margin: 0 0 1.5rem 0;
-  text-align: center;
 }
 
-.wealth-grid {
+.breakdown-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 2rem;
 }
 
 @media (max-width: 640px) {
-  .wealth-grid {
+  .breakdown-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
   }
-  
-  .wealth-card {
-    min-height: auto;
-    padding: 1.5rem;
-  }
 }
 
-.wealth-card {
+.breakdown-card {
   position: relative;
   padding: 2rem;
   border-radius: 20px;
-  text-align: center;
-  overflow: visible;
+  overflow: hidden;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  min-height: 180px;
 }
 
-.wealth-card.buying {
+.breakdown-card.renting {
   background: linear-gradient(
     135deg,
     rgba(172, 193, 150, 0.15),
@@ -237,7 +237,7 @@
   border: 2px solid rgba(172, 193, 150, 0.3);
 }
 
-.wealth-card.renting {
+.breakdown-card.selling {
   background: linear-gradient(
     135deg,
     rgba(121, 148, 150, 0.15),
@@ -246,32 +246,12 @@
   border: 2px solid rgba(121, 148, 150, 0.3);
 }
 
-.wealth-card::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(
-    circle,
-    rgba(233, 235, 158, 0.1) 0%,
-    transparent 70%
-  );
-  transform: translate(-50%, -50%) scale(0);
-  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.wealth-card:hover::before {
-  transform: translate(-50%, -50%) scale(1);
-}
-
-.wealth-card:hover {
+.breakdown-card:hover {
   transform: translateY(-6px);
   box-shadow: 0 15px 40px rgba(14, 8, 14, 0.2);
 }
 
-.wealth-label {
+.breakdown-label {
   font-family: var(--font-secondary);
   font-size: 1rem;
   font-weight: 600;
@@ -279,32 +259,73 @@
   margin-bottom: 1rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  text-align: center;
 }
 
-.wealth-value {
+.breakdown-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  background: rgba(73, 71, 91, 0.3);
+  border-radius: 12px;
+  border: 1px solid rgba(172, 193, 150, 0.1);
+  transition: all 0.2s ease;
+}
+
+.breakdown-item:hover {
+  background: rgba(73, 71, 91, 0.5);
+  border-color: var(--accent-sage);
+  transform: translateX(4px);
+}
+
+.breakdown-item-label {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.breakdown-item-value {
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.breakdown-total {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(172, 193, 150, 0.2);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.breakdown-total-label {
+  font-family: var(--font-secondary);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--accent-sage);
+}
+
+.breakdown-total-value {
   font-family: var(--font-header);
-  font-size: clamp(1.75rem, 5vw, 2.5rem);
+  font-size: 1.4rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin-bottom: 0.75rem;
-  display: block;
 }
 
-.wealth-description {
-  font-size: 0.9rem;
-  color: var(--text-muted);
-  line-height: 1.4;
-  margin-top: 0.5rem;
-  word-wrap: break-word;
-  hyphens: auto;
-}
-
-/* Monthly Preview */
-.monthly-preview {
+/* Monthly Cash Flow Preview */
+.cash-flow-preview {
   margin-top: 1rem;
 }
 
-.monthly-preview h4 {
+.cash-flow-preview h4 {
   font-family: var(--font-secondary);
   font-size: 1.3rem;
   font-weight: 600;
@@ -312,13 +333,13 @@
   margin: 0 0 1.5rem 0;
 }
 
-.cost-comparison {
+.cash-flow-timeline {
   display: flex;
   flex-direction: column;
   gap: 1rem;
 }
 
-.month-row {
+.timeline-item {
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 1.5rem;
@@ -330,48 +351,40 @@
   transition: all 0.3s ease;
 }
 
-.month-row:hover {
+.timeline-item:hover {
   background: rgba(73, 71, 91, 0.5);
   border-color: var(--accent-sage);
   transform: translateX(8px);
 }
 
-.month-label {
+.timeline-label {
   font-family: var(--font-secondary);
   font-weight: 600;
   color: var(--text-secondary);
-  min-width: 80px;
+  min-width: 100px;
 }
 
-.month-costs {
+.timeline-values {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
 }
 
-.cost-item {
+.timeline-value {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 0.95rem;
 }
 
-.cost-item span:first-child {
+.timeline-value span:first-child {
   color: var(--text-muted);
   font-weight: 500;
 }
 
-.cost-item span:last-child {
+.timeline-value span:last-child {
   color: var(--text-primary);
   font-weight: 600;
-}
-
-.more-data {
-  text-align: center;
-  padding: 1rem;
-  color: var(--text-muted);
-  font-style: italic;
-  border-top: 1px solid rgba(172, 193, 150, 0.1);
 }
 
 /* Disclaimers */
@@ -474,7 +487,7 @@
     grid-template-columns: 1fr;
   }
   
-  .month-costs {
+  .timeline-values {
     grid-template-columns: 1fr;
     gap: 0.5rem;
   }
@@ -483,15 +496,15 @@
     padding: 1.5rem;
   }
   
-  .wealth-card {
+  .breakdown-card {
     padding: 1.5rem;
   }
 }
 
 /* High Performance Animation Optimization */
 .metric-card,
-.wealth-card,
-.month-row {
+.breakdown-card,
+.timeline-item {
   will-change: transform;
 }
 
@@ -513,4 +526,170 @@
 
 .recommendation-badge[role="status"]:focus-visible::after {
   opacity: 0.3;
+}
+
+/* Results Tabs */
+.results-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  padding: 0.5rem;
+  background: rgba(14, 8, 14, 0.4);
+  border-radius: 16px;
+  border: 1px solid rgba(172, 193, 150, 0.1);
+  overflow-x: auto;
+}
+
+.results-tab {
+  padding: 0.75rem 1.5rem;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 12px;
+  color: var(--text-muted);
+  font-family: var(--font-secondary);
+  font-size: 0.95rem;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.results-tab:hover {
+  color: var(--text-secondary);
+  background: rgba(172, 193, 150, 0.05);
+}
+
+.results-tab.active {
+  color: var(--primary-dark);
+  background: linear-gradient(
+    135deg,
+    var(--accent-sage),
+    var(--accent-light)
+  );
+  border-color: transparent;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(172, 193, 150, 0.2);
+}
+
+/* Summary View */
+.summary-view {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Fix recommendation card styles */
+.recommendation-card.rent {
+  background: linear-gradient(
+    135deg,
+    rgba(16, 185, 129, 0.1),
+    rgba(172, 193, 150, 0.05)
+  );
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.recommendation-card.sell {
+  background: linear-gradient(
+    135deg,
+    rgba(245, 158, 11, 0.1),
+    rgba(233, 235, 158, 0.05)
+  );
+  border-color: rgba(245, 158, 11, 0.3);
+}
+
+.recommendation-card h3 {
+  font-family: var(--font-header);
+  font-size: clamp(1.5rem, 4vw, 2rem);
+  color: var(--text-primary);
+  margin: 0 0 1rem 0;
+}
+
+.advantage-amount {
+  font-family: var(--font-header);
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0.5rem 0;
+  background: linear-gradient(
+    135deg,
+    var(--text-primary),
+    var(--accent-sage)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.advantage-text {
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+  margin: 0.5rem 0;
+}
+
+.advantage-percent {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--accent-sage);
+  margin-top: 0.5rem;
+}
+
+/* Metrics Grid */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+/* Key Metrics Section */
+.key-metrics {
+  background: rgba(73, 71, 91, 0.4);
+  border: 1px solid rgba(172, 193, 150, 0.2);
+  border-radius: 16px;
+  padding: 2rem;
+  margin-top: 2rem;
+}
+
+.key-metrics h4 {
+  font-family: var(--font-secondary);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--accent-sage);
+  margin: 0 0 1.5rem 0;
+}
+
+.metrics-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.metric-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: rgba(14, 8, 14, 0.3);
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.metric-item:hover {
+  background: rgba(14, 8, 14, 0.5);
+  transform: translateX(4px);
+}
+
+.metric-item.highlight {
+  background: rgba(172, 193, 150, 0.1);
+  border: 1px solid rgba(172, 193, 150, 0.3);
+}
+
+.metric-name {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.metric-value {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-family: var(--font-header);
 }

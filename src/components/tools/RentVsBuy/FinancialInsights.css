@@ -1,5 +1,8 @@
 /* Financial Insights - Liquid Design Implementation */
 
+/* Import shared theme */
+@import '../shared/liquid-theme.css';
+
 .financial-insights {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));

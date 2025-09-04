@@ -4,6 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { RentVsBuySchema, defaultParams } from '../../../lib/calculators/rentVsBuy/validation';
 import type { RentVsBuyParams } from '../../../lib/calculators/rentVsBuy/types';
 import type { OnboardingData } from './OnboardingFlow';
+import LiquidSlider from '../shared/LiquidSlider';
 
 interface InputFormProps {
   onSubmit: (data: RentVsBuyParams) => void;
@@ -80,6 +81,7 @@ export default function InputForm({ onSubmit, isCalculating = false, onboardingD
     handleSubmit,
     formState: { errors },
     setValue,
+    watch,
   } = useForm<RentVsBuyParams>({
     resolver: zodResolver(RentVsBuySchema),
     defaultValues: defaultParams,
@@ -183,15 +185,17 @@ export default function InputForm({ onSubmit, isCalculating = false, onboardingD
           ]}
         />
         
-        <InputField
+        <LiquidSlider
           label="Years to Stay"
           name="plannedYears"
-          register={register}
+          value={watch('plannedYears') || 5}
+          onChange={(value) => setValue('plannedYears', value)}
           error={errors.plannedYears?.message}
           suffix="years"
           min={1}
           max={30}
           step={1}
+          tooltip="How long do you plan to live in the home?"
         />
       </div>
 

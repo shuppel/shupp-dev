@@ -43,7 +43,34 @@
       <feature>Development roadmap</feature>
       <feature>Dark mode toggle</feature>
       <feature>SEO optimized</feature>
+      <feature>Interactive calculator tools (Buy vs Rent, Rent vs Sell)</feature>
     </features>
+    
+    <tools>
+      <architecture>
+        <description>Calculator tools use a shared Liquid Design System with flowing animations and consistent UI</description>
+        <sharedLibrary location="/src/components/tools/shared/">
+          <file name="liquid-theme.css">
+            <purpose>Core design system variables, base styles, and animations</purpose>
+            <includes>Color palette, typography, spacing, transitions, base components</includes>
+          </file>
+          <file name="components.css">
+            <purpose>Reusable UI components that extend the liquid theme</purpose>
+            <includes>Buttons, cards, insights, charts, metrics, progress bars</includes>
+          </file>
+          <file name="calculator-theme.css">
+            <purpose>Calculator-specific shared styles</purpose>
+            <includes>Form layouts, input styles, wealth comparisons, payment breakdowns</includes>
+          </file>
+        </sharedLibrary>
+        <conventions>
+          <convention>All tools extend liquid-* classes from shared library</convention>
+          <convention>Tool-specific CSS only contains unique overrides</convention>
+          <convention>Use CSS custom properties (variables) for theming</convention>
+          <convention>Maintain consistent liquid animations across tools</convention>
+        </conventions>
+      </architecture>
+    </tools>
     
     <contentCollections>
       <collection name="authors" schema="strict" />
@@ -120,6 +147,8 @@
   </skills>
   
   <recentUpdates>
+    <update date="2025-08-26">Created shared CSS library for calculator tools</update>
+    <update date="2025-08-26">Refactored Buy vs Rent and Rent vs Sell tools to use shared CSS</update>
     <update date="2025-08-15">Added ESLint configuration with strict TypeScript rules</update>
     <update date="2025-08-15">Fixed primary button contrast in light mode</update>
     <update date="2025-08-15">Updated skills: combined TypeScript/React, added Machine Optimized Prompt Engineering and O(n) Scoping</update>
@@ -138,6 +167,16 @@
     <guideline priority="high">
       <rule>All email links must use erikk@shupp.dev</rule>
       <location>/src/config/site.ts</location>
+    </guideline>
+    
+    <guideline priority="high">
+      <rule>Use shared CSS libraries for calculator tools</rule>
+      <description>All calculator tools must use the shared liquid theme CSS library located at /src/components/tools/shared/</description>
+      <files>
+        <file>liquid-theme.css - Base theme variables and core styles</file>
+        <file>components.css - Reusable component styles</file>
+        <file>calculator-theme.css - Calculator-specific shared styles</file>
+      </files>
     </guideline>
     
     <guideline priority="medium">

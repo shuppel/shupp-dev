@@ -1,5 +1,8 @@
 /* User Profile - Liquid Design Implementation */
 
+/* Import shared theme */
+@import '../shared/liquid-theme.css';
+
 .user-profile-section {
   margin-bottom: 2rem;
   animation: liquidFadeIn 0.6s ease;

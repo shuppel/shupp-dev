@@ -107,21 +107,32 @@ const statusConfig = {
               <p class="app-card-tagline">{app.data.oneLiner}</p>
               
               <div class="app-metrics">
-                <div class="metric-group">
+                <div class="metric-group" data-rating={app.data.feasibility} data-metric="feasibility">
                   <span class="metric-label">Feasibility</span>
                   <div class="metric-stars">
                     {[...Array(5)].map((_, i) => (
                       <span class={`star ${i < app.data.feasibility ? 'filled' : ''}`}>⭐</span>
                     ))}
                   </div>
+                  <div class="metric-tooltip"></div>
                 </div>
-                <div class="metric-group">
+                <div class="metric-group" data-rating={app.data.excitement} data-metric="excitement">
                   <span class="metric-label">Excitement</span>
                   <div class="metric-stars">
                     {[...Array(5)].map((_, i) => (
                       <span class={`star ${i < app.data.excitement ? 'filled' : ''}`}>⭐</span>
                     ))}
                   </div>
+                  <div class="metric-tooltip"></div>
+                </div>
+                <div class="metric-group" data-rating={app.data.seriousness} data-metric="seriousness">
+                  <span class="metric-label">Seriousness</span>
+                  <div class="metric-stars">
+                    {[...Array(5)].map((_, i) => (
+                      <span class={`star ${i < app.data.seriousness ? 'filled' : ''}`}>⭐</span>
+                    ))}
+                  </div>
+                  <div class="metric-tooltip"></div>
                 </div>
               </div>
               
@@ -160,6 +171,44 @@ const statusConfig = {
     let currentStatusFilter = 'all';
     let currentCategoryFilter = 'all';
     let currentSort = 'excitement';
+
+    // Rating descriptions
+    const ratingDescriptions = {
+      feasibility: {
+        1: "Very challenging to implement - requires breakthrough technology or massive resources",
+        2: "Difficult to build - significant technical or resource challenges",
+        3: "Moderately feasible - achievable with effort and the right team",
+        4: "Highly feasible - straightforward to implement with existing technology",
+        5: "Extremely feasible - could be built quickly with minimal resources"
+      },
+      excitement: {
+        1: "Low interest - solves a minor problem for few people",
+        2: "Some interest - useful but not particularly compelling",
+        3: "Moderate excitement - solid idea that would attract users",
+        4: "High excitement - people would be eager to use this",
+        5: "Extremely exciting - potential game-changer that people would love"
+      },
+      seriousness: {
+        1: "Ridiculous fun - purely playful or experimental idea",
+        2: "Mostly fun - entertainment-focused with minor practical value",
+        3: "Balanced - mix of practical utility and enjoyable experience",
+        4: "Seriously good - would genuinely benefit many people's lives",
+        5: "Profoundly impactful - could significantly improve humanity"
+      }
+    };
+
+    // Populate tooltips
+    const metricGroups = document.querySelectorAll('.metric-group');
+    metricGroups.forEach(group => {
+      const rating = parseInt(group.getAttribute('data-rating') || '0');
+      const metric = group.getAttribute('data-metric') as keyof typeof ratingDescriptions;
+      const tooltip = group.querySelector('.metric-tooltip');
+      
+      if (tooltip && rating && metric && ratingDescriptions[metric]) {
+        const description = ratingDescriptions[metric][rating as keyof typeof ratingDescriptions.feasibility];
+        tooltip.innerHTML = `<strong>${rating}/5 ${metric}</strong>${description}`;
+      }
+    });
 
     // Filter and sort apps
     const filterAndSortApps = () => {
@@ -569,10 +618,67 @@ const statusConfig = {
   }
 
   .metric-label {
-    display: block;
-    font-size: 0.8rem;
-    color: var(--text-light);
+    font-size: 0.85rem;
+    font-weight: 600;
     margin-bottom: 0.25rem;
+    text-transform: capitalize;
+    cursor: help;
+    position: relative;
+    border-bottom: 1px dotted var(--text-light);
+  }
+
+  /* Tooltip styles */
+  .metric-group {
+    position: relative;
+  }
+
+  .metric-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: 10px;
+    padding: 10px 15px;
+    background: white;
+    color: #1f2937;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    width: 250px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+    z-index: 1000;
+    pointer-events: none;
+  }
+
+  html.dark .metric-tooltip {
+    background: #1a1a22;
+    color: #f3f4f6;
+    border-color: #3a3a42;
+  }
+
+  .metric-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border: 8px solid transparent;
+    border-top-color: var(--border-color);
+  }
+
+  .metric-group:hover .metric-tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .metric-tooltip strong {
+    color: var(--primary-color);
+    display: block;
+    margin-bottom: 5px;
   }
 
   .metric-stars {

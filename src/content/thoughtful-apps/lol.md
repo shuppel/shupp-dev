@@ -56,9 +56,14 @@ resources:
 lastUpdated: 2025-01-15
 feasibility: 3
 excitement: 4
+seriousness: 3
 voteCount: 0
 ---
 
-# LoL (Labor of Love)
+Labor of Love comes from being god awful at house chores. Chore charts don't work, and gaslighting each other into tasks is not a good love language.
 
-Turn household chores into a game that keeps everyone happy.
+So I thought, hey, I love video games, especially RPGs. Maybe I can also say "hey, I told you so" or maybe get a back massage reward from my wife. So what would this require? Turning your daily chores into a video game?
+
+Maybe sensors for time spent in your laundry room and a small button to check out, with an e-ink dial to pick your name. Maybe an e-ink timer to tap every time you do your dishes. Regardless, the biggest thing is, you can create the ecosystem and do a proof so that your loved ones stay loved ones LOL!!
+
+The name itself is a triple entendre - it's Labor of Love (the work you do for those you love), it's LoL (because maintaining humor is crucial in relationships), and it's about proving you actually did the work. No more arguments about who did what last.

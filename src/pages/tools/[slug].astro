@@ -219,6 +219,10 @@ const categoryEmoji = categoryEmojis[entry.data.category] || '🔧';
         const { mount } = await import('../../components/tools/RentVsBuy/mount');
         toolMount.innerHTML = '<div class="calculator-wrapper"></div>';
         mount();
+      } else if (componentName === 'RentVsSell') {
+        const { mount } = await import('../../components/tools/RentVsSell/mount');
+        toolMount.innerHTML = '<div class="calculator-wrapper"></div>';
+        mount();
       } else {
         toolMount.innerHTML = `<div class="error-message">Component "${componentName}" not found.</div>`;
       }

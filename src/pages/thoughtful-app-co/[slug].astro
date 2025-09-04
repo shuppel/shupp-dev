@@ -67,21 +67,32 @@ const showTLDraw = isFeatureEnabled('enableTLDraw');
         <p class="app-tagline">{entry.data.oneLiner}</p>
         
         <div class="app-ratings">
-          <div class="rating-item">
+          <div class="rating-item" data-rating={entry.data.feasibility} data-metric="feasibility">
             <span class="rating-label">Feasibility:</span>
             <div class="rating-stars">
               {[...Array(5)].map((_, i) => (
                 <span class={`star ${i < entry.data.feasibility ? 'filled' : ''}`}>⭐</span>
               ))}
             </div>
+            <div class="rating-tooltip"></div>
           </div>
-          <div class="rating-item">
+          <div class="rating-item" data-rating={entry.data.excitement} data-metric="excitement">
             <span class="rating-label">Excitement:</span>
             <div class="rating-stars">
               {[...Array(5)].map((_, i) => (
                 <span class={`star ${i < entry.data.excitement ? 'filled' : ''}`}>⭐</span>
               ))}
             </div>
+            <div class="rating-tooltip"></div>
+          </div>
+          <div class="rating-item" data-rating={entry.data.seriousness} data-metric="seriousness">
+            <span class="rating-label">Seriousness:</span>
+            <div class="rating-stars">
+              {[...Array(5)].map((_, i) => (
+                <span class={`star ${i < entry.data.seriousness ? 'filled' : ''}`}>⭐</span>
+              ))}
+            </div>
+            <div class="rating-tooltip"></div>
           </div>
         </div>
       </div>
@@ -89,6 +100,13 @@ const showTLDraw = isFeatureEnabled('enableTLDraw');
       <section class="app-section">
         <h2>The Problem</h2>
         <p class="problem-statement">{entry.data.problem}</p>
+      </section>
+
+      <section class="app-section story-section">
+        <h2>The Story Behind This App</h2>
+        <div class="prose">
+          <Content />
+        </div>
       </section>
 
       {entry.data.mainMockup && showTLDraw && (
@@ -349,6 +367,44 @@ const showTLDraw = isFeatureEnabled('enableTLDraw');
 
 <script>
   document.addEventListener('DOMContentLoaded', () => {
+    // Rating descriptions
+    const ratingDescriptions = {
+      feasibility: {
+        1: "Very challenging to implement - requires breakthrough technology or massive resources",
+        2: "Difficult to build - significant technical or resource challenges",
+        3: "Moderately feasible - achievable with effort and the right team",
+        4: "Highly feasible - straightforward to implement with existing technology",
+        5: "Extremely feasible - could be built quickly with minimal resources"
+      },
+      excitement: {
+        1: "Low interest - solves a minor problem for few people",
+        2: "Some interest - useful but not particularly compelling",
+        3: "Moderate excitement - solid idea that would attract users",
+        4: "High excitement - people would be eager to use this",
+        5: "Extremely exciting - potential game-changer that people would love"
+      },
+      seriousness: {
+        1: "Ridiculous fun - purely playful or experimental idea",
+        2: "Mostly fun - entertainment-focused with minor practical value",
+        3: "Balanced - mix of practical utility and enjoyable experience",
+        4: "Seriously good - would genuinely benefit many people's lives",
+        5: "Profoundly impactful - could significantly improve humanity"
+      }
+    };
+
+    // Populate tooltips
+    const ratingItems = document.querySelectorAll('.rating-item');
+    ratingItems.forEach(item => {
+      const rating = parseInt(item.getAttribute('data-rating') || '0');
+      const metric = item.getAttribute('data-metric') as keyof typeof ratingDescriptions;
+      const tooltip = item.querySelector('.rating-tooltip');
+      
+      if (tooltip && rating && metric && ratingDescriptions[metric]) {
+        const description = ratingDescriptions[metric][rating as keyof typeof ratingDescriptions.feasibility];
+        tooltip.innerHTML = `<strong>${rating}/5 ${metric.charAt(0).toUpperCase() + metric.slice(1)}</strong>${description}`;
+      }
+    });
+
     // Handle notify form
     const notifyForm = document.getElementById('notify-form');
     notifyForm?.addEventListener('submit', (e) => {
@@ -487,11 +543,63 @@ const showTLDraw = isFeatureEnabled('enableTLDraw');
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    position: relative;
   }
 
   .rating-label {
     font-weight: 500;
     color: var(--text-color);
+    cursor: help;
+    border-bottom: 1px dotted var(--text-light);
+  }
+
+  /* Tooltip styles */
+  .rating-tooltip {
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    margin-bottom: 10px;
+    padding: 10px 15px;
+    background: white;
+    color: #1f2937;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    font-size: 0.9rem;
+    line-height: 1.4;
+    width: 300px;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s, visibility 0.3s;
+    z-index: 1000;
+    pointer-events: none;
+  }
+
+  html.dark .rating-tooltip {
+    background: #1a1a22;
+    color: #f3f4f6;
+    border-color: #3a3a42;
+  }
+
+  .rating-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50px;
+    border: 8px solid transparent;
+    border-top-color: var(--border-color);
+  }
+
+  .rating-item:hover .rating-tooltip {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  .rating-tooltip strong {
+    color: var(--primary-color);
+    display: block;
+    margin-bottom: 5px;
+    font-size: 1rem;
   }
 
   .rating-stars {
@@ -530,6 +638,32 @@ const showTLDraw = isFeatureEnabled('enableTLDraw');
     font-size: 1.1rem;
     line-height: 1.7;
     color: var(--text-color);
+  }
+
+  /* Story Section */
+  .story-section .prose {
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--text-color);
+  }
+
+  .story-section .prose h2 {
+    font-size: 1.5rem;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+  }
+
+  .story-section .prose p {
+    margin-bottom: 1rem;
+  }
+
+  .story-section {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.03), rgba(59, 130, 246, 0.03));
+  }
+
+  html.dark .story-section {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.08), rgba(59, 130, 246, 0.08));
   }
 
   /* Mockup Containers */

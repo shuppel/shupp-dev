@@ -207,6 +207,7 @@ const thoughtfulAppsCollection = defineCollection({
     lastUpdated: z.date(),
     feasibility: z.number().min(1).max(5),
     excitement: z.number().min(1).max(5),
+    seriousness: z.number().min(1).max(5), // 1=ridiculous fun, 5=seriously impactful
     voteCount: z.number().default(0), // Will be updated dynamically
   }),
 });

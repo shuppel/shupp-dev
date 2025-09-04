@@ -1,0 +1,599 @@
+/* Liquid Theme - Shared CSS Library for Tools */
+
+:root {
+  /* Design System Colors */
+  --primary-dark: #14080E;
+  --secondary-dark: #49475B;
+  --accent-teal: #799496;
+  --accent-sage: #ACC196;
+  --accent-light: #E9EB9E;
+  
+  /* Semantic Colors */
+  --surface-primary: #14080E;
+  --surface-secondary: rgba(73, 71, 91, 0.95);
+  --surface-tertiary: rgba(121, 148, 150, 0.1);
+  --surface-accent: rgba(172, 193, 150, 0.08);
+  --surface-highlight: rgba(233, 235, 158, 0.12);
+  
+  /* Text Colors */
+  --text-primary: #E9EB9E;
+  --text-secondary: #ACC196;
+  --text-muted: rgba(172, 193, 150, 0.7);
+  --text-accent: #799496;
+  
+  /* Interactive States */
+  --focus-color: #ACC196;
+  --hover-color: rgba(121, 148, 150, 0.2);
+  --active-color: #799496;
+  
+  /* Typography */
+  --font-header: 'Maitree', serif;
+  --font-secondary: 'Cairo', sans-serif;
+  --font-body: 'Hind', sans-serif;
+  
+  /* Spacing */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2rem;
+  --space-2xl: 3rem;
+  
+  /* Border Radius */
+  --radius-sm: 12px;
+  --radius-md: 16px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
+  --radius-2xl: 32px;
+  --radius-full: 50px;
+  
+  /* Shadows */
+  --shadow-sm: 0 2px 8px rgba(14, 8, 14, 0.1);
+  --shadow-md: 0 8px 24px rgba(14, 8, 14, 0.2);
+  --shadow-lg: 0 15px 40px rgba(14, 8, 14, 0.3);
+  --shadow-xl: 0 25px 60px rgba(14, 8, 14, 0.4);
+  
+  /* Transitions */
+  --transition-base: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-fast: 0.2s ease;
+}
+
+/* Base Tool Container */
+.liquid-tool {
+  width: 100%;
+  min-height: 100vh;
+  background: linear-gradient(
+    135deg,
+    var(--primary-dark) 0%,
+    var(--secondary-dark) 50%,
+    var(--accent-teal) 100%
+  );
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Container Wrapper */
+.liquid-container {
+  width: 100%;
+  max-width: 100vw;
+  padding: var(--space-2xl);
+  box-sizing: border-box;
+}
+
+/* Layout Grid */
+.liquid-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-2xl);
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+}
+
+@media (min-width: 1024px) {
+  .liquid-layout {
+    grid-template-columns: 1fr 1fr;
+    align-items: start;
+  }
+}
+
+/* Flowing Background Animation */
+.liquid-layout::before {
+  content: '';
+  position: fixed;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(
+    circle at 30% 70%,
+    rgba(172, 193, 150, 0.03) 0%,
+    transparent 50%
+  ),
+  radial-gradient(
+    circle at 80% 20%,
+    rgba(121, 148, 150, 0.05) 0%,
+    transparent 50%
+  ),
+  radial-gradient(
+    circle at 20% 20%,
+    rgba(233, 235, 158, 0.02) 0%,
+    transparent 50%
+  );
+  z-index: -1;
+  animation: liquidFlow 20s ease-in-out infinite;
+  will-change: transform;
+}
+
+/* Panels */
+.liquid-panel {
+  background: rgba(73, 71, 91, 0.7);
+  backdrop-filter: blur(20px);
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(172, 193, 150, 0.1);
+  padding: 2.5rem;
+  position: relative;
+  overflow: visible;
+  transition: all var(--transition-base);
+  will-change: transform, box-shadow;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.liquid-panel::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    var(--accent-sage),
+    var(--accent-light),
+    var(--accent-sage),
+    transparent
+  );
+  animation: liquidShimmer 3s ease-in-out infinite;
+}
+
+.liquid-panel:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 8px 32px rgba(14, 8, 14, 0.3),
+    0 2px 8px rgba(172, 193, 150, 0.1);
+}
+
+/* Headers */
+.liquid-header {
+  margin-bottom: var(--space-xl);
+  position: relative;
+}
+
+.liquid-header h2 {
+  font-family: var(--font-header);
+  font-size: clamp(1.75rem, 4vw, 2.25rem);
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 var(--space-sm) 0;
+  background: linear-gradient(
+    135deg,
+    var(--text-primary),
+    var(--accent-sage),
+    var(--accent-light)
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Form Sections */
+.liquid-section {
+  position: relative;
+  padding: var(--space-xl);
+  background: rgba(121, 148, 150, 0.05);
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(172, 193, 150, 0.1);
+  transition: all var(--transition-base);
+  margin-bottom: var(--space-lg);
+}
+
+.liquid-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    135deg,
+    rgba(172, 193, 150, 0.02),
+    rgba(233, 235, 158, 0.01)
+  );
+  opacity: 0;
+  transition: opacity var(--transition-base);
+  z-index: -1;
+}
+
+.liquid-section:hover::before {
+  opacity: 1;
+}
+
+.liquid-section h3 {
+  font-family: var(--font-secondary);
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--accent-sage);
+  margin: 0 0 var(--space-lg) 0;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.liquid-section h3::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: linear-gradient(
+    180deg,
+    var(--accent-sage),
+    var(--accent-light)
+  );
+  border-radius: 2px;
+  animation: liquidPulse 2s ease-in-out infinite;
+}
+
+/* Input Fields */
+.liquid-field {
+  margin-bottom: 1.75rem;
+  position: relative;
+}
+
+.liquid-field label {
+  display: block;
+  font-family: var(--font-secondary);
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-sm);
+  font-size: 0.95rem;
+  transition: color var(--transition-fast);
+}
+
+.liquid-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  background: rgba(14, 8, 14, 0.6);
+  border: 2px solid rgba(172, 193, 150, 0.2);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  transition: all var(--transition-base);
+}
+
+.liquid-input-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(172, 193, 150, 0.05),
+    transparent
+  );
+  transform: translateX(-100%);
+  transition: transform var(--transition-base);
+}
+
+.liquid-input-wrapper:hover::before,
+.liquid-input-wrapper:focus-within::before {
+  transform: translateX(100%);
+}
+
+.liquid-input-wrapper:focus-within {
+  border-color: var(--focus-color);
+  box-shadow: 
+    0 0 0 3px rgba(172, 193, 150, 0.1),
+    0 4px 12px rgba(14, 8, 14, 0.2);
+  transform: translateY(-1px);
+}
+
+.liquid-input-wrapper input,
+.liquid-input-wrapper select {
+  flex: 1;
+  padding: 0.875rem 1rem;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: 1rem;
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.liquid-input-wrapper input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Buttons */
+.liquid-button {
+  position: relative;
+  padding: 1rem 3rem;
+  background: linear-gradient(
+    135deg,
+    var(--accent-sage),
+    var(--accent-light)
+  );
+  color: var(--primary-dark);
+  border: none;
+  border-radius: var(--radius-full);
+  font-family: var(--font-secondary);
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  overflow: hidden;
+  transition: all var(--transition-base);
+  will-change: transform;
+}
+
+.liquid-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.2),
+    transparent
+  );
+  transition: left var(--transition-slow);
+}
+
+.liquid-button:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 
+    0 8px 25px rgba(172, 193, 150, 0.3),
+    0 4px 10px rgba(14, 8, 14, 0.2);
+}
+
+.liquid-button:hover::before {
+  left: 100%;
+}
+
+.liquid-button:active {
+  transform: translateY(-1px) scale(0.98);
+}
+
+.liquid-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.liquid-button.secondary {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 2px solid rgba(172, 193, 150, 0.3);
+}
+
+.liquid-button.secondary:hover {
+  border-color: var(--accent-sage);
+  color: var(--text-primary);
+  background: rgba(172, 193, 150, 0.05);
+}
+
+/* Cards */
+.liquid-card {
+  background: rgba(73, 71, 91, 0.6);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(172, 193, 150, 0.15);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-base);
+  animation: liquidFadeIn 0.6s ease backwards;
+}
+
+.liquid-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Animations */
+@keyframes liquidFlow {
+  0%, 100% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(1deg) scale(1.02); }
+  50% { transform: rotate(-1deg) scale(0.98); }
+  75% { transform: rotate(0.5deg) scale(1.01); }
+}
+
+@keyframes liquidShimmer {
+  0%, 100% { opacity: 0.3; transform: translateX(-100%); }
+  50% { opacity: 0.7; transform: translateX(100%); }
+}
+
+@keyframes liquidPulse {
+  0%, 100% { height: 20px; opacity: 0.7; }
+  50% { height: 24px; opacity: 1; }
+}
+
+@keyframes liquidFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes liquidSlideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes liquidBounce {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Error States */
+.liquid-field.has-error .liquid-input-wrapper {
+  border-color: #ff6b6b;
+  animation: liquidShake 0.4s ease-in-out;
+}
+
+@keyframes liquidShake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  75% { transform: translateX(4px); }
+}
+
+.liquid-error {
+  color: #ff6b6b;
+  font-size: 0.875rem;
+  margin-top: var(--space-sm);
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  animation: liquidSlideIn 0.3s ease;
+}
+
+/* Loading States */
+.liquid-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 300px;
+  gap: var(--space-lg);
+}
+
+.liquid-spinner {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  position: relative;
+  background: conic-gradient(
+    from 0deg,
+    var(--accent-sage),
+    var(--accent-light),
+    var(--accent-teal),
+    var(--accent-sage)
+  );
+  animation: liquidSpin 2s linear infinite;
+}
+
+.liquid-spinner::before {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  right: 3px;
+  bottom: 3px;
+  background: var(--surface-secondary);
+  border-radius: 50%;
+}
+
+@keyframes liquidSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .liquid-container {
+    padding: var(--space-xl);
+  }
+  
+  .liquid-layout {
+    gap: var(--space-xl);
+  }
+}
+
+@media (max-width: 768px) {
+  .liquid-container {
+    padding: var(--space-lg);
+  }
+  
+  .liquid-layout {
+    grid-template-columns: 1fr;
+    gap: var(--space-lg);
+  }
+  
+  .liquid-panel {
+    padding: var(--space-xl);
+    border-radius: var(--radius-lg);
+  }
+  
+  .liquid-section {
+    padding: var(--space-lg);
+    margin-bottom: 1.25rem;
+  }
+  
+  .liquid-button {
+    width: 100%;
+    padding: var(--space-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .liquid-container {
+    padding: var(--space-md);
+  }
+  
+  .liquid-section {
+    padding: var(--space-md);
+  }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .liquid-layout::before {
+    animation: none;
+  }
+}
+
+/* Utility Classes */
+.liquid-text-primary { color: var(--text-primary); }
+.liquid-text-secondary { color: var(--text-secondary); }
+.liquid-text-muted { color: var(--text-muted); }
+.liquid-text-accent { color: var(--text-accent); }
+
+.liquid-bg-primary { background: var(--surface-primary); }
+.liquid-bg-secondary { background: var(--surface-secondary); }
+.liquid-bg-tertiary { background: var(--surface-tertiary); }
+
+.liquid-mt-sm { margin-top: var(--space-sm); }
+.liquid-mt-md { margin-top: var(--space-md); }
+.liquid-mt-lg { margin-top: var(--space-lg); }
+.liquid-mt-xl { margin-top: var(--space-xl); }
+
+.liquid-mb-sm { margin-bottom: var(--space-sm); }
+.liquid-mb-md { margin-bottom: var(--space-md); }
+.liquid-mb-lg { margin-bottom: var(--space-lg); }
+.liquid-mb-xl { margin-bottom: var(--space-xl); }
+
+.liquid-text-center { text-align: center; }
+.liquid-text-left { text-align: left; }
+.liquid-text-right { text-align: right; }

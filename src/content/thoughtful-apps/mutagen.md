@@ -53,9 +53,14 @@ resources:
 lastUpdated: 2025-01-15
 feasibility: 2
 excitement: 5
+seriousness: 3
 voteCount: 0
 ---
 
-# Mutagen
+Mutagen comes from The Witcher's mutagens - those alchemical compounds that alter a Witcher's abilities to help combat specific fiends. Each mutagen provides different enhancements based on what you're facing.
 
-The app that evolves to meet your needs through AI-powered API morphing.
+I thought: using lightweight AI models, couldn't you create a Zapier on the fly? Wouldn't it be cool to scrape, search, and create APIs live in your program, then build that functionality directly into your app for life? 
+
+Imagine a client asks for a specific need, and instead of saying "we don't develop that," the app hits a validation checkpoint and actually has a "mutation" ability. It then develops that feature using some Claude-code-esque API trigger. The app literally evolves based on user needs, just like a Witcher adapts their mutations to face different monsters.
+
+This isn't just about connecting existing services - it's about apps that can grow new capabilities entirely. Your software becomes a living thing that adapts to your specific challenges.

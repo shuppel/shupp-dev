@@ -56,6 +56,7 @@ resources:
 lastUpdated: 2025-01-15
 feasibility: 4
 excitement: 5
+seriousness: 2
 voteCount: 0
 ---
 

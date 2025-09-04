@@ -56,9 +56,12 @@ resources:
 lastUpdated: 2025-01-15
 feasibility: 4
 excitement: 5
+seriousness: 5
 voteCount: 0
 ---
 
-# Agape
+I'm not really sure where this idea initially came from, but I felt nostalgic about my teen years when I was heavily involved with Reston Bible Church. Every year near Christmas time, we had groups who worked hard raking leaves, cleaning houses, and basically earning money from church members and community members. Then we'd use that money to purchase groceries for families in need for the holidays. We'd come by and bring them groceries around 6-7 PM.
 
-Connect your skills with community needs for maximum impact.
+This was awesome. It was a good feeling at the end of the day. I don't know where this gets lost in translation for some people. There needs to be some sort of marketplace to do good.
+
+Agape isn't just about matching volunteers with opportunities - it's about recreating that feeling of direct, tangible impact. The platform would help groups organize service projects that directly fund other charitable efforts, creating a virtuous cycle of community support.

@@ -1,5 +1,8 @@
 /* Comparison Chart - Liquid Design Implementation */
 
+/* Import shared theme */
+@import '../shared/liquid-theme.css';
+
 .chart-container {
   margin-top: 2rem;
   padding: 2rem;
@@ -216,17 +219,6 @@
   animation: liquidFadeIn 0.8s ease;
 }
 
-@keyframes liquidFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
 /* Loading state for charts */
 .chart-loading {
   display: flex;
@@ -244,4 +236,8 @@
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-right: 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

@@ -56,9 +56,12 @@ resources:
 lastUpdated: 2025-01-15
 feasibility: 4
 excitement: 5
+seriousness: 4
 voteCount: 0
 ---
 
-# FriendLy
+FriendLy comes from my struggle to make more of my friendships while battling my terrible time management skills and my own self-absorption. Not narcissistic self-absorption, but more of a pursuit of ideas and knowledge - a thirst and curiosity that often overrides my need to recharge the social battery.
 
-Never lose touch with the people who matter most.
+This idea emerged after Nurture, part of a train of thought about improving our ability to maintain connections without relying on direct social media. It's more of an inside-out social approach versus perceiving from the outside in. Instead of absorbing all your friends' lives through an algorithm, this is about an algorithm helping you actively reach out to your friends.
+
+I also believe (like my friend Todd) that you should run your personal life in some fashion like a successful business. Just as businesses have CRMs and scheduled touchpoints with clients, why shouldn't we have tools to be intentional about our friendships? FriendLy isn't about making relationships transactional - it's about giving structure to good intentions that often get lost in the chaos of daily life.
