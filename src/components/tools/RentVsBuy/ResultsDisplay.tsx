@@ -8,7 +8,7 @@ interface ResultsDisplayProps {
   results: CalculationResult;
 }
 
-export default function ResultsDisplay({ results }: ResultsDisplayProps) {
+export default function ResultsDisplay({ results }: ResultsDisplayProps): React.JSX.Element {
   const [chartType, setChartType] = useState<'cumulative' | 'monthly' | 'wealth'>('cumulative');
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
@@ -20,7 +20,7 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps) {
   };
 
   const formatBreakEven = (months: number | null): string => {
-    if (!months) return 'Never';
+    if (months === null || months === 0) return 'Never';
     const years = Math.floor(months / 12);
     const remainingMonths = months % 12;
     

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { calculateRentVsSell } from '../../../lib/calculators/rentVsSell/calculator';
 import type { RentVsSellParams, RentVsSellResult, RentVsSellOnboardingData } from '../../../lib/calculators/rentVsSell/types';
 import { validateRentVsSellParamsWithWarnings } from '../../../lib/calculators/rentVsSell/validation';
@@ -10,7 +10,7 @@ import FinancialInsights from './FinancialInsights';
 import ValidationWarnings from '../shared/ValidationWarnings';
 import './Calculator.css';
 
-export default function Calculator() {
+export default function Calculator(): React.JSX.Element {
   const [results, setResults] = useState<RentVsSellResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -123,7 +123,7 @@ export default function Calculator() {
           <FinancialInsights results={results} />
         )}
         
-        {error && (
+        {error !== null && (
           <div className="error-banner">
             {error}
           </div>

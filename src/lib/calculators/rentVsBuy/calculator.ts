@@ -101,7 +101,7 @@ export function calculateRentVsBuy(
   const monthlyData: MonthlyComparison[] = [];
   
   // Adjust parameters based on user profile
-  let adjustedParams = { ...params };
+  const adjustedParams = { ...params };
   
   // Adjust standard deduction based on filing status
   if (params.filingStatus === 'married') {
@@ -252,7 +252,7 @@ export function calculateRentVsBuy(
   
   // Calculate monthly payment and ratios
   const monthlyPayment = amortization[0].payment;
-  const monthlyIncome = financialInfo?.annualIncome 
+  const monthlyIncome = financialInfo?.annualIncome !== null && financialInfo?.annualIncome !== undefined && financialInfo.annualIncome !== 0
     ? financialInfo.annualIncome / 12 
     : params.homePrice / 4 / 12; // Fallback estimate: home price = 4x annual income
   const totalMonthlyDebt = (financialInfo?.monthlyDebts || 0) + monthlyPayment;

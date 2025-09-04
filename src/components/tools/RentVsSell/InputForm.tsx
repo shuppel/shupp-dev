@@ -10,7 +10,7 @@ interface InputFormProps {
   onboardingData: RentVsSellOnboardingData | null;
 }
 
-export default function InputForm({ onSubmit, isCalculating, onboardingData }: InputFormProps) {
+export default function InputForm({ onSubmit, isCalculating, onboardingData }: InputFormProps): React.JSX.Element {
   const defaults = getDefaultParams();
   const [formData, setFormData] = useState<Partial<RentVsSellParams>>(defaults);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -26,15 +26,15 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
         primaryGoal: onboardingData.primaryGoal,
         propertyCondition: onboardingData.propertyCondition,
         yearsOwned: onboardingData.yearsOwned,
-        originalPurchasePrice: onboardingData.originalPurchasePrice || prev.originalPurchasePrice,
+        originalPurchasePrice: onboardingData.originalPurchasePrice ?? prev.originalPurchasePrice,
         hasBeenRented: onboardingData.hasBeenRented,
-        expectedMonthlyRent: onboardingData.currentMonthlyRent || prev.expectedMonthlyRent,
+        expectedMonthlyRent: onboardingData.currentMonthlyRent ?? prev.expectedMonthlyRent,
         purchaseDate: new Date(Date.now() - onboardingData.yearsOwned * 365 * 24 * 60 * 60 * 1000),
       }));
     }
   }, [onboardingData]);
 
-  const handleInputChange = (field: keyof RentVsSellParams, value: any) => {
+  const handleInputChange = <K extends keyof RentVsSellParams>(field: K, value: RentVsSellParams[K]): void => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear error for this field
     if (errors[field]) {
@@ -42,7 +42,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent): void => {
     e.preventDefault();
     
     const validationErrors = validateRentVsSellParams(formData);
@@ -105,7 +105,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   <input
                     type="number"
                     id="propertyValue"
-                    value={formData.propertyValue || ''}
+                    value={formData.propertyValue ?? ''}
                     onChange={(e) => handleInputChange('propertyValue', Number(e.target.value))}
                     className={errors.propertyValue ? 'error' : ''}
                   />
@@ -123,7 +123,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   <input
                     type="number"
                     id="originalPurchasePrice"
-                    value={formData.originalPurchasePrice || ''}
+                    value={formData.originalPurchasePrice ??''}
                     onChange={(e) => handleInputChange('originalPurchasePrice', Number(e.target.value))}
                     className={errors.originalPurchasePrice ? 'error' : ''}
                   />
@@ -142,7 +142,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   <input
                     type="number"
                     id="remainingMortgageBalance"
-                    value={formData.remainingMortgageBalance || ''}
+                    value={formData.remainingMortgageBalance ??''}
                     onChange={(e) => handleInputChange('remainingMortgageBalance', Number(e.target.value))}
                     className={errors.remainingMortgageBalance ? 'error' : ''}
                   />
@@ -159,7 +159,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   <input
                     type="number"
                     id="monthlyMortgagePayment"
-                    value={formData.monthlyMortgagePayment || ''}
+                    value={formData.monthlyMortgagePayment ??''}
                     onChange={(e) => handleInputChange('monthlyMortgagePayment', Number(e.target.value))}
                     className={errors.monthlyMortgagePayment ? 'error' : ''}
                   />
@@ -177,7 +177,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   <input
                     type="number"
                     id="mortgageInterestRate"
-                    value={formData.mortgageInterestRate || ''}
+                    value={formData.mortgageInterestRate ??''}
                     onChange={(e) => handleInputChange('mortgageInterestRate', Number(e.target.value))}
                     step="0.1"
                     className={errors.mortgageInterestRate ? 'error' : ''}
@@ -191,7 +191,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   id="yearsRemainingOnMortgage"
                   name="yearsRemainingOnMortgage"
                   label="Years Remaining on Mortgage"
-                  value={formData.yearsRemainingOnMortgage || 15}
+                  value={formData.yearsRemainingOnMortgage ?? 15}
                   onChange={(value) => handleInputChange('yearsRemainingOnMortgage', value)}
                   error={errors.yearsRemainingOnMortgage}
                   suffix="years"
@@ -220,7 +220,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   <input
                     type="number"
                     id="expectedMonthlyRent"
-                    value={formData.expectedMonthlyRent || ''}
+                    value={formData.expectedMonthlyRent ??''}
                     onChange={(e) => handleInputChange('expectedMonthlyRent', Number(e.target.value))}
                     className={errors.expectedMonthlyRent ? 'error' : ''}
                   />
@@ -237,7 +237,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   <input
                     type="number"
                     id="vacancyRate"
-                    value={formData.vacancyRate || ''}
+                    value={formData.vacancyRate ??''}
                     onChange={(e) => handleInputChange('vacancyRate', Number(e.target.value))}
                     step="0.5"
                     className={errors.vacancyRate ? 'error' : ''}
@@ -257,7 +257,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   <input
                     type="number"
                     id="annualRentIncreaseRate"
-                    value={formData.annualRentIncreaseRate || ''}
+                    value={formData.annualRentIncreaseRate ??''}
                     onChange={(e) => handleInputChange('annualRentIncreaseRate', Number(e.target.value))}
                     step="0.5"
                   />
@@ -274,7 +274,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   <input
                     type="number"
                     id="propertyManagementPercent"
-                    value={formData.propertyManagementPercent || ''}
+                    value={formData.propertyManagementPercent ??''}
                     onChange={(e) => handleInputChange('propertyManagementPercent', Number(e.target.value))}
                     step="0.5"
                     className={errors.propertyManagementPercent ? 'error' : ''}
@@ -301,7 +301,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   <input
                     type="number"
                     id="propertyTaxAnnual"
-                    value={formData.propertyTaxAnnual || ''}
+                    value={formData.propertyTaxAnnual ??''}
                     onChange={(e) => handleInputChange('propertyTaxAnnual', Number(e.target.value))}
                     className={errors.propertyTaxAnnual ? 'error' : ''}
                   />
@@ -318,7 +318,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   <input
                     type="number"
                     id="homeownersInsuranceAnnual"
-                    value={formData.homeownersInsuranceAnnual || ''}
+                    value={formData.homeownersInsuranceAnnual ??''}
                     onChange={(e) => handleInputChange('homeownersInsuranceAnnual', Number(e.target.value))}
                   />
                 </div>
@@ -335,7 +335,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   <input
                     type="number"
                     id="hoaFeesMonthly"
-                    value={formData.hoaFeesMonthly || ''}
+                    value={formData.hoaFeesMonthly ??''}
                     onChange={(e) => handleInputChange('hoaFeesMonthly', Number(e.target.value))}
                   />
                 </div>
@@ -350,7 +350,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   <input
                     type="number"
                     id="annualMaintenancePercent"
-                    value={formData.annualMaintenancePercent || ''}
+                    value={formData.annualMaintenancePercent ??''}
                     onChange={(e) => handleInputChange('annualMaintenancePercent', Number(e.target.value))}
                     step="0.25"
                     className={errors.annualMaintenancePercent ? 'error' : ''}
@@ -371,7 +371,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   <input
                     type="number"
                     id="sellingCostPercent"
-                    value={formData.sellingCostPercent || ''}
+                    value={formData.sellingCostPercent ??''}
                     onChange={(e) => handleInputChange('sellingCostPercent', Number(e.target.value))}
                     step="0.5"
                   />
@@ -405,7 +405,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                 </label>
                 <select
                   id="isInvestmentProperty"
-                  value={formData.isInvestmentProperty ? 'investment' : 'primary'}
+                  value={formData.isInvestmentProperty === true ? 'investment' : 'primary'}
                   onChange={(e) => handleInputChange('isInvestmentProperty', e.target.value === 'investment')}
                 >
                   <option value="primary">Primary Residence</option>
@@ -422,7 +422,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   <input
                     type="number"
                     id="depreciationRecaptureRate"
-                    value={formData.depreciationRecaptureRate || 25}
+                    value={formData.depreciationRecaptureRate ?? 25}
                     onChange={(e) => handleInputChange('depreciationRecaptureRate', Number(e.target.value))}
                     readOnly
                   />
@@ -447,7 +447,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   <input
                     type="number"
                     id="propertyAppreciationRate"
-                    value={formData.propertyAppreciationRate || ''}
+                    value={formData.propertyAppreciationRate ??''}
                     onChange={(e) => handleInputChange('propertyAppreciationRate', Number(e.target.value))}
                     step="0.5"
                     className={errors.propertyAppreciationRate ? 'error' : ''}
@@ -466,7 +466,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   <input
                     type="number"
                     id="investmentReturnRate"
-                    value={formData.investmentReturnRate || ''}
+                    value={formData.investmentReturnRate ??''}
                     onChange={(e) => handleInputChange('investmentReturnRate', Number(e.target.value))}
                     step="0.5"
                     className={errors.investmentReturnRate ? 'error' : ''}
@@ -486,7 +486,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   <input
                     type="number"
                     id="inflationRate"
-                    value={formData.inflationRate || ''}
+                    value={formData.inflationRate ??''}
                     onChange={(e) => handleInputChange('inflationRate', Number(e.target.value))}
                     step="0.5"
                   />
@@ -499,7 +499,7 @@ export default function InputForm({ onSubmit, isCalculating, onboardingData }: I
                   id="yearsToAnalyze"
                   name="yearsToAnalyze"
                   label="Years to Analyze"
-                  value={formData.yearsToAnalyze || 5}
+                  value={formData.yearsToAnalyze ?? 5}
                   onChange={(value) => handleInputChange('yearsToAnalyze', value)}
                   error={errors.yearsToAnalyze}
                   suffix="years"

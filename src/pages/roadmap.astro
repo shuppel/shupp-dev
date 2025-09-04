@@ -1,7 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
-import CardStyles from '../components/CardStyles.astro';
 
 // Get all roadmap items and principles
 const roadmapItems = await getCollection('roadmap');
@@ -91,7 +90,7 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
           
           <!-- Roadmap items floating on the liquid -->
           <div class="roadmap-items">
-            {sortedRoadmapItems.map((item, index) => (
+            {sortedRoadmapItems.map((item) => (
               <div class="roadmap-item" data-phase={item.data.phase}>
                 <div class="roadmap-node"></div>
                 <div class="roadmap-content two-tone-card">

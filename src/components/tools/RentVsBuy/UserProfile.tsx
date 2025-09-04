@@ -17,12 +17,12 @@ interface UserProfileProps {
 interface ProfileCardProps {
   title: string;
   description: string;
-  options: Array<{
+  options: {
     id: string;
     label: string;
     icon: string;
     description?: string;
-  }>;
+  }[];
   selected: string | null;
   onSelect: (value: string) => void;
 }
@@ -44,7 +44,7 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ title, description, options, 
               {option.icon}
             </span>
             <span className="option-label">{option.label}</span>
-            {option.description && (
+            {option.description !== null && option.description !== undefined && (
               <span className="option-description">{option.description}</span>
             )}
             <div className="option-checkmark">
@@ -57,8 +57,8 @@ const ProfileCard: React.FC<ProfileCardProps> = ({ title, description, options, 
   );
 };
 
-export default function UserProfile({ profile, onChange }: UserProfileProps) {
-  const updateProfile = (key: keyof UserProfileData, value: any) => {
+export default function UserProfile({ profile, onChange }: UserProfileProps): React.JSX.Element {
+  const updateProfile = <K extends keyof UserProfileData>(key: K, value: UserProfileData[K]): void => {
     onChange({
       ...profile,
       [key]: value
@@ -81,7 +81,7 @@ export default function UserProfile({ profile, onChange }: UserProfileProps) {
             { id: 'married', label: 'Married', icon: '👥', description: '$29,200 standard deduction' }
           ]}
           selected={profile.filingStatus}
-          onSelect={(value) => updateProfile('filingStatus', value)}
+          onSelect={(value) => updateProfile('filingStatus', value as 'single' | 'married')}
         />
 
         <ProfileCard
@@ -95,7 +95,7 @@ export default function UserProfile({ profile, onChange }: UserProfileProps) {
           onSelect={(value) => updateProfile('currentHomeowner', value === 'yes')}
         />
 
-        {profile.currentHomeowner && (
+          {profile.currentHomeowner === true && (
           <ProfileCard
             title="Selling Plans"
             description="Will you sell your current home?"

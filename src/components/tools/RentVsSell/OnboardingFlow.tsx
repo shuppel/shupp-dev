@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { RentVsSellOnboardingData } from '../../../lib/calculators/rentVsSell/types';
 import './OnboardingFlow.css';
 
@@ -25,7 +25,7 @@ const STEPS = [
   }
 ];
 
-export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowProps) {
+export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowProps): React.JSX.Element {
   const [currentStep, setCurrentStep] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [data, setData] = useState<Partial<RentVsSellOnboardingData>>({
@@ -40,24 +40,24 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
     planToMoveDistance: 'local',
   });
 
-  const updateData = (key: keyof RentVsSellOnboardingData, value: any) => {
+  const updateData = <K extends keyof RentVsSellOnboardingData>(key: K, value: RentVsSellOnboardingData[K]): void => {
     setData(prev => ({ ...prev, [key]: value }));
   };
 
-  const canProceed = () => {
+  const canProceed = (): boolean => {
     switch (currentStep) {
       case 0:
-        return data.propertyType && data.yearsOwned !== undefined && data.propertyCondition;
+        return data.propertyType !== undefined && data.yearsOwned !== undefined && data.propertyCondition !== undefined;
       case 1:
-        return data.landlordExperience && data.timeAvailability;
+        return data.landlordExperience !== undefined && data.timeAvailability !== undefined;
       case 2:
-        return data.primaryGoal && data.riskTolerance;
+        return data.primaryGoal !== undefined && data.riskTolerance !== undefined;
       default:
         return false;
     }
   };
 
-  const handleNext = () => {
+  const handleNext = (): void => {
     if (currentStep < STEPS.length - 1) {
       setIsAnimating(true);
       setTimeout(() => {
@@ -69,7 +69,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
     }
   };
 
-  const handleBack = () => {
+  const handleBack = (): void => {
     if (currentStep > 0) {
       setIsAnimating(true);
       setTimeout(() => {
@@ -79,9 +79,9 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
     }
   };
 
-  const getRenterReadinessScore = () => {
+  const getRenterReadinessScore = (): { score: number; factors: { positive: boolean; text: string }[]; readinessLevel: string; readinessColor: string } => {
     let score = 0;
-    let factors: Array<{ positive: boolean; text: string }> = [];
+    const factors: { positive: boolean; text: string }[] = [];
     
     // Time availability
     if (data.timeAvailability === 'plenty') {
@@ -132,7 +132,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
     }
     
     // Has been rented
-    if (data.hasBeenRented) {
+    if (data.hasBeenRented === true) {
       score += 10;
       factors.push({ positive: true, text: 'Property has rental history' });
     }
@@ -152,7 +152,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
     return { score, factors, readinessLevel, readinessColor };
   };
 
-  const renderStep = () => {
+  const renderStep = (): React.JSX.Element => {
     switch (currentStep) {
       case 0:
         return (
@@ -169,7 +169,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                   <button
                     key={option.value}
                     className={`option-button ${data.propertyType === option.value ? 'selected' : ''}`}
-                    onClick={() => updateData('propertyType', option.value)}
+                    onClick={() => updateData('propertyType', option.value as 'single-family' | 'condo' | 'townhouse' | 'multi-family')}
                   >
                     <span className="option-icon">{option.icon}</span>
                     <span className="option-text">
@@ -192,7 +192,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                   <button
                     key={option.value}
                     className={`option-button ${data.propertyCondition === option.value ? 'selected' : ''}`}
-                    onClick={() => updateData('propertyCondition', option.value)}
+                    onClick={() => updateData('propertyCondition', option.value as 'excellent' | 'good' | 'fair' | 'needs-work')}
                   >
                     <span className="option-text">
                       <strong>{option.label}</strong>
@@ -210,7 +210,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                   type="range"
                   min="0"
                   max="30"
-                  value={data.yearsOwned || 5}
+                  value={data.yearsOwned ?? 5}
                   onChange={(e) => updateData('yearsOwned', Number(e.target.value))}
                   className="styled-range"
                 />
@@ -220,9 +220,9 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                 </div>
               </div>
               <p className="input-hint">
-                {data.yearsOwned! < 2 && "Short-term capital gains tax may apply if you sell"}
-                {data.yearsOwned! >= 2 && data.yearsOwned! < 5 && "You may qualify for partial capital gains exemption"}
-                {data.yearsOwned! >= 5 && "You likely qualify for capital gains exemption if this is your primary residence"}
+                {data.yearsOwned !== undefined && data.yearsOwned < 2 && "Short-term capital gains tax may apply if you sell"}
+                {data.yearsOwned !== undefined && data.yearsOwned >= 2 && data.yearsOwned < 5 && "You may qualify for partial capital gains exemption"}
+                {data.yearsOwned !== undefined && data.yearsOwned >= 5 && "You likely qualify for capital gains exemption if this is your primary residence"}
               </p>
             </div>
 
@@ -252,7 +252,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
               </div>
             </div>
 
-            {data.hasBeenRented && (
+            {data.hasBeenRented === true && (
               <div className="input-group fade-in">
                 <label className="input-label">Current monthly rent (if rented)</label>
                 <div className="currency-input">
@@ -261,8 +261,8 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                     type="number"
                     className="financial-input"
                     placeholder="0"
-                    value={data.currentMonthlyRent || ''}
-                    onChange={(e) => updateData('currentMonthlyRent', parseInt(e.target.value) || 0)}
+                    value={data.currentMonthlyRent ?? ''}
+                    onChange={(e) => updateData('currentMonthlyRent', parseInt(e.target.value) ?? 0)}
                   />
                   <span className="input-suffix">per month</span>
                 </div>
@@ -278,8 +278,8 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                     type="number"
                     className="financial-input"
                     placeholder="0"
-                    value={data.originalPurchasePrice || ''}
-                    onChange={(e) => updateData('originalPurchasePrice', parseInt(e.target.value) || 0)}
+                    value={data.originalPurchasePrice ?? ''}
+                    onChange={(e) => updateData('originalPurchasePrice', parseInt(e.target.value) ?? 0)}
                   />
                 </div>
                 <small className="input-hint">Helps us calculate your potential capital gains</small>
@@ -356,7 +356,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                   <button
                     key={option.value}
                     className={`option-button ${data.timeAvailability === option.value ? 'selected' : ''}`}
-                    onClick={() => updateData('timeAvailability', option.value)}
+                    onClick={() => updateData('timeAvailability', option.value as 'plenty' | 'some' | 'minimal')}
                   >
                     <span className="option-icon">{option.icon}</span>
                     <span className="option-text">
@@ -522,6 +522,8 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
             </div>
           </div>
         );
+      default:
+        return <div />;
     }
   };
 
@@ -576,7 +578,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
           <button
             className="action-button primary"
             onClick={handleNext}
-            disabled={!canProceed()}
+            disabled={canProceed() === false}
           >
             {currentStep === STEPS.length - 1 ? 'Start Analysis' : 'Continue'}
           </button>

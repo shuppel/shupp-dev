@@ -15,7 +15,7 @@ interface InputFormProps {
 interface InputFieldProps {
   label: string;
   name: keyof RentVsBuyParams;
-  register: any;
+  register: ReturnType<typeof useForm<RentVsBuyParams>>['register'];
   error?: string;
   min?: number;
   max?: number;
@@ -24,7 +24,7 @@ interface InputFieldProps {
   suffix?: string;
   tooltip?: string;
   type?: 'number' | 'select';
-  options?: Array<{value: number, label: string}>;
+  options?: {value: number, label: string}[];
 }
 
 const InputField: React.FC<InputFieldProps> = ({
@@ -41,13 +41,13 @@ const InputField: React.FC<InputFieldProps> = ({
   type = 'number',
   options
 }) => (
-  <div className={`input-field ${error ? 'has-error' : ''}`}>
+  <div className={`input-field ${error !== null && error !== undefined ? 'has-error' : ''}`}>
     <label htmlFor={name}>
       {label}
-      {tooltip && <span className="tooltip" title={tooltip}>?</span>}
+      {tooltip !== null && tooltip !== undefined && <span className="tooltip" title={tooltip}>?</span>}
     </label>
     <div className="input-wrapper">
-      {prefix && <span className="prefix">{prefix}</span>}
+      {prefix !== null && prefix !== undefined && <span className="prefix">{prefix}</span>}
       {type === 'select' ? (
         <select
           id={name}
@@ -69,13 +69,13 @@ const InputField: React.FC<InputFieldProps> = ({
           step={step}
         />
       )}
-      {suffix && <span className="suffix">{suffix}</span>}
+      {suffix !== null && suffix !== undefined && <span className="suffix">{suffix}</span>}
     </div>
-    {error && <span className="error-message">{error}</span>}
+    {error !== null && error !== undefined && <span className="error-message">{error}</span>}
   </div>
 );
 
-export default function InputForm({ onSubmit, isCalculating = false, onboardingData }: InputFormProps) {
+export default function InputForm({ onSubmit, isCalculating = false, onboardingData }: InputFormProps): React.JSX.Element {
   const {
     register,
     handleSubmit,
@@ -125,7 +125,7 @@ export default function InputForm({ onSubmit, isCalculating = false, onboardingD
   }, [onboardingData, setValue]);
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="input-form">
+    <form onSubmit={(e) => void handleSubmit(onSubmit)(e)} className="input-form">
       <div className="form-section">
         <h3>Basic Information</h3>
         

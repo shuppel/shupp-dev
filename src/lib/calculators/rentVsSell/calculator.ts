@@ -36,7 +36,7 @@ function calculateMortgagePayment(
  */
 function calculateDepreciationSchedule(
   originalPrice: number,
-  landValuePercent: number = 20 // typically 20% of purchase price is land
+  landValuePercent = 20 // typically 20% of purchase price is land
 ): DepreciationSchedule[] {
   const depreciableBasis = originalPrice * (1 - landValuePercent / 100);
   const annualDepreciation = depreciableBasis / 27.5;

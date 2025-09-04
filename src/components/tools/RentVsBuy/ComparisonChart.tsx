@@ -19,7 +19,7 @@ interface ComparisonChartProps {
   chartType?: 'cumulative' | 'monthly' | 'wealth';
 }
 
-export default function ComparisonChart({ results, chartType = 'cumulative' }: ComparisonChartProps) {
+export default function ComparisonChart({ results, chartType = 'cumulative' }: ComparisonChartProps): React.JSX.Element {
   const chartData = useMemo(() => {
     return results.monthlyData
       .filter((_, index) => index % 3 === 0 || index === results.monthlyData.length - 1) // Show every 3rd month for performance
@@ -37,7 +37,7 @@ export default function ComparisonChart({ results, chartType = 'cumulative' }: C
       }));
   }, [results]);
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -46,7 +46,7 @@ export default function ComparisonChart({ results, chartType = 'cumulative' }: C
     }).format(value);
   };
 
-  const formatTooltip = (value: number, name: string) => {
+  const formatTooltip = (value: number, name: string): [string, string] => {
     const labels: Record<string, string> = {
       buyingCost: 'Total Buying Cost',
       rentingCost: 'Total Renting Cost',
@@ -60,7 +60,7 @@ export default function ComparisonChart({ results, chartType = 'cumulative' }: C
     return [formatCurrency(value), labels[name] || name];
   };
 
-  const getChartConfig = () => {
+  const getChartConfig = (): { title: string; description?: string; lines: { dataKey: string; stroke: string; name: string }[]; type: 'line' | 'area' } => {
     switch (chartType) {
       case 'monthly':
         return {
@@ -95,7 +95,7 @@ export default function ComparisonChart({ results, chartType = 'cumulative' }: C
   };
 
   const config = getChartConfig();
-  const breakEvenYears = results.breakEvenMonth ? (results.breakEvenMonth / 12).toFixed(1) : null;
+  const breakEvenYears = results.breakEvenMonth !== null ? (results.breakEvenMonth / 12).toFixed(1) : null;
 
   const ChartComponent = config.type === 'area' ? AreaChart : LineChart;
   const DataComponent = config.type === 'area' ? Area : Line;
@@ -168,7 +168,7 @@ export default function ComparisonChart({ results, chartType = 'cumulative' }: C
               formatter={(value) => <span style={{ color: '#E9EB9E' }}>{value}</span>}
             />
             
-            {breakEvenYears && chartType === 'cumulative' && (
+            {breakEvenYears !== null && chartType === 'cumulative' && (
               <ReferenceLine 
                 x={breakEvenYears} 
                 stroke="#E9EB9E"
@@ -199,7 +199,7 @@ export default function ComparisonChart({ results, chartType = 'cumulative' }: C
         </ResponsiveContainer>
       </div>
       
-      {breakEvenYears && (
+      {breakEvenYears !== null && (
         <div className="chart-insights">
           <p className="insight-text">
             <span className="insight-icon">💡</span>

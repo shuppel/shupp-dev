@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './OnboardingFlow.css';
 
 export interface OnboardingData {
@@ -57,7 +57,7 @@ const CATEGORIES = [
   }
 ];
 
-export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowProps) {
+export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowProps): React.JSX.Element {
   const [activeCategory, setActiveCategory] = useState(0);
   const [activeSection, setActiveSection] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
@@ -74,7 +74,7 @@ export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowP
     timeHorizon: null,
   });
 
-  const updateData = (key: keyof OnboardingData, value: any) => {
+  const updateData = <K extends keyof OnboardingData>(key: K, value: OnboardingData[K]): void => {
     setData(prev => ({ ...prev, [key]: value }));
   };
 
@@ -84,7 +84,7 @@ export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowP
   const completedSections = CATEGORIES.slice(0, activeCategory).reduce((sum, cat) => sum + cat.sections.length, 0) + activeSection;
   const progressPercentage = ((completedSections + 1) / totalSections) * 100;
 
-  const canProceed = () => {
+  const canProceed = (): boolean => {
     const cat = currentCategory.id;
     const sec = currentSection.id;
 
@@ -101,7 +101,7 @@ export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowP
     return false;
   };
 
-  const handleNext = () => {
+  const handleNext = (): void => {
     if (activeSection < currentCategory.sections.length - 1) {
       setIsAnimating(true);
       setTimeout(() => {
@@ -120,7 +120,7 @@ export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowP
     }
   };
 
-  const handleBack = () => {
+  const handleBack = (): void => {
     if (activeSection > 0) {
       setIsAnimating(true);
       setTimeout(() => {
@@ -202,7 +202,7 @@ export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowP
             </div>
           </div>
           
-          {data.currentHomeowner && (
+          {data.currentHomeowner === true && (
             <div className="input-group fade-in">
               <label className="input-label">Will you sell your current home?</label>
               <div className="button-group">
@@ -300,7 +300,7 @@ export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowP
                 <button
                   key={score.id}
                   className={`option-button compact ${data.creditScore === score.id ? 'selected' : ''}`}
-                  onClick={() => updateData('creditScore', score.id)}
+                  onClick={() => updateData('creditScore', score.id as 'excellent' | 'good' | 'fair' | 'poor')}
                 >
                   <span className="option-text">
                     <strong>{score.label}</strong>
@@ -328,7 +328,7 @@ export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowP
                 <button
                   key={market.id}
                   className={`option-button ${data.marketOutlook === market.id ? 'selected' : ''}`}
-                  onClick={() => updateData('marketOutlook', market.id)}
+                  onClick={() => updateData('marketOutlook', market.id as 'hot' | 'stable' | 'cooling')}
                 >
                   <span className="option-icon">{market.icon}</span>
                   <span className="option-text">
@@ -357,7 +357,7 @@ export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowP
                 <button
                   key={style.id}
                   className={`option-button compact ${data.investmentConfidence === style.id ? 'selected' : ''}`}
-                  onClick={() => updateData('investmentConfidence', style.id)}
+                  onClick={() => updateData('investmentConfidence', style.id as 'conservative' | 'moderate' | 'aggressive')}
                 >
                   <span className="option-icon">{style.icon}</span>
                   <span className="option-text">
@@ -380,7 +380,7 @@ export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowP
                 <button
                   key={time.id}
                   className={`option-button compact ${data.timeHorizon === time.id ? 'selected' : ''}`}
-                  onClick={() => updateData('timeHorizon', time.id)}
+                  onClick={() => updateData('timeHorizon', time.id as 'short' | 'medium' | 'long')}
                 >
                   <span className="option-icon">{time.icon}</span>
                   <span className="option-text">

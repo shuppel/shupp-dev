@@ -1,14 +1,10 @@
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
-import CardStyles from '../components/CardStyles.astro';
 import { isFeatureEnabled } from '../config/features';
 
 // Get all thoughtful apps
 const allApps = await getCollection('thoughtful-apps');
-
-// Check if TLDraw is enabled
-const showTLDraw = isFeatureEnabled('enableTLDraw');
 
 // Sort apps by excitement and feasibility (for default view)
 const apps = allApps.sort((a, b) => {
@@ -175,25 +171,25 @@ const statusConfig = {
     // Rating descriptions
     const ratingDescriptions = {
       feasibility: {
-        1: "Very challenging to implement - requires breakthrough technology or massive resources",
-        2: "Difficult to build - significant technical or resource challenges",
-        3: "Moderately feasible - achievable with effort and the right team",
-        4: "Highly feasible - straightforward to implement with existing technology",
-        5: "Extremely feasible - could be built quickly with minimal resources"
+        1: { name: "Moonshot", desc: "Requires breakthrough technology or massive resources" },
+        2: { name: "Challenging", desc: "Significant technical or resource hurdles to overcome" },
+        3: { name: "Doable", desc: "Achievable with effort and the right team" },
+        4: { name: "Straightforward", desc: "Can be implemented with existing technology" },
+        5: { name: "Weekend Project", desc: "Could be built quickly with minimal resources" }
       },
       excitement: {
-        1: "Low interest - solves a minor problem for few people",
-        2: "Some interest - useful but not particularly compelling",
-        3: "Moderate excitement - solid idea that would attract users",
-        4: "High excitement - people would be eager to use this",
-        5: "Extremely exciting - potential game-changer that people would love"
+        1: { name: "Meh", desc: "Solves a minor problem for very few people" },
+        2: { name: "Interesting", desc: "Useful but not particularly compelling" },
+        3: { name: "Cool", desc: "Solid idea that would attract loyal users" },
+        4: { name: "Thrilling", desc: "People would be eager to use this" },
+        5: { name: "Exhilarating", desc: "Potential game-changer that people would love" }
       },
       seriousness: {
-        1: "Ridiculous fun - purely playful or experimental idea",
-        2: "Mostly fun - entertainment-focused with minor practical value",
-        3: "Balanced - mix of practical utility and enjoyable experience",
-        4: "Seriously good - would genuinely benefit many people's lives",
-        5: "Profoundly impactful - could significantly improve humanity"
+        1: { name: "Absurd", desc: "Purely playful or experimental idea" },
+        2: { name: "Whimsical", desc: "Entertainment-focused with minor practical value" },
+        3: { name: "Practical", desc: "Mix of utility and enjoyable experience" },
+        4: { name: "Meaningful", desc: "Would genuinely benefit many people's lives" },
+        5: { name: "Revolutionary", desc: "Could significantly improve humanity" }
       }
     };
 
@@ -205,8 +201,8 @@ const statusConfig = {
       const tooltip = group.querySelector('.metric-tooltip');
       
       if (tooltip && rating && metric && ratingDescriptions[metric]) {
-        const description = ratingDescriptions[metric][rating as keyof typeof ratingDescriptions.feasibility];
-        tooltip.innerHTML = `<strong>${rating}/5 ${metric}</strong>${description}`;
+        const ratingData = ratingDescriptions[metric][rating as keyof typeof ratingDescriptions.feasibility];
+        tooltip.innerHTML = `<strong>${rating}/5 - ${ratingData.name}</strong><br>${ratingData.desc}`;
       }
     });
 

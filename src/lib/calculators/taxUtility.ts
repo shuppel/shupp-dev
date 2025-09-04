@@ -202,7 +202,7 @@ export function getStateTaxRate(state: string): number {
 /**
  * Calculate capital gains tax rate based on income and filing status
  */
-export function calculateCapitalGainsRate(income: number, filingStatus: FilingStatus, isLongTerm: boolean = true): number {
+export function calculateCapitalGainsRate(income: number, filingStatus: FilingStatus, isLongTerm = true): number {
   if (!isLongTerm) {
     // Short-term capital gains are taxed as ordinary income
     return calculateFederalTaxRate(income, filingStatus);
@@ -234,7 +234,7 @@ export function getDepreciationRecaptureRate(): number {
 /**
  * Get all states sorted alphabetically
  */
-export function getAllStates(): Array<{ value: string; label: string; taxRate: number; notes?: string }> {
+export function getAllStates(): { value: string; label: string; taxRate: number; notes?: string }[] {
   return Object.entries(STATE_TAX_INFO)
     .map(([abbr, info]) => ({
       value: abbr,

@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { calculateRentVsBuy } from '../../../lib/calculators/rentVsBuy/calculator';
 import type { RentVsBuyParams, CalculationResult } from '../../../lib/calculators/rentVsBuy/types';
 import OnboardingFlow, { type OnboardingData } from './OnboardingFlow';
@@ -7,7 +7,7 @@ import ResultsDisplay from './ResultsDisplay';
 import FinancialInsights from './FinancialInsights';
 import './Calculator.css';
 
-export default function Calculator() {
+export default function Calculator(): React.JSX.Element {
   const [results, setResults] = useState<CalculationResult | null>(null);
   const [isCalculating, setIsCalculating] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,18 +23,18 @@ export default function Calculator() {
       // Merge onboarding data with form data if available
       const mergedData: RentVsBuyParams = {
         ...data,
-        filingStatus: onboardingData?.filingStatus || undefined,
-        currentHomeowner: onboardingData?.currentHomeowner || undefined,
-        sellingCurrentHome: onboardingData?.sellingCurrentHome || undefined,
-        marketOutlook: onboardingData?.marketOutlook || undefined,
-        investmentConfidence: onboardingData?.investmentConfidence || undefined,
+        filingStatus: onboardingData?.filingStatus ?? undefined,
+        currentHomeowner: onboardingData?.currentHomeowner ?? undefined,
+        sellingCurrentHome: onboardingData?.sellingCurrentHome ?? undefined,
+        marketOutlook: onboardingData?.marketOutlook ?? undefined,
+        investmentConfidence: onboardingData?.investmentConfidence ?? undefined,
       };
       
       // Perform calculation with validated data and financial info
       const calculationResults = calculateRentVsBuy(mergedData, {
-        annualIncome: onboardingData?.annualIncome || 0,
-        monthlyDebts: onboardingData?.monthlyDebts || 0,
-        currentSavings: onboardingData?.currentSavings || 0,
+        annualIncome: onboardingData?.annualIncome ?? 0,
+        monthlyDebts: onboardingData?.monthlyDebts ?? 0,
+        currentSavings: onboardingData?.currentSavings ?? 0,
       });
       setResults(calculationResults);
     } catch (error) {
@@ -123,7 +123,7 @@ export default function Calculator() {
           />
         )}
         
-        {error && (
+        {error !== null && (
           <div className="error-banner">
             {error}
           </div>

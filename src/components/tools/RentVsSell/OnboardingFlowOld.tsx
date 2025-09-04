@@ -42,7 +42,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
 
   const getRenterReadinessScore = () => {
     let score = 0;
-    let factors = [];
+    const factors = [];
     
     // Time availability
     if (data.timeAvailability === 'plenty') {

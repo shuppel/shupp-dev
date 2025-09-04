@@ -5,7 +5,7 @@ interface ValidationWarningsProps {
   warnings: ValidationError[];
 }
 
-export default function ValidationWarnings({ warnings }: ValidationWarningsProps) {
+export default function ValidationWarnings({ warnings }: ValidationWarningsProps): React.JSX.Element | null {
   if (warnings.length === 0) return null;
 
   return (

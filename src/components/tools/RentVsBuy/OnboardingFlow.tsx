@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import './OnboardingFlow.css';
 
 export interface OnboardingData {
@@ -42,7 +42,7 @@ const STEPS = [
   }
 ];
 
-export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowProps) {
+export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowProps): React.JSX.Element {
   const [currentStep, setCurrentStep] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [data, setData] = useState<OnboardingData>({
@@ -58,11 +58,11 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
     timeHorizon: null,
   });
 
-  const updateData = (key: keyof OnboardingData, value: any) => {
+  const updateData = <K extends keyof OnboardingData>(key: K, value: OnboardingData[K]): void => {
     setData(prev => ({ ...prev, [key]: value }));
   };
 
-  const canProceed = () => {
+  const canProceed = (): boolean => {
     switch (currentStep) {
       case 0:
         return data.filingStatus !== null && data.currentHomeowner !== null;
@@ -75,7 +75,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
     }
   };
 
-  const handleNext = () => {
+  const handleNext = (): void => {
     if (currentStep < STEPS.length - 1) {
       setIsAnimating(true);
       setTimeout(() => {
@@ -87,7 +87,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
     }
   };
 
-  const handleBack = () => {
+  const handleBack = (): void => {
     if (currentStep > 0) {
       setIsAnimating(true);
       setTimeout(() => {
@@ -154,7 +154,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
               </div>
             </div>
 
-            {data.currentHomeowner && (
+            {data.currentHomeowner === true && (
               <div className="input-group fade-in">
                 <label className="input-label">Will you sell your current home?</label>
                 <div className="button-group">
@@ -245,7 +245,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                   <button
                     key={score.id}
                     className={`option-button ${data.creditScore === score.id ? 'selected' : ''}`}
-                    onClick={() => updateData('creditScore', score.id)}
+                    onClick={() => updateData('creditScore', score.id as 'excellent' | 'good' | 'fair' | 'poor')}
                   >
                     <span className="option-text">
                       <strong>{score.label} ({score.range})</strong>

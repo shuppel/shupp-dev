@@ -6,8 +6,8 @@ interface FinancialInsightsProps {
   results: RentVsSellResult;
 }
 
-export default function FinancialInsights({ results }: FinancialInsightsProps) {
-  const formatCurrency = (value: number) => {
+export default function FinancialInsights({ results }: FinancialInsightsProps): React.JSX.Element {
+  const formatCurrency = (value: number): string => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',

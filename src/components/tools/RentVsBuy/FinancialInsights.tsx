@@ -8,7 +8,7 @@ interface FinancialInsightsProps {
   loanAmount: number;
 }
 
-export default function FinancialInsights({ results, monthlyPayment, loanAmount }: FinancialInsightsProps) {
+export default function FinancialInsights({ results, monthlyPayment, loanAmount }: FinancialInsightsProps): React.JSX.Element {
   const formatCurrency = (amount: number): string => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -23,7 +23,7 @@ export default function FinancialInsights({ results, monthlyPayment, loanAmount 
   };
 
   // Financial health recommendations based on score
-  const getHealthRecommendation = () => {
+  const getHealthRecommendation = (): { title: string; description: string; advice: string; color: string; bgColor: string } => {
     const score = results.financialHealthScore;
     
     const recommendations = {
@@ -204,7 +204,7 @@ export default function FinancialInsights({ results, monthlyPayment, loanAmount 
               You're in the sweet spot - consider investing the difference in index funds
             </li>
           )}
-          {results.breakEvenMonth && results.breakEvenMonth > 60 && (
+          {results.breakEvenMonth !== null && results.breakEvenMonth > 60 && (
             <li>
               <span className="tip-icon">⏰</span>
               It takes {Math.floor(results.breakEvenMonth / 12)} years to break even - ensure you'll stay that long

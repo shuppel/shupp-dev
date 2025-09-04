@@ -19,8 +19,9 @@ const LiquidHero: React.FC<LiquidHeroProps> = ({ isDarkMode: isDarkModeProp = fa
 
   useEffect(() => {
     // Listen for dark mode changes from Astro
-    const handleDarkModeChange = (event: any) => {
-      setIsDarkMode(event.detail.isDarkMode);
+    const handleDarkModeChange = (event: Event): void => {
+      const customEvent = event as CustomEvent<{ isDarkMode: boolean }>;
+      setIsDarkMode(customEvent.detail.isDarkMode);
     };
     
     const container = document.querySelector('[data-liquid-hero]');
@@ -43,7 +44,7 @@ const LiquidHero: React.FC<LiquidHeroProps> = ({ isDarkMode: isDarkModeProp = fa
 
     // Check WebGL support
     const canvas = document.createElement('canvas');
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+    const gl = canvas.getContext('webgl') ?? canvas.getContext('experimental-webgl');
     if (!gl) {
       setIsWebGLSupported(false);
       return;
@@ -361,9 +362,9 @@ const LiquidHero: React.FC<LiquidHeroProps> = ({ isDarkMode: isDarkModeProp = fa
       camera.rotation.z = Math.sin(elapsedTime * 0.12) * 0.03;
       
       // Animate quantum nodes
-      if (nodesRef.current && nodesRef.current.length > 0) {
+      if (nodesRef.current !== null && nodesRef.current.length > 0) {
         nodesRef.current.forEach((node, i) => {
-          if (!node || !node.material) return;
+          if (node?.material === null || node?.material === undefined) return;
           const material = node.material as THREE.ShaderMaterial;
           
           // Update phase with quantum evolution
@@ -430,12 +431,12 @@ const LiquidHero: React.FC<LiquidHeroProps> = ({ isDarkMode: isDarkModeProp = fa
       }
       
       // Update connections
-      if (nodesRef.current && nodesRef.current.length > 0 && connectionsRef.current) {
+      if (nodesRef.current !== null && nodesRef.current.length > 0 && connectionsRef.current !== null) {
         const connectionPositions: number[] = [];
         nodesRef.current.forEach((node, i) => {
-          if (node && node.userData && node.userData.connections) {
+          if (node?.userData?.connections !== null && node?.userData?.connections !== undefined && Array.isArray(node.userData.connections)) {
             node.userData.connections.forEach((j: number) => {
-              if (j > i && nodesRef.current[j]) { // Avoid duplicate connections
+              if (j > i && nodesRef.current[j] !== null && nodesRef.current[j] !== undefined) { // Avoid duplicate connections
                 connectionPositions.push(
                   node.position.x, node.position.y, node.position.z,
                   nodesRef.current[j].position.x, nodesRef.current[j].position.y, nodesRef.current[j].position.z
@@ -445,7 +446,7 @@ const LiquidHero: React.FC<LiquidHeroProps> = ({ isDarkMode: isDarkModeProp = fa
           }
         });
         
-        const connectionGeometry = connectionsRef.current.geometry as THREE.BufferGeometry;
+        const connectionGeometry = connectionsRef.current.geometry;
         connectionGeometry.setAttribute('position', 
           new THREE.Float32BufferAttribute(connectionPositions, 3)
         );
@@ -495,11 +496,11 @@ const LiquidHero: React.FC<LiquidHeroProps> = ({ isDarkMode: isDarkModeProp = fa
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('resize', handleResize);
       
-      if (frameRef.current) {
+      if (frameRef.current !== null) {
         cancelAnimationFrame(frameRef.current);
       }
       
-      if (mountRef.current && renderer.domElement) {
+      if (mountRef.current !== null && renderer.domElement !== null) {
         mountRef.current.removeChild(renderer.domElement);
       }
       
@@ -509,12 +510,12 @@ const LiquidHero: React.FC<LiquidHeroProps> = ({ isDarkMode: isDarkModeProp = fa
       
       // Clean up nodes
       nodesRef.current.forEach(node => {
-        if (node.geometry) node.geometry.dispose();
-        if (node.material) (node.material as THREE.ShaderMaterial).dispose();
+        if (node.geometry !== null && node.geometry !== undefined) node.geometry.dispose();
+        if (node.material !== null && node.material !== undefined) (node.material as THREE.ShaderMaterial).dispose();
       });
       
       // Clean up connections
-      if (connectionsRef.current) {
+      if (connectionsRef.current !== null) {
         connectionsRef.current.geometry.dispose();
         (connectionsRef.current.material as THREE.Material).dispose();
       }
@@ -523,16 +524,16 @@ const LiquidHero: React.FC<LiquidHeroProps> = ({ isDarkMode: isDarkModeProp = fa
 
   // Update dark mode
   useEffect(() => {
-    if (sceneRef.current) {
+    if (sceneRef.current !== null) {
       sceneRef.current.traverse((child) => {
         if (child instanceof THREE.Mesh && child.material instanceof THREE.ShaderMaterial) {
           // Check if uniforms exist before accessing them
-          if (child.material.uniforms) {
-            if (child.material.uniforms.uDarkMode) {
+          if (child.material.uniforms !== null && child.material.uniforms !== undefined) {
+            if (child.material.uniforms.uDarkMode !== null && child.material.uniforms.uDarkMode !== undefined) {
               child.material.uniforms.uDarkMode.value = isDarkMode ? 1.0 : 0.0;
             }
             // Update node colors for dark mode
-            if (child.material.uniforms.uColor) {
+            if (child.material.uniforms.uColor !== null && child.material.uniforms.uColor !== undefined) {
               child.material.uniforms.uColor.value = new THREE.Color(isDarkMode ? 0xe9eb9e : 0xff9f40);
             }
           }
