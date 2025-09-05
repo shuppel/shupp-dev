@@ -38,16 +38,16 @@ const technologies = [...new Set(allTechnologies)];
       {projects.map(project => (
         <div class="portfolio-item two-tone-card" data-technologies={project.data.technologies.join(',')}>
           <div class="portfolio-card-image">
-            {project.data.projectImage && project.data.projectImage.startsWith('http') ? (
-              <div class="portfolio-image-preview">
-                 <img
-                   src={`https://api.screenshotmachine.com?key=${import.meta.env.SCREENSHOT_MACHINE_API_KEY}&url=${encodeURIComponent(project.data.projectImage)}&dimension=800x600`}
-                   alt={`${project.data.title} preview`}
-                   loading="lazy"
-                   class="portfolio-preview-img"
-                   onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgZmlsbD0iI2Y0ZjRmNCIvPjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjQwMCIgeT0iMzAwIiBzdHlsZT0iZmlsbDojYWFhO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1zaXplOjQwcHg7Zm9udC1mYW1pbHk6QXJpYWwsc2Fucy1zZXJpZjtkb21pbmFudC1iYXNlbGluZTpjZW50cmFsIj5QcmV2aWV3IFVuYXZhaWxhYmxlPC90ZXh0Pjwvc3ZnPg=='"
-                 />
-              </div>
+             {project.data.projectImage && project.data.projectImage.startsWith('http') ? (
+               <div class="portfolio-image-preview">
+                  <img
+                    src={`/api/screenshot?url=${encodeURIComponent(project.data.projectImage)}`}
+                    alt={`${project.data.title} preview`}
+                    loading="lazy"
+                    class="portfolio-preview-img"
+                    onerror="this.onerror=null; this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgZmlsbD0iI2Y0ZjRmNCIvPjx0ZXh0IHRleHQtYW5jaG9yPSJtaWRkbGUiIHg9IjQwMCIgeT0iMzAwIiBzdHlsZT0iZmlsbDojYWFhO2ZvbnQtd2VpZ2h0OmJvbGQ7Zm9udC1zaXplOjQwcHg7Zm9udC1mYW1pbHk6QXJpYWwsc2Fucy1zZXJpZjtkb21pbmFudC1iYXNlbGluZTpjZW50cmFsIj5QcmV2aWV3IFVuYXZhaWxhYmxlPC90ZXh0Pjwvc3ZnPg=='"
+                  />
+               </div>
             ) : (
               <div class="portfolio-image-placeholder">
                 <div class="placeholder-icon">💼</div>
