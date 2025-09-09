@@ -1,0 +1,199 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import FxSankeyWrapper from '../../components/FxSankey/FxSankeyWrapper';
+import '../../components/FxSankey/FxSankey.css';
+---
+
+<Layout title="FxSankey - Advanced Flow Visualization">
+  <main class="fxsankey-page">
+    <div class="container">
+      <header class="tool-header">
+        <h1>FxSankey</h1>
+        <p class="subtitle">Opulent Three.js-powered Sankey diagrams with liquid effects</p>
+      </header>
+      
+      <FxSankeyWrapper client:load />
+    </div>
+  </main>
+
+  <style>
+    .fxsankey-page {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #14080E 0%, #49475B 50%, #799496 100%);
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .tool-header {
+      text-align: center;
+      margin-bottom: 3rem;
+      padding: 2rem;
+      background: rgba(73, 71, 91, 0.7);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      border: 1px solid rgba(172, 193, 150, 0.2);
+    }
+
+    .tool-header h1 {
+      font-family: 'Maitree', serif;
+      font-size: 3rem;
+      font-weight: 600;
+      margin: 0 0 1rem 0;
+      background: linear-gradient(135deg, #E9EB9E, #ACC196, #799496);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .subtitle {
+      font-family: 'Cairo', sans-serif;
+      font-size: 1.25rem;
+      color: #ACC196;
+      margin: 0;
+    }
+
+    :global(.fxsankey-demo-container) {
+      background: rgba(73, 71, 91, 0.7);
+      backdrop-filter: blur(20px);
+      border-radius: 20px;
+      border: 1px solid rgba(172, 193, 150, 0.2);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    :global(.fxsankey-demo-header) {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    :global(.fxsankey-demo-header h2) {
+      font-family: 'Maitree', serif;
+      font-size: 1.75rem;
+      color: #E9EB9E;
+      margin: 0;
+    }
+
+    :global(.fxsankey-demo-selector) {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    :global(.fxsankey-demo-selector button) {
+      padding: 0.5rem 1.5rem;
+      background: rgba(14, 8, 14, 0.6);
+      border: 2px solid rgba(172, 193, 150, 0.3);
+      border-radius: 25px;
+      color: #ACC196;
+      font-family: 'Cairo', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    :global(.fxsankey-demo-selector button:hover) {
+      background: rgba(172, 193, 150, 0.1);
+      border-color: #ACC196;
+      color: #E9EB9E;
+      transform: translateY(-2px);
+    }
+
+    :global(.fxsankey-demo-selector button.active) {
+      background: linear-gradient(135deg, #ACC196, #E9EB9E);
+      color: #14080E;
+      border-color: transparent;
+      font-weight: 600;
+    }
+
+    :global(.fxsankey-demo-info) {
+      margin-top: 2rem;
+      padding: 1.5rem;
+      background: rgba(14, 8, 14, 0.4);
+      border-radius: 12px;
+      border-left: 3px solid #ACC196;
+    }
+
+    :global(.fxsankey-demo-info h3) {
+      font-family: 'Maitree', serif;
+      font-size: 1.5rem;
+      color: #E9EB9E;
+      margin: 0 0 0.5rem 0;
+    }
+
+    :global(.fxsankey-demo-info p) {
+      font-family: 'Cairo', sans-serif;
+      color: #ACC196;
+      margin: 0 0 1rem 0;
+    }
+
+    :global(.fxsankey-demo-features) {
+      margin-top: 1.5rem;
+    }
+
+    :global(.fxsankey-demo-features h4) {
+      font-family: 'Cairo', sans-serif;
+      font-size: 1.1rem;
+      color: #ACC196;
+      margin: 0 0 0.75rem 0;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    :global(.fxsankey-demo-features ul) {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 0.75rem;
+    }
+
+    :global(.fxsankey-demo-features li) {
+      font-family: 'Hind', sans-serif;
+      color: #E9EB9E;
+      font-size: 0.95rem;
+      padding: 0.5rem;
+      background: rgba(121, 148, 150, 0.05);
+      border-radius: 8px;
+      transition: all 0.3s ease;
+    }
+
+    :global(.fxsankey-demo-features li:hover) {
+      background: rgba(172, 193, 150, 0.1);
+      transform: translateX(5px);
+    }
+
+    @media (max-width: 768px) {
+      .tool-header h1 {
+        font-size: 2rem;
+      }
+
+      .subtitle {
+        font-size: 1rem;
+      }
+
+      :global(.fxsankey-demo-header) {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      :global(.fxsankey-demo-selector) {
+        justify-content: center;
+      }
+
+      :global(.fxsankey-demo-features ul) {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+
+
+</Layout>
