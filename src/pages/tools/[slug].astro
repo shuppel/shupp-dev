@@ -91,16 +91,18 @@ const categoryIcon = categoryIcons[entry.data.category] || 'Wrench';
       )}
     </header>
 
-    <main class="tool-container">
-      <!-- Tool Component will be rendered here -->
-      <div id="tool-mount" class="tool-mount">
-        {entry.data.component === 'RentVsBuy' && <RentVsBuyTool />}
-        {entry.data.component === 'RentVsSell' && <RentVsSellTool />}
-        {!['RentVsBuy', 'RentVsSell'].includes(entry.data.component) && (
-          <div class="error-message">Component "{entry.data.component}" not found.</div>
-        )}
-      </div>
-    </main>
+     <main class="tool-container">
+       <div class="tool-launch-section">
+         <div class="launch-content">
+           <h2>Try the {entry.data.title}</h2>
+           <p>Experience this interactive tool with a clean, distraction-free interface.</p>
+           <a href={`/tools/${entry.slug}/app`} class="launch-button">
+             <Icon name="Play" size={20} weight="duotone" />
+             <span>Launch Tool</span>
+           </a>
+         </div>
+       </div>
+     </main>
 
     <section class="tool-info">
       <div class="info-grid">
@@ -303,17 +305,53 @@ const categoryIcon = categoryIcons[entry.data.category] || 'Wrench';
     text-decoration: underline;
   }
 
-  .tool-container {
-    margin: 3rem 0;
-    padding: 2rem;
-    background: var(--card-bg);
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-  }
+   .tool-container {
+     margin: 3rem 0;
+   }
 
-  .tool-mount {
-    min-height: 400px;
-  }
+   .tool-launch-section {
+     background: var(--card-bg);
+     border-radius: 12px;
+     box-shadow: var(--card-shadow);
+     padding: 3rem 2rem;
+     text-align: center;
+   }
+
+   .launch-content h2 {
+     font-size: 2rem;
+     margin-bottom: 1rem;
+     color: var(--text-color);
+   }
+
+   .launch-content p {
+     font-size: 1.1rem;
+     color: var(--text-light);
+     margin-bottom: 2rem;
+     max-width: 500px;
+     margin-left: auto;
+     margin-right: auto;
+   }
+
+   .launch-button {
+     display: inline-flex;
+     align-items: center;
+     gap: 0.5rem;
+     padding: 1rem 2rem;
+     background: var(--primary-color);
+     color: white;
+     text-decoration: none;
+     border-radius: 8px;
+     font-weight: 600;
+     font-size: 1.1rem;
+     transition: all 0.3s ease;
+     box-shadow: var(--card-shadow);
+   }
+
+   .launch-button:hover {
+     background: var(--color-accent);
+     transform: translateY(-2px);
+     box-shadow: 0 8px 25px rgba(20, 8, 14, 0.2);
+   }
 
   .info-grid {
     display: grid;

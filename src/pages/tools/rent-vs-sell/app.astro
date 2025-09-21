@@ -1,0 +1,65 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import RentVsSellTool from '../../../components/tools/RentVsSell.astro';
+---
+
+<Layout title="Rent vs Sell Calculator - Interactive Tool" description="Calculate whether renting out or selling your property makes more financial sense with this interactive calculator">
+  <div class="tool-app">
+    <div class="tool-header">
+      <h1>Rent vs Sell Calculator</h1>
+      <p>Make informed decisions about renting out versus selling your property with comprehensive financial analysis.</p>
+    </div>
+
+    <div class="tool-content">
+      <RentVsSellTool />
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .tool-app {
+    min-height: 100vh;
+    background: var(--background-color);
+    color: var(--text-color);
+  }
+
+  .tool-header {
+    text-align: center;
+    padding: 2rem 1rem;
+    background: var(--background-alt);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .tool-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+  }
+
+  .tool-header p {
+    font-size: 1.25rem;
+    color: var(--text-light);
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .tool-content {
+    padding: 2rem 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  @media (max-width: 768px) {
+    .tool-header {
+      padding: 1rem;
+    }
+
+    .tool-header h1 {
+      font-size: 2rem;
+    }
+
+    .tool-content {
+      padding: 1rem;
+    }
+  }
+</style>

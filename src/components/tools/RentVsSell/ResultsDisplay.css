@@ -31,25 +31,13 @@
   border-radius: 24px;
   text-align: center;
   overflow: hidden;
-  animation: liquidGlow 4s ease-in-out infinite;
   min-height: 200px;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-@keyframes liquidGlow {
-  0%, 100% { 
-    box-shadow: 
-      0 0 20px rgba(172, 193, 150, 0.1),
-      inset 0 1px 0 rgba(233, 235, 158, 0.1);
-  }
-  50% { 
-    box-shadow: 
-      0 0 30px rgba(172, 193, 150, 0.2),
-      inset 0 1px 0 rgba(233, 235, 158, 0.2);
-  }
-}
+
 
 .recommendation-card::before {
   content: '';
@@ -64,13 +52,9 @@
     rgba(233, 235, 158, 0.1),
     transparent
   );
-  animation: liquidSweep 8s ease-in-out infinite;
 }
 
-@keyframes liquidSweep {
-  0%, 100% { left: -100%; }
-  50% { left: 100%; }
-}
+
 
 .recommendation-header {
   display: flex;

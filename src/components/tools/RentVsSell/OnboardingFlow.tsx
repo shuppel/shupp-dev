@@ -160,12 +160,12 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
             <div className="input-group">
               <label className="input-label">What type of property do you own?</label>
               <div className="button-group">
-                {[
-                  { value: 'single-family', icon: '🏠', label: 'Single Family' },
-                  { value: 'condo', icon: '🏢', label: 'Condo' },
-                  { value: 'townhouse', icon: '🏘️', label: 'Townhouse' },
-                  { value: 'multi-family', icon: '🏗️', label: 'Multi-Family' }
-                ].map(option => (
+                 {[
+                   { value: 'single-family', icon: 'Home', label: 'Single Family' },
+                   { value: 'condo', icon: 'Building', label: 'Condo' },
+                   { value: 'townhouse', icon: 'Townhouse', label: 'Townhouse' },
+                   { value: 'multi-family', icon: 'Buildings', label: 'Multi-Family' }
+                 ].map(option => (
                   <button
                     key={option.value}
                     className={`option-button ${data.propertyType === option.value ? 'selected' : ''}`}
@@ -233,7 +233,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                   className={`option-button ${data.hasBeenRented === true ? 'selected' : ''}`}
                   onClick={() => updateData('hasBeenRented', true)}
                 >
-                  <span className="option-icon">✅</span>
+                   <span className="option-icon">Yes</span>
                   <span className="option-text">
                     <strong>Yes</strong>
                     <small>Has rental history</small>
@@ -243,7 +243,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                   className={`option-button ${data.hasBeenRented === false ? 'selected' : ''}`}
                   onClick={() => updateData('hasBeenRented', false)}
                 >
-                  <span className="option-icon">❌</span>
+                   <span className="option-icon">No</span>
                   <span className="option-text">
                     <strong>No</strong>
                     <small>Never rented</small>
@@ -298,7 +298,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                   className={`option-button ${data.landlordExperience === 'none' ? 'selected' : ''}`}
                   onClick={() => updateData('landlordExperience', 'none')}
                 >
-                  <span className="option-icon">🆕</span>
+                   <span className="option-icon">New</span>
                   <span className="option-text">
                     <strong>No Experience</strong>
                     <small>First time landlord</small>
@@ -308,7 +308,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                   className={`option-button ${data.landlordExperience === 'some' ? 'selected' : ''}`}
                   onClick={() => updateData('landlordExperience', 'some')}
                 >
-                  <span className="option-icon">📚</span>
+                   <span className="option-icon">Book</span>
                   <span className="option-text">
                     <strong>Some Experience</strong>
                     <small>1-3 years</small>
@@ -318,7 +318,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                   className={`option-button ${data.landlordExperience === 'experienced' ? 'selected' : ''}`}
                   onClick={() => updateData('landlordExperience', 'experienced')}
                 >
-                  <span className="option-icon">🎓</span>
+                   <span className="option-icon">Graduation</span>
                   <span className="option-text">
                     <strong>Very Experienced</strong>
                     <small>3+ years</small>
@@ -335,21 +335,21 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                     value: 'minimal', 
                     label: 'Minimal Time', 
                     desc: 'Less than 5 hours per month',
-                    icon: '⏱️',
+                     icon: 'Timer',
                     warning: 'Consider hiring property management'
                   },
                   { 
                     value: 'some', 
                     label: 'Some Time', 
                     desc: '5-15 hours per month',
-                    icon: '⏰',
+                     icon: 'Clock',
                     warning: 'Good for 1-2 properties'
                   },
                   { 
                     value: 'plenty', 
                     label: 'Plenty of Time', 
                     desc: '15+ hours per month',
-                    icon: '🕐',
+                     icon: 'Time',
                     warning: 'Ready for hands-on management'
                   }
                 ].map(option => (
@@ -392,7 +392,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                       <div className="readiness-factors">
                         {factors.map((factor, index) => (
                           <div key={index} className={`factor ${factor.positive ? 'positive' : 'negative'}`}>
-                            <span className="factor-icon">{factor.positive ? '✅' : '⚠️'}</span>
+                             <span className="factor-icon">{factor.positive ? 'Check' : 'Warning'}</span>
                             <span className="factor-text">{factor.text}</span>
                           </div>
                         ))}
@@ -420,7 +420,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                   className={`option-button ${data.primaryGoal === 'cash-flow' ? 'selected' : ''}`}
                   onClick={() => updateData('primaryGoal', 'cash-flow')}
                 >
-                  <span className="option-icon">💵</span>
+                   <span className="option-icon">Money</span>
                   <span className="option-text">
                     <strong>Cash Flow</strong>
                     <small>Monthly income</small>
@@ -430,7 +430,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                   className={`option-button ${data.primaryGoal === 'appreciation' ? 'selected' : ''}`}
                   onClick={() => updateData('primaryGoal', 'appreciation')}
                 >
-                  <span className="option-icon">📈</span>
+                   <span className="option-icon">Trend</span>
                   <span className="option-text">
                     <strong>Appreciation</strong>
                     <small>Long-term growth</small>
@@ -440,7 +440,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                   className={`option-button ${data.primaryGoal === 'liquidity' ? 'selected' : ''}`}
                   onClick={() => updateData('primaryGoal', 'liquidity')}
                 >
-                  <span className="option-icon">💰</span>
+                   <span className="option-icon">Cash</span>
                   <span className="option-text">
                     <strong>Liquidity</strong>
                     <small>Access to cash</small>
@@ -456,7 +456,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                   className={`option-button ${data.riskTolerance === 'conservative' ? 'selected' : ''}`}
                   onClick={() => updateData('riskTolerance', 'conservative')}
                 >
-                  <span className="option-icon">🛡️</span>
+                   <span className="option-icon">Shield</span>
                   <span className="option-text">
                     <strong>Conservative</strong>
                     <small>Low risk preferred</small>
@@ -466,7 +466,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                   className={`option-button ${data.riskTolerance === 'moderate' ? 'selected' : ''}`}
                   onClick={() => updateData('riskTolerance', 'moderate')}
                 >
-                  <span className="option-icon">⚖️</span>
+                   <span className="option-icon">Balance</span>
                   <span className="option-text">
                     <strong>Moderate</strong>
                     <small>Balanced approach</small>
@@ -476,7 +476,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                   className={`option-button ${data.riskTolerance === 'aggressive' ? 'selected' : ''}`}
                   onClick={() => updateData('riskTolerance', 'aggressive')}
                 >
-                  <span className="option-icon">🚀</span>
+                   <span className="option-icon">Rocket</span>
                   <span className="option-text">
                     <strong>Aggressive</strong>
                     <small>Higher risk/reward</small>
@@ -492,7 +492,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                   className={`option-button ${data.planToMoveDistance === 'local' ? 'selected' : ''}`}
                   onClick={() => updateData('planToMoveDistance', 'local')}
                 >
-                  <span className="option-icon">🏘️</span>
+                   <span className="option-icon">Town</span>
                   <span className="option-text">
                     <strong>Staying Local</strong>
                     <small>Same city/area</small>
@@ -502,7 +502,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                   className={`option-button ${data.planToMoveDistance === 'nearby' ? 'selected' : ''}`}
                   onClick={() => updateData('planToMoveDistance', 'nearby')}
                 >
-                  <span className="option-icon">🚗</span>
+                   <span className="option-icon">Car</span>
                   <span className="option-text">
                     <strong>Nearby</strong>
                     <small>Within 2 hours</small>
@@ -512,7 +512,7 @@ export default function OnboardingFlow({ onComplete, onSkip }: OnboardingFlowPro
                   className={`option-button ${data.planToMoveDistance === 'far' ? 'selected' : ''}`}
                   onClick={() => updateData('planToMoveDistance', 'far')}
                 >
-                  <span className="option-icon">✈️</span>
+                   <span className="option-icon">Plane</span>
                   <span className="option-text">
                     <strong>Far Away</strong>
                     <small>Different state/region</small>

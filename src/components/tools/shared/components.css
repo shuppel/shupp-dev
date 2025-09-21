@@ -4,20 +4,15 @@
 @import './liquid-theme.css';
 
 /* Recommendation Components */
-.liquid-recommendation {
-  position: relative;
-  padding: clamp(2rem, 5vw, 3rem);
-  background: linear-gradient(
-    135deg,
-    rgba(172, 193, 150, 0.1),
-    rgba(233, 235, 158, 0.05)
-  );
-  border: 2px solid rgba(172, 193, 150, 0.2);
+ .liquid-recommendation {
+   position: relative;
+   padding: clamp(2rem, 5vw, 3rem);
+   background: rgba(172, 193, 150, 0.1);
+   border: 2px solid rgba(172, 193, 150, 0.2);
   border-radius: var(--radius-xl);
   text-align: center;
-  overflow: hidden;
-  animation: liquidGlow 4s ease-in-out infinite;
-  min-height: 200px;
+   overflow: hidden;
+   min-height: 200px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -51,17 +46,17 @@
   animation: liquidBounce 3s ease-in-out infinite;
 }
 
-.liquid-badge.success {
-  background: linear-gradient(135deg, var(--accent-sage), var(--accent-light));
-  color: var(--primary-dark);
-  box-shadow: 0 8px 25px rgba(172, 193, 150, 0.3);
-}
+ .liquid-badge.success {
+   background: var(--accent-sage);
+   color: var(--primary-dark);
+   box-shadow: 0 8px 25px rgba(172, 193, 150, 0.3);
+ }
 
-.liquid-badge.info {
-  background: linear-gradient(135deg, var(--accent-teal), var(--accent-sage));
-  color: var(--text-primary);
-  box-shadow: 0 8px 25px rgba(121, 148, 150, 0.3);
-}
+ .liquid-badge.info {
+   background: var(--accent-teal);
+   color: var(--text-primary);
+   box-shadow: 0 8px 25px rgba(121, 148, 150, 0.3);
+ }
 
 /* Metric Cards */
 .liquid-metrics-grid {
@@ -81,22 +76,15 @@
   backdrop-filter: blur(10px);
 }
 
-.liquid-metric::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    var(--accent-sage),
-    var(--accent-light),
-    var(--accent-teal)
-  );
-  background-size: 200% 100%;
-  animation: liquidFlow 3s ease-in-out infinite;
-}
+ .liquid-metric::before {
+   content: '';
+   position: absolute;
+   top: 0;
+   left: 0;
+   right: 0;
+   height: 3px;
+   background: var(--accent-sage);
+ }
 
 .liquid-metric:hover {
   transform: translateY(-4px) scale(1.02);
@@ -142,14 +130,8 @@
   padding: var(--space-lg);
   position: relative;
   overflow: hidden;
-  transition: all var(--transition-base);
-  animation: liquidFadeIn 0.6s ease backwards;
-}
-
-.liquid-insight:nth-child(1) { animation-delay: 0.1s; }
-.liquid-insight:nth-child(2) { animation-delay: 0.2s; }
-.liquid-insight:nth-child(3) { animation-delay: 0.3s; }
-.liquid-insight:nth-child(4) { animation-delay: 0.4s; }
+   transition: all var(--transition-base);
+ }
 
 .liquid-insight-header {
   display: flex;
@@ -182,22 +164,15 @@
   transition: all var(--transition-base);
 }
 
-.liquid-chart-container::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
-  background: linear-gradient(
-    90deg,
-    var(--accent-sage),
-    var(--accent-light),
-    var(--accent-teal)
-  );
-  background-size: 200% 100%;
-  animation: liquidFlow 3s ease-in-out infinite;
-}
+ .liquid-chart-container::before {
+   content: '';
+   position: absolute;
+   top: 0;
+   left: 0;
+   right: 0;
+   height: 3px;
+   background: var(--accent-sage);
+ }
 
 .liquid-chart-title {
   font-family: var(--font-secondary);
@@ -205,15 +180,7 @@
   font-weight: 600;
   color: var(--text-primary);
   margin: 0 0 var(--space-lg) 0;
-  text-align: center;
-  background: linear-gradient(
-    135deg,
-    var(--text-primary),
-    var(--accent-sage)
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+   text-align: center;
 }
 
 /* Progress Components */
@@ -225,18 +192,14 @@
   margin-bottom: var(--space-xl);
 }
 
-.liquid-progress-fill {
-  height: 100%;
-  background: linear-gradient(
-    90deg,
-    var(--accent-sage),
-    var(--accent-light)
-  );
-  border-radius: 4px;
-  transition: width var(--transition-slow);
-  position: relative;
-  overflow: hidden;
-}
+ .liquid-progress-fill {
+   height: 100%;
+   background: var(--accent-sage);
+   border-radius: 4px;
+   transition: width var(--transition-slow);
+   position: relative;
+   overflow: hidden;
+ }
 
 .liquid-progress-fill::after {
   content: '';
@@ -332,14 +295,13 @@
   font-size: 0.9rem;
 }
 
-.liquid-disclaimer li::before {
-  content: '•';
-  position: absolute;
-  left: 0;
-  color: var(--accent-sage);
-  font-weight: bold;
-  animation: liquidTwinkle 2s ease-in-out infinite;
-}
+ .liquid-disclaimer li::before {
+   content: '•';
+   position: absolute;
+   left: 0;
+   color: var(--accent-sage);
+   font-weight: bold;
+ }
 
 @keyframes liquidTwinkle {
   0%, 100% { opacity: 0.7; transform: scale(1); }
@@ -361,21 +323,17 @@
   overflow: hidden;
 }
 
-.liquid-option::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    135deg,
-    rgba(172, 193, 150, 0.1),
-    rgba(233, 235, 158, 0.05)
-  );
-  opacity: 0;
-  transition: opacity var(--transition-base);
-}
+ .liquid-option::before {
+   content: '';
+   position: absolute;
+   top: 0;
+   left: 0;
+   right: 0;
+   bottom: 0;
+   background: rgba(172, 193, 150, 0.1);
+   opacity: 0;
+   transition: opacity var(--transition-base);
+ }
 
 .liquid-option:hover {
   border-color: var(--accent-sage);
@@ -387,14 +345,10 @@
   opacity: 1;
 }
 
-.liquid-option.selected {
-  background: linear-gradient(
-    135deg,
-    rgba(172, 193, 150, 0.2),
-    rgba(233, 235, 158, 0.1)
-  );
-  border-color: var(--accent-sage);
-}
+ .liquid-option.selected {
+   background: rgba(172, 193, 150, 0.2);
+   border-color: var(--accent-sage);
+ }
 
 /* Fullscreen Mode */
 .liquid-fullscreen {
@@ -430,7 +384,7 @@
   height: 48px;
   background: rgba(73, 71, 91, 0.8);
   backdrop-filter: blur(10px);
-  border: 2px solid rgba(172, 193, 150, 0.3);
+  border: 1px solid rgba(172, 193, 150, 0.2);
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
@@ -441,15 +395,16 @@
 }
 
 .liquid-expand-button:hover {
+  background: rgba(73, 71, 91, 1);
   border-color: var(--accent-sage);
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(172, 193, 150, 0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(14, 8, 14, 0.2);
 }
 
 .liquid-expand-button svg {
   width: 24px;
   height: 24px;
-  fill: var(--text-primary);
+  color: var(--text-primary);
 }
 
 /* Tax Calculator Component */
@@ -479,19 +434,22 @@
 
 .toggle-details {
   padding: 0.5rem 1rem;
-  background: rgba(172, 193, 150, 0.1);
-  border: 1px solid rgba(172, 193, 150, 0.3);
+  background: rgba(73, 71, 91, 0.8);
+  border: 1px solid rgba(172, 193, 150, 0.2);
   border-radius: var(--radius-sm);
   color: var(--accent-sage);
   font-size: 0.9rem;
   font-weight: 500;
   cursor: pointer;
   transition: all var(--transition-fast);
+  backdrop-filter: blur(10px);
 }
 
 .toggle-details:hover {
-  background: rgba(172, 193, 150, 0.2);
+  background: rgba(73, 71, 91, 1);
+  border-color: var(--accent-sage);
   transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(14, 8, 14, 0.1);
 }
 
 .tax-inputs-grid {
@@ -538,9 +496,8 @@
   font-family: var(--font-header);
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--accent-light);
-  animation: liquidPulse 2s ease-in-out infinite;
-}
+   color: var(--accent-light);
+ }
 
 @keyframes liquidPulse {
   0%, 100% { opacity: 1; }
@@ -552,9 +509,8 @@
   padding: var(--space-lg);
   background: rgba(73, 71, 91, 0.3);
   border-radius: var(--radius-md);
-  border: 1px solid rgba(172, 193, 150, 0.1);
-  animation: liquidFadeIn 0.3s ease;
-}
+   border: 1px solid rgba(172, 193, 150, 0.1);
+ }
 
 .tax-details h4 {
   font-family: var(--font-secondary);
@@ -602,15 +558,10 @@
 .validation-warnings {
   margin: var(--space-lg) 0;
   padding: var(--space-lg);
-  background: linear-gradient(
-    135deg,
-    rgba(243, 156, 18, 0.05),
-    rgba(233, 235, 158, 0.03)
-  );
-  border: 1px solid rgba(243, 156, 18, 0.2);
-  border-radius: var(--radius-lg);
-  border-left: 4px solid var(--accent-light);
-  animation: liquidFadeIn 0.5s ease;
+   background: rgba(243, 156, 18, 0.05);
+   border: 1px solid rgba(243, 156, 18, 0.2);
+   border-radius: var(--radius-lg);
+   border-left: 4px solid var(--accent-light);
 }
 
 .warnings-header {
@@ -620,10 +571,9 @@
   margin-bottom: var(--space-md);
 }
 
-.warning-icon {
-  font-size: 1.5rem;
-  animation: liquidPulse 2s ease-in-out infinite;
-}
+ .warning-icon {
+   font-size: 1.5rem;
+ }
 
 .warnings-header h4 {
   font-family: var(--font-secondary);
@@ -728,15 +678,7 @@
   font-family: var(--font-header);
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--text-primary);
-  background: linear-gradient(
-    135deg,
-    var(--text-primary),
-    var(--accent-sage)
-  );
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+   color: var(--text-primary);
 }
 
 .value-suffix {
@@ -780,41 +722,22 @@
   transition: opacity var(--transition-base);
 }
 
-.liquid-slider:hover .slider-track::before {
-  opacity: 1;
-  animation: liquidFlow 3s ease-in-out infinite;
-}
+ .liquid-slider:hover .slider-track::before {
+   opacity: 1;
+ }
 
 .slider-fill {
   position: absolute;
   top: 0;
   left: 0;
   height: 100%;
-  background: linear-gradient(
-    90deg,
-    var(--accent-sage),
-    var(--accent-light)
-  );
+   background: var(--accent-sage);
   border-radius: 4px;
   transition: width var(--transition-base);
   overflow: hidden;
 }
 
-.slider-fill::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(
-    90deg,
-    transparent,
-    rgba(255, 255, 255, 0.2),
-    transparent
-  );
-  animation: liquidSweep 2s ease-in-out infinite;
-}
+
 
 .slider-thumb {
   position: absolute;
@@ -822,11 +745,7 @@
   transform: translate(-50%, -50%);
   width: 24px;
   height: 24px;
-  background: linear-gradient(
-    135deg,
-    var(--accent-sage),
-    var(--accent-light)
-  );
+   background: var(--accent-sage);
   border: 3px solid var(--primary-dark);
   border-radius: 50%;
   box-shadow: 
@@ -911,10 +830,9 @@
   color: #ff6b6b;
   font-size: 0.875rem;
   margin-top: 0.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  animation: liquidSlideIn 0.3s ease;
+   display: flex;
+   align-items: center;
+   gap: 0.5rem;
 }
 
 /* Disabled State */

@@ -29,7 +29,6 @@
     var(--accent-teal)
   );
   background-size: 200% 100%;
-  animation: liquidFlow 3s ease-in-out infinite;
 }
 
 .chart-container:hover {

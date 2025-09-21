@@ -83,8 +83,7 @@
   text-align: center;
   color: var(--text-secondary);
   font-size: 0.9rem;
-  font-style: italic;
-  animation: liquidFade 2s ease-in-out infinite;
+   font-style: italic;
 }
 
 @keyframes liquidFade {
@@ -129,23 +128,15 @@
   min-height: 180px;
 }
 
-.wealth-card.positive {
-  background: linear-gradient(
-    135deg,
-    rgba(172, 193, 150, 0.15),
-    rgba(233, 235, 158, 0.05)
-  );
-  border: 2px solid rgba(172, 193, 150, 0.3);
-}
+ .wealth-card.positive {
+   background: rgba(172, 193, 150, 0.15);
+   border: 2px solid rgba(172, 193, 150, 0.3);
+ }
 
-.wealth-card.neutral {
-  background: linear-gradient(
-    135deg,
-    rgba(121, 148, 150, 0.15),
-    rgba(73, 71, 91, 0.1)
-  );
-  border: 2px solid rgba(121, 148, 150, 0.3);
-}
+ .wealth-card.neutral {
+   background: rgba(121, 148, 150, 0.15);
+   border: 2px solid rgba(121, 148, 150, 0.3);
+ }
 
 .wealth-card:hover {
   transform: translateY(-6px);
@@ -374,11 +365,7 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--space-md);
-  background: linear-gradient(
-    135deg,
-    rgba(172, 193, 150, 0.1),
-    rgba(233, 235, 158, 0.05)
-  );
+   background: rgba(172, 193, 150, 0.1);
   border: 1px solid var(--accent-sage);
   border-radius: var(--radius-sm);
   margin-top: var(--space-md);
@@ -456,13 +443,13 @@
   transition: all var(--transition-slow);
 }
 
-.principal-portion {
-  background: linear-gradient(135deg, var(--accent-sage), var(--accent-light));
-}
+ .principal-portion {
+   background: var(--accent-sage);
+ }
 
-.interest-portion {
-  background: linear-gradient(135deg, #ff6b6b, #ff8787);
-}
+ .interest-portion {
+   background: #ff6b6b;
+ }
 
 .bar-label {
   color: var(--primary-dark);

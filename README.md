@@ -61,6 +61,10 @@ All commands are run from the root of the project, from a terminal:
 | `npm run build`           | Build your production site to `./dist/`          |
 | `npm run preview`         | Preview your build locally, before deploying     |
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
+| `npm run screenshot`      | Capture screenshots of the production site        |
+| `npm run screenshot:local`| Capture screenshots of the local dev server       |
+| `npm run lint`            | Check code style and lint errors                  |
+| `npm run typecheck`       | Run TypeScript type checking                      |
 
 ## Technologies
 
@@ -252,9 +256,41 @@ To enable feature flags:
 - Update your roadmap in the `/src/content/roadmap/` directory
 - Modify colors and styling in the CSS variables in `src/layouts/Layout.astro`
 
+## 📸 Automated Screenshots
+
+This project includes automated screenshot capture that runs on code commits and deployments.
+
+### Setup
+Set the `SCREENSHOT_MACHINE_API_KEY` environment variable:
+- **Local**: Add to your shell profile or `.env` file
+- **Netlify**: Add in site settings under Environment Variables
+
+### How It Works
+- **Local Post-commit**: Captures screenshots after each commit on main/master branch
+- **Netlify Post-build**: Captures screenshots after successful deployments
+- **Manual**: Run `npm run screenshot` or `npm run screenshot:local`
+
+### Screenshot Structure
+```
+screenshots/
+├── 2025-09-21-a1b2c3d/     # Date and commit hash
+│   ├── home.png            # Homepage screenshot
+│   ├── portfolio.png       # Portfolio page
+│   ├── blog.png           # Blog page
+│   ├── tools.png          # Tools page
+│   ├── about.png          # About page
+│   ├── thoughtful-apps.png # Thoughtful Apps page
+│   └── metadata.json      # Capture metadata
+└── latest/                 # Symlink to most recent (local only)
+```
+
+### Viewing Screenshots
+- **Local**: Navigate to `screenshots/latest/` directory
+- **Production**: Visit `https://your-site.com/screenshots/latest.json` for metadata, then access specific images
+
 ## Deployment
 
-This site can be deployed on any static hosting service like Netlify, Vercel, or GitHub Pages. The site includes a `netlify.toml` file for easy deployment on Netlify.
+This site can be deployed on any static hosting service like Netlify, Vercel, or GitHub Pages. The site includes a `netlify.toml` file for easy deployment on Netlify with automatic screenshot capture.
 
 ## License
 

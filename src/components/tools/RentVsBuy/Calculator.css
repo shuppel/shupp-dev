@@ -1,12 +1,15 @@
 /* Rent vs Buy Calculator - Clean, Focused Design */
 
+/* Import shared theme */
+@import '../shared/liquid-theme.css';
+
 /* Main Calculator Container */
 .rvb-calculator {
   width: 100%;
   min-height: 100vh;
-  background: #ffffff;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-  color: #1a1a1a;
+  background: var(--surface-primary);
+  font-family: var(--font-body);
+  color: var(--text-primary);
   overflow-x: hidden;
   position: relative;
 }
@@ -38,7 +41,7 @@
   height: 100vh;
   z-index: 9999;
   overflow-y: auto;
-  background: #f8f9fa;
+  background: var(--surface-secondary);
 }
 
 .rvb-calculator.fullscreen .calculator-container {
@@ -56,10 +59,10 @@
   position: absolute;
   top: 1rem;
   right: 1rem;
-  width: 40px;
-  height: 40px;
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  width: 44px;
+  height: 44px;
+  background: var(--surface-glass);
+  border: 1px solid rgba(143, 184, 138, 0.2);
   border-radius: 8px;
   display: flex;
   align-items: center;
@@ -67,19 +70,21 @@
   cursor: pointer;
   transition: all 0.2s ease;
   z-index: 100;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(14, 8, 14, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 .expand-button:hover {
-  background: #f3f4f6;
-  border-color: #d1d5db;
-  transform: scale(1.05);
+  background: var(--surface-tertiary);
+  border-color: var(--accent-sage);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(14, 8, 14, 0.15);
 }
 
 .expand-button svg {
   width: 20px;
   height: 20px;
-  fill: #6b7280;
+  color: var(--text-secondary);
 }
 
 @media (min-width: 1024px) {
@@ -92,21 +97,22 @@
 /* Panel Base Styles */
 .input-panel,
 .results-panel {
-  background: #ffffff;
-  border: 1px solid #e5e7eb;
+  background: var(--surface-glass);
+  border: 1px solid rgba(143, 184, 138, 0.2);
   border-radius: 12px;
   padding: 2rem;
   position: relative;
   transition: all 0.2s ease;
   width: 100%;
   box-sizing: border-box;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(14, 8, 14, 0.1);
+  backdrop-filter: blur(10px);
 }
 
 .input-panel:hover,
 .results-panel:hover {
-  border-color: #d1d5db;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  border-color: var(--accent-sage);
+  box-shadow: 0 4px 6px rgba(14, 8, 14, 0.15);
 }
 
 /* Panel Headers */
@@ -116,9 +122,10 @@
 }
 
 .panel-header h2 {
+  font-family: var(--font-header);
   font-size: 1.5rem;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--text-primary);
   margin: 0 0 0.5rem 0;
   line-height: 1.3;
 }
@@ -134,16 +141,23 @@
 .form-section {
   position: relative;
   padding: 1.5rem;
-  background: #f9fafb;
+  background: var(--surface-tertiary);
   border-radius: 8px;
-  border: 1px solid #e5e7eb;
+  border: 1px solid rgba(143, 184, 138, 0.1);
   margin-bottom: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.form-section:hover {
+  border-color: rgba(143, 184, 138, 0.2);
+  background: rgba(31, 31, 31, 0.7);
 }
 
 .form-section h3 {
+  font-family: var(--font-secondary);
   font-size: 1.125rem;
   font-weight: 600;
-  color: #374151;
+  color: var(--text-primary);
   margin: 0 0 1rem 0;
   position: relative;
 }
@@ -156,26 +170,30 @@
 
 .input-field label {
   display: block;
+  font-family: var(--font-secondary);
   font-weight: 500;
-  color: #374151;
+  color: var(--text-secondary);
   margin-bottom: 0.5rem;
   font-size: 0.875rem;
+  transition: color 0.2s ease;
+  line-height: 1.4;
+  letter-spacing: 0.01em;
 }
 
 .input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
-  background: #ffffff;
-  border: 1px solid #d1d5db;
+  background: var(--surface-primary);
+  border: 1px solid rgba(172, 193, 150, 0.2);
   border-radius: 8px;
   overflow: hidden;
   transition: all 0.2s ease;
 }
 
 .input-wrapper:focus-within {
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  border-color: var(--accent-sage);
+  box-shadow: 0 0 0 3px rgba(143, 184, 138, 0.2);
 }
 
 .input-wrapper input,
@@ -184,29 +202,35 @@
   padding: 0.75rem 1rem;
   background: transparent;
   border: none;
-  color: #1a1a1a;
+  color: var(--text-primary);
+  font-family: var(--font-body);
   font-size: 1rem;
   outline: none;
+  transition: all 0.2s ease;
+  line-height: 1.5;
+  font-weight: 400;
 }
 
 .input-wrapper input::placeholder {
-  color: #9ca3af;
+  color: var(--text-muted);
+  font-style: italic;
+  font-weight: 300;
 }
 
 .prefix,
 .suffix {
   padding: 0 0.75rem;
-  color: #6b7280;
+  color: var(--text-accent);
   font-weight: 500;
   font-size: 0.875rem;
 }
 
 .prefix {
-  border-right: 1px solid #e5e7eb;
+  border-right: 1px solid rgba(172, 193, 150, 0.1);
 }
 
 .suffix {
-  border-left: 1px solid #e5e7eb;
+  border-left: 1px solid rgba(172, 193, 150, 0.1);
 }
 
 /* Tooltip */
@@ -217,8 +241,8 @@
   width: 16px;
   height: 16px;
   margin-left: 0.5rem;
-  background: #3b82f6;
-  color: #ffffff;
+  background: var(--accent-sage);
+  color: var(--primary-dark);
   border-radius: 50%;
   font-size: 0.75rem;
   font-weight: 600;
@@ -228,21 +252,23 @@
 
 .tooltip:hover {
   transform: scale(1.1);
-  background: #2563eb;
+  background: var(--accent-light);
 }
 
 /* Error States */
 .input-field.has-error .input-wrapper {
-  border-color: #ef4444;
+  border-color: var(--error-color);
+  box-shadow: 0 0 0 2px rgba(229, 115, 115, 0.2);
 }
 
 .error-message {
-  color: #ef4444;
+  color: var(--error-color);
   font-size: 0.875rem;
   margin-top: 0.5rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  line-height: 1.4;
 }
 
 /* Form Actions */
@@ -253,21 +279,31 @@
 }
 
 .calculate-button {
-  padding: 0.75rem 2rem;
-  background: #3b82f6;
-  color: #ffffff;
+  padding: 0.875rem 2rem;
+  background: var(--accent-sage);
+  color: var(--primary-dark);
   border: none;
   border-radius: 8px;
+  font-family: var(--font-secondary);
   font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 8px rgba(143, 184, 138, 0.2);
+  text-decoration: none;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .calculate-button:hover {
-  background: #2563eb;
+  background: var(--accent-light);
   transform: translateY(-1px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 16px rgba(143, 184, 138, 0.3);
 }
 
 .calculate-button:active {
@@ -275,15 +311,17 @@
 }
 
 .calculate-button:disabled {
-  opacity: 0.6;
+  opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+  background: var(--text-muted);
+  box-shadow: none;
 }
 
 .calculation-status {
   margin-top: 1rem;
   text-align: center;
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 0.875rem;
 }
 
@@ -296,7 +334,7 @@
   min-height: 300px;
   text-align: center;
   padding: 2rem;
-  color: #6b7280;
+  color: var(--text-muted);
 }
 
 .empty-state p {
@@ -307,15 +345,20 @@
 
 /* Economic Summary */
 .economic-summary {
-  background: #f9fafb;
-  border: 1px solid #e5e7eb;
+  background: var(--surface-tertiary);
+  border: 1px solid rgba(143, 184, 138, 0.1);
   padding: 1.5rem;
   border-radius: 8px;
   margin-bottom: 1.5rem;
+  transition: all 0.2s ease;
+}
+
+.economic-summary:hover {
+  border-color: rgba(143, 184, 138, 0.2);
 }
 
 .economic-summary .summary-note {
-  color: #6b7280;
+  color: var(--text-muted);
   font-size: 0.875rem;
   margin-bottom: 1rem;
 }
@@ -330,24 +373,24 @@
   display: flex;
   justify-content: space-between;
   padding: 0.5rem 0;
-  border-bottom: 1px solid #e5e7eb;
+  border-bottom: 1px solid rgba(143, 184, 138, 0.1);
 }
 
 .assumption-item:last-child {
   border-bottom: none;
   justify-content: center;
-  color: #3b82f6;
+  color: var(--accent-sage);
   font-size: 0.875rem;
   margin-top: 0.5rem;
 }
 
 .assumption-item .label {
-  color: #6b7280;
+  color: var(--text-muted);
   font-weight: 500;
 }
 
 .assumption-item .value {
-  color: #1a1a1a;
+  color: var(--text-primary);
   font-weight: 600;
   text-transform: capitalize;
 }
@@ -357,11 +400,11 @@
   position: fixed;
   top: 1rem;
   right: 1rem;
-  background: #ef4444;
-  color: white;
+  background: var(--error-color);
+  color: var(--text-inverse);
   padding: 1rem 1.5rem;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 6px rgba(14, 8, 14, 0.1);
   z-index: 1000;
 }
 

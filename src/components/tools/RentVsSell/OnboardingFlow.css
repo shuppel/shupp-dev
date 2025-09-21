@@ -22,33 +22,7 @@
   box-sizing: border-box;
 }
 
-/* Animations */
-@keyframes liquidFadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
 
-@keyframes liquidSweep {
-  0%, 100% { left: -100%; }
-  50% { left: 100%; }
-}
-
-@keyframes liquidBounce {
-  0% { transform: scale(0); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
-}
-
-@keyframes liquidShimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
 
 .rvs-onboarding {
   width: 100%;
@@ -88,7 +62,6 @@
     var(--accent-light),
     var(--accent-teal)
   );
-  animation: liquidShimmer 3s ease-in-out infinite;
 }
 
 .onboarding-header {
@@ -149,7 +122,6 @@
     rgba(255, 255, 255, 0.3),
     transparent
   );
-  animation: liquidSweep 2s ease-in-out infinite;
 }
 
 .onboarding-content {
@@ -161,19 +133,9 @@
 
 .step-content {
   width: 100%;
-  animation: fadeIn 0.3s ease;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
+
 
 .step-content h3 {
   font-size: 1.5rem;
@@ -257,7 +219,6 @@
   align-items: center;
   justify-content: center;
   font-weight: bold;
-  animation: liquidBounce 0.4s ease;
 }
 
 .option-button.vertical {
@@ -486,7 +447,6 @@
   background: rgba(73, 71, 91, 0.4);
   border: 1px solid rgba(172, 193, 150, 0.2);
   border-radius: 16px;
-  animation: liquidFadeIn 0.5s ease;
 }
 
 .readiness-score h4 {
@@ -535,7 +495,6 @@
     rgba(255, 255, 255, 0.2),
     transparent
   );
-  animation: liquidSweep 2s ease-in-out infinite;
 }
 
 .readiness-label {
@@ -648,7 +607,6 @@
     var(--accent-light),
     var(--accent-teal)
   );
-  animation: liquidShimmer 3s ease-in-out infinite;
 }
 
 /* Progress Section */
