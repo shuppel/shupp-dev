@@ -1,6 +1,7 @@
----
-import { getCollection } from 'astro:content';
-import Layout from '../layouts/Layout.astro';
+ ---
+ import { getCollection } from 'astro:content';
+ import Layout from '../layouts/Layout.astro';
+ import Icon from '../components/Icon/Icon.astro';
 
 // Get all projects from the collection
 const allProjects = await getCollection('projects');
@@ -13,10 +14,13 @@ const projects = allProjects.sort((a, b) => {
 
 <Layout title="Portfolio" description="Explore my portfolio of software development and product management projects">
   <div class="portfolio-page">
-    <section class="portfolio-hero">
-      <h1>Portfolio</h1>
-      <p class="lead">Selected work and projects</p>
-    </section>
+     <section class="portfolio-hero">
+       <div class="portfolio-header">
+         <Icon name="Briefcase" size={48} weight="duotone" liquid={true} inkEffect="medium" />
+         <h1>Portfolio</h1>
+       </div>
+       <p class="lead">Selected work and projects</p>
+     </section>
 
     <section class="portfolio-grid">
       {projects.map(project => (
@@ -68,23 +72,31 @@ const projects = allProjects.sort((a, b) => {
     padding: 4rem 1.5rem;
   }
 
-  /* Hero Section */
-  .portfolio-hero {
-    margin-bottom: 4rem;
-  }
+    /* Hero Section */
+    .portfolio-hero {
+      margin-bottom: 3rem;
+    }
 
-  .portfolio-hero h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 0.75rem;
-    color: var(--text-color);
-  }
+   .portfolio-header {
+     display: flex;
+     align-items: center;
+     gap: 1rem;
+     margin-bottom: 0.75rem;
+   }
 
-  .lead {
-    font-size: 1.25rem;
-    color: var(--text-light);
-    line-height: 1.6;
-  }
+   .portfolio-hero h1 {
+     font-size: 2.5rem;
+     font-weight: 700;
+     margin: 0;
+     color: var(--text-color);
+   }
+
+   .lead {
+     font-size: 1.25rem;
+     color: var(--text-light);
+     line-height: 1.6;
+     margin: 0;
+   }
 
   /* Portfolio Grid */
   .portfolio-grid {
@@ -290,15 +302,20 @@ const projects = allProjects.sort((a, b) => {
     color: #9ca3af;
   }
 
-  /* Responsive */
-  @media (max-width: 768px) {
-    .portfolio-page {
-      padding: 3rem 1rem;
-    }
+   /* Responsive */
+   @media (max-width: 768px) {
+     .portfolio-page {
+       padding: 3rem 1rem;
+     }
 
-    .portfolio-hero h1 {
-      font-size: 2rem;
-    }
+     .portfolio-header {
+       flex-direction: column;
+       text-align: center;
+     }
+
+     .portfolio-hero h1 {
+       font-size: 2rem;
+     }
 
     .portfolio-grid {
       grid-template-columns: 1fr;

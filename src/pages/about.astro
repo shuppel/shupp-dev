@@ -37,7 +37,7 @@ const author = authorEntries[0]; // Using the first author as this is a personal
 
                <div class="profile-cta">
                  <a href="/portfolio" class="btn btn-primary">View Portfolio</a>
-                 <a href="/resume.pdf" class="btn btn-secondary">Download Resume</a>
+                  <a href="https://docs.google.com/document/d/YOUR_GOOGLE_DOC_ID/edit?usp=sharing" target="_blank" class="btn btn-secondary">View Resume</a>
                </div>
              </div>
            </div>
@@ -149,19 +149,17 @@ const author = authorEntries[0]; // Using the first author as this is a personal
      padding: 4rem 1.5rem;
    }
 
-   /* Hero Section */
-   .about-hero {
-     margin-bottom: 3rem;
-     text-align: center;
-   }
+    /* Hero Section */
+    .about-hero {
+      margin-bottom: 3rem;
+    }
 
-   .about-header {
-     display: flex;
-     align-items: center;
-     justify-content: center;
-     gap: 1rem;
-     margin-bottom: 1rem;
-   }
+    .about-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
 
    .about-hero h1 {
      font-size: 2.5rem;
@@ -170,13 +168,13 @@ const author = authorEntries[0]; // Using the first author as this is a personal
      color: var(--text-color);
    }
 
-   .lead {
-     font-size: 1.25rem;
-     color: var(--text-light);
-     line-height: 1.6;
-     max-width: 800px;
-     margin: 0 auto;
-   }
+    .lead {
+      font-size: 1.25rem;
+      color: var(--text-light);
+      line-height: 1.6;
+      max-width: 800px;
+      margin: 0;
+    }
 
    /* Container Layout */
    .about-container {
@@ -307,16 +305,9 @@ const author = authorEntries[0]; // Using the first author as this is a personal
     }
   }
 
-  .profile-details {
-    padding: 2rem;
-    background: white;
-    border-top: 1px solid rgba(121, 148, 150, 0.1);
-  }
-
-  html.dark .profile-details {
-    background: #23232b;
-    border-top: 1px solid rgba(172, 193, 150, 0.1);
-  }
+   .profile-details {
+     padding: 2rem 2rem 1rem 2rem;
+   }
 
   .profile-details a {
     color: var(--primary-color);
@@ -542,21 +533,22 @@ const author = authorEntries[0]; // Using the first author as this is a personal
    }
 
    /* Responsive */
-   @media (max-width: 768px) {
-     .about-page {
-       padding: 3rem 1rem;
-     }
+    @media (max-width: 768px) {
+      .about-page {
+        padding: 3rem 1rem;
+      }
 
-     .about-header {
-       flex-direction: column;
-     }
+      .about-header {
+        flex-direction: column;
+        text-align: center;
+      }
 
-     .about-hero h1 {
-       font-size: 2rem;
-     }
+      .about-hero h1 {
+        font-size: 2rem;
+      }
 
-     .lead {
-       font-size: 1.1rem;
-     }
-   }
+      .lead {
+        font-size: 1.1rem;
+      }
+    }
 </style>

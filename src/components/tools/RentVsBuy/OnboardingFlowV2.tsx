@@ -27,9 +27,9 @@ interface OnboardingFlowProps {
 const CATEGORIES = [
   {
     id: 'profile',
-    title: '👤 Personal Profile',
-    subtitle: 'Basic information about you',
-    icon: '👤',
+     title: 'Personal Profile',
+     subtitle: 'Basic information about you',
+     icon: 'Person',
     sections: [
       { id: 'filing', title: 'Filing Status', description: 'Tax filing information' },
       { id: 'ownership', title: 'Current Situation', description: 'Homeowner status' }
@@ -37,9 +37,9 @@ const CATEGORIES = [
   },
   {
     id: 'financial',
-    title: '💰 Financial Details',
-    subtitle: 'Your financial situation',
-    icon: '💰',
+     title: 'Financial Details',
+     subtitle: 'Your financial situation',
+     icon: 'Money',
     sections: [
       { id: 'income', title: 'Income & Debts', description: 'Monthly cash flow' },
       { id: 'credit', title: 'Credit & Savings', description: 'Financial health' }
@@ -47,9 +47,9 @@ const CATEGORIES = [
   },
   {
     id: 'market',
-    title: '📊 Market & Goals',
-    subtitle: 'Expectations and outlook',
-    icon: '📊',
+     title: 'Market & Goals',
+     subtitle: 'Expectations and outlook',
+     icon: 'Chart',
     sections: [
       { id: 'outlook', title: 'Market Outlook', description: 'Housing market view' },
       { id: 'investment', title: 'Investment Style', description: 'Risk and timeline' }
@@ -151,7 +151,7 @@ export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowP
                 className={`option-button ${data.filingStatus === 'single' ? 'selected' : ''}`}
                 onClick={() => updateData('filingStatus', 'single')}
               >
-                <span className="option-icon">👤</span>
+                 <span className="option-icon">Person</span>
                 <span className="option-text">
                   <strong>Single</strong>
                   <small>$14,600 standard deduction</small>
@@ -161,7 +161,7 @@ export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowP
                 className={`option-button ${data.filingStatus === 'married' ? 'selected' : ''}`}
                 onClick={() => updateData('filingStatus', 'married')}
               >
-                <span className="option-icon">👥</span>
+                 <span className="option-icon">People</span>
                 <span className="option-text">
                   <strong>Married Filing Jointly</strong>
                   <small>$29,200 standard deduction</small>
@@ -183,7 +183,7 @@ export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowP
                 className={`option-button ${data.currentHomeowner === true ? 'selected' : ''}`}
                 onClick={() => updateData('currentHomeowner', true)}
               >
-                <span className="option-icon">🏠</span>
+                 <span className="option-icon">Home</span>
                 <span className="option-text">
                   <strong>Yes, I'm a homeowner</strong>
                   <small>May have equity to leverage</small>
@@ -193,7 +193,7 @@ export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowP
                 className={`option-button ${data.currentHomeowner === false ? 'selected' : ''}`}
                 onClick={() => updateData('currentHomeowner', false)}
               >
-                <span className="option-icon">🏢</span>
+                 <span className="option-icon">Building</span>
                 <span className="option-text">
                   <strong>No, I rent</strong>
                   <small>First-time buyer programs available</small>
@@ -210,7 +210,7 @@ export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowP
                   className={`option-button ${data.sellingCurrentHome === true ? 'selected' : ''}`}
                   onClick={() => updateData('sellingCurrentHome', true)}
                 >
-                  <span className="option-icon">💰</span>
+                   <span className="option-icon">Money</span>
                   <span className="option-text">
                     <strong>Yes</strong>
                     <small>Proceeds for down payment</small>
@@ -220,7 +220,7 @@ export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowP
                   className={`option-button ${data.sellingCurrentHome === false ? 'selected' : ''}`}
                   onClick={() => updateData('sellingCurrentHome', false)}
                 >
-                  <span className="option-icon">🔑</span>
+                   <span className="option-icon">Key</span>
                   <span className="option-text">
                     <strong>No</strong>
                     <small>Keep as investment</small>
@@ -320,11 +320,11 @@ export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowP
           <div className="input-group">
             <label className="input-label">How do you view the housing market?</label>
             <div className="button-group">
-              {[
-                { id: 'hot', icon: '🔥', label: 'Hot Market', desc: 'Prices rising fast' },
-                { id: 'stable', icon: '⚖️', label: 'Stable', desc: 'Normal appreciation' },
-                { id: 'cooling', icon: '❄️', label: 'Cooling', desc: 'Prices may decline' }
-              ].map(market => (
+               {[
+                 { id: 'hot', icon: 'Hot', label: 'Hot Market', desc: 'Prices rising fast' },
+                 { id: 'stable', icon: 'Balance', label: 'Stable', desc: 'Normal appreciation' },
+                 { id: 'cooling', icon: 'Cool', label: 'Cooling', desc: 'Prices may decline' }
+               ].map(market => (
                 <button
                   key={market.id}
                   className={`option-button ${data.marketOutlook === market.id ? 'selected' : ''}`}
@@ -349,11 +349,11 @@ export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowP
           <div className="input-group">
             <label className="input-label">Investment style if you rent</label>
             <div className="button-group">
-              {[
-                { id: 'conservative', icon: '🛡️', label: 'Conservative', returns: '4-5% returns' },
-                { id: 'moderate', icon: '📊', label: 'Moderate', returns: '7-8% returns' },
-                { id: 'aggressive', icon: '🚀', label: 'Aggressive', returns: '10%+ returns' }
-              ].map(style => (
+               {[
+                 { id: 'conservative', icon: 'Shield', label: 'Conservative', returns: '4-5% returns' },
+                 { id: 'moderate', icon: 'Chart', label: 'Moderate', returns: '7-8% returns' },
+                 { id: 'aggressive', icon: 'Rocket', label: 'Aggressive', returns: '10%+ returns' }
+               ].map(style => (
                 <button
                   key={style.id}
                   className={`option-button compact ${data.investmentConfidence === style.id ? 'selected' : ''}`}
@@ -372,11 +372,11 @@ export default function OnboardingFlowV2({ onComplete, onSkip }: OnboardingFlowP
           <div className="input-group">
             <label className="input-label">How long will you stay?</label>
             <div className="button-group">
-              {[
-                { id: 'short', icon: '⏱️', label: '1-3 years', desc: 'Short term' },
-                { id: 'medium', icon: '⏰', label: '4-7 years', desc: 'Medium term' },
-                { id: 'long', icon: '📅', label: '8+ years', desc: 'Long term' }
-              ].map(time => (
+               {[
+                 { id: 'short', icon: 'Timer', label: '1-3 years', desc: 'Short term' },
+                 { id: 'medium', icon: 'Clock', label: '4-7 years', desc: 'Medium term' },
+                 { id: 'long', icon: 'Calendar', label: '8+ years', desc: 'Long term' }
+               ].map(time => (
                 <button
                   key={time.id}
                   className={`option-button compact ${data.timeHorizon === time.id ? 'selected' : ''}`}

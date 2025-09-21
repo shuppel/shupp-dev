@@ -27,10 +27,13 @@ const categoryIcons = {
 
 <Layout title="Tools" description="Free, open-source tools for everyday use">
   <div class="tools-page">
-    <section class="tools-hero">
-      <h1>Tools</h1>
-      <p class="lead">Free, open-source tools for everyday decisions</p>
-    </section>
+     <section class="tools-hero">
+       <div class="tools-header">
+         <Icon name="Wrench" size={48} weight="duotone" liquid={true} inkEffect="medium" />
+         <h1>Tools</h1>
+       </div>
+       <p class="lead">Free, open-source tools for everyday decisions</p>
+     </section>
 
     <section class="tools-list">
       {tools.map(tool => {
@@ -69,23 +72,31 @@ const categoryIcons = {
     padding: 4rem 1.5rem;
   }
 
-  /* Hero Section */
-  .tools-hero {
-    margin-bottom: 4rem;
-  }
+    /* Hero Section */
+    .tools-hero {
+      margin-bottom: 3rem;
+    }
 
-  .tools-hero h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin-bottom: 0.75rem;
-    color: var(--text-color);
-  }
+   .tools-header {
+     display: flex;
+     align-items: center;
+     gap: 1rem;
+     margin-bottom: 0.75rem;
+   }
 
-  .lead {
-    font-size: 1.25rem;
-    color: var(--text-light);
-    line-height: 1.6;
-  }
+   .tools-hero h1 {
+     font-size: 2.5rem;
+     font-weight: 700;
+     margin: 0;
+     color: var(--text-color);
+   }
+
+   .lead {
+     font-size: 1.25rem;
+     color: var(--text-light);
+     line-height: 1.6;
+     margin: 0;
+   }
 
   /* Tools List */
   .tools-list {
@@ -192,19 +203,24 @@ const categoryIcons = {
     color: #4ade80;
   }
 
-  /* Responsive */
-  @media (max-width: 768px) {
-    .tools-page {
-      padding: 3rem 1rem;
-    }
+   /* Responsive */
+   @media (max-width: 768px) {
+     .tools-page {
+       padding: 3rem 1rem;
+     }
 
-    .tools-hero h1 {
-      font-size: 2rem;
-    }
+     .tools-header {
+       flex-direction: column;
+       text-align: center;
+     }
 
-    .lead {
-      font-size: 1.1rem;
-    }
+     .tools-hero h1 {
+       font-size: 2rem;
+     }
+
+     .lead {
+       font-size: 1.1rem;
+     }
 
     .tool-item {
       flex-direction: column;

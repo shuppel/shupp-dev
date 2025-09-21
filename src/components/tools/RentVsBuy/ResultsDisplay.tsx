@@ -47,9 +47,9 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps): React.
             role="status"
             aria-live="polite"
           >
-            <span role="img" aria-label={isBuyingBetter ? 'House' : 'Key'}>
-              {isBuyingBetter ? '🏠' : '🗝️'}
-            </span>
+             <span role="img" aria-label={isBuyingBetter ? 'House' : 'Key'}>
+               {isBuyingBetter ? 'House' : 'Key'}
+             </span>
             {isBuyingBetter ? 'Buy' : 'Rent'}
           </div>
         </div>
@@ -62,22 +62,22 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps): React.
       {/* Key Metrics */}
       <div className="metrics-grid">
         <div className="metric-card">
-          <div className="metric-label">💰 Total Cost (Buying)</div>
+           <div className="metric-label">Total Cost (Buying)</div>
           <div className="metric-value">{formatCurrency(results.totalBuyingCost)}</div>
         </div>
         
         <div className="metric-card">
-          <div className="metric-label">🏠 Total Cost (Renting)</div>
+           <div className="metric-label">Total Cost (Renting)</div>
           <div className="metric-value">{formatCurrency(results.totalRentingCost)}</div>
         </div>
         
         <div className="metric-card">
-          <div className="metric-label">⚡ Break-even Point</div>
+           <div className="metric-label">Break-even Point</div>
           <div className="metric-value">{formatBreakEven(results.breakEvenMonth)}</div>
         </div>
         
         <div className="metric-card">
-          <div className="metric-label">📊 Tax Benefits</div>
+           <div className="metric-label">Tax Benefits</div>
           <div className="metric-value">{formatCurrency(results.totalTaxBenefit)}</div>
         </div>
       </div>

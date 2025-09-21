@@ -164,19 +164,17 @@ const posts = allPosts.sort((a, b) => {
     padding: 4rem 1.5rem;
   }
 
-  /* Hero Section */
-  .blog-hero {
-    margin-bottom: 3rem;
-    text-align: center;
-  }
+   /* Hero Section */
+   .blog-hero {
+     margin-bottom: 3rem;
+   }
 
-  .blog-header {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
+   .blog-header {
+     display: flex;
+     align-items: center;
+     gap: 1rem;
+     margin-bottom: 1rem;
+   }
 
   .blog-hero h1 {
     font-size: 2.5rem;
@@ -185,11 +183,12 @@ const posts = allPosts.sort((a, b) => {
     margin: 0;
   }
 
-  .lead {
-    font-size: 1.25rem;
-    color: var(--text-light);
-    line-height: 1.6;
-  }
+   .lead {
+     font-size: 1.25rem;
+     color: var(--text-light);
+     line-height: 1.6;
+     margin: 0;
+   }
 
   /* Container Layout */
   .blog-container {
@@ -399,22 +398,23 @@ const posts = allPosts.sort((a, b) => {
     }
   }
 
-  @media (max-width: 768px) {
-    .blog-page {
-      padding: 3rem 1rem;
-    }
+   @media (max-width: 768px) {
+     .blog-page {
+       padding: 3rem 1rem;
+     }
 
-    .blog-header {
-      flex-direction: column;
-    }
+     .blog-header {
+       flex-direction: column;
+       text-align: center;
+     }
 
-    .blog-hero h1 {
-      font-size: 2rem;
-    }
+     .blog-hero h1 {
+       font-size: 2rem;
+     }
 
-    .lead {
-      font-size: 1.1rem;
-    }
+     .lead {
+       font-size: 1.1rem;
+     }
 
     .blog-link {
       padding: 2rem 0;
