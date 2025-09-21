@@ -533,13 +533,11 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
 
 
 
-    .mobile-nav.active {
       transform: translateY(0);
       opacity: 1;
       visibility: visible;
     }
 
-    .mobile-nav-list {
       list-style: none;
       padding: 1rem;
       margin: 0;
@@ -548,7 +546,6 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
       gap: 0.5rem;
     }
 
-    .mobile-nav-link {
       display: flex;
       align-items: center;
       gap: 0.75rem;
@@ -559,19 +556,15 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
       transition: all 0.2s ease;
     }
 
-    html.dark .mobile-nav-link {
       color: #f3f4f6;
     }
 
-    .mobile-nav-link:hover {
       background-color: rgba(121, 148, 150, 0.1);
     }
 
-    html.dark .mobile-nav-link:hover {
       background-color: rgba(233, 235, 158, 0.1);
     }
 
-    .mobile-nav-icon {
       flex-shrink: 0;
     }
   }
@@ -654,47 +647,37 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
       transform: rotate(-45deg) translate(6px, -6px);
     }
 
-
-
-    .mobile-nav.active {
-      transform: translateY(0);
-      opacity: 1;
-      visibility: visible;
-    }
-
-    .mobile-nav-list {
-      list-style: none;
-      padding: 1rem;
-      margin: 0;
-      display: flex;
+    /* Mobile nav styles */
+    .nav.mobile-open .nav-list {
       flex-direction: column;
-      gap: 0.5rem;
+      gap: 1rem;
+      align-items: stretch;
     }
 
-    .mobile-nav-link {
-      display: flex;
-      align-items: center;
+    .nav.mobile-open .nav-link {
+      justify-content: flex-start;
       gap: 0.75rem;
       padding: 1rem;
-      color: var(--text-color);
-      text-decoration: none;
       border-radius: 8px;
-      transition: all 0.2s ease;
+      min-width: auto;
     }
 
-    html.dark .mobile-nav-link {
-      color: #f3f4f6;
+    .nav.mobile-open .nav-text {
+      display: block !important;
     }
 
-    .mobile-nav-link:hover {
+    .nav.mobile-open .nav-link:hover {
       background-color: rgba(121, 148, 150, 0.1);
     }
 
-    html.dark .mobile-nav-link:hover {
+    html.dark .nav.mobile-open .nav-link:hover {
+      background-color: rgba(233, 235, 158, 0.1);
+    }
+  }
+
       background-color: rgba(233, 235, 158, 0.1);
     }
 
-    .mobile-nav-icon {
       flex-shrink: 0;
     }
   }

@@ -9,53 +9,60 @@ const author = authorEntries[0]; // Using the first author as this is a personal
 ---
 
 <Layout title="About Me" description="Learn more about my professional background, skills, and experience">
-  <div class="about-page">
-    <section class="about-hero">
-      <div class="about-hero-content">
-        <h1>About Me</h1>
-        <p class="lead">{author.data.shortBio}</p>
-      </div>
-    </section>
+   <div class="about-page">
+     <section class="about-hero">
+       <div class="about-header">
+         <Icon name="User" size={48} weight="duotone" liquid={true} inkEffect="medium" />
+         <h1>About Me</h1>
+       </div>
+       <p class="lead">{author.data.shortBio}</p>
+     </section>
 
-    <section class="about-section">
-      <div class="about-grid">
-        <div class="about-content">
-          <h2>My Story</h2>
-          {author.data.longBio.split('\n\n').map(paragraph => (
-            <p>{paragraph}</p>
-          ))}
-          
-          <h3>Professional Philosophy</h3>
-          <ul class="philosophy-list">
-            <li><strong>Fitts Optimizing</strong> - Making the important things easy to reach</li>
-            <li><strong>Kotter × Parkinson's Law²</strong> - Create urgency to fill the day</li>
-            <li><strong>Optimize For Outcomes</strong> - Results over process, always</li>
-            <li><strong>All Meetings are F(x)'s</strong> - Every meeting must have inputs and outputs</li>
-            <li><strong>XML Prompt Chain Shotting</strong> - Structured thinking for complex problems</li>
-          </ul>
-        </div>
-        
-        <div class="profile-sidebar">
-          <div class="profile-image-placeholder">
-            <div class="placeholder-text">Profile Photo</div>
-          </div>
-          <div class="profile-details">
-            <h3>Quick Info</h3>
-            <ul class="profile-list">
-              <li><strong>Name:</strong> {author.data.name}</li>
-              <li><strong>Title:</strong> {author.data.title}</li>
-              <li><strong>Location:</strong> {author.data.location}</li>
-              <li><strong>Email:</strong> <a href={`mailto:${author.data.email}`}>{author.data.email}</a></li>
-            </ul>
-            
-            <div class="profile-cta">
-              <a href="/portfolio" class="btn btn-primary">View Portfolio</a>
-              <a href="/resume.pdf" class="btn btn-secondary">Download Resume</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+     <div class="about-container">
+       <!-- Left sidebar with profile info -->
+       <aside class="about-sidebar">
+         <div class="sidebar-sticky">
+           <div class="profile-sidebar">
+             <div class="profile-image-placeholder">
+               <div class="placeholder-text">Profile Photo</div>
+             </div>
+             <div class="profile-details">
+               <h3>Quick Info</h3>
+               <ul class="profile-list">
+                 <li><strong>Name:</strong> {author.data.name}</li>
+                 <li><strong>Title:</strong> {author.data.title}</li>
+                 <li><strong>Location:</strong> {author.data.location}</li>
+                 <li><strong>Email:</strong> <a href={`mailto:${author.data.email}`}>{author.data.email}</a></li>
+               </ul>
+
+               <div class="profile-cta">
+                 <a href="/portfolio" class="btn btn-primary">View Portfolio</a>
+                 <a href="/resume.pdf" class="btn btn-secondary">Download Resume</a>
+               </div>
+             </div>
+           </div>
+         </div>
+       </aside>
+
+       <!-- Main about content -->
+       <section class="about-main">
+         <div class="about-content">
+           <h2>My Story</h2>
+           {author.data.longBio.split('\n\n').map(paragraph => (
+             <p>{paragraph}</p>
+           ))}
+
+           <h3>Professional Philosophy</h3>
+           <ul class="philosophy-list">
+             <li><strong>Fitts Optimizing</strong> - Making the important things easy to reach</li>
+             <li><strong>Kotter × Parkinson's Law²</strong> - Create urgency to fill the day</li>
+             <li><strong>Optimize For Outcomes</strong> - Results over process, always</li>
+             <li><strong>All Meetings are F(x)'s</strong> - Every meeting must have inputs and outputs</li>
+             <li><strong>XML Prompt Chain Shotting</strong> - Structured thinking for complex problems</li>
+           </ul>
+         </div>
+       </section>
+     </div>
 
     <section class="skills-section">
       <h2>Skills & Expertise</h2>
@@ -136,114 +143,75 @@ const author = authorEntries[0]; // Using the first author as this is a personal
 </Layout>
 
 <style>
-  .about-page {
-    max-width: 1000px;
-    margin: 0 auto;
-  }
+   .about-page {
+     max-width: 1400px;
+     margin: 0 auto;
+     padding: 4rem 1.5rem;
+   }
 
-  .about-hero {
-    text-align: center;
-    padding: 4rem 0 3rem;
-    margin-bottom: 3rem;
-    background: linear-gradient(135deg, rgba(121, 148, 150, 0.2), rgba(172, 193, 150, 0.3), rgba(233, 235, 158, 0.2));
-    border-radius: 12px;
-    position: relative;
-    overflow: hidden;
-    transition: background 0.3s, color 0.3s;
-  }
+   /* Hero Section */
+   .about-hero {
+     margin-bottom: 3rem;
+     text-align: center;
+   }
 
-  html.dark .about-hero {
-    background: linear-gradient(135deg, rgba(44, 44, 56, 0.8), rgba(30, 32, 40, 0.9));
-  }
+   .about-header {
+     display: flex;
+     align-items: center;
+     justify-content: center;
+     gap: 1rem;
+     margin-bottom: 1rem;
+   }
 
-  .about-hero::before {
-    content: "";
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(ellipse at center, rgba(233, 235, 158, 0), rgba(233, 235, 158, 0.2));
-    opacity: 0.7;
-    animation: liquid-wave 15s ease-in-out infinite alternate;
-    z-index: 0;
-    pointer-events: none;
-  }
+   .about-hero h1 {
+     font-size: 2.5rem;
+     font-weight: 700;
+     margin: 0;
+     color: var(--text-color);
+   }
 
-  @keyframes liquid-wave {
-    0% {
-      transform: translate(-10%, -10%) rotate(0deg);
-    }
-    100% {
-      transform: translate(10%, 10%) rotate(360deg);
-    }
-  }
+   .lead {
+     font-size: 1.25rem;
+     color: var(--text-light);
+     line-height: 1.6;
+     max-width: 800px;
+     margin: 0 auto;
+   }
 
-  .about-hero-content {
-    position: relative;
-    z-index: 2;
-  }
+   /* Container Layout */
+   .about-container {
+     display: grid;
+     grid-template-columns: 280px 1fr;
+     gap: 3rem;
+     align-items: flex-start;
+   }
 
-  .about-hero h1 {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    background: linear-gradient(45deg, var(--color-dark), var(--color-secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-    position: relative;
-    letter-spacing: 0.15em;
-    text-transform: lowercase;
-  }
+   /* About Sidebar */
+   .about-sidebar {
+     position: sticky;
+     top: 5rem;
+     max-height: calc(100vh - 6rem);
+     overflow-y: auto;
+   }
 
-  html.dark .about-hero h1 {
-    background: linear-gradient(45deg, #f3f4f6, #e9eb9e);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-  }
+   .sidebar-sticky {
+     background: var(--card-bg, white);
+     border-radius: 12px;
+     padding: 1.5rem;
+     box-shadow: var(--card-shadow);
+   }
 
-  .about-hero h1::after {
-    content: "";
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 3px;
-    background: linear-gradient(to right, var(--color-tertiary), var(--color-accent));
-    border-radius: 3px;
-    transition: width 0.3s ease;
-  }
+   html.dark .sidebar-sticky {
+     background: #23232b;
+   }
 
-  .about-hero:hover h1::after {
-    width: 120px;
-  }
+   .about-main {
+     min-width: 0;
+   }
 
-  .about-hero .lead {
-    font-size: 1.25rem;
-    max-width: 700px;
-    margin: 0 auto;
-    color: var(--text-light);
-    position: relative;
-    z-index: 2;
-  }
-
-  html.dark .about-hero .lead {
-    color: #f3f4f6;
-  }
-
-  .about-section {
-    margin-bottom: 4rem;
-  }
-
-  .about-grid {
-    display: grid;
-    grid-template-columns: 3fr 2fr;
-    gap: 3rem;
-  }
+   .about-section {
+     margin-bottom: 4rem;
+   }
 
   .about-content h2 {
     color: var(--text-color);
@@ -290,18 +258,15 @@ const author = authorEntries[0]; // Using the first author as this is a personal
     color: var(--color-accent);
   }
 
-  .profile-sidebar {
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-    overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    will-change: transform, box-shadow;
-  }
+   .profile-sidebar {
+     transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+     will-change: transform, box-shadow;
+   }
 
-  .profile-sidebar:hover {
-    transform: translateY(-7px) scale(1.01);
-    box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 10px rgba(20, 8, 14, 0.05);
-  }
+   .profile-sidebar:hover {
+     transform: translateY(-7px) scale(1.01);
+     box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 10px rgba(20, 8, 14, 0.05);
+   }
 
   .profile-image-placeholder {
     height: 300px;
@@ -538,16 +503,29 @@ const author = authorEntries[0]; // Using the first author as this is a personal
     color: #f3f4f6;
   }
 
-  @media (max-width: 900px) {
-    .about-grid {
-      grid-template-columns: 1fr;
-    }
+   /* Responsive */
+   @media (max-width: 1024px) {
+     .about-container {
+       grid-template-columns: 1fr;
+     }
 
-    .skills-categories {
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
-    }
-  }
+     .about-sidebar {
+       position: static;
+       margin-bottom: 2rem;
+       max-height: none;
+     }
+
+     .sidebar-sticky {
+       max-width: 100%;
+     }
+   }
+
+   @media (max-width: 900px) {
+     .skills-categories {
+       grid-template-columns: 1fr;
+       gap: 1.5rem;
+     }
+   }
 
   @media (max-width: 600px) {
     .contact-options {
@@ -559,7 +537,26 @@ const author = authorEntries[0]; // Using the first author as this is a personal
     }
   }
 
-  html.dark .profile-details a {
-    color: var(--color-accent);
-  }
+   html.dark .profile-details a {
+     color: var(--color-accent);
+   }
+
+   /* Responsive */
+   @media (max-width: 768px) {
+     .about-page {
+       padding: 3rem 1rem;
+     }
+
+     .about-header {
+       flex-direction: column;
+     }
+
+     .about-hero h1 {
+       font-size: 2rem;
+     }
+
+     .lead {
+       font-size: 1.1rem;
+     }
+   }
 </style>

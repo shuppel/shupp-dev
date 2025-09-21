@@ -48,23 +48,27 @@ const showTLDraw = isFeatureEnabled('enableTLDraw');
 <Layout title={`${entry.data.title} - Thoughtful App Co.`} description={entry.data.oneLiner}>
   <div class="app-detail-page">
     <article class="app-content">
-      <div class="app-header">
-        <div class="app-meta">
-          <div class={`status-badge ${entry.data.status}`} style={`background-color: ${status.color}`}>
-            <span class="status-emoji">{status.emoji}</span>
-            {status.label}
-            {entry.data.status === 'prototyping' && hasGitHub && (
-              <a href={entry.data.githubUrl} target="_blank" rel="noopener noreferrer" class="github-badge">
-                <span class="github-icon">⭐</span>
-              </a>
-            )}
-          </div>
-          <span class="category-badge">{entry.data.category}</span>
-          <span class="last-updated">Updated {formattedDate}</span>
-        </div>
-        
-        <h1 class="app-title">{entry.data.title}</h1>
-        <p class="app-tagline">{entry.data.oneLiner}</p>
+       <div class="app-header">
+         <div class="app-hero">
+           <div class="app-header-content">
+             <div class="app-meta">
+               <div class={`status-badge ${entry.data.status}`} style={`background-color: ${status.color}`}>
+                 <span class="status-emoji">{status.emoji}</span>
+                 {status.label}
+                 {entry.data.status === 'prototyping' && hasGitHub && (
+                   <a href={entry.data.githubUrl} target="_blank" rel="noopener noreferrer" class="github-badge">
+                     <span class="github-icon">⭐</span>
+                   </a>
+                 )}
+               </div>
+               <span class="category-badge">{entry.data.category}</span>
+               <span class="last-updated">Updated {formattedDate}</span>
+             </div>
+
+             <h1 class="app-title">{entry.data.title}</h1>
+             <p class="app-tagline">{entry.data.oneLiner}</p>
+           </div>
+         </div>
         
         <div class="app-ratings">
           <div class="rating-item" data-rating={entry.data.feasibility} data-metric="feasibility">
@@ -454,14 +458,14 @@ const showTLDraw = isFeatureEnabled('enableTLDraw');
 </script>
 
 <style>
-  .app-detail-page {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
-    display: grid;
-    grid-template-columns: 1fr 300px;
-    gap: 3rem;
-  }
+   .app-detail-page {
+     max-width: 1400px;
+     margin: 0 auto;
+     padding: 4rem 1.5rem;
+     display: grid;
+     grid-template-columns: 1fr 300px;
+     gap: 3rem;
+   }
 
   .app-content {
     background: white;
@@ -474,15 +478,25 @@ const showTLDraw = isFeatureEnabled('enableTLDraw');
     background: #23232b;
   }
 
-  .app-header {
-    padding: 2.5rem;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
-    border-bottom: 1px solid var(--border-color);
-  }
+   .app-header {
+     padding: 2.5rem;
+     background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
+     border-bottom: 1px solid var(--border-color);
+     text-align: center;
+   }
 
-  html.dark .app-header {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
-  }
+   html.dark .app-header {
+     background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+   }
+
+   .app-hero {
+     margin-bottom: 1.5rem;
+   }
+
+   .app-header-content {
+     max-width: 800px;
+     margin: 0 auto;
+   }
 
   .app-meta {
     display: flex;
@@ -522,17 +536,19 @@ const showTLDraw = isFeatureEnabled('enableTLDraw');
     font-size: 0.9rem;
   }
 
-  .app-title {
-    font-size: 2.5rem;
-    margin-bottom: 0.75rem;
-    color: var(--text-color);
-  }
+   .app-title {
+     font-size: 2.5rem;
+     font-weight: 700;
+     margin-bottom: 0.75rem;
+     color: var(--text-color);
+   }
 
-  .app-tagline {
-    font-size: 1.25rem;
-    color: var(--text-light);
-    margin-bottom: 1.5rem;
-  }
+   .app-tagline {
+     font-size: 1.25rem;
+     color: var(--text-light);
+     line-height: 1.6;
+     margin-bottom: 1.5rem;
+   }
 
   .app-ratings {
     display: flex;
@@ -1135,24 +1151,50 @@ const showTLDraw = isFeatureEnabled('enableTLDraw');
     color: var(--text-color);
   }
 
-  /* Responsive */
-  @media (max-width: 900px) {
-    .app-detail-page {
-      grid-template-columns: 1fr;
-    }
+   /* Responsive */
+   @media (max-width: 1024px) {
+     .app-detail-page {
+       grid-template-columns: 1fr;
+     }
 
-    .app-sidebar {
-      position: static;
-    }
+     .app-sidebar {
+       position: static;
+     }
 
-    .tech-grid {
-      grid-template-columns: 1fr;
-    }
+     .tech-grid {
+       grid-template-columns: 1fr;
+     }
 
-    .app-engagement {
-      grid-template-columns: 1fr;
-    }
-  }
+     .app-engagement {
+       grid-template-columns: 1fr;
+     }
+   }
+
+   @media (max-width: 900px) {
+     .app-detail-page {
+       padding: 3rem 1rem;
+     }
+   }
+
+   @media (max-width: 768px) {
+     .app-header,
+     .app-section,
+     .app-engagement {
+       padding: 1.5rem;
+     }
+
+     .app-title {
+       font-size: 2rem;
+     }
+
+     .tldraw-embed {
+       height: 400px;
+     }
+
+     .tldraw-embed-small {
+       height: 300px;
+     }
+   }
 
   @media (max-width: 768px) {
     .app-header,
