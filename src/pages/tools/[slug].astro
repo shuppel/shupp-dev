@@ -1,7 +1,10 @@
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
+import Icon from '../../components/Icon/Icon.astro';
 import type { CollectionEntry } from 'astro:content';
+import RentVsBuyTool from '../../components/tools/RentVsBuy.astro';
+import RentVsSellTool from '../../components/tools/RentVsSell.astro';
 
 export async function getStaticPaths() {
   const toolEntries = await getCollection('tools');
@@ -18,11 +21,11 @@ interface Props {
 const { entry } = Astro.props;
 const { Content } = await entry.render();
 
-// Status configuration
+// Status configuration with Phosphor icon names
 const statusConfig = {
-  active: { emoji: '🟢', label: 'Active', color: '#22c55e' },
-  beta: { emoji: '🟡', label: 'Beta', color: '#eab308' },
-  archived: { emoji: '⚫', label: 'Archived', color: '#6b7280' }
+  active: { icon: 'CheckCircle', label: 'Active', color: '#22c55e' },
+  beta: { icon: 'CircleHalf', label: 'Beta', color: '#eab308' },
+  archived: { icon: 'Archive', label: 'Archived', color: '#6b7280' }
 };
 
 const status = statusConfig[entry.data.status];
@@ -34,17 +37,17 @@ const formattedDate = new Date(entry.data.lastUpdated).toLocaleDateString('en-US
   day: 'numeric',
 });
 
-// Category emoji
-const categoryEmojis = {
-  Financial: '💰',
-  Productivity: '⚡',
-  Health: '🏃',
-  Lifestyle: '🌟',
-  Analytics: '📊',
-  Converter: '🔄'
+// Category icons (Phosphor names)
+const categoryIcons = {
+  Financial: 'CurrencyDollar',
+  Productivity: 'Lightning',
+  Health: 'PersonSimpleRun',
+  Lifestyle: 'Star',
+  Analytics: 'ChartBar',
+  Converter: 'ArrowsClockwise'
 } as const;
 
-const categoryEmoji = categoryEmojis[entry.data.category] || '🔧';
+const categoryIcon = categoryIcons[entry.data.category] || 'Wrench';
 ---
 
 <Layout title={`${entry.data.title} - Open Source Tools`} description={entry.data.description}>
@@ -52,24 +55,25 @@ const categoryEmoji = categoryEmojis[entry.data.category] || '🔧';
     <header class="tool-header">
       <div class="tool-meta">
         <div class="tool-badges">
-          <div class="status-badge" style={`background-color: ${status.color}`}>
-            <span class="status-emoji">{status.emoji}</span>
-            {status.label}
+          <div class="status-badge" style={`background-color: ${status.color}20; border: 2px solid ${status.color}`}>
+            <Icon name={status.icon} size={16} color={status.color} weight="duotone" />
+            <span style={`color: ${status.color}`}>{status.label}</span>
           </div>
           <div class="category-badge">
-            <span class="category-emoji">{categoryEmoji}</span>
-            {entry.data.category}
+            <Icon name={categoryIcon} size={16} weight="duotone" />
+            <span>{entry.data.category}</span>
           </div>
           {entry.data.featured && (
             <div class="featured-badge">
-              <span>⭐ Featured</span>
+              <Icon name="Star" size={16} weight="fill" />
+              <span>Featured</span>
             </div>
           )}
         </div>
         {entry.data.githubUrl && (
           <a href={entry.data.githubUrl} target="_blank" rel="noopener noreferrer" class="github-link">
-            <span class="github-icon">📦</span>
-            View Source
+            <Icon name="GithubLogo" size={20} weight="duotone" />
+            <span>View Source</span>
           </a>
         )}
       </div>
@@ -89,13 +93,12 @@ const categoryEmoji = categoryEmojis[entry.data.category] || '🔧';
 
     <main class="tool-container">
       <!-- Tool Component will be rendered here -->
-      <div id="tool-mount" class="tool-mount" data-component={entry.data.component}>
-        <div class="tool-placeholder">
-          <div class="placeholder-content">
-            <div class="loading-spinner"></div>
-            <p>Loading {entry.data.title}...</p>
-          </div>
-        </div>
+      <div id="tool-mount" class="tool-mount">
+        {entry.data.component === 'RentVsBuy' && <RentVsBuyTool />}
+        {entry.data.component === 'RentVsSell' && <RentVsSellTool />}
+        {!['RentVsBuy', 'RentVsSell'].includes(entry.data.component) && (
+          <div class="error-message">Component "{entry.data.component}" not found.</div>
+        )}
       </div>
     </main>
 
@@ -114,8 +117,8 @@ const categoryEmoji = categoryEmojis[entry.data.category] || '🔧';
             <ul class="features-list">
               {entry.data.features.map(feature => (
                 <li class="feature-item">
-                  <span class="feature-check">✓</span>
-                  {feature}
+                  <Icon name="Check" size={16} color="#22c55e" weight="bold" />
+                  <span>{feature}</span>
                 </li>
               ))}
             </ul>
@@ -134,241 +137,144 @@ const categoryEmoji = categoryEmojis[entry.data.category] || '🔧';
             <h3>Tool Actions</h3>
             <div class="action-buttons">
               <button id="share-btn" class="action-btn">
-                <span class="action-icon">🔗</span>
-                Share Tool
+                <Icon name="Link" size={18} weight="duotone" />
+                <span>Share Tool</span>
               </button>
               {entry.data.embedEnabled && (
                 <button id="embed-btn" class="action-btn">
-                  <span class="action-icon">📋</span>
-                  Embed Code
+                  <Icon name="Code" size={18} weight="duotone" />
+                  <span>Embed Code</span>
                 </button>
               )}
               <button id="reset-btn" class="action-btn">
-                <span class="action-icon">🔄</span>
-                Reset Tool
+                <Icon name="ArrowClockwise" size={18} weight="duotone" />
+                <span>Reset Tool</span>
               </button>
             </div>
           </div>
 
-          <div class="sidebar-section stats-section">
-            <h3>Stats</h3>
-            <div class="stat-item">
-              <span class="stat-label">Last Updated</span>
-              <span class="stat-value">{formattedDate}</span>
-            </div>
-            <div class="stat-item">
-              <span class="stat-label">Times Used</span>
-              <span class="stat-value">{entry.data.popularity.toLocaleString()}</span>
-            </div>
+          <div class="sidebar-section">
+            <p class="update-date">
+              <Icon name="Clock" size={16} weight="duotone" />
+              Last updated: {formattedDate}
+            </p>
           </div>
-
-          {entry.data.githubUrl && (
-            <div class="sidebar-section">
-              <h3>Contribute</h3>
-              <p class="contribute-text">This tool is open source! Help improve it:</p>
-              <div class="github-actions">
-                <a href={entry.data.githubUrl} target="_blank" rel="noopener noreferrer" class="btn btn-primary">
-                  View on GitHub
-                </a>
-                <a href={`${entry.data.githubUrl}/issues`} target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
-                  Report Issue
-                </a>
-              </div>
-            </div>
-          )}
         </aside>
       </div>
     </section>
+
+    {entry.data.relatedTools && entry.data.relatedTools.length > 0 && (
+      <section class="related-tools">
+        <h2>Related Tools</h2>
+        <div class="related-grid">
+          {entry.data.relatedTools.map(toolSlug => (
+            <a href={`/tools/${toolSlug}`} class="related-card">
+              <Icon name="ArrowSquareOut" size={20} weight="duotone" />
+              <span>{toolSlug}</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    )}
   </div>
 
-  <!-- Embed Modal -->
-  <div id="embed-modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h3>Embed This Tool</h3>
-        <button class="modal-close">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p>Copy this code to embed the tool on your website:</p>
-        <pre class="embed-code"><code>&lt;iframe 
-  src="https://shupp.dev/tools/{entry.slug}/embed" 
-  width="100%" 
-  height="600" 
-  frameborder="0"&gt;
-&lt;/iframe&gt;</code></pre>
-        <button class="copy-btn">Copy Code</button>
-      </div>
-    </div>
-  </div>
-</Layout>
+  <script>
+    document.getElementById('share-btn')?.addEventListener('click', () => {
+      navigator.clipboard.writeText(window.location.href);
+      alert('Tool URL copied to clipboard!');
+    });
 
-<script>
-  // Tool component loader and page initialization
-  document.addEventListener('DOMContentLoaded', async () => {
-    const toolMount = document.getElementById('tool-mount');
-    const componentName = toolMount?.dataset.component;
-    
-    console.log(`Loading component: ${componentName}`);
-    
-    try {
-      // Clear loading placeholder
-      toolMount.innerHTML = '';
-      
-      // Load the appropriate component
-      if (componentName === 'RentVsBuy') {
-        const { mount } = await import('../../components/tools/RentVsBuy/mount');
-        toolMount.innerHTML = '<div class="calculator-wrapper"></div>';
-        mount();
-      } else if (componentName === 'RentVsSell') {
-        const { mount } = await import('../../components/tools/RentVsSell/mount');
-        toolMount.innerHTML = '<div class="calculator-wrapper"></div>';
-        mount();
-      } else {
-        toolMount.innerHTML = `<div class="error-message">Component "${componentName}" not found.</div>`;
-      }
-    } catch (error) {
-      console.error('Failed to load component:', error);
-      toolMount.innerHTML = '<div class="error-message">Failed to load calculator. Please refresh the page.</div>';
-    }
-    
-    // Share functionality
-    const shareBtn = document.getElementById('share-btn');
-    shareBtn?.addEventListener('click', async () => {
-      const shareData = {
-        title: document.title,
-        text: `Check out this tool: ${document.title}`,
-        url: window.location.href
-      };
-      
-      try {
-        if (navigator.share) {
-          await navigator.share(shareData);
-        } else {
-          await navigator.clipboard.writeText(window.location.href);
-          alert('Link copied to clipboard!');
-        }
-      } catch (err) {
-        console.error('Error sharing:', err);
-      }
+    document.getElementById('embed-btn')?.addEventListener('click', () => {
+      const embedCode = `<iframe src="${window.location.href}" width="100%" height="600" frameborder="0"></iframe>`;
+      navigator.clipboard.writeText(embedCode);
+      alert('Embed code copied to clipboard!');
     });
-    
-    // Embed modal
-    const embedBtn = document.getElementById('embed-btn');
-    const embedModal = document.getElementById('embed-modal');
-    const modalClose = embedModal?.querySelector('.modal-close');
-    const copyBtn = embedModal?.querySelector('.copy-btn');
-    
-    embedBtn?.addEventListener('click', () => {
-      embedModal?.classList.add('show');
-    });
-    
-    modalClose?.addEventListener('click', () => {
-      embedModal?.classList.remove('show');
-    });
-    
-    copyBtn?.addEventListener('click', async () => {
-      const embedCode = embedModal?.querySelector('.embed-code code')?.textContent;
-      if (embedCode) {
-        await navigator.clipboard.writeText(embedCode);
-        copyBtn.textContent = 'Copied!';
-        setTimeout(() => {
-          copyBtn.textContent = 'Copy Code';
-        }, 2000);
-      }
-    });
-    
-    // Reset tool
-    const resetBtn = document.getElementById('reset-btn');
-    resetBtn?.addEventListener('click', () => {
-      // This will be implemented per tool
+
+    document.getElementById('reset-btn')?.addEventListener('click', () => {
       window.location.reload();
     });
-  });
-</script>
+  </script>
+</Layout>
 
 <style>
   .tool-detail-page {
-    max-width: 1400px;
+    max-width: 1200px;
     margin: 0 auto;
     padding: 2rem 1rem;
   }
 
-  /* Header */
   .tool-header {
-    text-align: center;
-    margin-bottom: 3rem;
+    margin-bottom: 2rem;
     padding-bottom: 2rem;
-    border-bottom: 2px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
   }
 
   .tool-meta {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
     gap: 1rem;
     margin-bottom: 1.5rem;
-    flex-wrap: wrap;
   }
 
   .tool-badges {
     display: flex;
-    gap: 0.5rem;
-    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
   }
 
   .status-badge,
   .category-badge,
   .featured-badge {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    padding: 0.5rem 1rem;
-    border-radius: 30px;
-    font-size: 0.9rem;
+    gap: 0.4rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
     font-weight: 500;
+    transition: all 0.3s ease;
   }
 
-  .status-badge {
-    color: white;
+  .status-badge:hover,
+  .category-badge:hover,
+  .featured-badge:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   }
 
   .category-badge {
     background: rgba(139, 92, 246, 0.1);
     color: #8b5cf6;
-  }
-
-  html.dark .category-badge {
-    background: rgba(139, 92, 246, 0.2);
-    color: #a78bfa;
+    border: 2px solid rgba(139, 92, 246, 0.3);
   }
 
   .featured-badge {
     background: linear-gradient(135deg, #fbbf24, #f59e0b);
     color: white;
+    border: none;
   }
 
   .github-link {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     padding: 0.5rem 1rem;
-    background: #24292e;
-    color: white;
+    background: transparent;
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    color: var(--text-color);
     text-decoration: none;
-    border-radius: 30px;
-    font-size: 0.9rem;
     font-weight: 500;
     transition: all 0.3s ease;
   }
 
-  html.dark .github-link {
-    background: #1a1a22;
-    border: 1px solid #444;
-  }
-
   .github-link:hover {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   }
 
   .tool-title {
@@ -380,135 +286,66 @@ const categoryEmoji = categoryEmojis[entry.data.category] || '🔧';
   .tool-description {
     font-size: 1.25rem;
     color: var(--text-light);
-    max-width: 800px;
-    margin: 0 auto 1.5rem;
+    margin-bottom: 1rem;
   }
 
   .attribution {
-    font-size: 0.95rem;
+    font-size: 0.9rem;
     color: var(--text-light);
   }
 
   .attribution a {
     color: var(--primary-color);
     text-decoration: none;
-    font-weight: 500;
   }
 
   .attribution a:hover {
     text-decoration: underline;
   }
 
-  /* Tool Container */
   .tool-container {
+    margin: 3rem 0;
+    padding: 2rem;
     background: var(--card-bg);
     border-radius: 12px;
     box-shadow: var(--card-shadow);
-    margin-bottom: 3rem;
-    overflow: hidden;
   }
 
   .tool-mount {
-    min-height: 600px;
-    position: relative;
-  }
-
-  .tool-placeholder {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 600px;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
-  }
-
-  html.dark .tool-placeholder {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
-  }
-
-  .placeholder-content {
-    text-align: center;
-  }
-
-  .loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 3px solid rgba(59, 130, 246, 0.2);
-    border-top-color: #3b82f6;
-    border-radius: 50%;
-    margin: 0 auto 1rem;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
-
-  /* Info Section */
-  .tool-info {
-    margin-top: 3rem;
+    min-height: 400px;
   }
 
   .info-grid {
     display: grid;
     grid-template-columns: 1fr 350px;
     gap: 3rem;
-  }
-
-  .info-section {
-    background: var(--card-bg);
-    padding: 2.5rem;
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
+    margin-top: 3rem;
   }
 
   .info-section h2 {
-    font-size: 1.75rem;
     margin-bottom: 1.5rem;
     color: var(--text-color);
   }
 
   .tool-content {
     color: var(--text-color);
-    line-height: 1.7;
+    line-height: 1.8;
   }
 
-  .tool-content h3 {
-    font-size: 1.3rem;
-    margin-top: 2rem;
-    margin-bottom: 1rem;
-    color: var(--text-color);
-  }
-
-  .tool-content p {
-    margin-bottom: 1rem;
-  }
-
-  .tool-content ul,
-  .tool-content ol {
-    margin-bottom: 1rem;
-    padding-left: 2rem;
-  }
-
-  .tool-content li {
-    margin-bottom: 0.5rem;
-  }
-
-  /* Sidebar */
   .tool-sidebar {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 2rem;
   }
 
   .sidebar-section {
-    background: var(--card-bg);
     padding: 1.5rem;
+    background: var(--card-bg);
     border-radius: 12px;
     box-shadow: var(--card-shadow);
   }
 
   .sidebar-section h3 {
-    font-size: 1.1rem;
     margin-bottom: 1rem;
     color: var(--text-color);
   }
@@ -521,16 +358,14 @@ const categoryEmoji = categoryEmojis[entry.data.category] || '🔧';
   .feature-item {
     display: flex;
     align-items: flex-start;
-    gap: 0.5rem;
-    margin-bottom: 0.75rem;
-    font-size: 0.95rem;
+    gap: 0.75rem;
+    padding: 0.5rem 0;
     color: var(--text-color);
   }
 
-  .feature-check {
-    color: #22c55e;
-    font-weight: 600;
-    flex-shrink: 0;
+  .feature-item span {
+    flex: 1;
+    line-height: 1.5;
   }
 
   .tech-tags {
@@ -543,14 +378,8 @@ const categoryEmoji = categoryEmojis[entry.data.category] || '🔧';
     padding: 0.25rem 0.75rem;
     background: rgba(59, 130, 246, 0.1);
     color: #3b82f6;
-    border-radius: 20px;
+    border-radius: 15px;
     font-size: 0.85rem;
-    font-weight: 500;
-  }
-
-  html.dark .tech-tag {
-    background: rgba(59, 130, 246, 0.2);
-    color: #60a5fa;
   }
 
   .action-buttons {
@@ -569,219 +398,96 @@ const categoryEmoji = categoryEmojis[entry.data.category] || '🔧';
     border: 2px solid var(--border-color);
     border-radius: 8px;
     color: var(--text-color);
-    font-size: 0.95rem;
     font-weight: 500;
     cursor: pointer;
     transition: all 0.3s ease;
   }
 
   .action-btn:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
-    transform: translateY(-2px);
-  }
-
-  .action-icon {
-    font-size: 1.1rem;
-  }
-
-  .stats-section .stat-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .stats-section .stat-item:last-child {
-    border-bottom: none;
-  }
-
-  .stat-label {
-    font-weight: 500;
-    color: var(--text-light);
-    font-size: 0.9rem;
-  }
-
-  .stat-value {
-    color: var(--text-color);
-    font-weight: 500;
-    font-size: 0.9rem;
-  }
-
-  .contribute-text {
-    font-size: 0.9rem;
-    color: var(--text-light);
-    margin-bottom: 1rem;
-  }
-
-  .github-actions {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .btn {
-    padding: 0.75rem 1rem;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 500;
-    text-align: center;
-    transition: all 0.3s ease;
-  }
-
-  .btn-primary {
-    background: #24292e;
+    background: var(--primary-color);
     color: white;
-  }
-
-  html.dark .btn-primary {
-    background: #1a1a22;
-    border: 1px solid #444;
-  }
-
-  .btn-primary:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  }
-
-  .btn-secondary {
-    background: transparent;
-    color: var(--text-color);
-    border: 2px solid var(--border-color);
-  }
-
-  .btn-secondary:hover {
     border-color: var(--primary-color);
-    color: var(--primary-color);
+    transform: translateY(-2px);
   }
 
-  /* Modal */
-  .modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1000;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .modal.show {
+  .update-date {
     display: flex;
-  }
-
-  .modal-content {
-    background: var(--card-bg);
-    padding: 2rem;
-    border-radius: 12px;
-    max-width: 600px;
-    width: 90%;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-  }
-
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin: 0;
+  }
+
+  .related-tools {
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+  }
+
+  .related-tools h2 {
     margin-bottom: 1.5rem;
   }
 
-  .modal-header h3 {
-    font-size: 1.5rem;
-    color: var(--text-color);
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
   }
 
-  .modal-close {
-    background: none;
-    border: none;
-    font-size: 2rem;
-    color: var(--text-light);
-    cursor: pointer;
-    padding: 0;
-    width: 30px;
-    height: 30px;
+  .related-card {
     display: flex;
     align-items: center;
-    justify-content: center;
-  }
-
-  .modal-close:hover {
-    color: var(--text-color);
-  }
-
-  .modal-body p {
-    margin-bottom: 1rem;
-    color: var(--text-light);
-  }
-
-  .embed-code {
-    background: var(--bg-color);
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
+    gap: 0.5rem;
     padding: 1rem;
-    overflow-x: auto;
-    margin-bottom: 1rem;
-  }
-
-  .embed-code code {
-    font-family: monospace;
-    font-size: 0.9rem;
-    color: var(--text-color);
-  }
-
-  .copy-btn {
-    padding: 0.5rem 1.5rem;
-    background: var(--primary-color);
-    color: white;
-    border: none;
+    background: var(--card-bg);
     border-radius: 8px;
-    font-weight: 500;
-    cursor: pointer;
+    text-decoration: none;
+    color: var(--text-color);
     transition: all 0.3s ease;
   }
 
-  .copy-btn:hover {
-    background: var(--primary-hover);
+  .related-card:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: translateY(-2px);
   }
 
-  /* Responsive */
-  @media (max-width: 1024px) {
+  @media (max-width: 768px) {
     .info-grid {
       grid-template-columns: 1fr;
     }
 
-    .tool-sidebar {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    .tool-meta {
+      flex-direction: column;
+      align-items: flex-start;
     }
   }
 
-  @media (max-width: 768px) {
-    .tool-header {
-      padding-bottom: 1.5rem;
-    }
+  /* Dark mode adjustments */
+  html.dark .status-badge,
+  html.dark .category-badge {
+    background-blend-mode: multiply;
+  }
 
-    .tool-title {
-      font-size: 2rem;
-    }
+  html.dark .tool-container {
+    background: #23232b;
+  }
 
-    .tool-description {
-      font-size: 1.1rem;
-    }
+  html.dark .sidebar-section {
+    background: #23232b;
+  }
 
-    .info-section {
-      padding: 1.5rem;
-    }
+  html.dark .tech-tag {
+    background: rgba(59, 130, 246, 0.2);
+    color: #60a5fa;
+  }
 
-    .tool-sidebar {
-      grid-template-columns: 1fr;
-    }
+  html.dark .action-btn {
+    border-color: #374151;
+  }
 
-    .modal-content {
-      padding: 1.5rem;
-    }
+  html.dark .action-btn:hover {
+    border-color: var(--primary-color);
   }
 </style>

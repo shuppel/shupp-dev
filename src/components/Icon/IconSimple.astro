@@ -1,0 +1,53 @@
+---
+// Simple inline SVG icon component using Phosphor icon paths
+export interface Props {
+  name: string;
+  size?: number;
+  color?: string;
+  weight?: 'thin' | 'light' | 'regular' | 'bold' | 'fill' | 'duotone';
+  class?: string;
+}
+
+const {
+  name,
+  size = 24,
+  color = 'currentColor',
+  weight = 'regular',
+  class: className = ''
+} = Astro.props;
+
+// Import icon dynamically based on name and weight
+let IconComponent;
+try {
+  const icons = await import('@phosphor-icons/react');
+  IconComponent = icons[name];
+} catch (e) {
+  console.warn(`Icon ${name} not found`);
+}
+---
+
+{IconComponent ? (
+  <span class={`phosphor-icon-simple ${className}`}>
+    <IconComponent.render 
+      size={size} 
+      color={color} 
+      weight={weight}
+    />
+  </span>
+) : (
+  <span class={`phosphor-icon-simple placeholder ${className}`} style={`width: ${size}px; height: ${size}px;`}>
+    <svg width={size} height={size} fill={color} viewBox="0 0 256 256">
+      <circle cx="128" cy="128" r="96" opacity="0.2"/>
+      <circle cx="128" cy="128" r="96" fill="none" stroke={color} stroke-width="16"/>
+    </svg>
+  </span>
+)}
+
+<style>
+  .phosphor-icon-simple {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+  }
+</style>

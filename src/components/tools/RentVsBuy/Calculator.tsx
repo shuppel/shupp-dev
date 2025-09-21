@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { calculateRentVsBuy } from '../../../lib/calculators/rentVsBuy/calculator';
 import type { RentVsBuyParams, CalculationResult } from '../../../lib/calculators/rentVsBuy/types';
 import OnboardingFlow, { type OnboardingData } from './OnboardingFlow';

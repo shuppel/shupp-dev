@@ -146,7 +146,11 @@
     </interests>
   </skills>
   
-  <recentUpdates>
+   <recentUpdates>
+     <update date="2025-09-20">Fixed Phosphor icon rendering - use 'client:load' directive instead of complex server+client mounting</update>
+     <update date="2025-09-20">Replaced all custom SVG icons with standard Phosphor icons (Brain, Wrench, etc.)</update>
+     <update date="2025-09-20">Fixed Astro + React integration issues - must use Astro's client directives, not dynamic imports</update>
+     <update date="2025-09-20">Added LESSONS-LEARNED.md and PROMPT-INSTRUCTIONS.md for framework integration guidance</update>
     <update date="2025-08-26">Created shared CSS library for calculator tools</update>
     <update date="2025-08-26">Refactored Buy vs Rent and Rent vs Sell tools to use shared CSS</update>
     <update date="2025-08-15">Added ESLint configuration with strict TypeScript rules</update>
@@ -158,7 +162,21 @@
     <update date="2025-08-14">Updated About page with authentic bio and Arlington, VA location</update>
   </recentUpdates>
   
-  <guidelines>
+   <guidelines>
+     <guideline priority="critical">
+       <rule>Astro + React Integration: Use Astro's client directives, never dynamic imports</rule>
+       <enforcement>Import React components in Astro frontmatter, use client:load/idle/visible for hydration</enforcement>
+       <description>React components must be imported at build-time in Astro frontmatter (between ---), not dynamically in browser scripts. Always use explicit React imports in TSX files.</description>
+       <reference>See .claude/PROMPT-INSTRUCTIONS.md and LESSONS-LEARNED.md</reference>
+     </guideline>
+
+     <guideline priority="high">
+       <rule>Use Phosphor icons with 'client:load' directive</rule>
+       <enforcement>Icon components must use 'client:load' and import from './Icon.tsx'</enforcement>
+       <description>All icons should use the standard Phosphor icon library. Icon components must be client components with 'client:load' directive, not complex server+client mounting.</description>
+       <reference>See src/components/Icon/Icon.astro and LESSONS-LEARNED.md</reference>
+     </guideline>
+    
     <guideline priority="high">
       <rule>Never use type 'any' - always use precise types</rule>
       <enforcement>ESLint rule @typescript-eslint/no-explicit-any set to error</enforcement>

@@ -1,0 +1,52 @@
+---
+'client:load';
+
+import { Icon } from './Icon';
+
+export interface Props {
+  name: string;
+  size?: number;
+  color?: string;
+  weight?: 'thin' | 'light' | 'regular' | 'bold' | 'fill' | 'duotone';
+  class?: string;
+  liquid?: boolean;
+  animate?: boolean;
+  inkEffect?: 'light' | 'medium' | 'heavy';
+}
+
+const {
+  name,
+  size = 24,
+  color = 'currentColor',
+  weight = 'regular',
+  class: className = '',
+  liquid = false,
+  animate = false,
+  inkEffect = 'medium'
+} = Astro.props;
+---
+
+<Icon
+  name={name}
+  size={size}
+  color={color}
+  weight={weight}
+  className={className}
+  liquid={liquid}
+  animate={animate}
+  inkEffect={inkEffect}
+/>
+
+<style>
+  .phosphor-icon-wrapper {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon-placeholder {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+</style>

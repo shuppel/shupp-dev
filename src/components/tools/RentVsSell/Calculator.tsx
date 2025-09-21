@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import { calculateRentVsSell } from '../../../lib/calculators/rentVsSell/calculator';
 import type { RentVsSellParams, RentVsSellResult, RentVsSellOnboardingData } from '../../../lib/calculators/rentVsSell/types';
 import { validateRentVsSellParamsWithWarnings } from '../../../lib/calculators/rentVsSell/validation';

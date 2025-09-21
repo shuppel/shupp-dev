@@ -2,6 +2,7 @@
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
 import CardStyles from '../components/CardStyles.astro';
+import Icon from '../components/Icon/Icon.astro';
 
 // Get all tools
 const allTools = await getCollection('tools');
@@ -13,653 +14,227 @@ const tools = allTools.sort((a, b) => {
   return b.data.popularity - a.data.popularity;
 });
 
-// Get unique categories
-const categories = ['Financial', 'Productivity', 'Health', 'Lifestyle', 'Analytics', 'Converter'];
-
-// Status configuration
-const statusConfig = {
-  active: { emoji: '🟢', label: 'Active', color: '#22c55e' },
-  beta: { emoji: '🟡', label: 'Beta', color: '#eab308' },
-  archived: { emoji: '⚫', label: 'Archived', color: '#6b7280' }
-};
-
-// Category emojis
-const categoryEmojis = {
-  Financial: '💰',
-  Productivity: '⚡',
-  Health: '🏃',
-  Lifestyle: '🌟',
-  Analytics: '📊',
-  Converter: '🔄'
-};
+// Category icons (Phosphor names)
+const categoryIcons = {
+  Financial: 'CurrencyDollar',
+  Productivity: 'Lightning',
+  Health: 'PersonSimpleRun',
+  Lifestyle: 'Star',
+  Analytics: 'ChartBar',
+  Converter: 'ArrowsClockwise'
+} as const;
 ---
 
-<Layout title="Open Source Tools" description="Free, open-source tools for everyday use. Financial calculators, productivity tools, and more.">
+<Layout title="Tools" description="Free, open-source tools for everyday use">
   <div class="tools-page">
     <section class="tools-hero">
-      <h1>Open Source Tools</h1>
-      <p class="lead">Free tools to help with everyday decisions and tasks</p>
-      <p class="sub-lead">All tools are open source and available to use directly in your browser.</p>
-      <div class="hero-stats">
-        <div class="stat">
-          <span class="stat-number">{tools.length}</span>
-          <span class="stat-label">Tools Available</span>
-        </div>
-        <div class="stat">
-          <span class="stat-number">{tools.filter(t => t.data.status === 'active').length}</span>
-          <span class="stat-label">Active Tools</span>
-        </div>
-        <div class="stat">
-          <span class="stat-number">{tools.filter(t => t.data.githubUrl).length}</span>
-          <span class="stat-label">Open Source</span>
-        </div>
-      </div>
+      <h1>Tools</h1>
+      <p class="lead">Free, open-source tools for everyday decisions</p>
     </section>
 
-    <section class="tools-filters">
-      <div class="filter-group">
-        <label class="filter-label">Sort by:</label>
-        <select id="sort-select" class="filter-select">
-          <option value="featured">Featured</option>
-          <option value="popular">Most Popular</option>
-          <option value="recent">Recently Updated</option>
-          <option value="alphabetical">A-Z</option>
-        </select>
-      </div>
-      
-      <div class="filter-group">
-        <label class="filter-label">Category:</label>
-        <div class="filter-buttons">
-          <button class="filter-btn active" data-filter-type="category" data-filter-value="all">All Categories</button>
-          {categories.map(category => (
-            <button class="filter-btn" data-filter-type="category" data-filter-value={category}>
-              <span class="category-emoji">{categoryEmojis[category]}</span>
-              {category}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div class="filter-group">
-        <label class="filter-label">Status:</label>
-        <div class="filter-buttons">
-          <button class="filter-btn active" data-filter-type="status" data-filter-value="all">All</button>
-          <button class="filter-btn" data-filter-type="status" data-filter-value="active">
-            <span class="status-emoji">{statusConfig.active.emoji}</span>
-            Active
-          </button>
-          <button class="filter-btn" data-filter-type="status" data-filter-value="beta">
-            <span class="status-emoji">{statusConfig.beta.emoji}</span>
-            Beta
-          </button>
-        </div>
-      </div>
-    </section>
-
-    <section class="tools-grid">
-      {tools.map(tool => (
-        <article class="tool-card two-tone-card" 
-          data-status={tool.data.status} 
-          data-category={tool.data.category}
-          data-popularity={tool.data.popularity}
-          data-updated={tool.data.lastUpdated.toISOString()}>
-          <a href={`/tools/${tool.slug}`} class="tool-card-link">
-            <div class="tool-card-header">
-              <div class="tool-badges">
-                <div class="tool-status-badge" style={`background-color: ${statusConfig[tool.data.status].color}`}>
-                  <span class="status-emoji">{statusConfig[tool.data.status].emoji}</span>
-                  {statusConfig[tool.data.status].label}
-                </div>
-                <div class="tool-category-badge">
-                  <span class="category-emoji">{categoryEmojis[tool.data.category]}</span>
-                  {tool.data.category}
-                </div>
-              </div>
-              {tool.data.featured && (
-                <div class="featured-badge">
-                  <span>⭐ Featured</span>
-                </div>
-              )}
+    <section class="tools-list">
+      {tools.map(tool => {
+        const iconName = categoryIcons[tool.data.category] || 'Wrench';
+        return (
+          <a href={`/tools/${tool.slug}`} class="tool-item">
+            <div class="tool-icon-wrapper">
+              <Icon name={iconName} size={32} weight="duotone" liquid={true} inkEffect="light" />
             </div>
-            
-            <div class="tool-card-body">
+            <div class="tool-content">
               <h3 class="tool-title">{tool.data.title}</h3>
               <p class="tool-description">{tool.data.description}</p>
-              
-              <div class="tool-features">
-                {tool.data.features.slice(0, 3).map(feature => (
-                  <div class="feature-tag">
-                    <span class="feature-checkmark">✓</span>
-                    {feature}
-                  </div>
-                ))}
-                {tool.data.features.length > 3 && (
-                  <div class="feature-tag more">
-                    +{tool.data.features.length - 3} more
-                  </div>
-                )}
-              </div>
             </div>
-
-            <div class="tool-card-footer">
-              <div class="tool-meta">
-                <span class="tool-tech">
-                  {tool.data.technologies[0]}
+            <div class="tool-meta">
+              <span class="tool-year">{tool.data.lastUpdated.getFullYear()}</span>
+              {tool.data.status === 'active' && (
+                <span class="tool-status">
+                  <Icon name="CheckCircle" size={14} weight="fill" />
+                  Active
                 </span>
-                {tool.data.githubUrl && (
-                  <span class="tool-opensource">
-                    <span class="github-icon">⚡</span>
-                    Open Source
-                  </span>
-                )}
-              </div>
-              <button class="use-now-btn">
-                Use Now →
-              </button>
+              )}
             </div>
           </a>
-        </article>
-      ))}
-    </section>
-
-    <section class="tools-cta">
-      <div class="cta-content">
-        <h2>Want to Contribute?</h2>
-        <p>All tools are open source. Help improve them or suggest new ones!</p>
-        <div class="cta-buttons">
-          <a href="https://github.com/shupp-dev/open-source-tools" class="btn btn-primary">
-            View on GitHub
-          </a>
-          <a href="mailto:erikk@shupp.dev?subject=Tool Suggestion" class="btn btn-secondary">
-            Suggest a Tool
-          </a>
-        </div>
-      </div>
+        );
+      })}
     </section>
   </div>
 </Layout>
 
 <CardStyles />
 
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const filterButtons = document.querySelectorAll('.filter-btn');
-    const toolCards = document.querySelectorAll('.tool-card');
-    const sortSelect = document.getElementById('sort-select') as HTMLSelectElement;
-    
-    let activeFilters = {
-      category: 'all',
-      status: 'all'
-    };
-    
-    // Filter functionality
-    filterButtons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const filterType = btn.dataset.filterType;
-        const filterValue = btn.dataset.filterValue;
-        
-        if (filterType) {
-          // Update active filter
-          activeFilters[filterType as keyof typeof activeFilters] = filterValue || 'all';
-          
-          // Update button states
-          document.querySelectorAll(`[data-filter-type="${filterType}"]`).forEach(b => {
-            b.classList.remove('active');
-          });
-          btn.classList.add('active');
-          
-          // Apply filters
-          applyFilters();
-        }
-      });
-    });
-    
-    function applyFilters() {
-      toolCards.forEach(card => {
-        const cardCategory = card.dataset.category;
-        const cardStatus = card.dataset.status;
-        
-        const categoryMatch = activeFilters.category === 'all' || cardCategory === activeFilters.category;
-        const statusMatch = activeFilters.status === 'all' || cardStatus === activeFilters.status;
-        
-        if (categoryMatch && statusMatch) {
-          (card as HTMLElement).style.display = 'block';
-        } else {
-          (card as HTMLElement).style.display = 'none';
-        }
-      });
-    }
-    
-    // Sort functionality
-    sortSelect?.addEventListener('change', () => {
-      const sortValue = sortSelect.value;
-      const grid = document.querySelector('.tools-grid');
-      const cards = Array.from(toolCards);
-      
-      cards.sort((a, b) => {
-        switch (sortValue) {
-          case 'popular':
-            return parseInt(b.dataset.popularity || '0') - parseInt(a.dataset.popularity || '0');
-          case 'recent':
-            return new Date(b.dataset.updated || '').getTime() - new Date(a.dataset.updated || '').getTime();
-          case 'alphabetical':
-            const titleA = a.querySelector('.tool-title')?.textContent || '';
-            const titleB = b.querySelector('.tool-title')?.textContent || '';
-            return titleA.localeCompare(titleB);
-          default: // featured
-            return 0; // Keep original order
-        }
-      });
-      
-      // Re-append cards in new order
-      cards.forEach(card => grid?.appendChild(card));
-    });
-  });
-</script>
-
 <style>
   .tools-page {
-    max-width: 1200px;
+    max-width: 900px;
     margin: 0 auto;
-    padding: 2rem 1rem;
+    padding: 4rem 1.5rem;
   }
 
   /* Hero Section */
   .tools-hero {
-    text-align: center;
     margin-bottom: 4rem;
   }
 
   .tools-hero h1 {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: var(--text-color);
   }
 
   .lead {
-    font-size: 1.5rem;
-    color: var(--text-color);
-    margin-bottom: 0.5rem;
-  }
-
-  .sub-lead {
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     color: var(--text-light);
-    margin-bottom: 2rem;
+    line-height: 1.6;
   }
 
-  .hero-stats {
+  /* Tools List */
+  .tools-list {
     display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .tool-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+    padding: 2rem 0;
+    border-bottom: 1px solid var(--border-color);
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+  
+  .tool-icon-wrapper {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
     justify-content: center;
-    gap: 3rem;
-    margin-top: 2rem;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
+    border-radius: 12px;
+    transition: all 0.3s ease;
+  }
+  
+  .tool-item:hover .tool-icon-wrapper {
+    transform: rotate(-5deg) scale(1.1);
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(139, 92, 246, 0.2));
+  }
+  
+  html.dark .tool-icon-wrapper {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(139, 92, 246, 0.15));
   }
 
-  .stat {
-    text-align: center;
+  .tool-item:first-child {
+    padding-top: 0;
   }
 
-  .stat-number {
-    display: block;
-    font-size: 2.5rem;
-    font-weight: 700;
+  .tool-item:last-child {
+    border-bottom: none;
+  }
+
+  .tool-item:hover {
+    opacity: 0.8;
+  }
+
+  .tool-item:hover .tool-title {
     color: var(--primary-color);
   }
 
-  .stat-label {
-    display: block;
-    font-size: 0.9rem;
-    color: var(--text-light);
-    margin-top: 0.25rem;
-  }
-
-  /* Filters Section */
-  .tools-filters {
-    margin-bottom: 3rem;
-    padding: 2rem;
-    background: var(--card-bg);
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-  }
-
-  .filter-group {
-    margin-bottom: 1.5rem;
-  }
-
-  .filter-group:last-child {
-    margin-bottom: 0;
-  }
-
-  .filter-label {
-    display: block;
-    font-weight: 600;
-    color: var(--text-color);
-    margin-bottom: 0.75rem;
-  }
-
-  .filter-select {
-    padding: 0.5rem 1rem;
-    border: 2px solid var(--border-color);
-    border-radius: 8px;
-    background: var(--bg-color);
-    color: var(--text-color);
-    font-size: 0.95rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-
-  .filter-select:hover {
-    border-color: var(--primary-color);
-  }
-
-  .filter-buttons {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-  }
-
-  .filter-btn {
-    padding: 0.5rem 1rem;
-    border: 2px solid var(--border-color);
-    border-radius: 30px;
-    background: transparent;
-    color: var(--text-color);
-    font-size: 0.9rem;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-  }
-
-  .filter-btn:hover {
-    border-color: var(--primary-color);
-    transform: translateY(-2px);
-  }
-
-  .filter-btn.active {
-    background: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-  }
-
-  .category-emoji,
-  .status-emoji {
-    font-size: 1rem;
-  }
-
-  /* Tools Grid */
-  .tools-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 2rem;
-    margin-bottom: 4rem;
-  }
-
-  .tool-card {
-    background: var(--card-bg);
-    border-radius: 12px;
-    overflow: hidden;
-    transition: all 0.3s ease;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .tool-card:hover {
-    transform: translateY(-5px);
-  }
-
-  .tool-card-link {
-    text-decoration: none;
-    color: inherit;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-  }
-
-  .tool-card-header {
-    padding: 1.5rem 1.5rem 0;
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-  }
-
-  .tool-badges {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-  }
-
-  .tool-status-badge,
-  .tool-category-badge {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 500;
-  }
-
-  .tool-status-badge {
-    color: white;
-  }
-
-  .tool-category-badge {
-    background: rgba(139, 92, 246, 0.1);
-    color: #8b5cf6;
-  }
-
-  html.dark .tool-category-badge {
-    background: rgba(139, 92, 246, 0.2);
-    color: #a78bfa;
-  }
-
-  .featured-badge {
-    background: linear-gradient(135deg, #fbbf24, #f59e0b);
-    color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 600;
-  }
-
-  .tool-card-body {
+  .tool-content {
     flex: 1;
-    padding: 1.5rem;
+    padding-right: 2rem;
   }
 
   .tool-title {
-    font-size: 1.5rem;
-    margin-bottom: 0.75rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
     color: var(--text-color);
+    transition: color 0.2s ease;
   }
 
   .tool-description {
     color: var(--text-light);
     line-height: 1.6;
-    margin-bottom: 1.5rem;
-  }
-
-  .tool-features {
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-  }
-
-  .feature-tag {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.9rem;
-    color: var(--text-color);
-  }
-
-  .feature-checkmark {
-    color: #22c55e;
-    font-weight: 600;
-  }
-
-  .feature-tag.more {
-    color: var(--text-light);
-    font-style: italic;
-  }
-
-  .tool-card-footer {
-    padding: 1.5rem;
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    font-size: 1rem;
   }
 
   .tool-meta {
     display: flex;
     align-items: center;
     gap: 1rem;
+    flex-shrink: 0;
+    margin-left: auto;
   }
 
-  .tool-tech {
-    font-size: 0.85rem;
+  .tool-year {
     color: var(--text-light);
-    padding: 0.25rem 0.75rem;
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 15px;
+    font-size: 0.95rem;
   }
 
-  html.dark .tool-tech {
-    background: rgba(255, 255, 255, 0.05);
-  }
-
-  .tool-opensource {
-    display: flex;
+  .tool-status {
+    display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.3rem;
+    padding: 0.25rem 0.75rem;
+    background: rgba(34, 197, 94, 0.1);
+    color: #22c55e;
+    border-radius: 20px;
     font-size: 0.85rem;
-    color: #3b82f6;
     font-weight: 500;
   }
 
-  .github-icon {
-    font-size: 1rem;
-  }
-
-  .use-now-btn {
-    padding: 0.5rem 1.5rem;
-    background: var(--primary-color);
-    color: white;
-    border: none;
-    border-radius: 30px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-
-  .use-now-btn:hover {
-    background: var(--primary-hover);
-    transform: translateX(3px);
-  }
-
-  /* CTA Section */
-  .tools-cta {
-    text-align: center;
-    padding: 4rem 2rem;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05));
-    border-radius: 12px;
-  }
-
-  html.dark .tools-cta {
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(139, 92, 246, 0.1));
-  }
-
-  .cta-content h2 {
-    font-size: 2rem;
-    margin-bottom: 1rem;
-    color: var(--text-color);
-  }
-
-  .cta-content p {
-    font-size: 1.1rem;
-    color: var(--text-light);
-    margin-bottom: 2rem;
-  }
-
-  .cta-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
-  }
-
-  .btn {
-    padding: 0.75rem 2rem;
-    border-radius: 30px;
-    text-decoration: none;
-    font-weight: 600;
-    transition: all 0.3s ease;
-    display: inline-block;
-  }
-
-  .btn-primary {
-    background: var(--primary-color);
-    color: white;
-  }
-
-  .btn-primary:hover {
-    background: var(--primary-hover);
-    transform: translateY(-2px);
-  }
-
-  .btn-secondary {
-    background: transparent;
-    color: var(--text-color);
-    border: 2px solid var(--border-color);
-  }
-
-  .btn-secondary:hover {
-    border-color: var(--primary-color);
-    color: var(--primary-color);
+  html.dark .tool-status {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
   }
 
   /* Responsive */
   @media (max-width: 768px) {
+    .tools-page {
+      padding: 3rem 1rem;
+    }
+
     .tools-hero h1 {
       font-size: 2rem;
     }
 
     .lead {
-      font-size: 1.2rem;
+      font-size: 1.1rem;
     }
 
-    .hero-stats {
-      gap: 2rem;
-    }
-
-    .stat-number {
-      font-size: 2rem;
-    }
-
-    .tools-grid {
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
-    }
-
-    .filter-buttons {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .cta-buttons {
+    .tool-item {
       flex-direction: column;
-      align-items: center;
+      gap: 1rem;
+      padding: 1.5rem 0;
     }
 
-    .btn {
-      width: 100%;
-      max-width: 300px;
+    .tool-content {
+      padding-right: 0;
     }
+
+    .tool-meta {
+      width: 100%;
+    }
+
+    .tool-title {
+      font-size: 1.15rem;
+    }
+
+    .tool-description {
+      font-size: 0.95rem;
+    }
+  }
+
+  /* Dark mode enhancements */
+  html.dark .tool-item {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  html.dark .tool-item:hover {
+    background: rgba(255, 255, 255, 0.02);
   }
 </style>

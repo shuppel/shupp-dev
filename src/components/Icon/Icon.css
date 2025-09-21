@@ -1,0 +1,119 @@
+/* Phosphor Icon Base Styles */
+.phosphor-icon {
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Liquid Ink Effects */
+.icon-liquid-light {
+  filter: url(#liquid-filter-light);
+}
+
+.icon-liquid-medium {
+  filter: url(#liquid-filter-medium);
+}
+
+.icon-liquid-heavy {
+  filter: url(#liquid-filter-heavy);
+}
+
+.icon-animate {
+  animation: liquid-flow 4s ease-in-out infinite;
+}
+
+@keyframes liquid-flow {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  25% {
+    transform: translateY(-2px) rotate(1deg);
+  }
+  75% {
+    transform: translateY(2px) rotate(-1deg);
+  }
+}
+
+/* Hover Effects */
+.icon-liquid:hover {
+  filter: url(#liquid-filter-animated);
+  transform: scale(1.1);
+}
+
+.icon-liquid-intro {
+  animation: ink-drop 1s ease-out;
+}
+
+@keyframes ink-drop {
+  0% {
+    transform: scale(0) rotate(180deg);
+    opacity: 0;
+    filter: blur(10px);
+  }
+  50% {
+    transform: scale(1.2) rotate(90deg);
+    filter: blur(2px);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/* Ink Spread on Hover */
+.phosphor-icon.icon-hovered {
+  filter: url(#ink-spread);
+}
+
+/* Dark Mode Adjustments */
+html.dark .icon-liquid {
+  filter: url(#liquid-filter-light) brightness(1.2);
+}
+
+html.dark .icon-liquid:hover {
+  filter: url(#liquid-filter-animated) brightness(1.3);
+}
+
+/* Special Effects for Specific Icons */
+.icon-status-indicator {
+  position: relative;
+}
+
+.icon-status-indicator::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 150%;
+  height: 150%;
+  background: radial-gradient(circle, currentColor 0%, transparent 70%);
+  opacity: 0;
+  animation: pulse-ink 2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes pulse-ink {
+  0%, 100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8);
+  }
+  50% {
+    opacity: 0.3;
+    transform: translate(-50%, -50%) scale(1.2);
+  }
+}
+
+/* Three.js Canvas Container */
+.icon-three-container {
+  position: relative;
+  display: inline-block;
+}
+
+.icon-three-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  z-index: -1;
+}

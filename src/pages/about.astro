@@ -1,6 +1,7 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { getCollection } from 'astro:content';
+import Icon from '../components/Icon/Icon.astro';
 
 // Get the author data
 const authorEntries = await getCollection('authors');
@@ -96,28 +97,36 @@ const author = authorEntries[0]; // Using the first author as this is a personal
       <div class="contact-options">
         {author.data.email && (
           <a href={`mailto:${author.data.email}`} class="contact-option">
-            <div class="contact-icon">✉️</div>
+            <div class="contact-icon">
+              <Icon name="Envelope" size={32} weight="duotone" liquid={true} />
+            </div>
             <div class="contact-label">Email</div>
           </a>
         )}
         
         {author.data.socialLinks?.linkedin && (
           <a href={author.data.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" class="contact-option">
-            <div class="contact-icon">🔗</div>
+            <div class="contact-icon">
+              <Icon name="LinkedinLogo" size={32} weight="duotone" liquid={true} />
+            </div>
             <div class="contact-label">LinkedIn</div>
           </a>
         )}
 
         {author.data.socialLinks?.github && (
           <a href={author.data.socialLinks.github} target="_blank" rel="noopener noreferrer" class="contact-option">
-            <div class="contact-icon">🐙</div>
+            <div class="contact-icon">
+              <Icon name="GithubLogo" size={32} weight="duotone" liquid={true} />
+            </div>
             <div class="contact-label">GitHub</div>
           </a>
         )}
 
         {author.data.socialLinks?.bluesky && (
           <a href={author.data.socialLinks.bluesky} target="_blank" rel="noopener noreferrer" class="contact-option">
-            <div class="contact-icon">🦋</div>
+            <div class="contact-icon">
+              <Icon name="Butterfly" size={32} weight="duotone" liquid={true} />
+            </div>
             <div class="contact-label">Bluesky</div>
           </a>
         )}
@@ -515,17 +524,9 @@ const author = authorEntries[0]; // Using the first author as this is a personal
   .contact-icon {
     font-size: 2rem;
     margin-bottom: 0.75rem;
-    background: linear-gradient(45deg, var(--color-tertiary), var(--color-secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  html.dark .contact-icon {
-    background: linear-gradient(45deg, var(--color-accent), var(--color-light));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .contact-label {

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import type { RentVsSellOnboardingData } from '../../../lib/calculators/rentVsSell/types';
 import './OnboardingFlow.css';
 
