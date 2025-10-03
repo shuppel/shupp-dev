@@ -35,7 +35,10 @@ export class ParticleSystem {
     const velocities = new Float32Array(particleCount);
     const lifetimes = new Float32Array(particleCount);
 
-    const color = new THREE.Color(config.color ?? '#ACC196');
+    // Use provided color or a more neutral default
+    const color = config.color ? 
+      (typeof config.color === 'string' ? new THREE.Color(config.color) : config.color) :
+      new THREE.Color('#ffffff');
 
     for (let i = 0; i < particleCount; i++) {
       const t = Math.random();

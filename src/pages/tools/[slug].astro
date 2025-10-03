@@ -217,12 +217,13 @@ const categoryEmoji = categoryEmojis[entry.data.category] || '🔧';
       // Load the appropriate component
       if (componentName === 'RentVsBuy') {
         const { mount } = await import('../../components/tools/RentVsBuy/mount');
-        toolMount.innerHTML = '<div class="calculator-wrapper"></div>';
         mount();
       } else if (componentName === 'RentVsSell') {
         const { mount } = await import('../../components/tools/RentVsSell/mount');
-        toolMount.innerHTML = '<div class="calculator-wrapper"></div>';
         mount();
+      } else if (componentName === 'FxSankeyWrapper' || componentName === 'FxSankeyDemo') {
+        const { mountFxSankeyDemo } = await import('../../components/FxSankey/mount');
+        mountFxSankeyDemo();
       } else {
         toolMount.innerHTML = `<div class="error-message">Component "${componentName}" not found.</div>`;
       }

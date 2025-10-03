@@ -108,7 +108,20 @@
     
     <environmentVariables>
       <variable name="ENABLE_TLDRAW" default="false" description="Feature flag for TLDraw integration" />
+      <!-- Additional feature flags should be added here and in /src/config/features.ts -->
+      <!-- See FEATURE-FLAGS-CODEX.md for implementation guidelines -->
     </environmentVariables>
+    
+    <featureFlags>
+      <documentation>/FEATURE-FLAGS-CODEX.md</documentation>
+      <configuration>/src/config/features.ts</configuration>
+      <principles>
+        <principle>All new features must be behind feature flags</principle>
+        <principle>Use type-safe isFeatureEnabled() function</principle>
+        <principle>Feature flags are temporary - plan for removal</principle>
+        <principle>Environment variables override default values</principle>
+      </principles>
+    </featureFlags>
   </development>
   
   <skills>
@@ -159,6 +172,23 @@
   </recentUpdates>
   
   <guidelines>
+    <guideline priority="critical">
+      <rule>Use feature flags for all new features and experimental code</rule>
+      <description>All new features must be implemented behind feature flags as defined in FEATURE-FLAGS-CODEX.md</description>
+      <enforcement>
+        <location>/src/config/features.ts</location>
+        <documentation>/FEATURE-FLAGS-CODEX.md</documentation>
+        <pattern>Use isFeatureEnabled() function for type-safe flag checks</pattern>
+      </enforcement>
+      <checklist>
+        <item>Add flag to /src/config/features.ts</item>
+        <item>Use environment variables for override capability</item>
+        <item>Document with JSDoc including deprecation date</item>
+        <item>Test both enabled and disabled states</item>
+        <item>Never hardcode feature availability</item>
+      </checklist>
+    </guideline>
+    
     <guideline priority="high">
       <rule>Never use type 'any' - always use precise types</rule>
       <enforcement>ESLint rule @typescript-eslint/no-explicit-any set to error</enforcement>

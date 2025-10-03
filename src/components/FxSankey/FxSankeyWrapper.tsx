@@ -2,18 +2,31 @@ import React from 'react';
 import FxSankey from './FxSankey';
 import type { FxSankeyConfig, FxSankeyData } from '../../lib/fxsankey/types';
 
+// Comprehensive color palette
+const COLORS = {
+  coal: '#5D4037',        // Dark Brown
+  naturalGas: '#42A5F5',  // Light Blue
+  nuclear: '#7B1FA2',     // Purple
+  renewable: '#43A047',   // Green
+  electricity: '#FFB300',  // Amber
+  heat: '#EF5350',        // Red
+  residential: '#26A69A', // Teal
+  commercial: '#5C6BC0',  // Indigo
+  industrial: '#8D6E63',  // Brown
+};
+
 const FxSankeyWrapper: React.FC = () => {
   const energyFlowData: FxSankeyData = {
     nodes: [
-      { id: 'coal', label: 'Coal' },
-      { id: 'natural-gas', label: 'Natural Gas' },
-      { id: 'nuclear', label: 'Nuclear' },
-      { id: 'renewable', label: 'Renewable' },
-      { id: 'electricity', label: 'Electricity' },
-      { id: 'heat', label: 'Heat' },
-      { id: 'residential', label: 'Residential' },
-      { id: 'commercial', label: 'Commercial' },
-      { id: 'industrial', label: 'Industrial' },
+      { id: 'coal', label: 'Coal', color: COLORS.coal },
+      { id: 'natural-gas', label: 'Natural Gas', color: COLORS.naturalGas },
+      { id: 'nuclear', label: 'Nuclear', color: COLORS.nuclear },
+      { id: 'renewable', label: 'Renewable', color: COLORS.renewable },
+      { id: 'electricity', label: 'Electricity', color: COLORS.electricity },
+      { id: 'heat', label: 'Heat', color: COLORS.heat },
+      { id: 'residential', label: 'Residential', color: COLORS.residential },
+      { id: 'commercial', label: 'Commercial', color: COLORS.commercial },
+      { id: 'industrial', label: 'Industrial', color: COLORS.industrial },
     ],
     links: [
       { source: 'coal', target: 'electricity', value: 30 },
@@ -46,9 +59,9 @@ const FxSankeyWrapper: React.FC = () => {
     },
     theme: {
       background: '#14080E',
-      nodeStyle: 'liquid',
+      nodeStyle: 'solid',  // Changed to show actual colors
       linkStyle: 'bezier',
-      colorScheme: 'opulent',
+      colorScheme: 'custom',
     },
     animation: {
       duration: 1000,

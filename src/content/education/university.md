@@ -1,17 +1,18 @@
 ---
-institution: "Example University"
-degree: "Bachelor's"
-field: "Computer Science"
-location: "Somewhere, USA"
-startDate: 2018-09-01
-endDate: 2022-05-31
+institution: "George Mason University"
+degree: "Master of Science"
+field: "Technology Management"
+location: "Fairfax, Virginia"
+startDate: 2019-09-01
+endDate: 2020-05-31
 current: false
-description: "Studied computer science and related fields."
+description: "Advanced degree focusing on the intersection of technology and business management, with emphasis on IT strategy, digital transformation, and technology leadership."
 achievements:
-  - "Graduated with honors"
-  - "Participated in research projects"
+  - "Peter E. Tarbox Scholarship Endowment Recipient (2019-2020)"
+  - "Selected by faculty committee from pool of accomplished students"
+  - "Recognized for academic achievements and potential for continued success"
 order: 1
 visible: true
 ---
 
-Detailed education information will be added here.
+Completed Master of Science in Technology Management at George Mason University, focusing on strategic technology leadership, IT governance, and digital transformation. This program provided a comprehensive understanding of how to align technology initiatives with business objectives, manage complex IT projects, and lead technology-driven organizational change.

@@ -24,7 +24,7 @@
 .calculator-container {
   width: 100%;
   max-width: 100vw;
-  padding: 3rem;
+  padding: clamp(1rem, 4vw, 3rem);
   box-sizing: border-box;
 }
 
@@ -32,45 +32,78 @@
 .calculator-layout {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 3rem;
+  gap: clamp(1.5rem, 3vw, 3rem);
   max-width: 1400px;
   margin: 0 auto;
   position: relative;
 }
 
-/* Fullscreen Mode */
-.rvs-calculator.fullscreen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 9999;
-  overflow-y: auto;
+/* Fullscreen Mode - Desktop Only */
+@media (min-width: 1025px) {
+  .rvs-calculator.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    overflow-y: auto;
+  }
+
+  .rvs-calculator.fullscreen .calculator-container {
+    padding: 2rem;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .rvs-calculator.fullscreen .calculator-layout {
+    grid-template-columns: 1fr 1fr;
+    flex: 0 1 auto;
+    overflow: visible;
+  }
+
+  /* Ensure FinancialInsights flows below in fullscreen */
+  .rvs-calculator.fullscreen .financial-insights {
+    margin-top: 2rem;
+    position: relative;
+    z-index: 1;
+  }
 }
 
-.rvs-calculator.fullscreen .calculator-container {
-  padding: 2rem;
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
+/* Tablet Fullscreen Mode */
+@media (min-width: 768px) and (max-width: 1024px) {
+  .rvs-calculator.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 9999;
+    overflow-y: auto;
+  }
+
+  .rvs-calculator.fullscreen .calculator-container {
+    padding: 1.5rem;
+    min-height: 100%;
+  }
+
+  .rvs-calculator.fullscreen .calculator-layout {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
 }
 
-.rvs-calculator.fullscreen .calculator-layout {
-  grid-template-columns: 1fr 1fr;
-  flex: 0 1 auto;
-  overflow: visible;
+/* Mobile - No fullscreen mode */
+@media (max-width: 767px) {
+  .rvs-calculator.fullscreen {
+    /* Fullscreen disabled on mobile - maintain normal flow */
+    position: relative;
+  }
 }
 
-/* Ensure FinancialInsights flows below in fullscreen */
-.rvs-calculator.fullscreen .financial-insights {
-  margin-top: 2rem;
-  position: relative;
-  z-index: 1;
-}
-
-/* Expand Button */
+/* Expand Button - Hide on mobile by default */
 .expand-button {
   position: absolute;
   top: 2rem;
@@ -81,7 +114,7 @@
   backdrop-filter: blur(10px);
   border: 2px solid rgba(172, 193, 150, 0.3);
   border-radius: 12px;
-  display: flex;
+  display: none; /* Hidden by default */
   align-items: center;
   justify-content: center;
   cursor: pointer;
@@ -89,9 +122,16 @@
   z-index: 100;
 }
 
+/* Show expand button on tablet and desktop */
+@media (min-width: 768px) {
+  .expand-button {
+    display: flex;
+  }
+}
+
 .expand-button:hover {
   border-color: var(--accent-sage);
-  transform: scale(1.1);
+  transform: translateY(-2px); /* Subtle lift instead of scale */
   box-shadow: 0 4px 12px rgba(172, 193, 150, 0.3);
 }
 
@@ -132,8 +172,8 @@
     transparent 50%
   );
   z-index: -1;
-  animation: liquidFlow 20s ease-in-out infinite;
-  will-change: transform;
+  /* animation: liquidFlow 20s ease-in-out infinite; */ /* Disabled - causes rotation issues */
+  /* will-change: transform; */
 }
 
 /* Panel Base Styles */
@@ -169,7 +209,7 @@
     var(--accent-sage),
     transparent
   );
-  animation: liquidShimmer 3s ease-in-out infinite;
+  animation: liquidShimmer 6s ease-in-out infinite; /* Slower for less distraction */
 }
 
 .input-panel:hover,
@@ -472,7 +512,7 @@
 }
 
 .submit-button:hover {
-  transform: translateY(-3px) scale(1.02);
+  transform: translateY(-3px); /* Removed scale for cleaner interaction */
   box-shadow: 
     0 8px 25px rgba(172, 193, 150, 0.3),
     0 4px 10px rgba(14, 8, 14, 0.2);
@@ -483,7 +523,7 @@
 }
 
 .submit-button:active {
-  transform: translateY(-1px) scale(0.98);
+  transform: translateY(-1px); /* Removed scale for cleaner interaction */
 }
 
 .submit-button:disabled {
@@ -516,7 +556,7 @@
 }
 
 .tooltip:hover {
-  transform: scale(1.1);
+  transform: translateY(-1px); /* Subtle lift instead of scale */
   background: var(--accent-sage);
 }
 
@@ -594,18 +634,48 @@ option {
   max-width: 400px;
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
+/* Responsive Design - Enhanced breakpoints */
+
+/* Large Desktop (1440px+) */
+@media (min-width: 1440px) {
+  .calculator-layout {
+    grid-template-columns: 1fr 1fr;
+    gap: 3rem;
+    max-width: 1600px;
+  }
+}
+
+/* Desktop (1025px - 1439px) */
+@media (min-width: 1025px) and (max-width: 1439px) {
+  .calculator-layout {
+    grid-template-columns: 1fr 1fr;
+    gap: 2.5rem;
+  }
+}
+
+/* Tablet Landscape (769px - 1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
   .calculator-container {
     padding: 2rem;
   }
   
   .calculator-layout {
+    grid-template-columns: 1fr 1fr;
     gap: 2rem;
+  }
+  
+  .input-panel,
+  .results-panel {
+    padding: 2rem;
+  }
+  
+  .form-section {
+    padding: 1.75rem;
   }
 }
 
-@media (max-width: 768px) {
+/* Tablet Portrait & Large Mobile (481px - 768px) */
+@media (min-width: 481px) and (max-width: 768px) {
   .calculator-container {
     padding: 1.5rem;
   }
@@ -654,18 +724,68 @@ option {
   }
 }
 
+/* Mobile (320px - 480px) */
 @media (max-width: 480px) {
   .calculator-container {
     padding: 1rem;
   }
   
+  .calculator-layout {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
   .input-panel,
   .results-panel {
-    padding: 1.5rem;
+    padding: 1.25rem;
+    border-radius: 16px;
   }
   
   .form-section {
     padding: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .form-tabs {
+    padding: 0.25rem;
+    gap: 0.25rem;
+    flex-wrap: wrap;
+  }
+
+  .form-tab {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    flex: 1 1 auto;
+    min-width: calc(50% - 0.25rem);
+  }
+
+  .tab-icon {
+    display: none;
+  }
+
+  .form-content {
+    max-height: none;
+    padding-right: 0;
+  }
+  
+  .submit-button {
+    width: 100%;
+    padding: 0.875rem;
+    font-size: 1rem;
+  }
+  
+  .panel-header h2 {
+    font-size: 1.5rem;
+  }
+  
+  .input-field {
+    margin-bottom: 1.25rem;
+  }
+  
+  .input-wrapper input,
+  .input-wrapper select {
+    padding: 0.75rem;
+    font-size: 0.95rem;
   }
 }
 

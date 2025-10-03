@@ -15,7 +15,7 @@ skills:
   - "Serverless Applications"
   - "Microservices"
 category: "Cloud Computing"
-visible: true
+visible: false
 ---
 
 The AWS Certified Solutions Architect - Associate examination is intended for individuals who perform the role of solutions architect. The exam validates a candidate's ability to:

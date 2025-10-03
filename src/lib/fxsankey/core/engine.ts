@@ -18,8 +18,8 @@ export class FxSankeyEngine {
     this.layoutConfig = {
       type: config?.type ?? 'hierarchical',
       padding: config?.padding ?? 0.1,
-      nodeSpacing: config?.nodeSpacing ?? 0.2,
-      levelSpacing: config?.levelSpacing ?? 1.5,
+      nodeSpacing: config?.nodeSpacing ?? 0.3,
+      levelSpacing: config?.levelSpacing ?? 2.5,
       iterations: config?.iterations ?? 32,
       alignment: config?.alignment ?? 'justify',
     };
@@ -312,10 +312,10 @@ export class FxSankeyEngine {
   }
 
   private calculateNodeHeight(node: CalculatedNode): number {
-    const minHeight = 0.2;
-    const maxHeight = 2;
+    const minHeight = 0.3;
+    const maxHeight = 1.8;
     const maxValue = Math.max(...Array.from(this.nodes.values()).map(n => n.value ?? 0));
-    const normalizedValue = (node.value ?? 0) / maxValue;
+    const normalizedValue = Math.pow((node.value ?? 0) / maxValue, 0.7); // Use power for better distribution
     return minHeight + normalizedValue * (maxHeight - minHeight);
   }
 

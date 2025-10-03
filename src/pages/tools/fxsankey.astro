@@ -1,6 +1,6 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import FxSankeyWrapper from '../../components/FxSankey/FxSankeyWrapper';
+import FxSankeyDemo from '../../components/FxSankey/FxSankeyDemo';
 import '../../components/FxSankey/FxSankey.css';
 ---
 
@@ -9,10 +9,10 @@ import '../../components/FxSankey/FxSankey.css';
     <div class="container">
       <header class="tool-header">
         <h1>FxSankey</h1>
-        <p class="subtitle">Opulent Three.js-powered Sankey diagrams with liquid effects</p>
+        <p class="subtitle">Interactive 3D flow visualization with multiple datasets</p>
       </header>
       
-      <FxSankeyWrapper client:load />
+      <FxSankeyDemo client:load />
     </div>
   </main>
 

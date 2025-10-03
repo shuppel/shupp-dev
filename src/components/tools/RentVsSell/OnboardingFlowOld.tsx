@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import type { RentVsSellOnboardingData } from '../../../lib/calculators/rentVsSell/types';
 import LiquidSlider from '../shared/LiquidSlider';
 import './OnboardingFlow.css';

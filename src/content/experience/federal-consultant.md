@@ -16,7 +16,7 @@ technologies:
   - "Cybersecurity"
   - "Digital Transformation"
   - "Compliance Management"
-order: 2
+order: 1
 visible: true
 ---
 

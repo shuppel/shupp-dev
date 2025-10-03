@@ -1,17 +1,17 @@
 ---
 title: "FxSankey - Flow Visualization"
-description: "Opulent Three.js-powered Sankey diagrams with liquid effects and particle systems"
+description: "Interactive 3D Sankey diagrams with US Budget, Energy, and Workflow visualizations"
 category: "Analytics"
 status: "active"
-component: "FxSankeyWrapper"
+component: "FxSankeyDemo"
 githubUrl: "https://github.com/shuppel/shupp.dev"
 features:
-  - "Liquid-inspired node animations with glass morphism"
-  - "Flowing link animations with dynamic gradients"
-  - "Smart view presets (Default, Top, Side, Flow)"
+  - "US Federal Budget 2024 visualization with revenue and spending flows"
+  - "30+ distinct colors for optimal visual distinction"
+  - "Camera-aware labels with 'Mona Lisa effect'"
   - "Interactive 3D navigation with zoom and rotation"
-  - "Particle systems for enhanced visual effects"
-  - "Multiple dataset support with live switching"
+  - "Multiple datasets: US Budget, Energy Flow, Personal Budget, Workflow"
+  - "Dynamic tooltips with speech bubble design"
 technologies:
   - "React"
   - "Three.js"
@@ -35,12 +35,12 @@ Visualize complex data flows with stunning 3D Sankey diagrams powered by Three.j
 
 ## Use Cases
 
-- Energy flow analysis
-- Budget and financial flows
-- Workflow and process visualization
-- Network traffic analysis
-- Supply chain management
-- Resource allocation
+- **US Federal Budget** - Visualize $4.3T in revenue and spending allocation
+- **Government spending analysis** - Track money flow from taxes to programs
+- **Energy flow analysis** - From generation sources to consumption sectors
+- **Personal budget planning** - Income to expenses and savings
+- **Workflow visualization** - Product development lifecycle
+- **Financial reporting** - Corporate revenue and cost structures
 
 ## Technology
 

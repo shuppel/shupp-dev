@@ -1,0 +1,840 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+
+// Get all the data
+const authorEntries = await getCollection('authors');
+const author = authorEntries[0];
+const experiences = await getCollection('experience');
+const education = await getCollection('education');
+const credentials = await getCollection('credentials');
+
+// Sort experiences by order
+const sortedExperiences = experiences.sort((a, b) => (a.data.order || 999) - (b.data.order || 999));
+---
+
+<Layout title="Resume - Erikk Shupp" description="Professional resume of Erikk Shupp - Product Manager & Software Engineer">
+  <div class="resume-container">
+    <header class="resume-header">
+      <h1>{author.data.name}</h1>
+      <p class="title">{author.data.title}</p>
+      <div class="contact-info">
+        <span>{author.data.location}</span>
+        <span>•</span>
+        <a href={`mailto:${author.data.email}`}>{author.data.email}</a>
+        <span>•</span>
+        <a href={author.data.socialLinks?.website} target="_blank" rel="noopener noreferrer">shupp.dev</a>
+      </div>
+      <div class="social-links">
+        <a href={author.data.socialLinks?.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a>
+        <span>•</span>
+        <a href={author.data.socialLinks?.github} target="_blank" rel="noopener noreferrer">GitHub</a>
+        <span>•</span>
+        <a href={author.data.socialLinks?.bluesky} target="_blank" rel="noopener noreferrer">Bluesky</a>
+      </div>
+    </header>
+
+    <section class="resume-section">
+      <h2>Professional Summary</h2>
+      <p class="summary">
+        Product Manager & Full-Stack Engineer building thoughtful digital experiences for humans. Unique blend of 
+        creative writing background and deep technical expertise through comprehensive professional development in AI, local-first architectures, 
+        and native development. Passionate about leveraging cutting-edge technologies (LLMs, CRDTs, sync engines) to 
+        create products that respect user autonomy and privacy. Currently leading federal healthcare modernization 
+        while building the future of human-centered apps through Thoughtful App Co.
+      </p>
+    </section>
+
+    <section class="resume-section">
+      <h2>Professional Experience</h2>
+      <div class="experience-list">
+        <div class="experience-item">
+          <div class="experience-header">
+            <h3>Product Manager & Technical Founder</h3>
+            <span class="date">2024 - Present</span>
+          </div>
+          <p class="company">Nodetus / Thoughtful App Co. • Washington, DC Metro Area</p>
+          <ul class="achievements">
+            <li>Building portfolio of 16+ human-centered apps using AI, local-first architectures, and native development</li>
+            <li>Architected products using modern stack: React, Flutter, Supabase, Jazz.tools, PostgreSQL</li>
+            <li>Managed $32M+ portfolio across federal programs while maintaining 5/5 performance rating</li>
+            <li>Led digital transformation and product modernization for DHS, TSA, VA, and NIH</li>
+          </ul>
+        </div>
+
+        <div class="experience-item">
+          <div class="experience-header">
+            <h3>Agile IT Lead & Interface Manager</h3>
+            <span class="date">2020 - Present</span>
+          </div>
+          <p class="company">Tria Federal (VA EHRM Contract) • Department of Veterans Affairs</p>
+          <ul class="achievements">
+            <li>Led agile delivery of 15+ critical healthcare interfaces serving millions of veterans</li>
+            <li>Bridged gap between product owners and technical teams, driving actual implementation</li>
+            <li>Architected real-time data sync using HL7 FHIR standards and event-driven architecture</li>
+            <li>Achieved 99.9% uptime while orchestrating go-lives across multiple medical centers</li>
+          </ul>
+        </div>
+
+        <div class="experience-item">
+          <div class="experience-header">
+            <h3>Technical SME & Systems Architect</h3>
+            <span class="date">2021 - 2024</span>
+          </div>
+          <p class="company">Nodetus Integrators (NIH OALM Contract) • National Institutes of Health</p>
+          <ul class="achievements">
+            <li>Served as technical product advocate, filling gaps when product owners were absent</li>
+            <li>Reverse engineered legacy system to create modern microservices architecture</li>
+            <li>Designed and executed migration of 80,000+ data fields using PostgreSQL and ETL pipelines</li>
+            <li>Reduced document generation time by 60% through algorithmic optimization</li>
+          </ul>
+        </div>
+
+        <div class="experience-item">
+          <div class="experience-header">
+            <h3>Project Manager & Process Improvement Lead</h3>
+            <span class="date">2018 - 2019</span>
+          </div>
+          <p class="company">RWD (DHS/TSA Contract) • Transportation Security Administration</p>
+          <ul class="achievements">
+            <li>Drove digital transformation of procurement processes, acting as de facto product owner</li>
+            <li>Implemented automation workflows that were adopted across DHS components</li>
+            <li>Reduced contract cycle time by 30% through process optimization and tooling</li>
+          </ul>
+        </div>
+
+        <div class="experience-item">
+          <div class="experience-header">
+            <h3>Executive Council & Webmaster</h3>
+            <span class="date">2019 - Present</span>
+          </div>
+          <p class="company">Washington Rugby Football Club</p>
+          <ul class="achievements">
+            <li>Treasurer & Webmaster (2023-2025): Increased dues collection rate by 40% through Zeffy payment automation</li>
+            <li>Implemented SEO strategy using SEMrush, achieving #1 Google rankings for local rugby searches</li>
+            <li>Automated event calendar with ChronoScripts, Discord integration, and Google Business listings</li>
+            <li>Built predictive financial forecasting models resulting in first budget surplus in 5 years</li>
+            <li>Managed Google Ads campaigns with 300% ROI, driving record membership growth</li>
+            <li>Vice President (2021-2022) & Fundraising Chair (2021-2023): Raised $100K+ for operations</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="resume-section">
+      <h2>Education</h2>
+      <div class="education-list">
+        {education
+          .filter(edu => edu.data.institution === 'George Mason University' || edu.data.institution === 'Longwood University')
+          .sort((a, b) => (a.data.order || 999) - (b.data.order || 999))
+          .map(async (edu) => {
+            const { Content } = await edu.render();
+            const startYear = new Date(edu.data.startDate).getFullYear();
+            const endYear = edu.data.endDate ? new Date(edu.data.endDate).getFullYear() : 'Present';
+            
+            return (
+              <div class="education-item">
+                <div class="education-header">
+                  <h3>{edu.data.degree}</h3>
+                  <span class="date">{startYear} - {endYear}</span>
+                </div>
+                <p class="institution">{edu.data.institution}</p>
+                {edu.data.achievements && edu.data.achievements.length > 0 && (
+                  <p class="achievement">{edu.data.achievements[0]}</p>
+                )}
+              </div>
+            );
+          })}
+      </div>
+    </section>
+
+    <section class="resume-section">
+      <h2>Professional Development & Coursework</h2>
+      <div class="transcript-container">
+        <div class="transcript-header">
+          <span class="th-course">Course/Program</span>
+          <span class="th-institution">Institution</span>
+          <span class="th-credits">Credit Equiv.</span>
+        </div>
+        
+        <div class="transcript-section">
+          <h3>UX Design & Research</h3>
+          <div class="transcript-row">
+            <span class="course">UX Certification Program (12 courses)</span>
+            <span class="institution">Nielsen Norman Group</span>
+            <span class="credits">5 credits</span>
+          </div>
+          <div class="transcript-sub-items">
+            <span>• Interaction Design: 3-Day Intensive</span>
+            <span>• Information Architecture</span>
+            <span>• UX Roadmaps</span>
+            <span>• User Research Methods</span>
+            <span>• Discoveries: Building the Right Thing</span>
+            <span>• Managing User Experience Strategy</span>
+            <span>• Omnichannel Journeys & Customer Experience</span>
+            <span>• Customer Journey Management</span>
+            <span>• DesignOps: Scaling UX Design & Research</span>
+            <span>• Product and UX: Building Partnerships</span>
+          </div>
+        </div>
+
+        <div class="transcript-section">
+          <h3>Data Engineering & Analytics</h3>
+          <div class="transcript-row">
+            <span class="course">Python for Everybody Specialization (5 courses)</span>
+            <span class="institution">University of Michigan</span>
+            <span class="credits">3 credits</span>
+          </div>
+          <div class="transcript-row">
+            <span class="course">PostgreSQL for Everybody Specialization (4 courses)</span>
+            <span class="institution">University of Michigan</span>
+            <span class="credits">3 credits</span>
+          </div>
+          <div class="transcript-row">
+            <span class="course">Data Visualization</span>
+            <span class="institution">U. Illinois Chicago</span>
+            <span class="credits">1 credit</span>
+          </div>
+          <div class="transcript-row">
+            <span class="course">Introduction to Statistics</span>
+            <span class="institution">Stanford University</span>
+            <span class="credits">1 credit</span>
+          </div>
+        </div>
+
+        <div class="transcript-section">
+          <h3>Mathematics & Modeling</h3>
+          <div class="transcript-row">
+            <span class="course">Precalculus Specialization (4 courses)</span>
+            <span class="institution">Johns Hopkins University</span>
+            <span class="credits">3 credits</span>
+          </div>
+          <div class="transcript-row">
+            <span class="course">Fundamentals of Quantitative Modeling</span>
+            <span class="institution">University of Pennsylvania</span>
+            <span class="credits">1 credit</span>
+          </div>
+          <div class="transcript-row">
+            <span class="course">Calculus - Level 3</span>
+            <span class="institution">Brilliant</span>
+            <span class="credits">1 credit</span>
+          </div>
+          <div class="transcript-row">
+            <span class="course">Linear Algebra - Level 3</span>
+            <span class="institution">Brilliant</span>
+            <span class="credits">1 credit</span>
+          </div>
+        </div>
+
+        <div class="transcript-section">
+          <h3>Cloud & Infrastructure</h3>
+          <div class="transcript-row">
+            <span class="course">Google Cloud Infrastructure Specialization (3 courses)</span>
+            <span class="institution">Google Cloud</span>
+            <span class="credits">3 credits</span>
+          </div>
+          <div class="transcript-row">
+            <span class="course">Computer Communications Specialization (2 courses)</span>
+            <span class="institution">University of Colorado</span>
+            <span class="credits">2 credits</span>
+          </div>
+        </div>
+
+        <div class="transcript-section">
+          <h3>Other Professional Development</h3>
+          <div class="transcript-row">
+            <span class="course">Virtual Reality Development Specialization (3 courses)</span>
+            <span class="institution">University of London</span>
+            <span class="credits">3 credits</span>
+          </div>
+          <div class="transcript-row">
+            <span class="course">Cybersecurity Fundamentals Path (9 modules)</span>
+            <span class="institution">TryHackMe</span>
+            <span class="credits">4 credits</span>
+          </div>
+          <div class="transcript-row">
+            <span class="course">RPA Developer Certification (6 courses)</span>
+            <span class="institution">UiPath Academy</span>
+            <span class="credits">3 credits</span>
+          </div>
+          <div class="transcript-row">
+            <span class="course">Embedded Interface Design</span>
+            <span class="institution">University of Colorado Boulder</span>
+            <span class="credits">1 credit</span>
+          </div>
+          <div class="transcript-row">
+            <span class="course">Federal Acquisition Certificate (3 courses)</span>
+            <span class="institution">Defense Acquisition University</span>
+            <span class="credits">2 credits</span>
+          </div>
+          <div class="transcript-row">
+            <span class="course">Product Management Certificate</span>
+            <span class="institution">Product School</span>
+            <span class="credits">2 credits</span>
+          </div>
+          <div class="transcript-row">
+            <span class="course">Additional Technical Courses</span>
+            <span class="institution">Various</span>
+            <span class="credits">2 credits</span>
+          </div>
+        </div>
+
+        <div class="transcript-summary">
+          <strong>Total Professional Development:</strong> ~45 credit hour equivalents across 70+ courses and certifications
+        </div>
+      </div>
+    </section>
+
+    <section class="resume-section">
+      <h2>Certifications & Training</h2>
+      <div class="certification-grid">
+        <div class="certification-category">
+          <h3>Product</h3>
+          <ul>
+            <li>Product School Product Management Certificate</li>
+
+          </ul>
+        </div>
+        <div class="certification-category">
+          <h3>Design</h3>
+          <ul>
+            <li>Nielsen Norman Group UX Master Certificate (UXMC)
+              <ul style="margin-left: 1rem; font-size: 0.85rem;">
+                <li>Specialization: UX Management</li>
+                <li>Specialization: Interaction Design</li>
+                <li>Specialization: UX Research</li>
+              </ul>
+            </li>
+
+          </ul>
+        </div>
+        <div class="certification-category">
+          <h3>Project</h3>
+          <ul>
+            <li>SAFe 4 Practitioner</li>
+            <li>ITIL v4 Foundation</li>
+
+          </ul>
+        </div>
+        <div class="certification-category">
+          <h3>Security</h3>
+          <ul>
+            <li>TryHackMe Pre-Security Certificate</li>
+
+          </ul>
+        </div>
+        <div class="certification-category">
+          <h3>Other</h3>
+          <ul>
+            <li>FedRAMP Moderate Product Team</li>
+            <li>Defense Acquisition University Certifications</li>
+            <li>Section 508 Accessibility</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="resume-section">
+      <h2>Technical Skills</h2>
+      <div class="skills-grid">
+        <div class="skill-category">
+          <h3>Frontend & Native Development</h3>
+          <p><strong>Web (2019-Present):</strong> React, Next.js, Astro, TypeScript, Tailwind CSS, WebAssembly</p>
+          <p><strong>Native (2021-Present):</strong> Flutter, React Native/Expo</p>
+          <p><strong>Local-First (2023-Present):</strong> Jazz.tools, CRDTs, Sync Engines</p>
+        </div>
+        <div class="skill-category">
+          <h3>Backend & Infrastructure</h3>
+          <p><strong>Cloud (2020-Present):</strong> AWS, Vercel, Netlify, Supabase</p>
+          <p><strong>Databases (2019-Present):</strong> PostgreSQL, SQLite, Neo4j (Graph DB)</p>
+          <p><strong>DevOps (2021-Present):</strong> Docker, CI/CD, GitHub Actions</p>
+        </div>
+        <div class="skill-category">
+          <h3>AI & Machine Learning</h3>
+          <p><strong>LLMs (2022-Present):</strong> Claude AI, OpenAI, Prompt Engineering</p>
+          <p><strong>ML Frameworks (2023-Present):</strong> Hugging Face, LangChain, DSPy</p>
+          <p><strong>Automation (2020-Present):</strong> Agentic AI, Workflow Automation</p>
+        </div>
+        <div class="skill-category">
+          <h3>Specialized Domains</h3>
+          <p><strong>Healthcare IT (2020-Present):</strong> HL7 FHIR, HIPAA, Cerner</p>
+          <p><strong>Federal Systems (2018-Present):</strong> FedRAMP, NIST, Section 508</p>
+          <p><strong>Data Engineering (2021-Present):</strong> ETL, Analytics, O(n) Scoping</p>
+        </div>
+      </div>
+
+    </section>
+
+    <section class="resume-section">
+      <h2>Professional Organizations</h2>
+      <div class="organizations">
+        <span>Washington Rugby Football Club (Executive Board & Webmaster)</span>
+        <span>•</span>
+        <span>Local-First Software Community</span>
+        <span>•</span>
+        <span>ACT-IAC (IT Modernization, Emerging Tech)</span>
+        <span>•</span>
+        <span>Asian American Chamber of Commerce</span>
+        <span>•</span>
+        <span>Project Management Institute (PMI)</span>
+      </div>
+    </section>
+
+    <div class="resume-actions">
+      <button class="btn btn-primary" onclick="window.print()">Print Resume</button>
+      <a href="/api/resume.pdf" class="btn btn-secondary">Download PDF</a>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .resume-container {
+    max-width: 900px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  }
+
+  html.dark .resume-container {
+    background: #23232b;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+  }
+
+  .resume-header {
+    text-align: center;
+    padding-bottom: 2rem;
+    border-bottom: 2px solid var(--border-color);
+    margin-bottom: 2rem;
+  }
+
+  .resume-header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(45deg, var(--color-dark), var(--color-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  html.dark .resume-header h1 {
+    background: linear-gradient(45deg, #f3f4f6, #e9eb9e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .title {
+    font-size: 1.25rem;
+    color: var(--text-light);
+    margin-bottom: 1rem;
+  }
+
+  .contact-info, .social-links {
+    display: flex;
+    justify-content: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.5rem;
+    color: var(--text-light);
+  }
+
+  .contact-info a, .social-links a {
+    color: var(--color-tertiary);
+    text-decoration: none;
+  }
+
+  .contact-info a:hover, .social-links a:hover {
+    text-decoration: underline;
+  }
+
+  html.dark .contact-info a, html.dark .social-links a {
+    color: var(--color-accent);
+  }
+
+  .resume-section {
+    margin-bottom: 2.5rem;
+  }
+
+  .resume-section h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: var(--color-tertiary);
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 0.5rem;
+  }
+
+  html.dark .resume-section h2 {
+    color: var(--color-accent);
+    border-bottom-color: rgba(172, 193, 150, 0.2);
+  }
+
+  .summary {
+    line-height: 1.7;
+    color: var(--text-color);
+  }
+
+  .experience-list, .education-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .experience-item, .education-item {
+    padding-left: 1rem;
+    border-left: 3px solid rgba(121, 148, 150, 0.2);
+  }
+
+  html.dark .experience-item, html.dark .education-item {
+    border-left-color: rgba(172, 193, 150, 0.2);
+  }
+
+  .experience-header, .education-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 0.5rem;
+  }
+
+  .experience-header h3, .education-header h3 {
+    font-size: 1.2rem;
+    color: var(--text-color);
+  }
+
+  .date {
+    font-size: 0.9rem;
+    color: var(--text-light);
+  }
+
+  .company, .institution {
+    color: var(--text-light);
+    margin-bottom: 0.75rem;
+  }
+
+  .achievement {
+    color: var(--color-tertiary);
+    font-style: italic;
+  }
+
+  html.dark .achievement {
+    color: var(--color-accent);
+  }
+
+  .achievements {
+    list-style: none;
+    padding: 0;
+  }
+
+  .achievements li {
+    position: relative;
+    padding-left: 1.5rem;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+  }
+
+  .achievements li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: var(--color-tertiary);
+  }
+
+  html.dark .achievements li::before {
+    color: var(--color-accent);
+  }
+
+  .certification-grid, .skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .certification-category, .skill-category {
+    padding: 1rem;
+    background: rgba(121, 148, 150, 0.05);
+    border-radius: 8px;
+  }
+
+  html.dark .certification-category, html.dark .skill-category {
+    background: rgba(172, 193, 150, 0.05);
+  }
+
+  .certification-category h3, .skill-category h3 {
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: var(--color-tertiary);
+  }
+
+  html.dark .certification-category h3, html.dark .skill-category h3 {
+    color: var(--color-accent);
+  }
+
+  .certification-category ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .certification-category li {
+    padding: 0.25rem 0;
+    font-size: 0.9rem;
+  }
+
+  .skill-category p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    margin-bottom: 0.5rem;
+  }
+
+  .skill-category p strong {
+    color: var(--color-tertiary);
+    font-weight: 600;
+  }
+
+  html.dark .skill-category p strong {
+    color: var(--color-accent);
+  }
+
+  .skills-note {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgba(121, 148, 150, 0.05);
+    border-radius: 8px;
+  }
+
+  html.dark .skills-note {
+    background: rgba(172, 193, 150, 0.05);
+  }
+
+  .course-disciplines {
+    margin-top: 2rem;
+    padding: 1.5rem;
+    background: rgba(121, 148, 150, 0.03);
+    border-radius: 8px;
+  }
+
+  html.dark .course-disciplines {
+    background: rgba(172, 193, 150, 0.03);
+  }
+
+  .course-disciplines h3 {
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    color: var(--color-tertiary);
+    text-align: center;
+  }
+
+  html.dark .course-disciplines h3 {
+    color: var(--color-accent);
+  }
+
+  .discipline-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 0.5rem;
+    font-size: 0.85rem;
+  }
+
+  .discipline-list span {
+    padding: 0.25rem 0;
+  }
+
+  .organizations {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    color: var(--text-light);
+  }
+
+  /* Transcript styles */
+  .transcript-container {
+    font-size: 0.9rem;
+  }
+
+  .transcript-header {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 0.75fr;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: rgba(121, 148, 150, 0.1);
+    border-radius: 8px;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+  }
+
+  html.dark .transcript-header {
+    background: rgba(172, 193, 150, 0.1);
+  }
+
+  .transcript-section {
+    margin-bottom: 2rem;
+  }
+
+  .transcript-section h3 {
+    font-size: 1.1rem;
+    color: var(--color-tertiary);
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid rgba(121, 148, 150, 0.2);
+  }
+
+  html.dark .transcript-section h3 {
+    color: var(--color-accent);
+    border-bottom-color: rgba(172, 193, 150, 0.2);
+  }
+
+  .transcript-row {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 0.75fr;
+    gap: 1rem;
+    padding: 0.5rem 0.75rem;
+    border-bottom: 1px solid rgba(121, 148, 150, 0.05);
+  }
+
+  html.dark .transcript-row {
+    border-bottom-color: rgba(172, 193, 150, 0.05);
+  }
+
+  .transcript-row:hover {
+    background: rgba(121, 148, 150, 0.03);
+  }
+
+  html.dark .transcript-row:hover {
+    background: rgba(172, 193, 150, 0.03);
+  }
+
+  .transcript-row .course {
+    font-weight: 500;
+  }
+
+  .transcript-row .institution {
+    color: var(--text-light);
+  }
+
+  .transcript-row .credits {
+    text-align: right;
+    color: var(--text-light);
+    font-size: 0.85rem;
+  }
+
+  .transcript-sub-items {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.25rem;
+    padding: 0.5rem 0.75rem 0.75rem 2rem;
+    font-size: 0.85rem;
+    color: var(--text-light);
+  }
+
+  .transcript-sub-items span {
+    padding: 0.25rem 0;
+  }
+
+  .transcript-summary {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: rgba(121, 148, 150, 0.05);
+    border-radius: 8px;
+    text-align: center;
+    color: var(--color-tertiary);
+  }
+
+  html.dark .transcript-summary {
+    background: rgba(172, 193, 150, 0.05);
+    color: var(--color-accent);
+  }
+
+  .resume-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-color);
+  }
+
+  @media print {
+    .resume-container {
+      box-shadow: none;
+      padding: 0;
+    }
+
+    .resume-actions {
+      display: none;
+    }
+
+    .resume-header h1 {
+      background: none;
+      -webkit-text-fill-color: black;
+      color: black;
+    }
+
+    a {
+      color: black !important;
+      text-decoration: none !important;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .resume-container {
+      padding: 1rem;
+    }
+
+    .resume-header h1 {
+      font-size: 2rem;
+    }
+
+    .experience-header, .education-header {
+      flex-direction: column;
+    }
+
+    .certification-grid, .skills-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .transcript-header,
+    .transcript-row {
+      grid-template-columns: 1fr;
+      gap: 0.5rem;
+    }
+
+    .transcript-row .institution,
+    .transcript-row .credits {
+      font-size: 0.8rem;
+      color: var(--text-light);
+    }
+
+    .transcript-header span:not(:first-child),
+    .transcript-row span:not(:first-child) {
+      display: inline;
+    }
+
+    .transcript-row {
+      padding: 0.75rem 0.5rem;
+    }
+
+    .transcript-row .credits::before {
+      content: " • ";
+    }
+
+    .transcript-sub-items {
+      grid-template-columns: 1fr;
+      padding-left: 1rem;
+    }
+  }
+</style>
+
+<script>
+  // Handle print button
+  if (typeof window !== 'undefined') {
+    window.addEventListener('beforeprint', () => {
+      document.body.classList.add('printing');
+    });
+
+    window.addEventListener('afterprint', () => {
+      document.body.classList.remove('printing');
+    });
+  }
+</script>

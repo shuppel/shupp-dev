@@ -68,40 +68,56 @@ const FxSankey: React.FC<FxSankeyProps> = ({
     );
 
     let material: THREE.Material;
+    let nodeColor: THREE.Color;  // Declare color at higher scope
     
     if (config.theme?.nodeStyle === 'liquid' && liquidEffectRef.current) {
       material = liquidEffectRef.current.createLiquidNodeMaterial(node.id);
+      nodeColor = new THREE.Color('#ACC196');  // Default for liquid
     } else {
-      const color = node.color ? 
-        (typeof node.color === 'string' ? new THREE.Color(node.color) : node.color) :
-        new THREE.Color('#799496');
+      // Use provided color or generate a unique color based on node position
+      if (node.color) {
+        nodeColor = typeof node.color === 'string' ? new THREE.Color(node.color) : node.color;
+      } else {
+        // Generate distinct colors using HSL color space for better distribution
+        const allNodes = engineRef.current?.getNodes() || [];
+        const nodeIndex = allNodes.findIndex(n => n.id === node.id);
+        const hue = (nodeIndex * 137.5) % 360; // Golden angle for good distribution
+        const saturation = 0.6 + (nodeIndex % 3) * 0.15; // Vary saturation
+        const lightness = 0.45 + (nodeIndex % 2) * 0.1; // Vary lightness
+        nodeColor = new THREE.Color().setHSL(hue / 360, saturation, lightness);
+      }
 
       material = new THREE.MeshPhysicalMaterial({
-        color,
-        metalness: 0.2,
-        roughness: 0.3,
-        transmission: 0.5,
-        thickness: 0.5,
+        color: nodeColor,
+        metalness: 0.1,
+        roughness: 0.4,
+        transmission: 0.2,  // Less transmission to show color better
+        thickness: 0.3,
         transparent: true,
-        opacity: node.opacity ?? 0.9,
-        clearcoat: 1,
-        clearcoatRoughness: 0,
+        opacity: node.opacity ?? 0.95,  // More opaque
+        clearcoat: 0.5,  // Less clearcoat effect
+        clearcoatRoughness: 0.1,
+        emissive: nodeColor,  // Add emissive for better color visibility
+        emissiveIntensity: 0.1,
       });
     }
 
     const mesh = new THREE.Mesh(geometry, material);
     mesh.position.set(node.x, node.y, node.z);
-    mesh.userData = { type: 'node', data: node };
+    mesh.userData = { type: 'node', data: node, nodeColor };  // Store color for later use
     
     if (node.glow?.enabled) {
       const glowGeometry = new THREE.BoxGeometry(
-        node.width * 1.2,
+        calculatedWidth * 1.2,
         node.height * 1.2,
-        node.depth * 1.2
+        nodeDepth * 1.2
       );
       
+      // Use the node's color for glow, or the calculated color
+      const glowColor = node.glow.color ?? mesh.userData.nodeColor;
+      
       const glowMaterial = new THREE.MeshBasicMaterial({
-        color: node.glow.color ?? '#ACC196',
+        color: glowColor,
         transparent: true,
         opacity: 0.2,
         side: THREE.BackSide,
@@ -250,7 +266,20 @@ const FxSankey: React.FC<FxSankeyProps> = ({
     linkMeshes.current.set(`${link.source}_${link.target}`, mesh);
 
     if (link.particles?.enabled && particleSystemRef.current) {
-      particleSystemRef.current.createParticles(link, scene);
+      // Pass the source node color to the particle system
+      const sourceNodeMesh = nodeMeshes.current.get(link.source);
+      const particleColor = sourceNodeMesh?.userData.nodeColor || linkColor;
+      
+      // Override the particle color config with the node color
+      const particleLink = {
+        ...link,
+        particles: {
+          ...link.particles,
+          color: particleColor
+        }
+      };
+      
+      particleSystemRef.current.createParticles(particleLink, scene);
     }
 
     return mesh;
@@ -424,9 +453,10 @@ const FxSankey: React.FC<FxSankeyProps> = ({
             
             // Highlight connected links with animation, keep others static
             if (isConnected) {
-              (linkMesh.material as THREE.MeshPhysicalMaterial).opacity = 1.0;
-              (linkMesh.material as THREE.MeshPhysicalMaterial).emissive = (linkMesh.material as THREE.MeshPhysicalMaterial).color;
-              (linkMesh.material as THREE.MeshPhysicalMaterial).emissiveIntensity = 0.4;
+              const mat = linkMesh.material as THREE.MeshPhysicalMaterial;
+              mat.opacity = 1.0;
+              mat.emissive = mat.color.clone();
+              mat.emissiveIntensity = 0.4;
               
               // Optional: Add flow animation only to highlighted segments
               if (flowAnimationRef.current) {

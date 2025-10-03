@@ -47,9 +47,45 @@ const author = authorEntries[0]; // Using the first author as this is a personal
               <li><strong>Email:</strong> <a href={`mailto:${author.data.email}`}>{author.data.email}</a></li>
             </ul>
             
+            <div class="social-icons">
+              {author.data.socialLinks?.linkedin && (
+                <a href={author.data.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" class="social-icon" title="LinkedIn">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                    <rect x="2" y="9" width="4" height="12"></rect>
+                    <circle cx="4" cy="4" r="2"></circle>
+                  </svg>
+                </a>
+              )}
+              {author.data.socialLinks?.github && (
+                <a href={author.data.socialLinks.github} target="_blank" rel="noopener noreferrer" class="social-icon" title="GitHub">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                  </svg>
+                </a>
+              )}
+              {author.data.socialLinks?.bluesky && (
+                <a href={author.data.socialLinks.bluesky} target="_blank" rel="noopener noreferrer" class="social-icon" title="Bluesky">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 19c1.768-1.768 4.243-5.303 4.243-8.243C16.243 7.817 14.426 6 12 6s-4.243 1.817-4.243 4.757c0 2.94 2.475 6.475 4.243 8.243z"></path>
+                    <path d="M12 19c-1.768-1.768-4.243-5.303-4.243-8.243C7.757 7.817 9.574 6 12 6s4.243 1.817 4.243 4.757c0 2.94-2.475 6.475-4.243 8.243z"></path>
+                  </svg>
+                </a>
+              )}
+              <a href="/resume" class="social-icon" title="Resume">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+              </a>
+            </div>
+            
             <div class="profile-cta">
               <a href="/portfolio" class="btn btn-primary">View Portfolio</a>
-              <a href="/resume.pdf" class="btn btn-secondary">Download Resume</a>
+              <a href="/resume" class="btn btn-secondary">View Resume</a>
             </div>
           </div>
         </div>
@@ -361,6 +397,54 @@ const author = authorEntries[0]; // Using the first author as this is a personal
 
   .profile-list li {
     margin-bottom: 0.75rem;
+  }
+
+  .social-icons {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(121, 148, 150, 0.1);
+    justify-content: center;
+  }
+
+  html.dark .social-icons {
+    border-top-color: rgba(172, 193, 150, 0.1);
+  }
+
+  .social-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: rgba(121, 148, 150, 0.1);
+    color: var(--color-tertiary);
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    text-decoration: none;
+  }
+
+  html.dark .social-icon {
+    background: rgba(172, 193, 150, 0.1);
+    color: var(--color-accent);
+  }
+
+  .social-icon:hover {
+    transform: translateY(-3px);
+    background: var(--color-tertiary);
+    color: white;
+    box-shadow: 0 4px 8px rgba(20, 8, 14, 0.15);
+  }
+
+  html.dark .social-icon:hover {
+    background: var(--color-accent);
+    color: #23232b;
+  }
+
+  .social-icon svg {
+    width: 20px;
+    height: 20px;
   }
 
   .profile-cta {
