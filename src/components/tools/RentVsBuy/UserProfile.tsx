@@ -76,10 +76,10 @@ export default function UserProfile({ profile, onChange }: UserProfileProps): Re
         <ProfileCard
           title="Filing Status"
           description="Your tax filing status affects deductions"
-          options={[
-            { id: 'single', label: 'Single', icon: '👤', description: '$14,600 standard deduction' },
-            { id: 'married', label: 'Married', icon: '👥', description: '$29,200 standard deduction' }
-          ]}
+           options={[
+             { id: 'single', label: 'Single', icon: 'Person', description: '$14,600 standard deduction' },
+             { id: 'married', label: 'Married', icon: 'People', description: '$29,200 standard deduction' }
+           ]}
           selected={profile.filingStatus}
           onSelect={(value) => updateProfile('filingStatus', value as 'single' | 'married')}
         />
@@ -87,10 +87,10 @@ export default function UserProfile({ profile, onChange }: UserProfileProps): Re
         <ProfileCard
           title="Current Housing"
           description="Do you currently own a home?"
-          options={[
-            { id: 'yes', label: 'Homeowner', icon: '🏠', description: 'I own my current home' },
-            { id: 'no', label: 'Renter', icon: '🏢', description: 'I currently rent' }
-          ]}
+           options={[
+             { id: 'yes', label: 'Homeowner', icon: 'Home', description: 'I own my current home' },
+             { id: 'no', label: 'Renter', icon: 'Building', description: 'I currently rent' }
+           ]}
           selected={profile.currentHomeowner === null ? null : profile.currentHomeowner ? 'yes' : 'no'}
           onSelect={(value) => updateProfile('currentHomeowner', value === 'yes')}
         />
@@ -99,10 +99,10 @@ export default function UserProfile({ profile, onChange }: UserProfileProps): Re
           <ProfileCard
             title="Selling Plans"
             description="Will you sell your current home?"
-            options={[
-              { id: 'yes', label: 'Selling', icon: '💰', description: 'Proceeds for down payment' },
-              { id: 'no', label: 'Keeping', icon: '🔑', description: 'Investment property' }
-            ]}
+             options={[
+               { id: 'yes', label: 'Selling', icon: 'Money', description: 'Proceeds for down payment' },
+               { id: 'no', label: 'Keeping', icon: 'Key', description: 'Investment property' }
+             ]}
             selected={profile.sellingCurrentHome === null ? null : profile.sellingCurrentHome ? 'yes' : 'no'}
             onSelect={(value) => updateProfile('sellingCurrentHome', value === 'yes')}
           />
@@ -111,11 +111,11 @@ export default function UserProfile({ profile, onChange }: UserProfileProps): Re
         <ProfileCard
           title="Market Outlook"
           description="Your view on the housing market"
-          options={[
-            { id: 'hot', label: 'Hot Market', icon: '🔥', description: 'Prices rising fast' },
-            { id: 'stable', label: 'Stable', icon: '⚖️', description: 'Normal appreciation' },
-            { id: 'cooling', label: 'Cooling', icon: '❄️', description: 'Prices may decline' }
-          ]}
+           options={[
+             { id: 'hot', label: 'Hot Market', icon: 'Hot', description: 'Prices rising fast' },
+             { id: 'stable', label: 'Stable', icon: 'Balance', description: 'Normal appreciation' },
+             { id: 'cooling', label: 'Cooling', icon: 'Cool', description: 'Prices may decline' }
+           ]}
           selected={profile.marketOutlook}
           onSelect={(value) => updateProfile('marketOutlook', value as 'hot' | 'stable' | 'cooling')}
         />
@@ -123,11 +123,11 @@ export default function UserProfile({ profile, onChange }: UserProfileProps): Re
         <ProfileCard
           title="Investment Style"
           description="If you rent, how would you invest?"
-          options={[
-            { id: 'conservative', label: 'Conservative', icon: '🛡️', description: '4-5% returns' },
-            { id: 'moderate', label: 'Moderate', icon: '📊', description: '7-8% returns' },
-            { id: 'aggressive', label: 'Aggressive', icon: '🚀', description: '10%+ returns' }
-          ]}
+           options={[
+             { id: 'conservative', label: 'Conservative', icon: 'Shield', description: '4-5% returns' },
+             { id: 'moderate', label: 'Moderate', icon: 'Chart', description: '7-8% returns' },
+             { id: 'aggressive', label: 'Aggressive', icon: 'Rocket', description: '10%+ returns' }
+           ]}
           selected={profile.investmentConfidence}
           onSelect={(value) => updateProfile('investmentConfidence', value as 'conservative' | 'moderate' | 'aggressive')}
         />
@@ -138,13 +138,13 @@ export default function UserProfile({ profile, onChange }: UserProfileProps): Re
         <ul className="insights-list">
           {profile.filingStatus && (
             <li>
-              <span className="insight-icon">📋</span>
+               <span className="insight-icon">List</span>
               Your {profile.filingStatus === 'married' ? 'married' : 'single'} filing status affects tax deductions
             </li>
           )}
           {profile.currentHomeowner !== null && (
             <li>
-              <span className="insight-icon">🏠</span>
+               <span className="insight-icon">Home</span>
               {profile.currentHomeowner 
                 ? 'As a current homeowner, you may have equity to leverage'
                 : 'First-time buyer programs may be available to you'}
@@ -152,7 +152,7 @@ export default function UserProfile({ profile, onChange }: UserProfileProps): Re
           )}
           {profile.marketOutlook && (
             <li>
-              <span className="insight-icon">📈</span>
+               <span className="insight-icon">Trend</span>
               {profile.marketOutlook === 'hot' && 'Hot markets favor buying sooner to lock in prices'}
               {profile.marketOutlook === 'stable' && 'Stable markets provide predictable appreciation'}
               {profile.marketOutlook === 'cooling' && 'Cooling markets may offer better buying opportunities later'}
@@ -160,7 +160,7 @@ export default function UserProfile({ profile, onChange }: UserProfileProps): Re
           )}
           {profile.investmentConfidence && (
             <li>
-              <span className="insight-icon">💼</span>
+               <span className="insight-icon">Briefcase</span>
               Your {profile.investmentConfidence} investment approach impacts opportunity cost calculations
             </li>
           )}

@@ -11,7 +11,7 @@ export default function ValidationWarnings({ warnings }: ValidationWarningsProps
   return (
     <div className="validation-warnings">
       <div className="warnings-header">
-        <span className="warning-icon">⚠️</span>
+         <span className="warning-icon">Warning</span>
         <h4>Analysis Insights</h4>
       </div>
       <div className="warnings-content">

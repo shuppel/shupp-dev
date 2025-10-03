@@ -202,7 +202,7 @@ export default function ComparisonChart({ results, chartType = 'cumulative' }: C
       {breakEvenYears !== null && (
         <div className="chart-insights">
           <p className="insight-text">
-            <span className="insight-icon">💡</span>
+             <span className="insight-icon">Insight</span>
             {chartType === 'cumulative' && `The break-even point occurs at ${breakEvenYears} years, where buying becomes more cost-effective than renting.`}
             {chartType === 'wealth' && `Your net wealth when ${results.netAdvantage > 0 ? 'buying' : 'renting'} exceeds the alternative by ${formatCurrency(Math.abs(results.netAdvantage))}.`}
             {chartType === 'monthly' && `Monthly costs ${results.monthlyData[results.monthlyData.length - 1].buyingCost > results.monthlyData[results.monthlyData.length - 1].rentingCost ? 'for buying remain higher' : 'for renting become higher'} by the end of your analysis period.`}

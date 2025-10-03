@@ -1,30 +1,13 @@
 ---
 // This component will be dynamically loaded on the tool page
+import Calculator from './RentVsSell/Calculator.tsx';
 ---
 
 <div id="rent-vs-sell-calculator" class="tool-container">
   <div class="calculator-wrapper">
-    <!-- React component will mount here -->
-    <div class="loading-state">
-      <div class="spinner"></div>
-      <p>Loading calculator...</p>
-    </div>
+    <Calculator client:load />
   </div>
 </div>
-
-<script>
-  // Dynamic import and mount of React component
-  document.addEventListener('DOMContentLoaded', async () => {
-    try {
-      const { mount } = await import('./RentVsSell/mount');
-      mount();
-    } catch (error) {
-      console.error('Failed to load calculator:', error);
-      document.querySelector('.calculator-wrapper')!.innerHTML = 
-        '<p class="error-message">Failed to load calculator. Please refresh the page.</p>';
-    }
-  });
-</script>
 
 <style>
   .tool-container {

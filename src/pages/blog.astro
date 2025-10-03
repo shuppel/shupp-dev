@@ -1,6 +1,7 @@
 ---
 import { getCollection } from 'astro:content';
 import Layout from '../layouts/Layout.astro';
+import Icon from '../components/Icon/Icon.astro';
 
 // Get all blog posts
 const allPosts = await getCollection('blog');
@@ -10,836 +11,432 @@ const posts = allPosts.sort((a, b) => {
   return new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime();
 });
 
-// Get unique categories
-const categories = [...new Set(allPosts.flatMap(post => post.data.categories))];
 
-// Pagination configuration
-const postsPerPage = 5;
-const totalPages = Math.ceil(posts.length / postsPerPage);
 ---
 
 <Layout title="Blog" description="Articles and insights on product management, software development, UX design, and more">
   <div class="blog-page">
     <section class="blog-hero">
-      <h1>My Blog</h1>
-      <p class="lead">Thoughts on product management, software development, and technology trends</p>
+      <div class="blog-header">
+        <Icon name="Article" size={48} weight="duotone" liquid={true} inkEffect="medium" />
+        <h1>Blog</h1>
+      </div>
+      <p class="lead">Thoughts on product management, software development, and technology</p>
     </section>
 
     <div class="blog-container">
-      <main class="blog-main">
-        <div class="blog-filters">
-          <div class="search-container">
-            <input type="text" id="blog-search" placeholder="Search articles..." class="search-input">
-          </div>
-        </div>
+      <!-- Left sidebar index -->
+      <aside class="blog-index">
+        <div class="index-sticky">
+          <h3 class="index-title">
+            <Icon name="ListBullets" size={20} weight="duotone" />
+            <span>Quick Navigation</span>
+          </h3>
+          
 
-        <div class="blog-grid">
+
+          <nav class="index-list">
+            <div class="index-group">
+              <h4 class="index-group-title">Recent Posts</h4>
+              {posts.slice(0, 10).map(post => (
+                <a href={`#${post.slug}`} class="index-item" data-slug={post.slug}>
+                  <span class="index-date">
+                    {new Date(post.data.pubDate).toLocaleDateString('en-US', { 
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </span>
+                  <span class="index-title">{post.data.title}</span>
+                </a>
+              ))}
+            </div>
+            
+            {posts.length > 10 && (
+              <button id="show-all-posts" class="show-more-btn">
+                <Icon name="CaretDown" size={16} />
+                Show all {posts.length} posts
+              </button>
+            )}
+            
+            <div id="all-posts" class="index-group hidden">
+              <h4 class="index-group-title">All Posts</h4>
+              {posts.slice(10).map(post => (
+                <a href={`#${post.slug}`} class="index-item" data-slug={post.slug}>
+                  <span class="index-date">
+                    {new Date(post.data.pubDate).toLocaleDateString('en-US', { 
+                      month: 'short',
+                      day: 'numeric',
+                      year: '2-digit'
+                    })}
+                  </span>
+                  <span class="index-title">{post.data.title}</span>
+                </a>
+              ))}
+            </div>
+          </nav>
+
+
+        </div>
+      </aside>
+
+      <!-- Main blog content -->
+      <section class="blog-main">
+        <div class="blog-list">
           {posts.map(post => (
-            <article class="blog-card two-tone-card">
-              <a href={`/blog/${post.slug}`} class="blog-card-link">
-                <div class="blog-card-image">
-                  <div class="blog-image-placeholder">
-                    {post.data.featuredImage && (
-                      <div class="placeholder-text">{post.data.featuredImage}</div>
+            <article class="blog-item" id={post.slug}>
+              <a href={`/blog/${post.slug}`} class="blog-link">
+                <div class="blog-content">
+                  <div class="blog-meta">
+                    <span class="blog-date">
+                      <Icon name="CalendarBlank" size={14} />
+                      {new Date(post.data.pubDate).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </span>
+                    {post.data.readTime && (
+                      <span class="blog-read-time">
+                        <Icon name="Clock" size={14} />
+                        {post.data.readTime}
+                      </span>
                     )}
                   </div>
-                </div>
-                <div class="blog-card-content">
-                  <div class="blog-card-meta">
-                    <span class="blog-date">{new Date(post.data.pubDate).toLocaleDateString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}</span>
-                    <span class="blog-read-time">{post.data.readTime}</span>
-                  </div>
-                  <h2 class="blog-card-title">{post.data.title}</h2>
-                  <p class="blog-card-description">{post.data.description}</p>
-                  <div class="blog-categories">
-                    {post.data.categories?.map(category => (
-                      <span class="blog-category">{category}</span>
-                    )) || []}
-                  </div>
-                  <div class="read-more-container">
-                    <span class="read-more">Read Article</span>
-                  </div>
+                  <h2 class="blog-title">{post.data.title}</h2>
+                  <p class="blog-description">{post.data.description}</p>
+
                 </div>
               </a>
             </article>
           ))}
         </div>
-
-        {totalPages > 1 && (
-          <div class="blog-pagination">
-            {Array.from({ length: totalPages }).map((_, index) => (
-              <button class={`pagination-btn ${index === 0 ? 'active' : ''}`} data-page={index + 1}>
-                {index + 1}
-              </button>
-            ))}
-            {totalPages > 1 && (
-              <button class="pagination-btn pagination-next" data-page="2">
-                Next →
-              </button>
-            )}
-          </div>
-        )}
-      </main>
-
-      <aside class="blog-sidebar">
-        <div class="sidebar-widget card-base card-glow">
-          <h3 class="widget-title">Categories</h3>
-          <ul class="category-list">
-            {categories.map(category => (
-              <li class="category-item">
-                <a href={`/blog?category=${category}`} class="category-link" data-category={category}>{category}</a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div class="sidebar-widget card-base card-glow">
-          <h3 class="widget-title">Popular Posts</h3>
-          <ul class="popular-posts">
-            {posts.slice(0, 3).map(post => (
-              <li class="popular-post">
-                <a href={`/blog/${post.slug}`}>
-                  <span class="popular-post-title">{post.data.title}</span>
-                  <span class="popular-post-date">{new Date(post.data.pubDate).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                  })}</span>
-                </a>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        <div class="sidebar-widget card-base card-glow">
-          <h3 class="widget-title">Subscribe</h3>
-          <div class="subscribe-form">
-            <p>Get notified about new articles and updates.</p>
-            <div class="form-group">
-              <input type="email" placeholder="Your email address" class="form-input">
-              <button class="btn btn-primary">Subscribe</button>
-            </div>
-          </div>
-        </div>
-      </aside>
+      </section>
     </div>
   </div>
-</Layout>
 
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    // Search functionality
-    const searchInput = document.getElementById('blog-search');
-    const blogCards = document.querySelectorAll('.blog-card');
-    const blogGrid = document.querySelector('.blog-grid');
-    const paginationButtons = document.querySelectorAll('.pagination-btn');
-
-    // Number of posts per page
-    const postsPerPage = 5;
-    let currentPage = 1;
-    let filteredPosts = [...blogCards]; // Store all posts for filtering/pagination
-
-    // Function to update post visibility based on pagination
-    const updatePostsDisplay = () => {
-      if (filteredPosts.length === 0) {
-        // No matching posts
-        if (blogGrid) {
-          blogGrid.innerHTML = '<div class="no-results">No posts match your search criteria.</div>';
-        }
-        return;
-      }
-
-      // Calculate pagination
-      const startIndex = (currentPage - 1) * postsPerPage;
-      const endIndex = startIndex + postsPerPage;
-
-      // Hide all filtered posts first
-      filteredPosts.forEach(post => {
-        (post as HTMLElement).style.display = 'none';
-      });
-
-      // Show only posts for current page
-      filteredPosts.slice(startIndex, endIndex).forEach(post => {
-        (post as HTMLElement).style.display = 'block';
-      });
-
-      // Update pagination buttons
-      if (paginationButtons.length) {
-        updatePaginationButtons();
-      }
-    };
-
-    // Update pagination buttons active state
-    const updatePaginationButtons = () => {
-      const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
-
-      // Update page number buttons
-      paginationButtons.forEach(button => {
-        if ((button as HTMLElement).classList.contains('pagination-next')) {
-          // Update next button
-          const nextPage = Math.min(currentPage + 1, totalPages);
-          (button as HTMLElement).setAttribute('data-page', nextPage.toString());
-          (button as HTMLElement).style.display = currentPage < totalPages ? 'block' : 'none';
-        } else {
-          // Regular page buttons
-          const dataPage = (button as HTMLElement).getAttribute('data-page');
-          const buttonPage = dataPage ? parseInt(dataPage) : NaN;
-          if (buttonPage) {
-            (button as HTMLElement).classList.toggle('active', buttonPage === currentPage);
-            // Hide page buttons beyond total pages
-            (button as HTMLElement).style.display = buttonPage <= totalPages ? 'block' : 'none';
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      // Show all posts toggle
+      const showAllBtn = document.getElementById('show-all-posts');
+      const allPostsSection = document.getElementById('all-posts');
+      
+      if (showAllBtn && allPostsSection) {
+        showAllBtn.addEventListener('click', () => {
+          allPostsSection.classList.toggle('hidden');
+          const icon = showAllBtn.querySelector('svg');
+          if (icon) {
+            icon.style.transform = allPostsSection.classList.contains('hidden') ? 'rotate(0deg)' : 'rotate(180deg)';
           }
-        }
-      });
-    };
-
-    // Search functionality
-    if (searchInput && searchInput instanceof HTMLInputElement) {
-      searchInput.addEventListener('input', () => {
-        const searchTerm = searchInput.value.toLowerCase();
-
-        // Filter posts based on search term
-        filteredPosts = [...blogCards].filter(card => {
-          const title = card.querySelector('.blog-card-title')?.textContent?.toLowerCase() ?? '';
-          const excerpt = card.querySelector('.blog-card-description')?.textContent?.toLowerCase() ?? '';
-          const categories = Array.from(card.querySelectorAll('.blog-category')).map(cat => cat.textContent?.toLowerCase() ?? '');
-
-          return title.includes(searchTerm) ||
-                 excerpt.includes(searchTerm) ||
-                 categories.some(cat => cat.includes(searchTerm));
+          showAllBtn.innerHTML = allPostsSection.classList.contains('hidden') 
+            ? showAllBtn.innerHTML.replace('Hide', 'Show all')
+            : showAllBtn.innerHTML.replace('Show all', 'Hide');
         });
-
-        // Reset to first page when search changes
-        currentPage = 1;
-        updatePostsDisplay();
-      });
-    }
-
-    // Pagination click handlers
-    paginationButtons.forEach(button => {
-      (button as HTMLElement).addEventListener('click', () => {
-        const dataPage = (button as HTMLElement).getAttribute('data-page');
-        if (!dataPage) return;
-        const newPage = parseInt(dataPage);
-        if (newPage && newPage !== currentPage) {
-          currentPage = newPage;
-          updatePostsDisplay();
-          // Scroll back to top of blog section
-          document.querySelector('.blog-container')?.scrollIntoView({ behavior: 'smooth' });
-        }
-      });
-    });
-
-    // Category filtering
-    const categoryLinks = document.querySelectorAll('.category-link');
-
-    categoryLinks.forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-
-        const dataCategory = link.getAttribute('data-category');
-        if (!dataCategory) return;
-        const selectedCategory = dataCategory.toLowerCase();
-
-        // Filter posts based on category
-        filteredPosts = [...blogCards].filter(card => {
-          const cardCategories = Array.from(card.querySelectorAll('.blog-category')).map(cat => cat.textContent?.toLowerCase() ?? '');
-          return cardCategories.includes(selectedCategory);
-        });
-
-        // Reset to first page and update display
-        currentPage = 1;
-        updatePostsDisplay();
-
-        // Update active state for category links
-        categoryLinks.forEach(catLink => {
-          catLink.classList.remove('active');
-        });
-        link.classList.add('active');
-
-        // Reset search input
-        if (searchInput && searchInput instanceof HTMLInputElement) {
-          searchInput.value = '';
-        }
-      });
-    });
-
-    // Handle URL query parameters for filtering
-    const urlParams = new URLSearchParams(window.location.search);
-    const categoryParam = urlParams.get('category');
-
-    if (categoryParam) {
-      // Find the corresponding category link and click it to apply filter
-      const categoryLink = Array.from(categoryLinks).find(link => {
-        const dataCategory = link.getAttribute('data-category');
-        return dataCategory && dataCategory.toLowerCase() === categoryParam.toLowerCase();
-      });
-      if (categoryLink) {
-        // Dispatch a click event instead of using .click()
-        categoryLink.dispatchEvent(new Event('click'));
       }
-    } else {
-      // Initial pagination setup if no category filter
-      updatePostsDisplay();
-    }
-  });
-</script>
+
+
+
+
+
+      // Smooth scroll to blog post when clicking index item
+      indexItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.preventDefault();
+          const slug = (item as HTMLElement).dataset.slug;
+          const target = document.getElementById(slug || '');
+          if (target) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Highlight the post briefly
+            target.style.background = 'var(--primary-color)10';
+            setTimeout(() => {
+              target.style.background = '';
+            }, 2000);
+          }
+        });
+      });
+    });
+  </script>
+</Layout>
 
 <style>
   .blog-page {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
+    padding: 4rem 1.5rem;
   }
 
-  .blog-hero {
-    text-align: center;
-    padding: 4rem 0 3rem;
-    background: linear-gradient(135deg, rgba(121, 148, 150, 0.2), rgba(172, 193, 150, 0.3), rgba(233, 235, 158, 0.2));
-    border-radius: 12px;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-    transition: background 0.3s, color 0.3s;
-  }
+   /* Hero Section */
+   .blog-hero {
+     margin-bottom: 3rem;
+   }
 
-  html.dark .blog-hero {
-    background: linear-gradient(135deg, rgba(44, 44, 56, 0.8), rgba(30, 32, 40, 0.9));
-  }
-
-  .blog-hero::before {
-    content: "";
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(ellipse at center, rgba(233, 235, 158, 0), rgba(233, 235, 158, 0.2));
-    opacity: 0.7;
-    animation: liquid-wave 15s ease-in-out infinite alternate;
-  z-index: 0;
-    pointer-events: none;
-  }
-
-  @keyframes liquid-wave {
-    0% {
-      transform: translate(-10%, -10%) rotate(0deg);
-    }
-    100% {
-      transform: translate(10%, 10%) rotate(360deg);
-    }
-  }
+   .blog-header {
+     display: flex;
+     align-items: center;
+     gap: 1rem;
+     margin-bottom: 1rem;
+   }
 
   .blog-hero h1 {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    background: linear-gradient(45deg, var(--color-dark), var(--color-secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-    position: relative;
-    z-index: 2;
-    letter-spacing: 0.15em;
-    text-transform: lowercase;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
   }
 
-  html.dark .blog-hero h1 {
-    background: linear-gradient(45deg, #f3f4f6, #e9eb9e);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-  }
+   .lead {
+     font-size: 1.25rem;
+     color: var(--text-light);
+     line-height: 1.6;
+     margin: 0;
+   }
 
-  .blog-hero h1::after {
-    content: "";
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 3px;
-    background: linear-gradient(to right, var(--color-tertiary), var(--color-accent));
-    border-radius: 3px;
-    transition: width 0.3s ease;
-  }
-
-  .blog-hero:hover h1::after {
-    width: 120px;
-  }
-
-  .blog-hero .lead {
-    font-size: 1.25rem;
-    max-width: 700px;
-    margin: 0 auto;
-    color: var(--text-light);
-    position: relative;
-    z-index: 2;
-  }
-
-  html.dark .blog-hero .lead {
-    color: #f3f4f6;
-  }
-
+  /* Container Layout */
   .blog-container {
     display: grid;
-    grid-template-columns: 1fr 300px;
+    grid-template-columns: 280px 1fr;
     gap: 3rem;
-    margin-top: 2rem;
+    align-items: flex-start;
   }
 
-  .blog-filters {
-    margin-bottom: 2rem;
+  /* Blog Index Sidebar */
+  .blog-index {
+    position: sticky;
+    top: 5rem;
+    max-height: calc(100vh - 6rem);
+    overflow-y: auto;
   }
 
-  .search-container {
-    width: 100%;
-    max-width: 500px;
-  }
-
-  .search-input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: 30px;
-    font-size: 1rem;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    background: white;
-  }
-
-  html.dark .search-input {
-    background: #23232b;
-    color: #f3f4f6;
-    border-color: var(--color-tertiary);
-  }
-
-  .search-input:focus {
-    outline: none;
-    border-color: var(--color-tertiary);
-    box-shadow: 0 0 10px rgba(121, 148, 150, 0.2);
-    transform: translateY(-2px);
-  }
-
-  html.dark .search-input:focus {
-    box-shadow: 0 0 10px rgba(172, 193, 150, 0.3);
-  }
-
-  .blog-grid {
-    display: grid;
-    gap: 2.5rem;
-    margin-bottom: 2.5rem;
-  }
-
-  /* Two-tone card styles */
-  .blog-card {
-    background: white;
+  .index-sticky {
+    background: var(--card-bg, white);
     border-radius: 12px;
-    overflow: hidden;
+    padding: 1.5rem;
     box-shadow: var(--card-shadow);
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    position: relative;
-    will-change: transform, box-shadow;
   }
 
-  html.dark .blog-card {
+  html.dark .index-sticky {
     background: #23232b;
-    color: #f3f4f6;
   }
 
-  .blog-card:hover {
-    transform: translateY(-7px) scale(1.01);
-    box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 10px rgba(20, 8, 14, 0.05);
-  }
-
-  .two-tone-card {
+  .index-title {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-color);
   }
 
-  .blog-card-image {
-    height: 200px;
-    overflow: hidden;
-    position: relative;
+
+
+
+
+  .index-group {
+    margin-bottom: 1.5rem;
   }
 
-  .blog-image-placeholder {
+  .index-group.hidden {
+    display: none;
+  }
+
+  .index-group-title {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .index-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.5rem;
+    margin: 0 -0.5rem;
+    border-radius: 6px;
+    text-decoration: none;
+    color: var(--text-color);
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+    cursor: pointer;
+  }
+
+  .index-item:hover {
+    background: var(--primary-color)10;
+    transform: translateX(4px);
+  }
+
+  .index-date {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+    color: var(--text-light);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .index-title {
+    line-height: 1.4;
+  }
+
+  .show-more-btn {
     width: 100%;
-    height: 100%;
-    background: linear-gradient(45deg, var(--color-tertiary), var(--color-secondary));
+    padding: 0.5rem;
+    background: transparent;
+    border: 1px dashed var(--border-color);
+    border-radius: 6px;
+    color: var(--text-light);
+    font-size: 0.85rem;
+    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    color: white;
-    font-weight: bold;
-    font-size: 1.5rem;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-  }
-
-  html.dark .blog-image-placeholder {
-    background: linear-gradient(45deg, #1c1c24, #2a2a36);
-  }
-
-  .blog-card-link {
-    display: block;
-    color: inherit;
-    text-decoration: none;
-  }
-
-  .blog-card-content {
-    padding: 1.8rem;
-    position: relative;
-    z-index: 2;
-    background: white;
-    border-top: 1px solid rgba(121, 148, 150, 0.1);
-  }
-
-  html.dark .blog-card-content {
-    background: #23232b;
-    border-top: 1px solid rgba(172, 193, 150, 0.1);
-  }
-
-  .blog-card-meta {
-    display: flex;
-    justify-content: space-between;
-    color: var(--text-light);
-    font-size: 0.9rem;
-    margin-bottom: 1rem;
-  }
-
-  html.dark .blog-card-meta {
-    color: var(--color-accent);
-  }
-
-  .blog-card-title {
-    margin-bottom: 1rem;
-    color: var(--color-dark);
-    transition: color 0.3s ease;
-    position: relative;
-    display: inline-block;
-  }
-
-  html.dark .blog-card-title {
-    color: #f3f4f6;
-  }
-
-  .blog-card-description {
-    color: var(--text-light);
-    margin-bottom: 1.5rem;
-    line-height: 1.6;
-  }
-
-  html.dark .blog-card-description {
-    color: #c5c5d2;
-  }
-
-  .blog-categories {
-    display: flex;
-    flex-wrap: wrap;
     gap: 0.5rem;
-    margin-top: 0.5rem;
+    transition: all 0.2s ease;
+    margin-bottom: 1rem;
   }
 
-  .blog-category {
+  .show-more-btn:hover {
     background: var(--background-alt);
-    color: var(--text-light);
-    font-size: 0.8rem;
-    padding: 0.25rem 0.7rem;
-    border-radius: 4px;
-    transition: all 0.3s ease;
+    border-style: solid;
   }
 
-  html.dark .blog-category {
-    background: rgba(233, 235, 158, 0.1);
-    color: var(--color-accent);
+  .show-more-btn svg {
+    transition: transform 0.3s ease;
   }
 
-  .read-more-container {
-    margin-top: 1.5rem;
+
+
+  /* Blog Main Content */
+  .blog-main {
+    min-width: 0;
   }
 
-  /* Pagination styles with improved dark mode */
-  .blog-pagination {
+  .blog-list {
     display: flex;
-    justify-content: center;
-    gap: 0.5rem;
-    margin-top: 2rem;
+    flex-direction: column;
+    gap: 0;
   }
 
-  .pagination-btn, .pagination-ellipsis {
-    padding: 0.5rem 1rem;
-    border: 1px solid var(--color-tertiary);
-    border-radius: 30px;
-    background: white;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-  }
-
-  html.dark .pagination-btn,
-  html.dark .pagination-ellipsis {
-    background: #23232b;
-    color: #f3f4f6;
-    border-color: var(--color-accent);
-  }
-
-  .pagination-btn:hover {
-    border-color: var(--color-tertiary);
-    color: white;
-    background: var(--color-tertiary);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(121, 148, 150, 0.2);
-  }
-
-  html.dark .pagination-btn:hover {
-    border-color: var(--color-accent);
-    background: var(--color-accent);
-    color: #23232b;
-    box-shadow: 0 4px 8px rgba(172, 193, 150, 0.3);
-  }
-
-  .pagination-btn.active {
-    background: var(--color-tertiary);
-    color: white;
-    border-color: var(--color-tertiary);
-  }
-
-  html.dark .pagination-btn.active {
-    background: var(--color-accent);
-    color: #23232b;
-    border-color: var(--color-accent);
-  }
-
-  /* Sidebar */
-  .blog-sidebar {
-    position: sticky;
-    top: 2rem;
-    align-self: start;
-  }
-
-  .sidebar-widget {
-    padding: 1.8rem;
-    margin-bottom: 2rem;
-  }
-
-  .widget-title {
-    margin-bottom: 1.25rem;
-    position: relative;
-    padding-bottom: 0.75rem;
-    font-size: 1.25rem;
-    color: var(--color-dark);
-  }
-
-  html.dark .widget-title {
-    color: #f3f4f6;
-  }
-
-  .widget-title::after {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 40px;
-    height: 3px;
-    background: linear-gradient(to right, var(--color-tertiary), var(--color-accent));
-    border-radius: 3px;
-    transition: width 0.3s ease;
-  }
-
-  .sidebar-widget:hover .widget-title::after {
-    width: 60px;
-  }
-
-  .category-list {
-    list-style: none;
-    padding: 0;
-  }
-
-  .category-item {
-    margin-bottom: 0.75rem;
-  }
-
-  .category-link {
-    display: block;
-    color: var(--text-color);
-    text-decoration: none;
-    transition: all 0.3s ease;
-    padding: 0.4rem 0;
-    position: relative;
-  }
-
-  html.dark .category-link {
-    color: #c5c5d2;
-  }
-
-  .category-link::before {
-    content: '›';
-    position: absolute;
-    left: -15px;
-    color: var(--color-tertiary);
-    opacity: 0;
-    transform: translateX(-5px);
+  .blog-item {
+    border-bottom: 1px solid var(--border-color);
     transition: all 0.3s ease;
   }
 
-  .category-link:hover, .category-link.active {
-    color: var(--color-tertiary);
-    transform: translateX(8px);
-  }
-
-  html.dark .category-link:hover,
-  html.dark .category-link.active {
-    color: var(--color-accent);
-  }
-
-  .category-link:hover::before,
-  .category-link.active::before {
-    opacity: 1;
-    transform: translateX(0);
-  }
-
-  .popular-posts {
-    list-style: none;
-    padding: 0;
-  }
-
-  .popular-post {
-    margin-bottom: 1.2rem;
-    padding-bottom: 1.2rem;
-    border-bottom: 1px solid rgba(121, 148, 150, 0.2);
-    transition: all 0.3s ease;
-  }
-
-  html.dark .popular-post {
-    border-bottom-color: rgba(172, 193, 150, 0.2);
-  }
-
-  .popular-post:last-child {
-    margin-bottom: 0;
-    padding-bottom: 0;
+  .blog-item:last-child {
     border-bottom: none;
   }
 
-  .popular-post a {
+  .blog-link {
     display: block;
-    color: var(--text-color);
     text-decoration: none;
-    transition: all 0.3s ease;
-    padding: 0.3rem 0.5rem;
-    border-radius: 6px;
-    margin-left: -0.5rem;
+    color: inherit;
+    padding: 2.5rem 0;
+    transition: opacity 0.2s ease;
   }
 
-  html.dark .popular-post a {
-    color: #f3f4f6;
+  .blog-link:hover {
+    opacity: 0.8;
   }
 
-  .popular-post a:hover {
-    color: var(--color-tertiary);
-    background: rgba(121, 148, 150, 0.08);
-    transform: translateX(5px);
+  .blog-link:hover .blog-title {
+    color: var(--primary-color);
   }
 
-  html.dark .popular-post a:hover {
-    color: var(--color-accent);
-    background: rgba(172, 193, 150, 0.08);
+  .blog-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
   }
 
-  .popular-post-title {
-    display: block;
-    font-weight: 500;
-    margin-bottom: 0.25rem;
-  }
-
-  .popular-post-date {
-    display: block;
-    font-size: 0.85rem;
-    color: var(--color-tertiary);
-  }
-
-  html.dark .popular-post-date {
-    color: var(--color-accent);
-  }
-
-  .subscribe-form p {
-    margin-bottom: 1.2rem;
+  .blog-meta {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    font-size: 0.9rem;
     color: var(--text-light);
   }
 
-  html.dark .subscribe-form p {
-    color: #c5c5d2;
+  .blog-meta span {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
   }
 
-  .form-group {
-    display: grid;
-    gap: 1rem;
+  .blog-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 1.3;
+    color: var(--text-color);
+    transition: color 0.2s ease;
+    margin: 0.25rem 0;
   }
 
-  .form-input {
-    width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid var(--border-color);
-    border-radius: 30px;
-    font-size: 0.9rem;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    background: white;
+  .blog-description {
+    color: var(--text-light);
+    line-height: 1.6;
+    font-size: 1.05rem;
+    margin: 0;
   }
 
-  html.dark .form-input {
-    background: #23232b;
-    color: #f3f4f6;
-    border-color: var(--color-tertiary);
-  }
 
-  .form-input:focus {
-    outline: none;
-    border-color: var(--color-tertiary);
-    box-shadow: 0 0 10px rgba(121, 148, 150, 0.2);
-    transform: translateY(-2px);
-  }
 
-  html.dark .form-input:focus {
-    box-shadow: 0 0 10px rgba(172, 193, 150, 0.3);
-  }
-
-  @media (max-width: 900px) {
+  /* Responsive */
+  @media (max-width: 1024px) {
     .blog-container {
       grid-template-columns: 1fr;
     }
 
-    .blog-sidebar {
+    .blog-index {
       position: static;
-      margin-top: 3rem;
+      margin-bottom: 2rem;
+      max-height: none;
+    }
+
+    .index-sticky {
+      max-width: 100%;
     }
   }
 
-  .no-results {
-    padding: 3rem 1rem;
-    text-align: center;
-    color: var(--text-light);
-    font-size: 1.1rem;
-    background: rgba(121, 148, 150, 0.05);
-    border-radius: 12px;
-    border: 1px dashed var(--color-tertiary);
-  }
+   @media (max-width: 768px) {
+     .blog-page {
+       padding: 3rem 1rem;
+     }
 
-  html.dark .no-results {
-    background: rgba(44, 44, 56, 0.2);
-    color: #c5c5d2;
-    border-color: var(--color-accent);
-  }
+     .blog-header {
+       flex-direction: column;
+       text-align: center;
+     }
 
-  @media (max-width: 768px) {
-    .blog-hero h1 {
-      font-size: 2.5rem;
+     .blog-hero h1 {
+       font-size: 2rem;
+     }
+
+     .lead {
+       font-size: 1.1rem;
+     }
+
+    .blog-link {
+      padding: 2rem 0;
     }
 
-    .card-image {
-      height: 180px;
+    .blog-title {
+      font-size: 1.3rem;
+    }
+
+    .blog-description {
+      font-size: 1rem;
     }
   }
+
+  /* Dark mode enhancements */
+  html.dark .blog-item {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  html.dark .blog-link:hover {
+    background: rgba(255, 255, 255, 0.02);
+  }
+
+
 </style>

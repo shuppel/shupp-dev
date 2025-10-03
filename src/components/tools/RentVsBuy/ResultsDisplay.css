@@ -22,26 +22,14 @@
   border: 2px solid rgba(172, 193, 150, 0.2);
   border-radius: 24px;
   text-align: center;
-  overflow: hidden;
-  animation: liquidGlow 4s ease-in-out infinite;
-  min-height: 200px;
+   overflow: hidden;
+   min-height: 200px;
   display: flex;
   flex-direction: column;
   justify-content: center;
 }
 
-@keyframes liquidGlow {
-  0%, 100% { 
-    box-shadow: 
-      0 0 20px rgba(172, 193, 150, 0.1),
-      inset 0 1px 0 rgba(233, 235, 158, 0.1);
-  }
-  50% { 
-    box-shadow: 
-      0 0 30px rgba(172, 193, 150, 0.2),
-      inset 0 1px 0 rgba(233, 235, 158, 0.2);
-  }
-}
+
 
 .recommendation-card::before {
   content: '';
@@ -55,14 +43,10 @@
     transparent,
     rgba(233, 235, 158, 0.1),
     transparent
-  );
-  animation: liquidSweep 8s ease-in-out infinite;
-}
+   );
+ }
 
-@keyframes liquidSweep {
-  0%, 100% { left: -100%; }
-  50% { left: 100%; }
-}
+
 
 .recommendation-header {
   display: flex;
@@ -90,26 +74,25 @@
   border-radius: 50px;
   position: relative;
   overflow: hidden;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  animation: liquidBounce 3s ease-in-out infinite;
-}
+   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+ }
 
 @keyframes liquidBounce {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
 }
 
-.recommendation-badge.buy {
-  background: linear-gradient(135deg, var(--accent-sage), var(--accent-light));
-  color: var(--primary-dark);
-  box-shadow: 0 8px 25px rgba(172, 193, 150, 0.3);
-}
+ .recommendation-badge.buy {
+   background: var(--accent-sage);
+   color: var(--primary-dark);
+   box-shadow: 0 8px 25px rgba(172, 193, 150, 0.3);
+ }
 
-.recommendation-badge.rent {
-  background: linear-gradient(135deg, var(--accent-teal), var(--accent-sage));
-  color: var(--text-primary);
-  box-shadow: 0 8px 25px rgba(121, 148, 150, 0.3);
-}
+ .recommendation-badge.rent {
+   background: var(--accent-teal);
+   color: var(--text-primary);
+   box-shadow: 0 8px 25px rgba(121, 148, 150, 0.3);
+ }
 
 .recommendation-text {
   font-size: clamp(1rem, 3vw, 1.25rem);
@@ -145,14 +128,7 @@
   left: 0;
   right: 0;
   height: 3px;
-  background: linear-gradient(
-    90deg,
-    var(--accent-sage),
-    var(--accent-light),
-    var(--accent-teal)
-  );
-  background-size: 200% 100%;
-  animation: liquidFlow 3s ease-in-out infinite;
+   background: var(--accent-sage);
 }
 
 @keyframes liquidFlow {
@@ -160,13 +136,12 @@
   50% { background-position: 100% 50%; }
 }
 
-.metric-card:hover {
-  transform: translateY(-4px) scale(1.02);
-  border-color: var(--accent-sage);
-  box-shadow: 
-    0 12px 40px rgba(14, 8, 14, 0.3),
-    0 4px 12px rgba(172, 193, 150, 0.2);
-}
+ .metric-card:hover {
+   border-color: var(--accent-sage);
+   box-shadow:
+     0 12px 40px rgba(14, 8, 14, 0.3),
+     0 4px 12px rgba(172, 193, 150, 0.2);
+ }
 
 .metric-label {
   font-family: var(--font-secondary);
@@ -266,10 +241,9 @@
   transform: translate(-50%, -50%) scale(1);
 }
 
-.wealth-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 15px 40px rgba(14, 8, 14, 0.2);
-}
+ .wealth-card:hover {
+   box-shadow: 0 15px 40px rgba(14, 8, 14, 0.2);
+ }
 
 .wealth-label {
   font-family: var(--font-secondary);
@@ -330,11 +304,10 @@
   transition: all 0.3s ease;
 }
 
-.month-row:hover {
-  background: rgba(73, 71, 91, 0.5);
-  border-color: var(--accent-sage);
-  transform: translateX(8px);
-}
+ .month-row:hover {
+   background: rgba(73, 71, 91, 0.5);
+   border-color: var(--accent-sage);
+ }
 
 .month-label {
   font-family: var(--font-secondary);
@@ -411,9 +384,8 @@
   content: '•';
   position: absolute;
   left: 0;
-  color: var(--accent-sage);
-  font-weight: bold;
-  animation: liquidTwinkle 2s ease-in-out infinite;
+   color: var(--accent-sage);
+   font-weight: bold;
 }
 
 @keyframes liquidTwinkle {
@@ -442,9 +414,8 @@
     var(--accent-light),
     var(--accent-teal),
     var(--accent-sage)
-  );
-  animation: liquidSpin 2s linear infinite;
-}
+   );
+ }
 
 .liquid-loader::before {
   content: '';
@@ -463,9 +434,8 @@
 
 .loading-text {
   color: var(--text-secondary);
-  font-family: var(--font-secondary);
-  font-size: 1.1rem;
-  animation: liquidFade 2s ease-in-out infinite;
+   font-family: var(--font-secondary);
+   font-size: 1.1rem;
 }
 
 /* Responsive Adjustments */

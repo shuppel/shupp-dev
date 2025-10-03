@@ -26,3 +26,7 @@ pnpm-debug.log*
 **/.claude/settings.local.json
 
 **/CLAUDE.local.md
+
+# Screenshots (local development)
+screenshots/
+!screenshots/.gitkeep

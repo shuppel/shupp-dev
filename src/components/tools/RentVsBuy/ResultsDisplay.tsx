@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { House, Key } from '@phosphor-icons/react';
 import type { CalculationResult } from '../../../lib/calculators/rentVsBuy/types';
 import ComparisonChart from './ComparisonChart';
 import './ResultsDisplay.css';
@@ -42,16 +43,14 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps): React.
       <div className="recommendation-card">
         <div className="recommendation-header">
           <h3>Financial Recommendation</h3>
-          <div 
-            className={`recommendation-badge ${isBuyingBetter ? 'buy' : 'rent'}`}
-            role="status"
-            aria-live="polite"
-          >
-            <span role="img" aria-label={isBuyingBetter ? 'House' : 'Key'}>
-              {isBuyingBetter ? '🏠' : '🗝️'}
-            </span>
-            {isBuyingBetter ? 'Buy' : 'Rent'}
-          </div>
+             <div
+             className={`recommendation-badge ${isBuyingBetter ? 'buy' : 'rent'}`}
+             role="status"
+             aria-live="polite"
+           >
+              {isBuyingBetter ? <House size={24} /> : <Key size={24} />}
+             {isBuyingBetter ? 'Buy' : 'Rent'}
+           </div>
         </div>
         <p className="recommendation-text">
           <strong>{isBuyingBetter ? 'Buying' : 'Renting'}</strong> provides better financial outcomes 
@@ -62,22 +61,22 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps): React.
       {/* Key Metrics */}
       <div className="metrics-grid">
         <div className="metric-card">
-          <div className="metric-label">💰 Total Cost (Buying)</div>
+           <div className="metric-label">Total Cost (Buying)</div>
           <div className="metric-value">{formatCurrency(results.totalBuyingCost)}</div>
         </div>
         
         <div className="metric-card">
-          <div className="metric-label">🏠 Total Cost (Renting)</div>
+           <div className="metric-label">Total Cost (Renting)</div>
           <div className="metric-value">{formatCurrency(results.totalRentingCost)}</div>
         </div>
         
         <div className="metric-card">
-          <div className="metric-label">⚡ Break-even Point</div>
+           <div className="metric-label">Break-even Point</div>
           <div className="metric-value">{formatBreakEven(results.breakEvenMonth)}</div>
         </div>
         
         <div className="metric-card">
-          <div className="metric-label">📊 Tax Benefits</div>
+           <div className="metric-label">Tax Benefits</div>
           <div className="metric-value">{formatCurrency(results.totalTaxBenefit)}</div>
         </div>
       </div>
@@ -107,19 +106,19 @@ export default function ResultsDisplay({ results }: ResultsDisplayProps): React.
             className={`chart-type-btn ${chartType === 'cumulative' ? 'active' : ''}`}
             onClick={() => setChartType('cumulative')}
           >
-            📊 Cumulative Costs
+             Cumulative Costs
           </button>
           <button 
             className={`chart-type-btn ${chartType === 'monthly' ? 'active' : ''}`}
             onClick={() => setChartType('monthly')}
           >
-            📈 Monthly Costs
+             Monthly Costs
           </button>
           <button 
             className={`chart-type-btn ${chartType === 'wealth' ? 'active' : ''}`}
             onClick={() => setChartType('wealth')}
           >
-            💰 Wealth Growth
+             Wealth Growth
           </button>
         </div>
         <ComparisonChart results={results} chartType={chartType} />

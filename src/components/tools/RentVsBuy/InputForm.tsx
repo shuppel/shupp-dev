@@ -391,17 +391,14 @@ export default function InputForm({ onSubmit, isCalculating = false, onboardingD
       )}
       
       <div className="form-actions">
-        <button 
-          type="submit" 
-          className="calculate-button"
-          disabled={isCalculating}
-          aria-describedby={isCalculating ? 'calculation-status' : undefined}
-        >
-          <span role="img" aria-hidden="true">
-            {isCalculating ? '⏳' : '🧮'}
-          </span>
-          {isCalculating ? 'Calculating Your Results...' : 'Calculate Rent vs Buy'}
-        </button>
+         <button
+           type="submit"
+           className="calculate-button"
+           disabled={isCalculating}
+           aria-describedby={isCalculating ? 'calculation-status' : undefined}
+         >
+           {isCalculating ? 'Calculating Your Results...' : 'Calculate Rent vs Buy'}
+         </button>
         {isCalculating && (
           <div id="calculation-status" className="calculation-status" role="status" aria-live="polite">
             Analyzing your financial scenario...

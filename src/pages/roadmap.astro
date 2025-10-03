@@ -1,6 +1,7 @@
----
-import Layout from '../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
+ ---
+ import Layout from '../layouts/Layout.astro';
+ import { getCollection } from 'astro:content';
+ import Icon from '../components/Icon/Icon.astro';
 
 // Get all roadmap items and principles
 const roadmapItems = await getCollection('roadmap');
@@ -68,10 +69,13 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
 
 <Layout title="Development Roadmap" description="My future plans and development roadmap">
   <div class="roadmap-page">
-    <section class="roadmap-hero">
-      <h1>Site Dev Roadmap</h1>
-      <p class="lead">plans for this domain. think. think.</p>
-    </section>
+      <section class="roadmap-hero">
+        <div class="roadmap-header">
+          <Icon name="MapTrifold" size={48} weight="duotone" liquid={true} inkEffect="medium" />
+          <h1>Development Roadmap</h1>
+        </div>
+        <p class="lead">My future plans and development roadmap</p>
+      </section>
 
     <section class="roadmap-visualization">
       <div class="liquid-roadmap">
@@ -256,89 +260,30 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
     margin: 0 auto;
   }
 
-  .roadmap-hero {
-    text-align: center;
-    padding: 4rem 0 3rem;
-    background: linear-gradient(135deg, rgba(121, 148, 150, 0.2), rgba(172, 193, 150, 0.3), rgba(233, 235, 158, 0.2));
-    border-radius: 12px;
-    margin-bottom: 2rem;
-    position: relative;
-    overflow: hidden;
-    transition: background 0.3s, color 0.3s;
-  }
+    .roadmap-hero {
+      margin-bottom: 3rem;
+    }
 
-  html.dark .roadmap-hero {
-    background: linear-gradient(135deg, rgba(44, 44, 56, 0.8), rgba(30, 32, 40, 0.9));
-  }
+    .roadmap-header {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
 
-  .roadmap-hero::before {
-    content: "";
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(ellipse at center, rgba(233, 235, 158, 0), rgba(233, 235, 158, 0.2));
-    opacity: 0.7;
-    animation: liquid-wave 15s ease-in-out infinite alternate;
-    z-index: 0;
-    pointer-events: none;
-  }
+    .roadmap-hero h1 {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text-color);
+      margin: 0;
+    }
 
-  .roadmap-hero h1 {
-    font-size: 3rem;
-    margin-bottom: 1rem;
-    background: linear-gradient(45deg, var(--color-dark), var(--color-secondary));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-    position: relative;
-    z-index: 2;
-    letter-spacing: 0.15em;
-    text-transform: lowercase;
-  }
-
-  html.dark .roadmap-hero h1 {
-    background: linear-gradient(45deg, #f3f4f6, #e9eb9e);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-  }
-
-  .roadmap-hero h1::after {
-    content: "";
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 3px;
-    background: linear-gradient(to right, var(--color-tertiary), var(--color-accent));
-    border-radius: 3px;
-  }
-
-  .roadmap-hero .lead {
-    font-size: 1.25rem;
-    max-width: 700px;
-    margin: 0 auto;
-    color: var(--text-light);
-    position: relative;
-    z-index: 2;
-  }
-
-  html.dark .roadmap-hero .lead {
-    color: #f3f4f6;
-  }
-
-  html.dark .roadmap-hero h1 {
-    background: linear-gradient(45deg, var(--color-light), var(--color-accent));
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-fill-color: transparent;
-  }
+    .lead {
+      font-size: 1.25rem;
+      color: var(--text-light);
+      line-height: 1.6;
+      margin: 0;
+    }
 
   /* Liquid Roadmap Visualization */
   .roadmap-visualization {
@@ -1047,10 +992,19 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
     font-style: italic;
   }
 
-  @media (max-width: 768px) {
-    .roadmap-hero h1 {
-      font-size: 2.5rem;
-    }
+    @media (max-width: 768px) {
+      .roadmap-header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .roadmap-hero h1 {
+        font-size: 2rem;
+      }
+
+      .lead {
+        font-size: 1.1rem;
+      }
 
     .roadmap-phases {
       grid-template-columns: 1fr;
