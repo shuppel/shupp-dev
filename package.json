@@ -18,7 +18,7 @@
     "@hookform/resolvers": "^5.2.1",
     "@lyket/react": "^2.1.0",
     "@nanostores/react": "^1.0.0",
-    "@phosphor-icons/react": "^2.1.0",
+    "@phosphor-icons/react": "^2.1.10",
     "@types/three": "^0.180.0",
     "aceternity": "^1.0.1",
     "astro": "^5.7.12",

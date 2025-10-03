@@ -185,10 +185,11 @@ const categoryIcon = categoryIcons[entry.data.category] || 'Wrench';
       navigator.clipboard.writeText(window.location.href);
       alert('Tool URL copied to clipboard!');
     });
+  </script>
 
-<script>
-  // Tool component loader and page initialization
-  document.addEventListener('DOMContentLoaded', async () => {
+  <script>
+    // Tool component loader and page initialization
+    document.addEventListener('DOMContentLoaded', async () => {
     const toolMount = document.getElementById('tool-mount');
     const componentName = toolMount?.dataset.component;
     
@@ -246,6 +247,7 @@ const categoryIcon = categoryIcons[entry.data.category] || 'Wrench';
     document.getElementById('reset-btn')?.addEventListener('click', () => {
       window.location.reload();
     });
+  });
   </script>
 </Layout>
 
