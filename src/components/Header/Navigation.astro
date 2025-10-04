@@ -189,22 +189,19 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
       updateThemeIcons();
     });
 
-    // Handle mobile dropdown toggle for tablets
-    const isMobile = window.innerWidth <= 768;
-
-    if (isMobile) {
-      const dropdowns = document.querySelectorAll('.dropdown');
-
-      dropdowns.forEach(dropdown => {
-        const link = dropdown.querySelector('.nav-link');
-
-        link.addEventListener('click', (e) => {
-          // If on mobile, prevent navigation and toggle dropdown
-          if (window.innerWidth <= 768) {
-            e.preventDefault();
-            dropdown.classList.toggle('active');
-          }
-        });
+    // Handle mobile dropdown toggle
+    const appsDropdown = document.querySelector('.apps-dropdown');
+    if (appsDropdown) {
+      const appsLink = appsDropdown.querySelector('.nav-link');
+      
+      appsLink.addEventListener('click', (e) => {
+        // If on mobile and menu is open, allow navigation to the main page
+        if (window.innerWidth <= 768 && nav.classList.contains('mobile-open')) {
+          // Let the link navigate normally, don't prevent default
+          // The menu will close due to the navLinks click handler above
+          return;
+        }
+        // On desktop, let hover handle the dropdown
       });
     }
   });
@@ -626,10 +623,15 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
   @media (max-width: 768px) {
     .container {
       padding: 1rem 1.5rem;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
     }
 
     .mobile-controls {
       display: flex;
+      justify-content: flex-end;
+      align-items: center;
     }
     
     /* Hide desktop theme toggle on mobile */
@@ -787,15 +789,5 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
     }
   }
 
-  @media (max-width: 768px) {
-    .container {
-      flex-direction: column;
-      gap: 1rem;
-      padding: 1rem;
-    }
-    
-    .nav-list {
-      gap: 1rem;
-    }
-  }
+
 </style>

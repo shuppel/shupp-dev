@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import { TrendUp, Heart, ChartBar, Lightbulb } from '@phosphor-icons/react';
+import React from 'react';
 import type { CalculationResult } from '../../../lib/calculators/rentVsBuy/types';
 import './FinancialInsights.css';
 
@@ -8,8 +7,6 @@ interface FinancialInsightsProps {
   monthlyPayment: number;
   loanAmount: number;
 }
-
-type InsightSection = 'interest' | 'health' | 'payment' | 'tips';
 
 export default function FinancialInsights({ results, monthlyPayment, loanAmount }: FinancialInsightsProps): React.JSX.Element {
   const formatCurrency = (amount: number): string => {
