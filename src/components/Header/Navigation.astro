@@ -337,28 +337,32 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
     transform: rotate(-5deg) scale(1.1);
   }
 
-  /* Hover tooltips for icon-only mode */
-  .nav-link[data-tooltip]:hover::after {
-    content: attr(data-tooltip);
-    position: absolute;
-    top: 100%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--color-dark);
-    color: white;
-    padding: 0.5rem 0.75rem;
-    border-radius: 4px;
-    font-size: 0.875rem;
-    white-space: nowrap;
-    z-index: 1000;
-    margin-top: 0.5rem;
-    opacity: 0;
-    animation: fadeInUp 0.2s ease forwards;
+  /* Hover tooltips for icon-only mode - desktop only */
+  @media (min-width: 769px) {
+    .nav-link[data-tooltip]:hover::after {
+      content: attr(data-tooltip);
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--color-dark);
+      color: white;
+      padding: 0.5rem 0.75rem;
+      border-radius: 4px;
+      font-size: 0.875rem;
+      white-space: nowrap;
+      z-index: 1000;
+      margin-top: 0.5rem;
+      opacity: 0;
+      animation: fadeInUp 0.2s ease forwards;
+    }
   }
 
-  html.dark .nav-link[data-tooltip]:hover::after {
-    background: #23232b;
-    color: #f3f4f6;
+  @media (min-width: 769px) {
+    html.dark .nav-link[data-tooltip]:hover::after {
+      background: #23232b;
+      color: #f3f4f6;
+    }
   }
 
   @keyframes fadeInUp {
@@ -633,6 +637,11 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
       justify-content: flex-end;
       align-items: center;
     }
+
+    /* Ensure no tooltips show on mobile */
+    .nav-link[data-tooltip]::after {
+      display: none !important;
+    }
     
     /* Hide desktop theme toggle on mobile */
     .desktop-only {
@@ -690,6 +699,10 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
       text-decoration: none;
       border-radius: 8px;
       transition: all 0.2s ease;
+    }
+
+    .nav.mobile-open .nav-text {
+      display: inline;
     }
 
     html.dark .nav.mobile-open .nav-link {
