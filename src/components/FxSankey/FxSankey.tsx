@@ -75,11 +75,11 @@ const FxSankey: React.FC<FxSankeyProps> = ({
       nodeColor = new THREE.Color('#ACC196');  // Default for liquid
     } else {
       // Use provided color or generate a unique color based on node position
-      if (node.color) {
+      if (node.color !== undefined && node.color !== null) {
         nodeColor = typeof node.color === 'string' ? new THREE.Color(node.color) : node.color;
       } else {
         // Generate distinct colors using HSL color space for better distribution
-        const allNodes = engineRef.current?.getNodes() || [];
+        const allNodes = engineRef.current?.getNodes() ?? [];
         const nodeIndex = allNodes.findIndex(n => n.id === node.id);
         const hue = (nodeIndex * 137.5) % 360; // Golden angle for good distribution
         const saturation = 0.6 + (nodeIndex % 3) * 0.15; // Vary saturation
@@ -233,7 +233,7 @@ const FxSankey: React.FC<FxSankeyProps> = ({
     const sourceNode = nodeMeshes.current.get(link.source);
     let linkColor = new THREE.Color('#ACC196');
     
-    if (sourceNode && sourceNode.material && 'color' in sourceNode.material) {
+    if (sourceNode?.material && 'color' in sourceNode.material) {
       linkColor = (sourceNode.material as THREE.MeshPhysicalMaterial).color.clone();
     } else if (link.gradient?.colors && link.gradient.colors.length > 0) {
       linkColor = new THREE.Color(link.gradient.colors[0]);
@@ -446,7 +446,7 @@ const FxSankey: React.FC<FxSankeyProps> = ({
           const linkKey = `${link.source}_${link.target}`;
           const linkMesh = linkMeshes.current.get(linkKey);
           
-          if (linkMesh && linkMesh.material) {
+          if (linkMesh?.material) {
             const isConnected = connectedLinks.some(
               cl => cl.source === link.source && cl.target === link.target
             );
@@ -477,7 +477,7 @@ const FxSankey: React.FC<FxSankeyProps> = ({
         // Also highlight connected nodes
         layout.nodes.forEach(n => {
           const nodeMesh = nodeMeshes.current.get(n.id);
-          if (nodeMesh && nodeMesh.material) {
+          if (nodeMesh?.material) {
             const isConnected = n.id === foundNode.id || 
               connectedLinks.some(link => link.source === n.id || link.target === n.id);
             
@@ -492,7 +492,7 @@ const FxSankey: React.FC<FxSankeyProps> = ({
           const linkKey = `${link.source}_${link.target}`;
           const linkMesh = linkMeshes.current.get(linkKey);
           
-          if (linkMesh && linkMesh.material) {
+          if (linkMesh?.material) {
             // Restore original static material if it was replaced
             if (linkMesh.userData.originalMaterial) {
               linkMesh.material = linkMesh.userData.originalMaterial;
@@ -506,7 +506,7 @@ const FxSankey: React.FC<FxSankeyProps> = ({
         
         layout.nodes.forEach(n => {
           const nodeMesh = nodeMeshes.current.get(n.id);
-          if (nodeMesh && nodeMesh.material) {
+          if (nodeMesh?.material) {
             (nodeMesh.material as THREE.MeshPhysicalMaterial).opacity = n.opacity ?? 0.9;
           }
         });

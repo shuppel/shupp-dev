@@ -2,8 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import FxSankeyDemo from './FxSankeyDemo.js';
 
-export function mountFxSankeyDemo() {
-  const container = document.getElementById('tool-mount') || document.getElementById('fxsankey-demo');
+export function mountFxSankeyDemo(): void {
+  const container = document.getElementById('tool-mount') ?? document.getElementById('fxsankey-demo');
   
   if (!container) {
     console.error('FxSankey container not found');
