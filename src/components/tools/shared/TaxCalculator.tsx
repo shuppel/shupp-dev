@@ -1,8 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  calculateFederalTaxRate, 
-  getStateTaxRate, 
-  calculateCapitalGainsRate,
   getAllStates,
   getTaxSummary,
   type FilingStatus
