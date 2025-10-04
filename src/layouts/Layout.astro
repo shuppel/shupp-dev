@@ -1,4 +1,5 @@
 ---
+import { ViewTransitions } from 'astro:transitions';
 import Navigation from '../components/Header/Navigation.astro';
 import Footer from '../components/Footer/Footer.astro';
 
@@ -21,6 +22,7 @@ const { title, description = "Professional Portfolio and Blog for Software Engin
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&family=Hind:wght@300;400;500;600;700&family=Maitree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <title>{title} | shupp.dev</title>
+    <ViewTransitions />
   </head>
   <body>
     <Navigation />
@@ -492,5 +494,38 @@ const { title, description = "Professional Portfolio and Blog for Software Engin
     main {
       padding: 1rem;
     }
+  }
+
+  /* View Transitions - Smooth and simple */
+  ::view-transition-old(root) {
+    animation: fade-out 0.3s ease-out;
+  }
+
+  ::view-transition-new(root) {
+    animation: fade-in 0.3s ease-out;
+  }
+
+  @keyframes fade-out {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Faster transitions on mobile for snappier feel */
+  @media (max-width: 768px) {
+    ::view-transition-old(root),
+    ::view-transition-new(root) {
+      animation-duration: 0.25s;
+      animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    }
+  }
+
+  /* Prevent layout shift during navigation */
+  html {
+    view-transition-name: none;
   }
 </style>
