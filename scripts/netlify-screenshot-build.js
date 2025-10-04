@@ -1,4 +1,5 @@
 #!/usr/bin/env node
+/* eslint-env node */
 
 // Netlify build hook script for capturing screenshots after deployment
 // This should be called from netlify.toml as a post-build step
