@@ -99,13 +99,14 @@ export const Icon3D: React.FC<Icon3DProps> = ({
             positions[idx] += Math.cos(time + i * 0.3) * 0.05;
             break;
 
-          case 'spiral':
+          case 'spiral': {
             // Spiral effect
             const angle = time + (i / particleCount) * Math.PI * 2;
             const radius = size * 0.3 * (1 + Math.sin(time * 2) * 0.2);
             positions[idx] = Math.cos(angle) * radius;
             positions[idx + 1] = Math.sin(angle) * radius;
             break;
+          }
 
           case 'drip':
             // Ink drip effect
@@ -118,7 +119,7 @@ export const Icon3D: React.FC<Icon3DProps> = ({
             positions[idx] += Math.sin(time * 5 + i) * 0.1;
             break;
 
-          default: // particles
+          default: { // particles
             // Organic particle movement
             positions[idx] += velocities[idx] + Math.sin(time + i) * 0.05;
             positions[idx + 1] += velocities[idx + 1] + Math.cos(time + i) * 0.05;
@@ -129,6 +130,7 @@ export const Icon3D: React.FC<Icon3DProps> = ({
               velocities[idx] *= -0.8;
               velocities[idx + 1] *= -0.8;
             }
+          }
         }
       }
 

@@ -21,7 +21,7 @@ let IconComponent;
 try {
   const icons = await import('@phosphor-icons/react');
   IconComponent = icons[name];
-} catch (e) {
+} catch {
   console.warn(`Icon ${name} not found`);
 }
 ---
