@@ -24,19 +24,13 @@ const { title, description = "Professional Portfolio and Blog for Software Engin
   </head>
   <body>
     <Navigation />
-    <button id="darkModeToggle" class="theme-toggle">
-      <span id="themeIcon" class="theme-icon"></span>
-      <div class="bokeh-glow"></div>
-    </button>
     <main>
       <slot />
     </main>
     <Footer />
     <script type="module">
-      // Dark mode toggle logic (defaulting to dark mode)
+      // Initialize dark mode on page load
       document.addEventListener('DOMContentLoaded', () => {
-        const toggle = document.getElementById('darkModeToggle');
-        const iconContainer = document.getElementById('themeIcon');
         const html = document.documentElement;
         
         // Default to dark mode unless explicitly set to light
@@ -44,103 +38,15 @@ const { title, description = "Professional Portfolio and Blog for Software Engin
           html.classList.add('dark');
         }
         
-        if (toggle && iconContainer) {
-          const updateIcon = () => {
-            const isDark = html.classList.contains('dark');
-            // Clean, centered SVG icons with subtle animations
-            iconContainer.innerHTML = isDark 
-              ? `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;">
-                  <defs>
-                    <linearGradient id="sunGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" style="stop-color:#FBBF24;stop-opacity:1" />
-                      <stop offset="50%" style="stop-color:#FCD34D;stop-opacity:1" />
-                      <stop offset="100%" style="stop-color:#E9EB9E;stop-opacity:1" />
-                    </linearGradient>
-                    <filter id="sunBokeh">
-                      <feGaussianBlur in="SourceGraphic" stdDeviation="0.5"/>
-                      <feComponentTransfer result="bokeh">
-                        <feFuncA type="discrete" tableValues="0 1 1 1"/>
-                      </feComponentTransfer>
-                      <feGaussianBlur in="bokeh" stdDeviation="1" result="bokeh2"/>
-                      <feMerge>
-                        <feMergeNode in="bokeh2"/>
-                        <feMergeNode in="SourceGraphic"/>
-                      </feMerge>
-                    </filter>
-                  </defs>
-                  <!-- Sun core -->
-                  <circle cx="12" cy="12" r="5" fill="url(#sunGradient)" opacity="0.95">
-                    <animate attributeName="r" values="5;5.2;5" dur="3s" repeatCount="indefinite"/>
-                  </circle>
-                  <!-- Bokeh glow -->
-                  <circle cx="12" cy="12" r="7" fill="url(#sunGradient)" opacity="0.3" filter="url(#sunBokeh)"/>
-                  <!-- Rays -->
-                  <g stroke="url(#sunGradient)" stroke-width="2" stroke-linecap="round" opacity="0.9">
-                    <line x1="12" y1="1" x2="12" y2="3"><animate attributeName="opacity" values="0.7;1;0.7" dur="3s" repeatCount="indefinite"/></line>
-                    <line x1="12" y1="21" x2="12" y2="23"><animate attributeName="opacity" values="0.7;1;0.7" dur="3s" begin="0.4s" repeatCount="indefinite"/></line>
-                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"><animate attributeName="opacity" values="0.7;1;0.7" dur="3s" begin="0.8s" repeatCount="indefinite"/></line>
-                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"><animate attributeName="opacity" values="0.7;1;0.7" dur="3s" begin="1.2s" repeatCount="indefinite"/></line>
-                    <line x1="1" y1="12" x2="3" y2="12"><animate attributeName="opacity" values="0.7;1;0.7" dur="3s" begin="1.6s" repeatCount="indefinite"/></line>
-                    <line x1="21" y1="12" x2="23" y2="12"><animate attributeName="opacity" values="0.7;1;0.7" dur="3s" begin="2s" repeatCount="indefinite"/></line>
-                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"><animate attributeName="opacity" values="0.7;1;0.7" dur="3s" begin="2.4s" repeatCount="indefinite"/></line>
-                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"><animate attributeName="opacity" values="0.7;1;0.7" dur="3s" begin="2.8s" repeatCount="indefinite"/></line>
-                  </g>
-                </svg>`
-              : `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="display: block;">
-                  <defs>
-                    <linearGradient id="moonGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" style="stop-color:#49475B;stop-opacity:1" />
-                      <stop offset="50%" style="stop-color:#5D5B6E;stop-opacity:1" />
-                      <stop offset="100%" style="stop-color:#799496;stop-opacity:1" />
-                    </linearGradient>
-                    <filter id="moonBokeh">
-                      <feGaussianBlur in="SourceGraphic" stdDeviation="0.8" result="blur1"/>
-                      <feGaussianBlur in="SourceGraphic" stdDeviation="1.5" result="blur2"/>
-                      <feMerge>
-                        <feMergeNode in="blur2" />
-                        <feMergeNode in="blur1" />
-                        <feMergeNode in="SourceGraphic" />
-                      </feMerge>
-                    </filter>
-                  </defs>
-                  <!-- Moon -->
-                  <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21c2.889 0 5.517-1.388 7.354-3.646z" 
-                    fill="url(#moonGradient)" 
-                    opacity="0.95"/>
-                  <!-- Bokeh glow around moon -->
-                  <path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21c2.889 0 5.517-1.388 7.354-3.646z" 
-                    fill="url(#moonGradient)" 
-                    opacity="0.3"
-                    filter="url(#moonBokeh)"
-                    transform="scale(1.1) translate(-1.2, -1.2)"/>
-                  <!-- Stars with twinkle -->
-                  <g fill="url(#moonGradient)">
-                    <circle cx="3" cy="3" r="1" opacity="0.6">
-                      <animate attributeName="opacity" values="0.3;0.9;0.3" dur="3s" repeatCount="indefinite"/>
-                      <animate attributeName="r" values="1;1.2;1" dur="3s" repeatCount="indefinite"/>
-                    </circle>
-                    <circle cx="7" cy="7" r="0.5" opacity="0.5">
-                      <animate attributeName="opacity" values="0.4;1;0.4" dur="2.5s" begin="0.5s" repeatCount="indefinite"/>
-                      <animate attributeName="r" values="0.5;0.7;0.5" dur="2.5s" begin="0.5s" repeatCount="indefinite"/>
-                    </circle>
-                    <circle cx="5" cy="12" r="0.7" opacity="0.4">
-                      <animate attributeName="opacity" values="0.3;0.8;0.3" dur="3.5s" begin="1s" repeatCount="indefinite"/>
-                      <animate attributeName="r" values="0.7;0.9;0.7" dur="3.5s" begin="1s" repeatCount="indefinite"/>
-                    </circle>
-                  </g>
-                </svg>`;
-          };
-          
-          toggle.addEventListener('click', () => {
-            html.classList.toggle('dark');
-            const isDark = html.classList.contains('dark');
-            localStorage.setItem('theme', isDark ? 'dark' : 'light');
-            updateIcon();
-          });
-          
-          // Set initial toggle button icon
-          updateIcon();
-        }
+        // Listen for theme changes
+        window.addEventListener('themechange', (e) => {
+          const isDark = e.detail.isDarkMode;
+          if (isDark) {
+            html.classList.add('dark');
+          } else {
+            html.classList.remove('dark');
+          }
+        });
       });
     </script>
   </body>
@@ -268,116 +174,11 @@ const { title, description = "Professional Portfolio and Blog for Software Engin
     color: #f3f4f6 !important;
   }
 
-  /* Dark mode toggle button styles */
-  .theme-toggle {
-    position: fixed;
-    top: 1rem;
-    right: 1rem;
-    z-index: 200;
-    width: 48px;
-    height: 48px;
-    border: 2px solid;
-    border-color: var(--color-secondary);
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    overflow: hidden;
-  }
-
-  html.dark .theme-toggle {
-    background: rgba(0, 0, 0, 0.3);
-    border-color: var(--color-light);
-  }
-
-  .theme-icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    transition: transform 0.3s ease;
-  }
-
-  .theme-toggle:hover .theme-icon {
-    transform: scale(1.2);
-  }
-
-  .theme-toggle:active .theme-icon {
-    transform: scale(0.95);
-  }
-
-  /* Bokeh glow effect */
-  .bokeh-glow {
-    position: absolute;
-    inset: -50%;
-    background: radial-gradient(circle at center, 
-      rgba(251, 191, 36, 0.4) 0%, 
-      rgba(251, 191, 36, 0.2) 20%,
-      rgba(251, 191, 36, 0.1) 40%,
-      transparent 70%
-    );
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-    filter: blur(8px);
-  }
-
-  html.dark .bokeh-glow {
-    background: radial-gradient(circle at center, 
-      rgba(233, 235, 158, 0.4) 0%, 
-      rgba(233, 235, 158, 0.2) 20%,
-      rgba(233, 235, 158, 0.1) 40%,
-      transparent 70%
-    );
-  }
-
-  .theme-toggle:hover .bokeh-glow {
-    opacity: 0.6;
-    animation: bokeh-pulse 2s ease-in-out infinite;
-  }
-
-  @keyframes bokeh-pulse {
-    0%, 100% { 
-      transform: scale(1);
-      opacity: 0.4;
+  /* Global overflow fix for mobile */
+  @media (max-width: 768px) {
+    body {
+      overflow-x: hidden;
     }
-    50% { 
-      transform: scale(1.2);
-      opacity: 0.6;
-    }
-  }
-
-  /* Additional subtle glow layers */
-  .theme-toggle::before {
-    content: '';
-    position: absolute;
-    inset: -2px;
-    border-radius: 50%;
-    background: radial-gradient(circle at 30% 30%, 
-      rgba(255, 255, 255, 0.3) 0%, 
-      transparent 50%
-    );
-    opacity: 0;
-    transition: opacity 0.3s ease;
-  }
-
-  .theme-toggle:hover::before {
-    opacity: 1;
-  }
-
-  .theme-toggle::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 50%;
-    box-shadow: 
-      inset 0 1px 2px rgba(255, 255, 255, 0.2),
-      inset 0 -1px 2px rgba(0, 0, 0, 0.1);
   }
 
   * {

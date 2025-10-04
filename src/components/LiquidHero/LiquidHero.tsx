@@ -16,26 +16,40 @@ const LiquidHero: React.FC<LiquidHeroProps> = ({ isDarkMode: isDarkModeProp = fa
   const connectionsRef = useRef<THREE.LineSegments | null>(null);
   const [isWebGLSupported, setIsWebGLSupported] = useState(true);
   const [isDarkMode, setIsDarkMode] = useState(isDarkModeProp);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isLowPerformance, setIsLowPerformance] = useState(false);
 
   useEffect(() => {
-    // Listen for dark mode changes from Astro
-    const handleDarkModeChange = (event: Event): void => {
+    // Check if mobile device
+    const checkMobile = () => {
+      const mobile = window.innerWidth <= 768 || 
+        ('ontouchstart' in window) || 
+        (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) || false;
+      setIsMobile(mobile);
+      
+      // Check for low performance devices
+      const lowPerf = mobile || window.innerWidth <= 640 || 
+        (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 4) || false;
+      setIsLowPerformance(lowPerf);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    // Listen for theme changes
+    const handleThemeChange = (event: Event): void => {
       const customEvent = event as CustomEvent<{ isDarkMode: boolean }>;
       setIsDarkMode(customEvent.detail.isDarkMode);
     };
     
-    const container = document.querySelector('[data-liquid-hero]');
-    if (container) {
-      container.addEventListener('darkModeChange', handleDarkModeChange);
-    }
+    window.addEventListener('themechange', handleThemeChange);
     
     // Check initial dark mode state
     setIsDarkMode(document.documentElement.classList.contains('dark'));
     
     return () => {
-      if (container) {
-        container.removeEventListener('darkModeChange', handleDarkModeChange);
-      }
+      window.removeEventListener('resize', checkMobile);
+      window.removeEventListener('themechange', handleThemeChange);
     };
   }, []);
 
@@ -63,14 +77,14 @@ const LiquidHero: React.FC<LiquidHeroProps> = ({ isDarkMode: isDarkModeProp = fa
     );
     camera.position.z = 0;
 
-    // Renderer setup
+    // Renderer setup - optimize for mobile
     const renderer = new THREE.WebGLRenderer({ 
       alpha: true, 
-      antialias: true,
-      powerPreference: 'high-performance'
+      antialias: !isLowPerformance, // Disable antialiasing on low-end devices
+      powerPreference: isLowPerformance ? 'low-power' : 'high-performance'
     });
     renderer.setSize(mountRef.current.clientWidth, mountRef.current.clientHeight);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, isLowPerformance ? 1 : 2));
     rendererRef.current = renderer;
     mountRef.current.appendChild(renderer.domElement);
 
@@ -100,22 +114,31 @@ const LiquidHero: React.FC<LiquidHeroProps> = ({ isDarkMode: isDarkModeProp = fa
     const cube = new THREE.Mesh(geometry, liquidMaterial);
     scene.add(cube);
 
-    // Quantum node network - connected spheres
-    const nodeCount = 20;
+    // Quantum node network - reduced for mobile
+    const nodeCount = isLowPerformance ? 8 : (isMobile ? 12 : 20);
     const nodes: THREE.Mesh[] = [];
     const nodeGroup = new THREE.Group();
     
-    // Create sphere nodes with higher resolution
-    const sphereGeometry = new THREE.SphereGeometry(0.3, 32, 32);
-    const nodeMaterial = new THREE.ShaderMaterial({
-      uniforms: {
-        uTime: { value: 0 },
-        uPhase: { value: 0 },
-        uColor: { value: new THREE.Color(isDarkMode ? 0xe9eb9e : 0xff9f40) },
-        uOpacity: { value: 0.4 },
-        uFrequency: { value: 1.0 },
-        uAmplitude: { value: 1.0 },
-      },
+    // Create sphere nodes with adaptive resolution
+    const sphereResolution = isLowPerformance ? 16 : (isMobile ? 24 : 32);
+    const sphereGeometry = new THREE.SphereGeometry(0.3, sphereResolution, sphereResolution);
+    const nodeMaterial = isLowPerformance ? 
+      // Simple material for low-end devices
+      new THREE.MeshBasicMaterial({
+        color: new THREE.Color(isDarkMode ? 0xe9eb9e : 0xff9f40),
+        transparent: true,
+        opacity: 0.6,
+      }) :
+      // Full shader material for desktop
+      new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0 },
+          uPhase: { value: 0 },
+          uColor: { value: new THREE.Color(isDarkMode ? 0xe9eb9e : 0xff9f40) },
+          uOpacity: { value: 0.4 },
+          uFrequency: { value: 1.0 },
+          uAmplitude: { value: 1.0 },
+        },
       vertexShader: `
         varying vec3 vNormal;
         varying vec3 vWorldPosition;
@@ -240,7 +263,10 @@ const LiquidHero: React.FC<LiquidHeroProps> = ({ isDarkMode: isDarkModeProp = fa
     
     // Position nodes in 3D space
     for (let i = 0; i < nodeCount; i++) {
-      const node = new THREE.Mesh(sphereGeometry, nodeMaterial.clone());
+      const material = isLowPerformance ? 
+        (nodeMaterial as THREE.MeshBasicMaterial).clone() : 
+        (nodeMaterial as THREE.ShaderMaterial).clone();
+      const node = new THREE.Mesh(sphereGeometry, material);
       
       // Distribute nodes in true 3D space using spherical coordinates with more randomness
       const theta = Math.random() * Math.PI * 2; // Random angle around Y axis (0 to 2π)
@@ -351,20 +377,34 @@ const LiquidHero: React.FC<LiquidHeroProps> = ({ isDarkMode: isDarkModeProp = fa
       cube.rotation.y = elapsedTime * 0.03;
       cube.rotation.z = elapsedTime * 0.02;
       
-      // 3D camera movement for immersive feeling
-      camera.position.x = Math.sin(elapsedTime * 0.3) * 1.5;
-      camera.position.y = Math.cos(elapsedTime * 0.25) * 1.2;
-      camera.position.z = Math.sin(elapsedTime * 0.2) * 1.5;
+      // Reduced camera movement for mobile
+      if (!isLowPerformance) {
+        camera.position.x = Math.sin(elapsedTime * 0.3) * (isMobile ? 0.8 : 1.5);
+        camera.position.y = Math.cos(elapsedTime * 0.25) * (isMobile ? 0.6 : 1.2);
+        camera.position.z = Math.sin(elapsedTime * 0.2) * (isMobile ? 0.8 : 1.5);
+        
+        // Subtle camera rotation - reduced for mobile
+        camera.rotation.x = Math.sin(elapsedTime * 0.15) * (isMobile ? 0.02 : 0.05);
+        camera.rotation.y = Math.cos(elapsedTime * 0.1) * (isMobile ? 0.02 : 0.05);
+        camera.rotation.z = Math.sin(elapsedTime * 0.12) * (isMobile ? 0.01 : 0.03);
+      }
       
-      // Subtle camera rotation
-      camera.rotation.x = Math.sin(elapsedTime * 0.15) * 0.05;
-      camera.rotation.y = Math.cos(elapsedTime * 0.1) * 0.05;
-      camera.rotation.z = Math.sin(elapsedTime * 0.12) * 0.03;
-      
-      // Animate quantum nodes
+      // Animate quantum nodes - simplified for mobile
       if (nodesRef.current !== null && nodesRef.current.length > 0) {
         nodesRef.current.forEach((node, i) => {
           if (node?.material === null || node?.material === undefined) return;
+          
+          if (isLowPerformance) {
+            // Simple rotation for low-end devices
+            node.rotation.x += 0.01;
+            node.rotation.y += 0.01;
+            
+            // Simple oscillation
+            const oscillation = Math.sin(elapsedTime + i) * 0.05;
+            node.position.y += oscillation * 0.1;
+            return;
+          }
+          
           const material = node.material as THREE.ShaderMaterial;
           
           // Update phase with quantum evolution
@@ -405,17 +445,20 @@ const LiquidHero: React.FC<LiquidHeroProps> = ({ isDarkMode: isDarkModeProp = fa
           node.position.add(complexMotion);
           node.position.add(superposition);
           
-          // Quantum tunneling probability
-          const tunnelingProb = Math.exp(-Math.abs(eulerReal * eulerImag));
-          if (Math.random() < tunnelingProb * 0.001) {
-            // Quantum tunnel to new position
-            const tunnelDistance = 2.0;
-            const tunnelDirection = new THREE.Vector3(
-              Math.random() - 0.5,
-              Math.random() - 0.5,
-              Math.random() - 0.5
-            ).normalize();
-            node.position.add(tunnelDirection.multiplyScalar(tunnelDistance));
+          // Skip quantum tunneling on mobile for performance
+          if (!isMobile) {
+            // Quantum tunneling probability
+            const tunnelingProb = Math.exp(-Math.abs(eulerReal * eulerImag));
+            if (Math.random() < tunnelingProb * 0.001) {
+              // Quantum tunnel to new position
+              const tunnelDistance = 2.0;
+              const tunnelDirection = new THREE.Vector3(
+                Math.random() - 0.5,
+                Math.random() - 0.5,
+                Math.random() - 0.5
+              ).normalize();
+              node.position.add(tunnelDirection.multiplyScalar(tunnelDistance));
+            }
           }
           
           // Keep nodes within bounds
@@ -544,11 +587,20 @@ const LiquidHero: React.FC<LiquidHeroProps> = ({ isDarkMode: isDarkModeProp = fa
     }
   }, [isDarkMode]);
 
+  // Show simplified version or fallback based on performance
   if (!isWebGLSupported) {
     return <div className="liquid-hero-fallback" />;
   }
 
-  return <div ref={mountRef} className="liquid-hero-canvas" />;
+  return (
+    <div ref={mountRef} className={`liquid-hero-canvas ${isLowPerformance ? 'low-performance' : ''}`}>
+      {isLowPerformance && (
+        <div className="performance-indicator" aria-hidden="true">
+          <span>Simplified animation for optimal performance</span>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default LiquidHero;

@@ -10,6 +10,25 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
 <header class="header">
   <div class="container">
     <a href="/" class="logo">shupp.dev</a>
+    
+    <!-- Mobile controls -->
+    <div class="mobile-controls">
+      <button id="nav-theme-toggle" class="theme-toggle-nav" aria-label="Toggle dark mode">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="theme-icon-svg">
+          <circle class="sun-icon" cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
+          <path class="sun-rays" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path class="moon-icon" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <button class="hamburger-menu" aria-label="Toggle navigation menu">
+        <div class="hamburger-icon">
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+        </div>
+      </button>
+    </div>
+    
     <nav class="nav">
       <ul class="nav-list">
         <li class="nav-item">
@@ -79,14 +98,16 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
           </a>
         </li>
       </ul>
+      
+      <!-- Desktop theme toggle -->
+      <button id="desktop-theme-toggle" class="theme-toggle-nav desktop-only" aria-label="Toggle dark mode">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" class="theme-icon-svg">
+          <circle class="sun-icon" cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
+          <path class="sun-rays" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          <path class="moon-icon" d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
     </nav>
-    <button class="hamburger-menu" aria-label="Toggle navigation menu">
-      <div class="hamburger-icon">
-        <span class="hamburger-line"></span>
-        <span class="hamburger-line"></span>
-        <span class="hamburger-line"></span>
-      </div>
-    </button>
   </div>
 </header>
 
@@ -95,11 +116,14 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
     // Handle hamburger menu toggle
     const hamburgerMenu = document.querySelector('.hamburger-menu');
     const nav = document.querySelector('.nav');
+    const header = document.querySelector('.header');
 
     if (hamburgerMenu && nav) {
       hamburgerMenu.addEventListener('click', () => {
         hamburgerMenu.classList.toggle('active');
         nav.classList.toggle('mobile-open');
+        // Prevent body scroll when menu is open
+        document.body.style.overflow = nav.classList.contains('mobile-open') ? 'hidden' : '';
       });
 
       // Close mobile menu when clicking outside
@@ -107,6 +131,7 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
         if (!hamburgerMenu.contains(e.target) && !nav.contains(e.target)) {
           hamburgerMenu.classList.remove('active');
           nav.classList.remove('mobile-open');
+          document.body.style.overflow = '';
         }
       });
 
@@ -116,9 +141,53 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
         link.addEventListener('click', () => {
           hamburgerMenu.classList.remove('active');
           nav.classList.remove('mobile-open');
+          document.body.style.overflow = '';
         });
       });
     }
+
+    // Handle theme toggles (both mobile and desktop)
+    const mobileThemeToggle = document.getElementById('nav-theme-toggle');
+    const desktopThemeToggle = document.getElementById('desktop-theme-toggle');
+    const html = document.documentElement;
+    
+    const updateThemeIcons = () => {
+      const isDark = html.classList.contains('dark');
+      [mobileThemeToggle, desktopThemeToggle].forEach(toggle => {
+        if (toggle) {
+          toggle.classList.toggle('dark-mode', isDark);
+        }
+      });
+    };
+
+    const handleThemeToggle = () => {
+      html.classList.toggle('dark');
+      const isDark = html.classList.contains('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      updateThemeIcons();
+      
+      // Dispatch custom event for other components
+      window.dispatchEvent(new CustomEvent('themechange', { 
+        detail: { isDarkMode: isDark } 
+      }));
+    };
+
+    // Add click handlers to both toggles
+    if (mobileThemeToggle) {
+      mobileThemeToggle.addEventListener('click', handleThemeToggle);
+    }
+    
+    if (desktopThemeToggle) {
+      desktopThemeToggle.addEventListener('click', handleThemeToggle);
+    }
+
+    // Set initial state
+    updateThemeIcons();
+    
+    // Listen for theme changes from other sources
+    window.addEventListener('themechange', (e) => {
+      updateThemeIcons();
+    });
 
     // Handle mobile dropdown toggle for tablets
     const isMobile = window.innerWidth <= 768;
@@ -227,6 +296,12 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
 
   .logo:hover::after {
     width: 100%;
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
   }
 
   .nav-list {
@@ -453,8 +528,80 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
     background-color: #6b7280;
   }
 
-  /* Responsive navigation - icon only mode */
-  @media (max-width: 1024px) {
+  /* Mobile controls container */
+  .mobile-controls {
+    display: none;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  /* Theme toggle styling - shared between mobile and desktop */
+  .theme-toggle-nav {
+    background: transparent;
+    border: 2px solid var(--color-secondary);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    color: var(--color-secondary);
+  }
+
+  /* Desktop only theme toggle */
+  .desktop-only {
+    display: flex;
+    margin-left: 1rem;
+  }
+
+  .theme-toggle-nav:hover {
+    background-color: rgba(121, 148, 150, 0.1);
+    transform: scale(1.05);
+  }
+
+  html.dark .theme-toggle-nav {
+    border-color: var(--color-light);
+    color: var(--color-light);
+  }
+
+  html.dark .theme-toggle-nav:hover {
+    background-color: rgba(233, 235, 158, 0.1);
+  }
+
+  .theme-icon-svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Show sun icon by default, hide moon */
+  .theme-toggle-nav .moon-icon {
+    display: none;
+  }
+
+  .theme-toggle-nav .sun-icon,
+  .theme-toggle-nav .sun-rays {
+    display: block;
+  }
+
+  /* In dark mode, show moon, hide sun */
+  .theme-toggle-nav.dark-mode .sun-icon,
+  .theme-toggle-nav.dark-mode .sun-rays {
+    display: none;
+  }
+
+  .theme-toggle-nav.dark-mode .moon-icon {
+    display: block;
+  }
+
+  /* Hamburger menu - hidden by default */
+  .hamburger-menu {
+    display: none;
+  }
+
+  /* Tablet responsive - icon only mode */
+  @media (max-width: 1024px) and (min-width: 769px) {
     .nav-text {
       display: none;
     }
@@ -475,69 +622,55 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
     }
   }
 
-  /* Hamburger menu for very small screens */
-  @media (max-width: 640px) {
+  /* Mobile responsive - show mobile controls and hamburger */
+  @media (max-width: 768px) {
+    .container {
+      padding: 1rem 1.5rem;
+    }
+
+    .mobile-controls {
+      display: flex;
+    }
+    
+    /* Hide desktop theme toggle on mobile */
+    .desktop-only {
+      display: none !important;
+    }
+
+    .nav-list {
+      gap: 1.5rem;
+    }
     .nav {
       display: none;
-    }
-
-    .hamburger-menu {
-      display: block;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0.5rem;
-      border-radius: 4px;
-      transition: background-color 0.2s ease;
-    }
-
-    .hamburger-menu:hover {
-      background-color: rgba(121, 148, 150, 0.1);
-    }
-
-    html.dark .hamburger-menu:hover {
-      background-color: rgba(233, 235, 158, 0.1);
-    }
-
-    .hamburger-icon {
-      width: 24px;
-      height: 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-around;
-    }
-
-    .hamburger-line {
-      width: 100%;
-      height: 2px;
-      background-color: var(--color-secondary);
-      transition: all 0.3s ease;
-      transform-origin: center;
-    }
-
-    html.dark .hamburger-line {
-      background-color: #c5c5d2;
-    }
-
-    .hamburger-menu.active .hamburger-line:nth-child(1) {
-      transform: rotate(45deg) translate(6px, 6px);
-    }
-
-    .hamburger-menu.active .hamburger-line:nth-child(2) {
+      position: fixed;
+      top: 72px;
+      left: 0;
+      right: 0;
+      background-color: rgba(255, 255, 255, 0.98);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      box-shadow: 0 4px 20px rgba(20, 8, 14, 0.1);
+      max-height: calc(100vh - 72px);
+      overflow-y: auto;
+      transform: translateY(-100%);
       opacity: 0;
+      visibility: hidden;
+      transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      z-index: 999;
     }
 
-    .hamburger-menu.active .hamburger-line:nth-child(3) {
-      transform: rotate(-45deg) translate(6px, -6px);
+    html.dark .nav {
+      background-color: rgba(35, 35, 43, 0.98);
     }
 
-
-
+    .nav.mobile-open {
+      display: block;
       transform: translateY(0);
       opacity: 1;
       visibility: visible;
     }
 
+    .nav.mobile-open .nav-list {
       list-style: none;
       padding: 1rem;
       margin: 0;
@@ -546,6 +679,7 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
       gap: 0.5rem;
     }
 
+    .nav.mobile-open .nav-link {
       display: flex;
       align-items: center;
       gap: 0.75rem;
@@ -556,45 +690,20 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
       transition: all 0.2s ease;
     }
 
+    html.dark .nav.mobile-open .nav-link {
       color: #f3f4f6;
     }
 
+    .nav.mobile-open .nav-link:hover {
       background-color: rgba(121, 148, 150, 0.1);
     }
 
+    html.dark .nav.mobile-open .nav-link:hover {
       background-color: rgba(233, 235, 158, 0.1);
     }
 
+    .nav.mobile-open .nav-icon {
       flex-shrink: 0;
-    }
-  }
-
-  /* Responsive navigation - icon only mode */
-  @media (max-width: 1024px) {
-    .nav-text {
-      display: none;
-    }
-
-    .nav-link {
-      gap: 0;
-      justify-content: center;
-      min-width: 44px;
-    }
-
-    /* Add tooltips for icon-only mode */
-    .nav-link[data-tooltip] {
-      position: relative;
-    }
-
-    .nav-link[data-tooltip]:hover::after {
-      content: attr(data-tooltip);
-    }
-  }
-
-  /* Hamburger menu for very small screens */
-  @media (max-width: 640px) {
-    .nav {
-      display: none;
     }
 
     .hamburger-menu {
@@ -646,41 +755,9 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
     .hamburger-menu.active .hamburger-line:nth-child(3) {
       transform: rotate(-45deg) translate(6px, -6px);
     }
-
-    /* Mobile nav styles */
-    .nav.mobile-open .nav-list {
-      flex-direction: column;
-      gap: 1rem;
-      align-items: stretch;
-    }
-
-    .nav.mobile-open .nav-link {
-      justify-content: flex-start;
-      gap: 0.75rem;
-      padding: 1rem;
-      border-radius: 8px;
-      min-width: auto;
-    }
-
-    .nav.mobile-open .nav-text {
-      display: block !important;
-    }
-
-    .nav.mobile-open .nav-link:hover {
-      background-color: rgba(121, 148, 150, 0.1);
-    }
-
-    html.dark .nav.mobile-open .nav-link:hover {
-      background-color: rgba(233, 235, 158, 0.1);
-    }
   }
 
-      background-color: rgba(233, 235, 158, 0.1);
-    }
 
-      flex-shrink: 0;
-    }
-  }
 
   /* Responsive dropdown */
   @media (max-width: 768px) {

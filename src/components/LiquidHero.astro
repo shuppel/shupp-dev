@@ -13,33 +13,8 @@ const { class: className } = Astro.props;
 </div>
 
 <script>
-  // Pass dark mode state to React component
-  const liquidContainer = document.querySelector('[data-liquid-hero]');
-  
-  if (liquidContainer) {
-    const updateDarkMode = () => {
-      const isDarkMode = document.documentElement.classList.contains('dark');
-      const event = new CustomEvent('darkModeChange', { detail: { isDarkMode } });
-      liquidContainer.dispatchEvent(event);
-    };
-    
-    // Watch for dark mode changes
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => {
-        if (mutation.attributeName === 'class') {
-          updateDarkMode();
-        }
-      });
-    });
-    
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ['class']
-    });
-    
-    // Initial update
-    updateDarkMode();
-  }
+  // Theme change events are now handled globally via window.themechange event
+  // The React component listens directly to window.themechange
 </script>
 
 <style>
