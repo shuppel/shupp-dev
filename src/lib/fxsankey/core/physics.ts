@@ -14,7 +14,7 @@ export class ParticleSystem {
   private particles: THREE.Points[] = [];
   private particleGeometries: THREE.BufferGeometry[] = [];
   private particleMaterials: THREE.PointsMaterial[] = [];
-  private particleData: Map<string, ParticleData> = new Map();
+  private particleData = new Map<string, ParticleData>();
   private time = 0;
 
   public createParticles(
@@ -197,7 +197,7 @@ export class ParticleSystem {
 }
 
 export class FlowAnimation {
-  private flowMaterials: Map<string, THREE.ShaderMaterial> = new Map();
+  private flowMaterials = new Map<string, THREE.ShaderMaterial>();
   private time = 0;
 
   public createFlowMaterial(link: CalculatedLink): THREE.ShaderMaterial {
@@ -283,7 +283,7 @@ export class FlowAnimation {
 
 export class LiquidEffect {
   private time = 0;
-  private nodeMaterials: Map<string, THREE.ShaderMaterial> = new Map();
+  private nodeMaterials = new Map<string, THREE.ShaderMaterial>();
 
   public createLiquidNodeMaterial(nodeId: string): THREE.ShaderMaterial {
     const material = new THREE.ShaderMaterial({

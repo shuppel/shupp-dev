@@ -10,7 +10,7 @@ import type {
 } from '../types';
 
 export class FxSankeyEngine {
-  private nodes: Map<string, CalculatedNode> = new Map();
+  private nodes = new Map<string, CalculatedNode>();
   private links: CalculatedLink[] = [];
   private layoutConfig: Required<LayoutConfig>;
 

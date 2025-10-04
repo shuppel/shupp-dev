@@ -10,7 +10,7 @@ export class LayoutManager {
     perspective: 'isometric',
   };
 
-  private smartViews: Map<string, SmartView> = new Map();
+  private smartViews = new Map<string, SmartView>();
   private camera: THREE.PerspectiveCamera | null = null;
 
   constructor() {
