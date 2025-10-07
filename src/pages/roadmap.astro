@@ -1,7 +1,8 @@
- ---
- import Layout from '../layouts/Layout.astro';
- import { getCollection } from 'astro:content';
- import Icon from '../components/Icon/Icon.astro';
+---
+import Layout from '../layouts/Layout.astro';
+import { getCollection } from 'astro:content';
+import Icon from '../components/Icon/Icon.astro';
+import RoadmapTimeline from '../components/RoadmapTimeline/RoadmapTimeline.astro';
 
 // Get all roadmap items and principles
 const roadmapItems = await getCollection('roadmap');
@@ -35,518 +36,243 @@ if (completedCMSItems > 0) {
     (cmsMaxProgress - cmsInitialProgress) * (completedCMSItems / cmsExpectedTotal);
 }
 
-// Ensure we have the phase data for the timeline
-console.log(`Phases found: ${phaseItems.length}`);
-phaseItems.forEach(phase => console.log(`Phase: ${phase.data.title}, Order: ${phase.data.order}`));
+// Prepare combined timeline data for 3D visualization
+const timelineData = sortedPhases.map((phase, phaseIndex) => {
+  // Get items that belong to this phase
+  const phaseRoadmapItems = sortedRoadmapItems.filter(item => {
+    // Match items to phases based on timing/status
+    if (phaseIndex === 0) return item.data.status === 'now';
+    if (phaseIndex === 1) return item.data.status === 'next';
+    return item.data.status === 'later' || item.data.status === 'exploring';
+  });
 
-// Use phase data to create timeline markers
-// Sort the phase files by order
-const sortedTimelinePhases = sortedPhases;
-
-// Create timeline markers from phases with fallback to hardcoded values if needed
-const timelineMarkers = (sortedTimelinePhases.length > 0) ?
-  sortedTimelinePhases.map(phase => {
-    // Handle phase titles with or without "Phase X:" prefix
-    const titleParts = phase.data.title.split(':');
-    const displayTitle = titleParts.length > 1 ? titleParts[1].trim() : phase.data.title;
-
-    return {
-      title: displayTitle,
-      timeframe: phase.data.timeframe || 'TBD',
-      active: phase.data.phase === 'current'
-    };
-  }) :
-  [
-    { title: 'Content Foundation', timeframe: 'Q2 2025', active: true },
-    { title: 'SVG Playground', timeframe: 'Q3 2025', active: false },
-    { title: 'Local-First Demo', timeframe: 'Q3 2025', active: false },
-    { title: 'Portfolio Integration', timeframe: 'Q4 2025', active: false },
-    { title: 'Liquid v2 Animations', timeframe: 'Q1 2026', active: false },
-    { title: 'Interactive Stories', timeframe: 'Q2 2026', active: false },
-    { title: 'AI Integration', timeframe: 'Q3-Q4 2026', active: false },
-  ];
+  return {
+    id: phase.id,
+    title: phase.data.title.split(':').length > 1 ? phase.data.title.split(':')[1].trim() : phase.data.title,
+    fullTitle: phase.data.title,
+    timeframe: phase.data.timeframe || 'TBD',
+    description: phase.data.description,
+    status: phase.data.status === 'now' ? 'current' : 
+           phase.data.status === 'completed' ? 'completed' : 'upcoming',
+    order: phase.data.order,
+    progress: phaseIndex === 0 ? completedCMSItems * 20 : 0,
+    goals: phase.data.goals || [],
+    items: phaseRoadmapItems.map(item => ({
+      id: item.id,
+      title: item.data.title,
+      description: item.data.description,
+      status: item.data.status,
+      features: item.data.features || [],
+      completedItems: item.data.completedItems || []
+    }))
+  };
+});
 ---
 
 <Layout title="Development Roadmap" description="My future plans and development roadmap">
   <div class="roadmap-page">
-      <section class="roadmap-hero">
-        <div class="roadmap-header">
-          <Icon name="MapTrifold" size={48} weight="duotone" liquid={true} inkEffect="medium" />
-          <h1>Development Roadmap</h1>
-        </div>
-        <p class="lead">My future plans and development roadmap</p>
-      </section>
+    <!-- Hero Section -->
+    <section class="roadmap-hero">
+      <div class="roadmap-header">
+        <Icon name="MapTrifold" size={48} weight="duotone" liquid={true} inkEffect="medium" />
+        <h1>Development Roadmap</h1>
+      </div>
+      <p class="lead">Exploring the future of web experiences through innovative development phases</p>
+    </section>
 
-    <section class="roadmap-visualization">
-      <div class="liquid-roadmap">
-        <div class="roadmap-stream">
-          <!-- Liquid SVG animation -->
-          <svg class="liquid-wave" viewBox="0 0 1200 120" preserveAspectRatio="none">
-            <path d="M0,0 C300,90 600,30 900,90 L1200,30 L1200,120 L0,120 Z" fill="url(#gradient)"></path>
-            <defs>
-              <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" style="stop-color:var(--color-tertiary);stop-opacity:0.7" />
-                <stop offset="50%" style="stop-color:var(--color-accent);stop-opacity:0.5" />
-                <stop offset="100%" style="stop-color:var(--color-light);stop-opacity:0.7" />
-              </linearGradient>
-            </defs>
-          </svg>
-          
-          <!-- Roadmap items floating on the liquid -->
-          <div class="roadmap-items">
-            {sortedRoadmapItems.map((item) => (
-              <div class="roadmap-item" data-phase={item.data.phase}>
-                <div class="roadmap-node"></div>
-                <div class="roadmap-content two-tone-card">
-                  <div class="roadmap-card-header">
-                    <h3 class="roadmap-card-title">{item.data.title}</h3>
-                  </div>
-                  <div class="roadmap-card-body">
-                    <p class="roadmap-card-description">{item.data.description}</p>
-                    <ul class="roadmap-features">
-                      {item.data.features && item.data.features.map(feature => (
-                        <li>{feature}</li>
-                      ))}
-                    </ul>
-                    {item.data.completedItems && item.data.completedItems.length > 0 && (
-                      <div class="roadmap-completed">
-                        <h4>Completed:</h4>
-                        <ul class="completed-features">
-                          {item.data.completedItems.map(completed => (
-                            <li class="completed">{completed}</li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-                    <div class={`roadmap-status ${item.data.status}`}>{item.data.status}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+    <!-- 3D Timeline - Now the main feature -->
+    <section class="roadmap-timeline-section">
+      <div class="timeline-container">
+        <RoadmapTimeline 
+          phases={timelineData}
+          currentProgress={progressPercentage}
+        />
+      </div>
+      
+      <!-- Timeline Legend -->
+      <div class="timeline-legend">
+        <div class="legend-item">
+          <span class="legend-dot completed"></span>
+          <span>Completed</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot current"></span>
+          <span>In Progress</span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot upcoming"></span>
+          <span>Upcoming</span>
         </div>
       </div>
     </section>
 
-    <section class="roadmap-details">
-      <h2>The Vision</h2>
-      <p>My development roadmap is guided by a philosophy of creating engaging, user-centric experiences that push the boundaries of web technology. Each phase builds upon the last, creating a cohesive ecosystem that reflects my growth and direction as a developer and innovator.</p>
-
+    <!-- Vision & Principles -->
+    <section class="roadmap-vision">
+      <h2>Guiding Principles</h2>
+      <p class="vision-text">My development roadmap is guided by a philosophy of creating engaging, user-centric experiences that push the boundaries of web technology.</p>
+      
       <div class="roadmap-principles">
         {sortedPrinciples.map(principle => (
-          <div class="principle-card card-base card-glow">
-            <h3 class="card-title">{principle.data.title}</h3>
-            <p class="card-description">{principle.data.description}</p>
+          <div class="principle-card">
+            <div class="principle-icon">
+              <Icon name="Sparkle" size={32} weight="duotone" />
+            </div>
+            <h3>{principle.data.title}</h3>
+            <p>{principle.data.description}</p>
           </div>
         ))}
       </div>
-      
-      <div class="roadmap-phases">
-        {sortedPhases.length > 0 ? (
-          sortedPhases.map(phase => (
-            <div class="phase-card two-tone-card">
-              <div class="phase-card-header">
-                <h3 class="phase-card-title">{phase.data.title}</h3>
-                <div class={`phase-indicator ${phase.data.status}`}>{phase.data.status}</div>
-              </div>
-              <div class="phase-card-body">
-                <p class="phase-card-description">{phase.data.description}</p>
-                <div class="phase-goals">
-                  <h4>Key Goals:</h4>
-                  <ul>
-                    {phase.data.goals && phase.data.goals.map(goal => (
-                      <li>{goal}</li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          ))
-        ) : (
-          <div class="phase-card two-tone-card empty-state">
-            <div class="phase-card-header">
-              <h3 class="phase-card-title">Development Phases Coming Soon</h3>
-            </div>
-            <div class="phase-card-body">
-              <p class="phase-card-description">The site development is organized into strategic phases. Check back soon for detailed information about each phase.</p>
-            </div>
-          </div>
-        )}
-      </div>
     </section>
 
-    <section class="roadmap-timeline">
-      <h2>Development Timeline</h2>
-      <div class="timeline">
-        <div class="timeline-progress-bar">
-          <div class="timeline-progress" style={`width: ${progressPercentage}%`}></div>
-        </div>
-
-        <div class="timeline-markers">
-          {timelineMarkers && timelineMarkers.length > 0 ? (
-            timelineMarkers.map(marker => (
-              <div class={`timeline-marker ${marker.active ? 'active' : ''}`}>
-                <div class="marker-dot"></div>
-                <div class="marker-label">{marker.timeframe}</div>
-                <div class="marker-title">{marker.title}</div>
-              </div>
-            ))
-          ) : (
-            <div class="timeline-empty-state">
-              <p>Timeline information is currently being updated. Check back soon for a detailed development schedule.</p>
-            </div>
-          )}
-        </div>
-      </div>
-    </section>
-
+    <!-- CTA Section -->
     <section class="roadmap-cta">
-      <div class="cta-card card-base card-glow">
-        <h2>Want to collaborate?</h2>
+      <div class="cta-card">
+        <h2>Let's Build Together</h2>
         <p>I'm always open to interesting collaboration opportunities that align with my roadmap. If you have a project that fits with my vision, let's discuss how we might work together.</p>
         <div class="cta-buttons">
-          <a href="mailto:erikk@shupp.dev" class="btn btn-primary">Email Me</a>
-          <a href="https://github.com/shuppel" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">GitHub</a>
-          <a href="https://www.linkedin.com/in/shupp-erikk" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">LinkedIn</a>
+          <a href="mailto:erikk@shupp.dev" class="btn btn-primary">
+            <Icon name="Envelope" size={20} weight="duotone" />
+            Email Me
+          </a>
+          <a href="https://github.com/shuppel" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+            <Icon name="GithubLogo" size={20} weight="duotone" />
+            GitHub
+          </a>
+          <a href="https://www.linkedin.com/in/shupp-erikk" target="_blank" rel="noopener noreferrer" class="btn btn-secondary">
+            <Icon name="LinkedinLogo" size={20} weight="duotone" />
+            LinkedIn
+          </a>
         </div>
       </div>
     </section>
   </div>
 </Layout>
 
-<script>
-  // Animate roadmap items on scroll
-  document.addEventListener('DOMContentLoaded', () => {
-    const roadmapItems = document.querySelectorAll('.roadmap-item');
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('animate');
-        }
-      });
-    }, {
-      threshold: 0.2
-    });
-    
-    roadmapItems.forEach(item => {
-      observer.observe(item);
-    });
-    
-    // Liquid wave animation
-    const liquidWave = document.querySelector('.liquid-wave path');
-    let waveOffset = 0;
-    
-    function animateWave() {
-      waveOffset += 0.5;
-      
-      // Create a dynamic wavy path
-      const path = `M0,0 C300,${Math.sin(waveOffset * 0.017) * 30 + 60} 600,${Math.sin(waveOffset * 0.02 + 1) * 30 + 60} 900,${Math.sin(waveOffset * 0.017 + 2) * 30 + 60} L1200,30 L1200,120 L0,120 Z`;
-      
-      if (liquidWave) {
-        liquidWave.setAttribute('d', path);
-      }
-      
-      requestAnimationFrame(animateWave);
-    }
-    
-    animateWave();
-  });
-</script>
-
 <style>
-  /* Roadmap Page Styles */
+  /* Page Layout */
   .roadmap-page {
-    max-width: 1200px;
+    max-width: 1400px;
     margin: 0 auto;
-  }
-
-    .roadmap-hero {
-      margin-bottom: 3rem;
-    }
-
-    .roadmap-header {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
-
-    .roadmap-hero h1 {
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: var(--text-color);
-      margin: 0;
-    }
-
-    .lead {
-      font-size: 1.25rem;
-      color: var(--text-light);
-      line-height: 1.6;
-      margin: 0;
-    }
-
-  /* Liquid Roadmap Visualization */
-  .roadmap-visualization {
-    margin: 5rem 0;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .liquid-roadmap {
-    position: relative;
-    min-height: 800px;
-    padding: 2rem 0;
-  }
-
-  .roadmap-stream {
-    position: relative;
-    min-height: 600px;
-    overflow: hidden;
-  }
-
-  .liquid-wave {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 120px;
-    transform: rotate(180deg);
-    filter: drop-shadow(0 10px 20px rgba(20, 8, 14, 0.1));
-  }
-
-  .roadmap-items {
-    position: relative;
-    padding: 3rem 1rem;
-    z-index: 2;
-  }
-
-  .roadmap-item {
-    position: relative;
-    display: flex;
-    align-items: flex-start;
-    margin-bottom: 8rem;
-    opacity: 0;
-    transform: translateY(30px);
-    transition: all 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
-  }
-
-  .roadmap-item.animate {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  .roadmap-item:nth-child(odd) {
-    flex-direction: row;
-    padding-right: 20%;
-  }
-
-  .roadmap-item:nth-child(even) {
-    flex-direction: row-reverse;
-    padding-left: 20%;
-  }
-
-  .roadmap-node {
-    width: 30px;
-    height: 30px;
-    background: linear-gradient(135deg, var(--color-tertiary), var(--color-accent));
-    border-radius: 50%;
-    margin: 0 2rem;
-    position: relative;
-    box-shadow: 0 6px 15px rgba(20, 8, 14, 0.1);
-    z-index: 2;
-  }
-
-  .roadmap-node::before {
-    content: '';
-    position: absolute;
-    top: -5px;
-    left: -5px;
-    right: -5px;
-    bottom: -5px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--color-tertiary), var(--color-accent));
-    opacity: 0.3;
-    z-index: -1;
-    animation: pulse 3s infinite;
-  }
-
-  @keyframes pulse {
-    0% {
-      transform: scale(1);
-      opacity: 0.3;
-    }
-    50% {
-      transform: scale(1.5);
-      opacity: 0.1;
-    }
-    100% {
-      transform: scale(1);
-      opacity: 0.3;
-    }
-  }
-
-  .roadmap-content {
-    flex: 1;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-  }
-
-  .roadmap-card-header {
-    background: linear-gradient(45deg, var(--color-tertiary), var(--color-secondary));
-    padding: 1.5rem 2rem;
-    color: white;
-  }
-
-  html.dark .roadmap-card-header {
-    background: linear-gradient(45deg, #1c1c24, #2a2a36);
-  }
-
-  .roadmap-card-body {
-    background: white;
     padding: 2rem;
-    border-top: 1px solid rgba(121, 148, 150, 0.1);
   }
 
-  html.dark .roadmap-card-body {
-    background: #23232b;
-    border-top: 1px solid rgba(172, 193, 150, 0.1);
+  /* Hero Section */
+  .roadmap-hero {
+    text-align: center;
+    margin-bottom: 4rem;
   }
 
-  .roadmap-content:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 15px rgba(20, 8, 14, 0.05);
+  .roadmap-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
   }
 
-  .roadmap-card-title {
-    margin-bottom: 0;
-    color: white;
-    font-weight: 600;
-  }
-
-  html.dark .roadmap-card-title {
-    color: white;
-  }
-
-  .roadmap-card-description {
-    margin-bottom: 1.5rem;
-    color: var(--text-light);
-  }
-
-  html.dark .roadmap-card-description {
-    color: #c5c5d2;
-  }
-
-  .roadmap-features {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 1.5rem 0;
-  }
-
-  .roadmap-features li {
-    padding-left: 1.5rem;
-    position: relative;
-    margin-bottom: 0.5rem;
-  }
-
-  .roadmap-features li::before {
-    content: '•';
-    position: absolute;
-    left: 0;
-    color: var(--color-tertiary);
-    font-size: 1.2rem;
-  }
-
-  .roadmap-completed {
-    margin-top: 1.5rem;
-    margin-bottom: 1.5rem;
-    border-top: 1px dashed var(--border-color);
-    padding-top: 1rem;
-  }
-
-  .roadmap-completed h4 {
-    color: var(--color-tertiary);
-    margin-bottom: 0.5rem;
-    font-size: 0.9rem;
-  }
-
-  .completed-features {
-    list-style: none;
-    padding: 0;
+  .roadmap-hero h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--color-tertiary), var(--color-accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
     margin: 0;
   }
 
-  .completed-features li {
-    padding-left: 1.5rem;
+  .lead {
+    font-size: 1.25rem;
+    color: var(--text-light);
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  /* Timeline Section */
+  .roadmap-timeline-section {
+    margin: 4rem 0 6rem;
     position: relative;
-    margin-bottom: 0.5rem;
-    color: var(--color-tertiary);
   }
 
-  .completed-features li.completed::before {
-    content: '✓';
-    position: absolute;
-    left: 0;
-    color: var(--color-tertiary);
-    font-weight: bold;
+  .timeline-container {
+    width: 100%;
+    margin: 0 auto;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(135deg, 
+      rgba(121, 148, 150, 0.02) 0%, 
+      rgba(172, 193, 150, 0.02) 100%);
   }
 
-  .roadmap-status {
+  html.dark .timeline-container {
+    background: linear-gradient(135deg, 
+      rgba(44, 44, 56, 0.3) 0%, 
+      rgba(30, 32, 40, 0.3) 100%);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Timeline Legend */
+  .timeline-legend {
+    display: flex;
+    justify-content: center;
+    gap: 2rem;
+    margin-top: 2rem;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    width: fit-content;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  html.dark .timeline-legend {
+    background: rgba(30, 32, 40, 0.8);
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     font-size: 0.9rem;
-    font-weight: 600;
-    padding: 0.3rem 0.8rem;
-    border-radius: 30px;
+    color: var(--text-light);
+  }
+
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
     display: inline-block;
-    margin-top: 0.5rem;
   }
 
-  .roadmap-status {
-    font-weight: 600;
-    padding: 0.3rem 0.8rem;
-    border-radius: 30px;
-    display: inline-block;
-    font-size: 0.9rem;
+  .legend-dot.completed {
+    background: linear-gradient(135deg, #5ea3a3, #7bb8b8);
   }
 
-  .roadmap-status.now {
-    background-color: rgba(121, 148, 150, 0.2);
-    color: var(--color-tertiary);
+  .legend-dot.current {
+    background: linear-gradient(135deg, #7994aa, #acb5dd);
+    box-shadow: 0 0 10px rgba(172, 181, 221, 0.5);
   }
 
-  .roadmap-status.next {
-    background-color: rgba(172, 193, 150, 0.2);
-    color: var(--color-accent);
+  .legend-dot.upcoming {
+    background: linear-gradient(135deg, #c5c5d2, #e0e0e8);
   }
 
-  .roadmap-status.later {
-    background-color: rgba(233, 235, 158, 0.2);
-    color: var(--color-secondary);
-  }
-
-  html.dark .roadmap-status.later {
-    background-color: rgba(233, 235, 158, 0.2);
-    color: var(--color-light);
-  }
-
-  .roadmap-status.exploring {
-    background-color: rgba(110, 125, 200, 0.2);
-    color: #6e7dc8;
-  }
-
-  /* Phases Section */
-  .roadmap-details {
+  /* Vision Section */
+  .roadmap-vision {
     margin: 6rem 0;
-  }
-
-  .roadmap-details h2 {
     text-align: center;
-    margin-bottom: 2.5rem;
-    position: relative;
   }
 
-  .roadmap-details h2::after {
+  .roadmap-vision h2 {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+    position: relative;
+    display: inline-block;
+  }
+
+  .roadmap-vision h2::after {
     content: "";
     position: absolute;
     bottom: -10px;
@@ -554,39 +280,41 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
     transform: translateX(-50%);
     width: 60px;
     height: 3px;
-    background: var(--primary-color);
+    background: linear-gradient(to right, var(--color-tertiary), var(--color-accent));
     border-radius: 3px;
   }
 
-  .roadmap-details > p {
-    max-width: 800px;
+  .vision-text {
+    max-width: 700px;
     margin: 0 auto 3rem;
-    text-align: center;
     color: var(--text-light);
     font-size: 1.1rem;
     line-height: 1.7;
   }
 
+  /* Principles Grid */
   .roadmap-principles {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 3rem;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+    margin-top: 3rem;
   }
 
   .principle-card {
     background: white;
-    border-radius: 10px;
-    padding: 1.5rem;
-    box-shadow: var(--card-shadow);
+    border-radius: 16px;
+    padding: 2rem;
     text-align: center;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     position: relative;
     overflow: hidden;
   }
 
   html.dark .principle-card {
-    background: #23232b;
+    background: rgba(30, 32, 40, 0.6);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
   }
 
   .principle-card::before {
@@ -594,15 +322,42 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
+    right: 0;
     height: 4px;
     background: linear-gradient(to right, var(--color-tertiary), var(--color-accent));
-    opacity: 0.7;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .principle-card:hover::before {
+    opacity: 1;
+  }
+
+  .principle-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+  }
+
+  html.dark .principle-card:hover {
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+  }
+
+  .principle-icon {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color-tertiary), var(--color-accent));
+    border-radius: 50%;
+    color: white;
   }
 
   .principle-card h3 {
     margin-bottom: 0.8rem;
     color: var(--color-dark);
+    font-size: 1.3rem;
   }
 
   html.dark .principle-card h3 {
@@ -611,248 +366,12 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
 
   .principle-card p {
     color: var(--text-light);
-    font-size: 0.95rem;
-    line-height: 1.5;
+    line-height: 1.6;
+    margin: 0;
   }
 
   html.dark .principle-card p {
     color: #c5c5d2;
-  }
-
-  .principle-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(20, 8, 14, 0.1);
-  }
-
-  .roadmap-phases {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2rem;
-  }
-
-  .phase-card {
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .phase-card-header {
-    background: linear-gradient(45deg, var(--color-tertiary), var(--color-secondary));
-    padding: 1.5rem 2rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  html.dark .phase-card-header {
-    background: linear-gradient(45deg, #1c1c24, #2a2a36);
-  }
-
-  .phase-card-body {
-    background: white;
-    padding: 2rem;
-    border-top: 1px solid rgba(121, 148, 150, 0.1);
-  }
-
-  html.dark .phase-card-body {
-    background: #23232b;
-    border-top: 1px solid rgba(172, 193, 150, 0.1);
-  }
-
-  .phase-card:hover {
-    transform: translateY(-7px);
-    box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 15px rgba(20, 8, 14, 0.05);
-  }
-
-  .phase-card-title {
-    margin: 0;
-    font-size: 1.3rem;
-    color: white;
-    font-weight: 600;
-  }
-
-  html.dark .phase-card-title {
-    color: white;
-  }
-
-  .phase-indicator {
-    font-size: 0.75rem;
-    font-weight: 600;
-    padding: 0.25rem 0.8rem;
-    border-radius: 30px;
-  }
-
-  .phase-indicator.now {
-    background-color: rgba(121, 148, 150, 0.2);
-    color: var(--color-tertiary);
-  }
-
-  .phase-indicator.next {
-    background-color: rgba(172, 193, 150, 0.2);
-    color: var(--color-accent);
-  }
-
-  .phase-indicator.later {
-    background-color: rgba(233, 235, 158, 0.2);
-    color: var(--color-secondary);
-  }
-
-  .phase-indicator.exploring {
-    background-color: rgba(110, 125, 200, 0.2);
-    color: #6e7dc8;
-  }
-
-  html.dark .phase-indicator.now,
-  html.dark .phase-indicator.next,
-  html.dark .phase-indicator.later,
-  html.dark .phase-indicator.exploring {
-    color: var(--color-light);
-  }
-
-  .phase-card-description {
-    margin-bottom: 1.5rem;
-    color: var(--text-light);
-    line-height: 1.6;
-  }
-
-  html.dark .phase-card-description {
-    color: #c5c5d2;
-  }
-
-  .phase-goals h4 {
-    margin-bottom: 1rem;
-    font-size: 1.1rem;
-    color: var(--color-secondary);
-  }
-
-  html.dark .phase-goals h4 {
-    color: var(--color-accent);
-  }
-
-  .phase-goals ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-
-  .phase-goals li {
-    padding: 0.5rem 0 0.5rem 1.5rem;
-    position: relative;
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .phase-goals li:last-child {
-    border-bottom: none;
-  }
-
-  .phase-goals li::before {
-    content: '→';
-    position: absolute;
-    left: 0;
-    color: var(--color-tertiary);
-  }
-
-  /* Timeline Section */
-  .roadmap-timeline {
-    margin: 6rem 0;
-  }
-
-  .roadmap-timeline h2 {
-    text-align: center;
-    margin-bottom: 4rem;
-    position: relative;
-  }
-
-  .roadmap-timeline h2::after {
-    content: "";
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 3px;
-    background: var(--primary-color);
-    border-radius: 3px;
-  }
-
-  .timeline {
-    position: relative;
-    max-width: 1000px;
-    margin: 0 auto;
-    padding: 2rem 1rem;
-  }
-
-  .timeline-progress-bar {
-    position: relative;
-    height: 4px;
-    background-color: var(--background-alt);
-    border-radius: 4px;
-    margin-bottom: 2.5rem;
-  }
-
-  .timeline-progress {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 100%;
-    background: linear-gradient(to right, var(--color-tertiary), var(--color-accent));
-    border-radius: 4px;
-  }
-
-  .timeline-markers {
-    display: flex;
-    justify-content: space-between;
-    position: relative;
-  }
-
-  .timeline-marker {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    width: 120px;
-  }
-
-  .marker-dot {
-    width: 16px;
-    height: 16px;
-    background-color: var(--background-alt);
-    border: 3px solid white;
-    border-radius: 50%;
-    margin-bottom: 1rem;
-    box-shadow: 0 2px 5px rgba(20, 8, 14, 0.1);
-    transition: all 0.3s ease;
-  }
-
-  .timeline-marker.active .marker-dot {
-    background: linear-gradient(135deg, var(--color-tertiary), var(--color-accent));
-    transform: scale(1.2);
-    box-shadow: 0 3px 8px rgba(20, 8, 14, 0.2);
-  }
-
-  .marker-label {
-    font-size: 0.8rem;
-    font-weight: 600;
-    color: var(--text-light);
-    margin-bottom: 0.5rem;
-  }
-
-  .marker-title {
-    font-size: 0.9rem;
-    font-weight: 600;
-    color: var(--color-secondary);
-    transition: color 0.3s ease;
-  }
-
-  .timeline-marker.active .marker-title {
-    color: var(--color-dark);
-  }
-
-  html.dark .timeline-marker.active .marker-title {
-    color: var(--color-light);
   }
 
   /* CTA Section */
@@ -861,57 +380,46 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
   }
 
   .cta-card {
-    background: linear-gradient(135deg, rgba(121, 148, 150, 0.1), white, rgba(172, 193, 150, 0.1));
+    background: linear-gradient(135deg, var(--color-tertiary), var(--color-accent));
+    color: white;
     text-align: center;
     padding: 4rem 2rem;
-    border-radius: 16px;
-    box-shadow: var(--card-shadow);
+    border-radius: 24px;
     position: relative;
     overflow: hidden;
   }
 
-  html.dark .cta-card {
-    background: linear-gradient(135deg, rgba(44, 44, 56, 0.8), rgba(30, 32, 40, 0.9));
-  }
-
-  .cta-card::before, .cta-card::after {
+  .cta-card::before {
     content: '';
     position: absolute;
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+    animation: rotate 20s linear infinite;
   }
 
-  .cta-card::before {
-    background: radial-gradient(circle, rgba(121, 148, 150, 0.1) 0%, rgba(121, 148, 150, 0) 70%);
-    top: -150px;
-    right: -150px;
-  }
-
-  .cta-card::after {
-    background: radial-gradient(circle, rgba(172, 193, 150, 0.1) 0%, rgba(172, 193, 150, 0) 70%);
-    bottom: -150px;
-    left: -150px;
+  @keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
   }
 
   .cta-card h2 {
     margin-bottom: 1.5rem;
-    color: var(--color-dark);
-  }
-
-  html.dark .cta-card h2 {
-    color: #f3f4f6;
+    font-size: 2.5rem;
+    position: relative;
+    z-index: 1;
   }
 
   .cta-card p {
     max-width: 600px;
     margin: 0 auto 2.5rem;
-    color: var(--text-light);
     font-size: 1.1rem;
-  }
-
-  html.dark .cta-card p {
-    color: #c5c5d2;
+    line-height: 1.7;
+    position: relative;
+    z-index: 1;
+    opacity: 0.95;
   }
 
   .cta-buttons {
@@ -919,100 +427,67 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
     justify-content: center;
     gap: 1rem;
     flex-wrap: wrap;
+    position: relative;
+    z-index: 1;
   }
 
-  /* Responsive Adjustments */
-  @media (max-width: 900px) {
-    .roadmap-item {
-      flex-direction: column !important;
-      padding: 0 !important;
-      margin-bottom: 5rem;
-      align-items: center;
-    }
-
-    .roadmap-node {
-      margin-bottom: 2rem;
-    }
-
-    .phase-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
-
-    .timeline-markers {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 2.5rem;
-    }
-
-    .timeline-marker {
-      width: 100%;
-      flex-direction: row;
-      align-items: center;
-      text-align: left;
-      gap: 1rem;
-    }
-
-    .marker-dot {
-      margin-bottom: 0;
-    }
-
-    .roadmap-item:nth-child(odd) .roadmap-content::before,
-    .roadmap-item:nth-child(even) .roadmap-content::before {
-      left: 0;
-    }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
   }
 
-  /* Empty state styles */
-  .phase-card.empty-state .phase-card-header {
-    text-align: center;
+  .btn-primary {
+    background: white;
+    color: var(--color-tertiary);
   }
 
-  .phase-card.empty-state .phase-card-body {
-    text-align: center;
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
   }
 
-  .timeline-empty-state {
-    text-align: center;
-    padding: 3rem;
-    background: linear-gradient(135deg, rgba(121, 148, 150, 0.05), rgba(172, 193, 150, 0.05));
-    border: 1px dashed var(--border-color);
+  .btn-secondary {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    backdrop-filter: blur(10px);
   }
 
-  .timeline-empty-state {
-    width: 100%;
-    padding: 2rem;
-    margin: 2rem 0;
-    border-radius: 8px;
+  .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
   }
 
-  .timeline-empty-state p {
-    color: var(--text-light);
-    font-style: italic;
-  }
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .roadmap-hero h1 {
+      font-size: 2rem;
+    }
 
-    @media (max-width: 768px) {
-      .roadmap-header {
-        flex-direction: column;
-        text-align: center;
-      }
+    .lead {
+      font-size: 1.1rem;
+    }
 
-      .roadmap-hero h1 {
-        font-size: 2rem;
-      }
+    .roadmap-vision h2 {
+      font-size: 2rem;
+    }
 
-      .lead {
-        font-size: 1.1rem;
-      }
-
-    .roadmap-phases {
+    .roadmap-principles {
       grid-template-columns: 1fr;
       gap: 1.5rem;
     }
 
-    .roadmap-content {
-      padding: 1.5rem;
+    .cta-card {
+      padding: 3rem 1.5rem;
+    }
+
+    .cta-card h2 {
+      font-size: 2rem;
     }
 
     .cta-buttons {
@@ -1020,6 +495,16 @@ const timelineMarkers = (sortedTimelinePhases.length > 0) ?
       width: 100%;
       max-width: 300px;
       margin: 0 auto;
+    }
+
+    .btn {
+      width: 100%;
+      justify-content: center;
+    }
+
+    .timeline-legend {
+      flex-wrap: wrap;
+      gap: 1rem;
     }
   }
 </style>

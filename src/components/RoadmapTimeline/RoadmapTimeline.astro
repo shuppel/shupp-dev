@@ -1,0 +1,38 @@
+---
+export interface Props {
+  phases: Array<{
+    id: string;
+    title: string;
+    timeframe: string;
+    description?: string;
+    status: 'completed' | 'current' | 'upcoming';
+    progress?: number;
+    order: number;
+  }>;
+  currentProgress?: number;
+}
+
+const { phases, currentProgress = 0 } = Astro.props;
+---
+
+<div id="roadmap-timeline-root" data-phases={JSON.stringify(phases)} data-progress={currentProgress}></div>
+
+<script>
+  import RoadmapTimeline from './RoadmapTimelineWrapper';
+  import React from 'react';
+  import ReactDOM from 'react-dom/client';
+  
+  const rootElement = document.getElementById('roadmap-timeline-root');
+  if (rootElement) {
+    const phases = JSON.parse(rootElement.dataset.phases || '[]');
+    const progress = parseFloat(rootElement.dataset.progress || '0');
+    
+    const root = ReactDOM.createRoot(rootElement);
+    root.render(
+      React.createElement(RoadmapTimeline, {
+        phases: phases,
+        currentProgress: progress
+      })
+    );
+  }
+</script>
