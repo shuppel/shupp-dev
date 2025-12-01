@@ -14,6 +14,7 @@ export const siteConfig = {
     linkedin: 'https://www.linkedin.com/in/shupp-erikk/',
     twitter: 'https://twitter.com/erikkshupp',
     bluesky: 'https://bsky.app/profile/shupp.dev',
+    podcast: 'https://open.spotify.com/show/5795Q9GCmotmDpParHL1v6?si=6930bfe903dc4286',
   },
   
   // Default author
