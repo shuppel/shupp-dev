@@ -137,6 +137,15 @@ const author = authorEntries[0]; // Using the first author as this is a personal
             <div class="contact-label">Bluesky</div>
           </a>
         )}
+
+        {author.data.socialLinks?.podcast && (
+          <a href={author.data.socialLinks.podcast} target="_blank" rel="noopener noreferrer" class="contact-option">
+            <div class="contact-icon">
+              <Icon name="Microphone" size={32} weight="duotone" liquid={true} />
+            </div>
+            <div class="contact-label">Podcast</div>
+          </a>
+        )}
       </div>
     </section>
   </div>
