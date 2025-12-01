@@ -1,36 +1,153 @@
 ---
-import { ViewTransitions } from 'astro:transitions';
+import { ClientRouter } from 'astro:transitions';
 import Navigation from '../components/Header/Navigation.astro';
 import Footer from '../components/Footer/Footer.astro';
+import JsonLd from '../components/SEO/JsonLd.astro';
 
 export interface Props {
   title: string;
   description?: string;
+  image?: string;
+  type?: 'website' | 'article';
+  author?: string;
+  keywords?: string;
+  jsonLdType?: 'website' | 'article' | 'person' | 'organization' | 'breadcrumb' | 'tool';
+  jsonLdData?: any;
 }
 
-const { title, description = "Professional Portfolio and Blog for Software Engineer and Product Manager" } = Astro.props;
+const { 
+  title, 
+  description = "Professional Portfolio and Blog for Software Engineer and Product Manager",
+  image = "/og-default.png",
+  type = "website",
+  author = "Erikk Shupp",
+  keywords = "software engineer, product manager, web development, thoughtful app company, TACo, apps, Arlington VA, local-first, human-first, human-centered design",
+  jsonLdType = 'website',
+  jsonLdData = {}
+} = Astro.props;
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 ---
 
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="description" content={description} />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={canonicalURL} />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="/rss.xml" />
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <meta name="theme-color" content="#799496" />
+    
+    <!-- Primary Meta Tags -->
+    <title>{title} | shupp.dev</title>
+    <meta name="title" content={`${title} | shupp.dev`} />
+    <meta name="description" content={description} />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={new URL(image, Astro.site)} />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content={canonicalURL} />
+    <meta property="twitter:title" content={title} />
+    <meta property="twitter:description" content={description} />
+    <meta property="twitter:image" content={new URL(image, Astro.site)} />
+
+    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&family=Hind:wght@300;400;500;600;700&family=Maitree:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <title>{title} | shupp.dev</title>
-    <ViewTransitions />
+    
+    <!-- Additional SEO Meta Tags -->
+    <meta name="author" content={author} />
+    <meta name="keywords" content={keywords} />
+    
+    <!-- Structured Data -->
+    <JsonLd type={jsonLdType} data={jsonLdData} />
+    
+    <ClientRouter />
   </head>
   <body>
+    <a href="#main-content" class="skip-to-content">Skip to main content</a>
     <Navigation />
-    <main>
+    <main id="main-content">
       <slot />
     </main>
     <Footer />
     <script type="module">
+      // Core Web Vitals reporting
+      function sendToAnalytics({name, value, rating, delta}) {
+        // Log to console in development
+        if (window.location.hostname === 'localhost') {
+          console.log(`Web Vital: ${name}`, { value, rating, delta });
+        }
+        // You can send to your analytics service here
+        // Example: gtag('event', name, { value, rating, delta });
+      }
+
+      // Observe Web Vitals if browser supports it
+      if ('PerformanceObserver' in window) {
+        try {
+          // Observe Largest Contentful Paint
+          const lcpObserver = new PerformanceObserver((list) => {
+            const entries = list.getEntries();
+            const lastEntry = entries[entries.length - 1];
+            sendToAnalytics({
+              name: 'LCP',
+              value: lastEntry.renderTime || lastEntry.loadTime,
+              rating: lastEntry.renderTime < 2500 ? 'good' : lastEntry.renderTime < 4000 ? 'needs-improvement' : 'poor'
+            });
+          });
+          lcpObserver.observe({ type: 'largest-contentful-paint', buffered: true });
+
+          // Observe First Input Delay
+          const fidObserver = new PerformanceObserver((list) => {
+            const entries = list.getEntries();
+            entries.forEach((entry) => {
+              sendToAnalytics({
+                name: 'FID',
+                value: entry.processingStart - entry.startTime,
+                rating: entry.processingStart - entry.startTime < 100 ? 'good' : entry.processingStart - entry.startTime < 300 ? 'needs-improvement' : 'poor'
+              });
+            });
+          });
+          fidObserver.observe({ type: 'first-input', buffered: true });
+
+          // Observe Cumulative Layout Shift
+          let clsValue = 0;
+          const clsObserver = new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+              if (!entry.hadRecentInput) {
+                clsValue += entry.value;
+              }
+            }
+          });
+          clsObserver.observe({ type: 'layout-shift', buffered: true });
+
+          // Report CLS when page is backgrounded or unloaded
+          ['pagehide', 'visibilitychange'].forEach((type) => {
+            addEventListener(type, () => {
+              if (type === 'visibilitychange' && document.visibilityState === 'visible') return;
+              sendToAnalytics({
+                name: 'CLS',
+                value: clsValue,
+                rating: clsValue < 0.1 ? 'good' : clsValue < 0.25 ? 'needs-improvement' : 'poor'
+              });
+            }, { capture: true });
+          });
+        } catch (e) {
+          // Silently fail if not supported
+        }
+      }
+
       // Initialize dark mode on page load
       document.addEventListener('DOMContentLoaded', () => {
         const html = document.documentElement;
@@ -462,6 +579,24 @@ const { title, description = "Professional Portfolio and Blog for Software Engin
       transform: scale(100, 100);
       opacity: 0;
     }
+  }
+
+  /* Skip to content link */
+  .skip-to-content {
+    position: absolute;
+    top: -40px;
+    left: 0;
+    background: var(--primary-color);
+    color: white;
+    padding: 8px 16px;
+    z-index: 9999;
+    text-decoration: none;
+    border-radius: 0 0 4px 0;
+    font-weight: 500;
+  }
+
+  .skip-to-content:focus {
+    top: 0;
   }
 
   /* Reduce motion */

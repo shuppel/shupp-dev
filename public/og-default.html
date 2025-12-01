@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=1200, height=630">
+    <title>OG Image</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            width: 1200px;
+            height: 630px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #799496 0%, #ACC196 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+        
+        .container {
+            text-align: center;
+            padding: 60px;
+            width: 100%;
+        }
+        
+        .logo {
+            font-size: 80px;
+            font-weight: 700;
+            color: #14080E;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .tagline {
+            font-size: 36px;
+            color: #49475B;
+            font-weight: 400;
+            margin-bottom: 40px;
+        }
+        
+        .info {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            font-size: 24px;
+            color: #14080E;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .icon {
+            width: 30px;
+            height: 30px;
+            background: #14080E;
+            border-radius: 50%;
+        }
+        
+        .url {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 22px;
+            color: #49475B;
+            font-weight: 500;
+        }
+        
+        .pattern {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.1;
+            background-image: 
+                repeating-linear-gradient(45deg, transparent, transparent 35px, rgba(255,255,255,.5) 35px, rgba(255,255,255,.5) 70px);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="pattern"></div>
+    <div class="container">
+        <div class="logo">Erikk Shupp</div>
+        <div class="tagline">building apps for hoomans</div>
+        <div class="info">
+            <div class="info-item">
+                <div class="icon"></div>
+                <span>Product Manager</span>
+            </div>
+            <div class="info-item">
+                <div class="icon"></div>
+                <span>Software Engineer</span>
+            </div>
+        </div>
+    </div>
+    <div class="url">shupp.dev</div>
+</body>
+</html>

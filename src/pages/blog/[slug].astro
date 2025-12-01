@@ -3,6 +3,7 @@ import { getCollection } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import type { CollectionEntry } from 'astro:content';
 import RelatedProjects from '../../components/RelatedProjects.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
 
 export async function getStaticPaths() {
   const blogEntries = await getCollection('blog');
@@ -25,9 +26,45 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
   month: 'long',
   day: 'numeric',
 });
+
+// Prepare breadcrumb data
+const breadcrumbs = [
+  { name: 'Blog', url: '/blog' },
+  { name: entry.data.title }
+];
+
+// Prepare JSON-LD data for article
+const articleData = {
+  article: {
+    title: entry.data.title,
+    description: entry.data.description,
+    pubDate: entry.data.pubDate.toISOString(),
+    updatedDate: entry.data.updatedDate?.toISOString(),
+    author: entry.data.author,
+    tags: entry.data.tags || [],
+    categories: entry.data.categories || [],
+    readTime: entry.data.readTime,
+    image: entry.data.featuredImage || '/og-default.png'
+  },
+  breadcrumbs: [
+    { name: 'Home', url: 'https://shupp.dev' },
+    { name: 'Blog', url: 'https://shupp.dev/blog' },
+    { name: entry.data.title, url: `https://shupp.dev/blog/${entry.slug}` }
+  ]
+};
 ---
 
-<Layout title={entry.data.title} description={entry.data.description}>
+<Layout 
+  title={entry.data.title} 
+  description={entry.data.description}
+  type="article"
+  image={entry.data.featuredImage || '/og-default.png'}
+  author={entry.data.author}
+  keywords={entry.data.tags?.join(', ') || ''}
+  jsonLdType="article"
+  jsonLdData={articleData}
+>
+  <Breadcrumbs items={breadcrumbs} />
   <div class="blog-post">
     <article class="post-content">
       <div class="post-header">
@@ -170,13 +207,14 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
         const targetElement = document.querySelector(targetId);
 
         if (targetElement) {
+          const top = (targetElement as HTMLElement).offsetTop - 80;
           window.scrollTo({
-            top: targetElement.offsetTop - 80,
+            top: top,
             behavior: 'smooth'
           });
 
           // Update URL without scrolling
-          history.pushState(null, null, targetId);
+          if (targetId) history.pushState(null, "", targetId);
         }
       });
     });
@@ -188,6 +226,8 @@ const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
       let scrollY = window.pageYOffset;
 
       sections.forEach(section => {
+        if (!(section instanceof HTMLElement)) return;
+        
         const sectionHeight = section.offsetHeight;
         const sectionTop = section.offsetTop - 100;
         const sectionId = section.getAttribute('id');

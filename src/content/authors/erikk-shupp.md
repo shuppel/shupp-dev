@@ -4,7 +4,7 @@ title: Product Manager & Software Engineer
 email: erikk@shupp.dev
 location: Arlington, Virginia
 avatar: /images/avatar.jpg
-shortBio: Building apps for hoomans. Product manager and software engineer passionate about thoughtful digital experiences.
+shortBio: Building apps for hoomans. Product manager and software engineer passionate about human-first digital experiences.
 longBio: |
   I did things the opposite way—maybe the wrong way, but AI has kind of saved my ass from being irrelevant in the fourth generation tech evolution. English Creative Writing undergrad, Technology Management masters, and I've been open source learning all my most technical skills in the midsummer of my career. What a fever dream LLMs have been.
 
