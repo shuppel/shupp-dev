@@ -1,0 +1,187 @@
+---
+import { siteConfig } from '../../config/site';
+
+export interface Props {
+  type?: 'website' | 'article' | 'person' | 'organization' | 'breadcrumb' | 'tool';
+  data?: any;
+}
+
+const { type = 'website', data = {} } = Astro.props;
+const currentUrl = new URL(Astro.url.pathname, Astro.site);
+
+// Default Organization schema
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Thoughtful App Company",
+  alternateName: "TACo",
+  url: siteConfig.siteUrl,
+  logo: `${siteConfig.siteUrl}/favicon.svg`,
+  sameAs: [
+    siteConfig.social.linkedin,
+    siteConfig.social.github,
+    siteConfig.social.twitter,
+    siteConfig.social.bluesky,
+  ],
+  founder: {
+    "@type": "Person",
+    name: siteConfig.author.name,
+    jobTitle: siteConfig.author.title,
+    url: siteConfig.siteUrl,
+  }
+};
+
+// Website schema for homepage
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: siteConfig.siteName,
+  description: siteConfig.tagline,
+  url: siteConfig.siteUrl,
+  publisher: organizationSchema,
+  potentialAction: {
+    "@type": "SearchAction",
+    target: {
+      "@type": "EntryPoint",
+      urlTemplate: `${siteConfig.siteUrl}/blog?search={search_term_string}`
+    },
+    "query-input": "required name=search_term_string"
+  }
+};
+
+// Person schema for author/about pages
+const personSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: siteConfig.author.name,
+  jobTitle: siteConfig.author.title,
+  url: siteConfig.siteUrl,
+  sameAs: [
+    siteConfig.social.linkedin,
+    siteConfig.social.github,
+    siteConfig.social.twitter,
+    siteConfig.social.bluesky,
+  ],
+  email: siteConfig.email,
+  address: {
+    "@type": "PostalAddress",
+    addressLocality: "Arlington",
+    addressRegion: "VA",
+    addressCountry: "US"
+  },
+  worksFor: {
+    "@type": "Organization",
+    name: "Thoughtful App Company"
+  }
+};
+
+// Article schema for blog posts
+const articleSchema = data.article ? {
+  "@context": "https://schema.org",
+  "@type": "Article",
+  headline: data.article.title,
+  description: data.article.description,
+  image: data.article.image || `${siteConfig.siteUrl}/og-default.png`,
+  datePublished: data.article.pubDate,
+  dateModified: data.article.updatedDate || data.article.pubDate,
+  author: {
+    "@type": "Person",
+    name: data.article.author || siteConfig.author.name,
+    url: siteConfig.siteUrl
+  },
+  publisher: organizationSchema,
+  mainEntityOfPage: {
+    "@type": "WebPage",
+    "@id": currentUrl.href
+  },
+  keywords: data.article.tags?.join(', ') || '',
+  articleSection: data.article.categories?.[0] || 'General',
+  wordCount: data.article.wordCount,
+  timeRequired: data.article.readTime || '5 min'
+} : null;
+
+interface BreadcrumbItem {
+  name: string;
+  url: string;
+}
+
+// Breadcrumb schema
+const breadcrumbSchema = data.breadcrumbs ? {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  itemListElement: data.breadcrumbs.map((item: BreadcrumbItem, index: number) => ({
+    "@type": "ListItem",
+    position: index + 1,
+    name: item.name,
+    item: item.url
+  }))
+} : null;
+
+// SoftwareApplication schema for tools
+const toolSchema = data.tool ? {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: data.tool.title,
+  description: data.tool.description,
+  applicationCategory: "WebApplication",
+  operatingSystem: "Web Browser",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD"
+  },
+  author: organizationSchema,
+  url: currentUrl.href,
+  featureList: data.tool.features?.join(', ') || '',
+  softwareVersion: "1.0",
+  datePublished: data.tool.lastUpdated,
+  aggregateRating: data.tool.rating ? {
+    "@type": "AggregateRating",
+    ratingValue: data.tool.rating,
+    ratingCount: data.tool.ratingCount || 1
+  } : undefined
+} : null;
+
+// Select the appropriate schema based on type
+let selectedSchema;
+switch(type) {
+  case 'article':
+    selectedSchema = articleSchema;
+    break;
+  case 'person':
+    selectedSchema = personSchema;
+    break;
+  case 'organization':
+    selectedSchema = organizationSchema;
+    break;
+  case 'breadcrumb':
+    selectedSchema = breadcrumbSchema;
+    break;
+  case 'tool':
+    selectedSchema = toolSchema;
+    break;
+  case 'website':
+  default:
+    selectedSchema = websiteSchema;
+}
+
+// For articles, also include breadcrumbs if provided
+const schemas: any[] = [];
+if (selectedSchema) schemas.push(selectedSchema);
+if (type === 'article' && data.breadcrumbs) {
+  schemas.push({
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    itemListElement: data.breadcrumbs.map((item: BreadcrumbItem, index: number) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      name: item.name,
+      item: item.url
+    }))
+  });
+}
+---
+
+{schemas.map(schema => (
+  <script type="application/ld+json" set:html={JSON.stringify(schema, null, 2)} />
+))}

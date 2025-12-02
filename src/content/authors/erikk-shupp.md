@@ -4,7 +4,7 @@ title: Product Manager & Software Engineer
 email: erikk@shupp.dev
 location: Arlington, Virginia
 avatar: /images/avatar.jpg
-shortBio: Building apps for hoomans. Product manager and software engineer passionate about thoughtful digital experiences.
+shortBio: Building apps for hoomans. Product manager and software engineer passionate about human-first digital experiences.
 longBio: |
   I did things the opposite way—maybe the wrong way, but AI has kind of saved my ass from being irrelevant in the fourth generation tech evolution. English Creative Writing undergrad, Technology Management masters, and I've been open source learning all my most technical skills in the midsummer of my career. What a fever dream LLMs have been.
 
@@ -18,13 +18,14 @@ longBio: |
 
   My work with Washington Rugby exemplifies this philosophy—transforming their digital infrastructure through strategic use of nonprofit resources, implementing zero-fee payment systems, and building automation that actually works. Not because it's technically impressive, but because it helps real people do real things better.
 
-  Currently building apps for hoomans through Thoughtful App Co., where every concept starts with a real problem and ends with a solution that respects users' time and attention.
+  Currently building apps for hoomans through Thoughtful App Co., where every concept starts with a real problem and ends with a solution that respects users' time and attention. I also host the *Humans Only* podcast, exploring how emerging technology can better serve humanity.
 socialLinks:
   github: https://github.com/shuppel
   linkedin: https://www.linkedin.com/in/shupp-erikk/
   twitter: https://twitter.com/shuppdev
   bluesky: https://bsky.app/profile/shupp.dev
   website: https://shupp.dev
+  podcast: https://open.spotify.com/show/5795Q9GCmotmDpParHL1v6?si=6930bfe903dc4286
 skills:
   - Full-Stack Development
   - TypeScript & React
@@ -51,5 +52,6 @@ interests:
   - Mental Health Technology
   - Local-First Software
   - Human-Centered Design
+  - Podcasting
   - Rugby (Union)
 ---

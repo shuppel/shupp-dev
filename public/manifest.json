@@ -1,0 +1,54 @@
+{
+  "name": "Shupp.dev - Building Apps for Hoomans",
+  "short_name": "Shupp.dev",
+  "description": "Portfolio and tools by Erikk Shupp - Product Manager & Software Engineer",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#14080E",
+  "theme_color": "#799496",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "finance", "utilities"],
+  "shortcuts": [
+    {
+      "name": "Blog",
+      "short_name": "Blog",
+      "description": "Read the latest articles",
+      "url": "/blog",
+      "icons": [{ "src": "/favicon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Tools",
+      "short_name": "Tools",
+      "description": "Access productivity tools",
+      "url": "/tools",
+      "icons": [{ "src": "/favicon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Thoughtful Apps",
+      "short_name": "TACo",
+      "description": "Explore Thoughtful App Company",
+      "url": "/thoughtful-app-co",
+      "icons": [{ "src": "/favicon.svg", "sizes": "96x96" }]
+    }
+  ]
+}

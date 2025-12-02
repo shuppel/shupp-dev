@@ -70,6 +70,7 @@ const authorCollection = defineCollection({
       twitter: z.string().url().optional(),
       bluesky: z.string().url().optional(),
       website: z.string().url().optional(),
+      podcast: z.string().url().optional(),
     }),
     skills: z.array(z.string()).optional(),
     softSkills: z.array(z.string()).optional(),
