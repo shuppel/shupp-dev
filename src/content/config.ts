@@ -29,7 +29,7 @@ const projectCollection = defineCollection({
     completed: z.boolean().default(true),
     technologies: z.array(z.string()),
     featured: z.boolean().default(false),
-    projectImage: z.string().optional(),
+    image: z.string().optional(),
     projectUrl: z.string().url().optional(),
     githubUrl: z.string().url().optional(),
     relatedBlogPosts: z.union([z.array(z.string()), z.null()]).optional(), // Related blog post slugs or null if N/A

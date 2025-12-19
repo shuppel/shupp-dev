@@ -9,9 +9,7 @@
     "astro": "astro",
     "lint": "eslint . --ext .ts,.tsx,.astro",
     "lint:fix": "eslint . --ext .ts,.tsx,.astro --fix",
-    "typecheck": "astro check && tsc --noEmit",
-    "screenshot": "node -r dotenv/config scripts/capture-screenshots.js",
-    "screenshot:local": "echo '⚠️  localhost screenshots not supported - use npm run screenshot for production URLs'"
+    "typecheck": "astro check && tsc --noEmit"
   },
   "dependencies": {
     "@astrojs/react": "^4.3.0",

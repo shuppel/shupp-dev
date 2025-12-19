@@ -5,7 +5,7 @@ projectDate: 2025-07-01
 completed: true
 technologies: ["Next.js", "Vercel", "Supabase", "Contentful CMS", "TypeScript", "React", "SEO", "Google Apps Script", "Discord API", "Textbelt", "Zeffy", "Google Workspace"]
 featured: true
-projectImage: "https://www.washingtonrugby.org"
+image: "/images/projects/wrfc.png"
 projectUrl: "https://www.washingtonrugby.org"
 githubUrl: "https://github.com/shuppel/wrfc-website/tree/dev"
 relatedBlogPosts: ["deployment-netlify-toml"]

@@ -26,13 +26,12 @@ const projects = allProjects.sort((a, b) => {
       {projects.map(project => (
         <a href={`/portfolio/${project.slug}`} class="portfolio-item">
           <div class="portfolio-image">
-            {project.data.projectImage && project.data.projectImage.startsWith('http') ? (
+            {project.data.image ? (
               <img
-                src={`/api/screenshot?url=${encodeURIComponent(project.data.projectImage)}`}
-                alt=""
+                src={project.data.image}
+                alt={project.data.title}
                 loading="lazy"
                 class="portfolio-preview-img"
-                onerror="this.onerror=null; this.parentElement.classList.add('fallback'); this.style.display='none'"
               />
             ) : (
               <div class="portfolio-placeholder">
