@@ -4,6 +4,7 @@ import Layout from '../../layouts/Layout.astro';
 import type { CollectionEntry } from 'astro:content';
 import RelatedProjects from '../../components/RelatedProjects.astro';
 import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import '../../styles/prose.css';
 
 export async function getStaticPaths() {
   const blogEntries = await getCollection('blog');
@@ -95,7 +96,7 @@ const articleData = {
         </div>
       </div>
 
-      <div class="post-body">
+      <div class="post-body prose">
         <Content />
       </div>
 
@@ -423,59 +424,6 @@ const articleData = {
 
   .post-body {
     padding: 2.5rem;
-    font-size: 1.05rem;
-    line-height: 1.7;
-  }
-
-  html.dark .post-body {
-    color: #e5e7eb;
-  }
-
-  .post-body h2 {
-    font-size: 1.8rem;
-    margin: 2.5rem 0 1.5rem;
-    padding-top: 2rem;
-    color: var(--text-color);
-  }
-
-  html.dark .post-body h2 {
-    color: #f3f4f6;
-  }
-
-  .post-body h3 {
-    font-size: 1.4rem;
-    margin: 2rem 0 1rem;
-    padding-top: 1.5rem;
-    color: var(--text-color);
-  }
-
-  html.dark .post-body h3 {
-    color: #f3f4f6;
-  }
-
-  .post-body p {
-    margin-bottom: 1.5rem;
-  }
-
-  .post-body ul, .post-body ol {
-    margin-bottom: 1.5rem;
-    padding-left: 2rem;
-  }
-
-  .post-body li {
-    margin-bottom: 0.5rem;
-  }
-
-  .post-body blockquote {
-    border-left: 4px solid var(--primary-color);
-    padding: 1rem 0 1rem 1.5rem;
-    margin: 2rem 0;
-    font-style: italic;
-    background: var(--background-alt);
-  }
-
-  .post-body blockquote p {
-    margin-bottom: 0;
   }
 
   .post-tags {
