@@ -38,18 +38,15 @@ const projects = allProjects.sort((a, b) => {
                 <span class="placeholder-logo">shupp.dev</span>
               </div>
             )}
-            <div class="portfolio-overlay">
-              <div class="overlay-content">
-                <h3 class="overlay-title">{project.data.title}</h3>
-                <p class="overlay-description">{project.data.description}</p>
-                <div class="overlay-meta">
-                  <span class="overlay-date">
-                    {new Date(project.data.projectDate).getFullYear()}
-                  </span>
-                  <span class="overlay-cta">View Project →</span>
-                </div>
-              </div>
-            </div>
+             <div class="portfolio-overlay">
+               <div class="overlay-content">
+                 <h3 class="overlay-title">{project.data.title}</h3>
+                 <p class="overlay-description">{project.data.description}</p>
+                 <span class="overlay-date">
+                   {new Date(project.data.projectDate).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
+                 </span>
+               </div>
+             </div>
           </div>
           <div class="portfolio-info">
             <h3 class="portfolio-title">{project.data.title}</h3>
@@ -217,17 +214,19 @@ const projects = allProjects.sort((a, b) => {
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, rgba(59, 130, 246, 0.9), rgba(139, 92, 246, 0.9));
+    background: linear-gradient(135deg, rgba(172, 193, 150, 0.92), rgba(121, 148, 150, 0.92));
     opacity: 0;
     transition: opacity 0.3s ease;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 2rem;
+    backdrop-filter: blur(4px);
   }
 
   html.dark .portfolio-overlay {
-    background: linear-gradient(135deg, rgba(30, 30, 40, 0.95), rgba(50, 50, 70, 0.95));
+    background: linear-gradient(135deg, rgba(20, 8, 14, 0.96), rgba(73, 71, 91, 0.96));
+    backdrop-filter: blur(6px);
   }
 
   .portfolio-item:hover .portfolio-overlay {
@@ -236,45 +235,51 @@ const projects = allProjects.sort((a, b) => {
 
   .overlay-content {
     text-align: center;
-    color: white;
     max-width: 90%;
   }
 
   .overlay-title {
-    font-size: 1.5rem;
-    font-weight: 700;
+    font-size: 1.6rem;
+    font-weight: 800;
     margin-bottom: 0.75rem;
+    color: var(--color-dark);
+    text-shadow: 0 2px 4px rgba(255, 255, 255, 0.5);
+    letter-spacing: -0.5px;
+  }
+
+  html.dark .overlay-title {
+    color: var(--color-light);
+    text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
   }
 
   .overlay-description {
     font-size: 0.95rem;
     line-height: 1.6;
     margin-bottom: 1.5rem;
-    opacity: 0.95;
+    color: var(--color-dark);
+    font-weight: 500;
   }
 
-  .overlay-meta {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 2rem;
+  html.dark .overlay-description {
+    color: #f3f4f6;
   }
 
   .overlay-date {
-    font-size: 0.9rem;
-    opacity: 0.8;
+    display: inline-block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--color-dark);
+    background: var(--color-light);
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    margin-top: 1rem;
+    box-shadow: 0 4px 12px rgba(20, 8, 14, 0.2);
   }
 
-  .overlay-cta {
-    font-weight: 600;
-    font-size: 0.95rem;
-    display: inline-flex;
-    align-items: center;
-    transition: transform 0.2s ease;
-  }
-
-  .portfolio-item:hover .overlay-cta {
-    transform: translateX(5px);
+  html.dark .overlay-date {
+    color: var(--color-dark);
+    background: var(--color-light);
+    box-shadow: 0 4px 12px rgba(233, 235, 158, 0.15);
   }
 
   /* Portfolio Info */
