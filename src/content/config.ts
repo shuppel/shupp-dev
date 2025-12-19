@@ -13,7 +13,8 @@ const blogCollection = defineCollection({
     categories: z.array(z.string()),
     tags: z.array(z.string()).optional(),
     readTime: z.string().optional(),
-    featuredImage: z.string().optional(),
+    featuredImage: z.string().optional(), // Display text/slug for featured image placeholder
+    ogImage: z.string().optional(), // Actual image path for OpenGraph (e.g., /images/blog/my-post.png)
     featured: z.boolean().default(false), // Added featured flag for promoting posts
     relatedProjects: z.union([z.array(z.string()), z.null()]).optional(), // Related project slugs or null if N/A
   }),
@@ -178,6 +179,7 @@ const thoughtfulAppsCollection = defineCollection({
     status: z.enum(['concept', 'exploring', 'prototyping', 'shelved']),
     category: z.string(),
     problem: z.string(),
+    ogImage: z.string().optional(), // OpenGraph image path (e.g., /images/thoughtful-apps/app-name.png)
     mainMockup: z.string().optional(), // TLDraw embed URL
     features: z.array(z.object({
       name: z.string(),

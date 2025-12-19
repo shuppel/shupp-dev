@@ -7,6 +7,7 @@ categories: ["Announcement", "Product Management", "Thoughtful App Co."]
 tags: ["startup", "product", "apps", "tac"]
 readTime: "3 min"
 featured: true
+ogImage: "/images/projects/thoughtful-app-co.png"
 ---
 
 After some thought and gradual rollout, I am starting to take the white papers and thought experiments and convert them into ideas. I think its definitely the time.

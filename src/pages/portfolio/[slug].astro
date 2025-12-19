@@ -32,7 +32,12 @@ const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US
 });
 ---
 
-<Layout title={entry.data.title} description={entry.data.description}>
+<Layout 
+  title={entry.data.title} 
+  description={entry.data.description}
+  image={entry.data.image || '/og-default.png'}
+  type="article"
+>
   <div class="project-page">
     <article class="project-content">
       <div class="project-header">
