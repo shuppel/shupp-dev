@@ -5,6 +5,7 @@ projectDate: 2025-09-20
 completed: true
 technologies: ["Three.js", "JavaScript", "WebGL", "HTML5", "CSS3", "Netlify", "Calendar Integration", "WhatsApp Business API"]
 featured: false
+image: "/images/projects/giray-yoga.png"
 projectUrl: "https://giray-yoga.netlify.app/"
 ---
 

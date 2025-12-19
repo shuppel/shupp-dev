@@ -5,7 +5,7 @@ projectDate: 2024-01-01
 completed: true
 technologies: ["IT Strategy", "Compliance", "Digital Transformation", "Government Consulting"]
 featured: true
-projectImage: "https://nodetus.com"
+image: "/images/projects/nodetus.png"
 projectUrl: "https://nodetus.com"
 relatedBlogPosts: []
 ---
