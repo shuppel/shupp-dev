@@ -50,7 +50,12 @@ const categoryIcons = {
 const categoryIcon = categoryIcons[entry.data.category] || 'Wrench';
 ---
 
-<Layout title={`${entry.data.title} - Open Source Tools`} description={entry.data.description}>
+<Layout 
+  title={`${entry.data.title} - Open Source Tools`} 
+  description={entry.data.description}
+  image={entry.data.previewImage || '/og-default.png'}
+  type="article"
+>
   <div class="tool-detail-page">
     <header class="tool-header">
       <div class="tool-meta">

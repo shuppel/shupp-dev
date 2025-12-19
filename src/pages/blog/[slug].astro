@@ -34,6 +34,9 @@ const breadcrumbs = [
   { name: entry.data.title }
 ];
 
+// Determine the OG image - prefer ogImage field, fallback to default
+const ogImage = entry.data.ogImage || '/og-default.png';
+
 // Prepare JSON-LD data for article
 const articleData = {
   article: {
@@ -45,7 +48,7 @@ const articleData = {
     tags: entry.data.tags || [],
     categories: entry.data.categories || [],
     readTime: entry.data.readTime,
-    image: entry.data.featuredImage || '/og-default.png'
+    image: ogImage
   },
   breadcrumbs: [
     { name: 'Home', url: 'https://shupp.dev' },
@@ -59,7 +62,7 @@ const articleData = {
   title={entry.data.title} 
   description={entry.data.description}
   type="article"
-  image={entry.data.featuredImage || '/og-default.png'}
+  image={ogImage}
   author={entry.data.author}
   keywords={entry.data.tags?.join(', ') || ''}
   jsonLdType="article"

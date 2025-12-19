@@ -7,6 +7,7 @@ categories: ["Podcast", "Philosophy", "Technology"]
 tags: ["humans only", "social media", "mindfulness", "audio"]
 readTime: "4 min"
 featured: false
+ogImage: "/images/projects/humansonlyfm.png"
 ---
 
 Today I started the **Humans Only** podcast, which has its [pilot live now on Spotify](https://open.spotify.com/episode/6R5N9957YkGaSoAGyRnFeJ?si=3Yg8umgrRe64ONvPaazCQQ)—almost an hour long. 

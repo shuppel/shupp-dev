@@ -45,7 +45,12 @@ const formattedDate = new Date(entry.data.lastUpdated).toLocaleDateString('en-US
 const showTLDraw = isFeatureEnabled('enableTLDraw');
 ---
 
-<Layout title={`${entry.data.title} - Thoughtful App Co.`} description={entry.data.oneLiner}>
+<Layout 
+  title={`${entry.data.title} - Thoughtful App Co.`} 
+  description={entry.data.oneLiner}
+  image={entry.data.ogImage || '/og-default.png'}
+  type="article"
+>
   <div class="app-detail-page">
     <article class="app-content">
        <div class="app-header">
