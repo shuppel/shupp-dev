@@ -22,10 +22,10 @@ const author = authorEntries[0]; // Using the first author as this is a personal
        <!-- Left sidebar with profile info -->
        <aside class="about-sidebar">
          <div class="sidebar-sticky">
-           <div class="profile-sidebar">
-             <div class="profile-image-placeholder">
-               <div class="placeholder-text">Profile Photo</div>
-             </div>
+            <div class="profile-sidebar">
+              <div class="profile-image">
+                <img src="/images/about/esheadshot.jpg" alt={author.data.name} class="headshot" />
+              </div>
              <div class="profile-details">
                <h3>Quick Info</h3>
                <ul class="profile-list">
@@ -275,43 +275,16 @@ const author = authorEntries[0]; // Using the first author as this is a personal
      box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 10px rgba(20, 8, 14, 0.05);
    }
 
-  .profile-image-placeholder {
-    height: 300px;
-    background: linear-gradient(45deg, var(--color-tertiary), var(--color-secondary));
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    font-size: 1.25rem;
-  }
-
-  html.dark .profile-image-placeholder {
-    background: linear-gradient(45deg, #2c2c38, #3a3a46);
-    position: relative;
+  .profile-image {
     overflow: hidden;
+    border-radius: 8px 8px 0 0;
   }
 
-  html.dark .profile-image-placeholder::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(circle at center, rgba(172, 193, 150, 0.2), transparent 70%);
-    animation: pulse-dark 4s ease-in-out infinite alternate;
-  }
-
-  @keyframes pulse-dark {
-    0% {
-      opacity: 0.1;
-      transform: scale(0.8);
-    }
-    100% {
-      opacity: 0.3;
-      transform: scale(1.2);
-    }
+  .headshot {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
   }
 
    .profile-details {
