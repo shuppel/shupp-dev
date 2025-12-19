@@ -112,7 +112,8 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
 </header>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
+  // Use astro:page-load to handle View Transitions - fires on initial load and every navigation
+  document.addEventListener('astro:page-load', () => {
     // Handle hamburger menu toggle
     const hamburgerMenu = document.querySelector('.hamburger-menu');
     const nav = document.querySelector('.nav');
@@ -181,13 +182,8 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
       desktopThemeToggle.addEventListener('click', handleThemeToggle);
     }
 
-    // Set initial state
+    // Set initial state - sync icons with current theme
     updateThemeIcons();
-    
-    // Listen for theme changes from other sources
-    window.addEventListener('themechange', (e) => {
-      updateThemeIcons();
-    });
 
     // Handle mobile dropdown toggle
     const appsDropdown = document.querySelector('.apps-dropdown');
@@ -205,6 +201,21 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
       });
     }
   });
+
+  // Listen for theme changes from other sources (only set up once)
+  if (!window._navThemeListenerAdded) {
+    window._navThemeListenerAdded = true;
+    window.addEventListener('themechange', () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      const mobileToggle = document.getElementById('nav-theme-toggle');
+      const desktopToggle = document.getElementById('desktop-theme-toggle');
+      [mobileToggle, desktopToggle].forEach(toggle => {
+        if (toggle) {
+          toggle.classList.toggle('dark-mode', isDark);
+        }
+      });
+    });
+  }
 </script>
 
 <style>
