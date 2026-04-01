@@ -22,6 +22,7 @@ export const siteConfig = {
     thoughtfulAppCo: {
       name: 'Thoughtful App Co.',
       url: 'https://thoughtfulapp.co',
+      email: 'launch@thoughtfulapp.co',
       tagline: 'Building apps for hoomans',
       youtube: 'https://www.youtube.com/@thoughtfulappco',
       tiktok: 'https://www.tiktok.com/@thoughtfulappco',
@@ -30,6 +31,7 @@ export const siteConfig = {
     humansOnlyPodcast: {
       name: 'Humans Only',
       url: 'https://humansonly.fm',
+      email: 'human@humansonly.fm',
       tagline: 'How emerging tech can better serve humanity',
       spotify: 'https://open.spotify.com/show/5795Q9GCmotmDpParHL1v6?si=6930bfe903dc4286',
       apple: 'https://podcasts.apple.com/us/podcast/humans-only',

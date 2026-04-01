@@ -139,6 +139,10 @@ const activeApps = allApps.filter(a => a.data.status !== 'shelved');
       <div class="pk-social-group">
         <h3 class="pk-social-group-title">Thoughtful App Co.</h3>
         <div class="pk-social-links">
+          <a href={`mailto:${siteConfig.ventures.thoughtfulAppCo.email}`} class="pk-social-link">
+            <span class="pk-social-icon">&#x2709;</span>
+            <span class="pk-social-label">{siteConfig.ventures.thoughtfulAppCo.email}</span>
+          </a>
           <a href={siteConfig.ventures.thoughtfulAppCo.url} class="pk-social-link" target="_blank" rel="noopener noreferrer">
             <span class="pk-social-icon">&#x1F310;</span>
             <span class="pk-social-label">thoughtfulapp.co</span>
@@ -160,6 +164,10 @@ const activeApps = allApps.filter(a => a.data.status !== 'shelved');
       <div class="pk-social-group">
         <h3 class="pk-social-group-title">Humans Only Podcast</h3>
         <div class="pk-social-links">
+          <a href={`mailto:${siteConfig.ventures.humansOnlyPodcast.email}`} class="pk-social-link">
+            <span class="pk-social-icon">&#x2709;</span>
+            <span class="pk-social-label">{siteConfig.ventures.humansOnlyPodcast.email}</span>
+          </a>
           <a href={siteConfig.ventures.humansOnlyPodcast.url} class="pk-social-link" target="_blank" rel="noopener noreferrer">
             <span class="pk-social-icon">&#x1F310;</span>
             <span class="pk-social-label">humansonly.fm</span>
@@ -168,12 +176,10 @@ const activeApps = allApps.filter(a => a.data.status !== 'shelved');
             <span class="pk-social-icon">&#x1F3B5;</span>
             <span class="pk-social-label">Spotify</span>
           </a>
-          {siteConfig.ventures.humansOnlyPodcast.youtube && (
-            <a href={siteConfig.ventures.humansOnlyPodcast.youtube} class="pk-social-link" target="_blank" rel="noopener noreferrer">
-              <span class="pk-social-icon">&#x25B6;</span>
-              <span class="pk-social-label">YouTube</span>
-            </a>
-          )}
+          <a href={siteConfig.ventures.humansOnlyPodcast.youtube} class="pk-social-link" target="_blank" rel="noopener noreferrer">
+            <span class="pk-social-icon">&#x25B6;</span>
+            <span class="pk-social-label">YouTube</span>
+          </a>
         </div>
       </div>
     </div>
