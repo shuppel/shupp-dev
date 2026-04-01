@@ -12,7 +12,7 @@ export const siteConfig = {
   social: {
     github: 'https://github.com/shuppel',
     linkedin: 'https://www.linkedin.com/in/shupp-erikk/',
-    twitter: 'https://twitter.com/erikkshupp',
+    twitter: 'https://x.com/KimJungUzi',
     bluesky: 'https://bsky.app/profile/shupp.dev',
     instagram: 'https://instagram.com/erikkshupp',
   },
@@ -23,7 +23,8 @@ export const siteConfig = {
       name: 'Thoughtful App Co.',
       url: 'https://thoughtfulapp.co',
       tagline: 'Building apps for hoomans',
-      twitter: 'https://twitter.com/thoughtfulappco',
+      youtube: 'https://www.youtube.com/@thoughtfulappco',
+      tiktok: 'https://www.tiktok.com/@thoughtfulappco',
       github: 'https://github.com/thoughtful-app-co',
     },
     humansOnlyPodcast: {
@@ -32,7 +33,11 @@ export const siteConfig = {
       tagline: 'How emerging tech can better serve humanity',
       spotify: 'https://open.spotify.com/show/5795Q9GCmotmDpParHL1v6?si=6930bfe903dc4286',
       apple: 'https://podcasts.apple.com/us/podcast/humans-only',
-      youtube: 'https://youtube.com/@humansonlyfm',
+      youtube: 'https://www.youtube.com/watch?v=yqPDuuMReKo&list=PLCnYURZ5KeTjo_ZcveQtWT5HFIBzgYYka&index=1',
+    },
+    booboTheSpinosaur: {
+      name: 'Boobo the Spinosaur',
+      youtube: 'https://www.youtube.com/playlist?list=PLCnYURZ5KeTixpbRBta_xmeHGj46WFuZI',
     },
   },
 
