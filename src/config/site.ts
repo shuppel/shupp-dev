@@ -14,7 +14,7 @@ export const siteConfig = {
     linkedin: 'https://www.linkedin.com/in/shupp-erikk/',
     twitter: 'https://x.com/KimJungUzi',
     bluesky: 'https://bsky.app/profile/shupp.dev',
-    instagram: 'https://instagram.com/erikkshupp',
+    instagram: 'https://instagram.com/kimjunguzi',
   },
 
   // Business / ventures
