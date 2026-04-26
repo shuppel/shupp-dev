@@ -1,19 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
 import { siteConfig } from '../config/site.ts';
 import LiquidHero from '../components/LiquidHero.astro';
 import Icon from '../components/Icon/Icon.astro';
-
-// Get latest blog post for press section
-const allPosts = await getCollection('blog');
-const latestPost = allPosts
-  .sort((a, b) => new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime())
-  [0];
-
-// Get thoughtful apps count
-const allApps = await getCollection('thoughtful-apps');
-const activeApps = allApps.filter(a => a.data.status !== 'shelved');
 ---
 
 <Layout title="Press Kit — Erikk Shupp">
@@ -37,28 +26,6 @@ const activeApps = allApps.filter(a => a.data.status !== 'shelved');
     <div class="pk-bio-content">
       <p>Product manager and software engineer building human-first digital experiences. Founder of <strong>Thoughtful App Co.</strong> and host of the <strong>Humans Only</strong> podcast. Based in Arlington, VA — working at the intersection of human needs and technical possibilities.</p>
       <p>Unconventional path: English Creative Writing undergrad, Technology Management masters, open-source self-taught engineer. A true product manager with deep technical aptitude — from storytelling to shipping software.</p>
-    </div>
-  </section>
-
-  <!-- Thoughtful App Co. — Primary Spotlight -->
-  <section class="pk-section pk-venture pk-venture-primary">
-    <div class="pk-venture-badge">Featured Venture</div>
-    <div class="pk-venture-header">
-      <div class="pk-venture-logo">
-        <span class="pk-logo-icon"><Icon name="Brain" size={32} weight="duotone" color="white" /></span>
-      </div>
-      <div>
-        <h2 class="pk-venture-name">Thoughtful App Co.</h2>
-        <p class="pk-venture-tagline">{siteConfig.ventures.thoughtfulAppCo.tagline}</p>
-      </div>
-    </div>
-    <p class="pk-venture-description">A product studio building thoughtful software that respects users' time and attention. Every concept starts with a real human problem and ends with a solution designed for people, not metrics. Currently exploring <strong>{activeApps.length} active concepts</strong> across health, finance, and digital wellness.</p>
-    <div class="pk-venture-links">
-      <a href="/thoughtful-app-co" class="pk-btn pk-btn-primary">View App Concepts</a>
-      <a href={siteConfig.ventures.thoughtfulAppCo.url} class="pk-btn pk-btn-outline" target="_blank" rel="noopener noreferrer">thoughtfulapp.co</a>
-      <a href={siteConfig.ventures.thoughtfulAppCo.youtube} class="pk-btn pk-btn-ghost" target="_blank" rel="noopener noreferrer">YouTube</a>
-      <a href={siteConfig.ventures.thoughtfulAppCo.tiktok} class="pk-btn pk-btn-ghost" target="_blank" rel="noopener noreferrer">TikTok</a>
-      <a href={siteConfig.ventures.thoughtfulAppCo.github} class="pk-btn pk-btn-ghost" target="_blank" rel="noopener noreferrer">GitHub</a>
     </div>
   </section>
 
@@ -92,7 +59,7 @@ const activeApps = allApps.filter(a => a.data.status !== 'shelved');
     <div class="pk-venture-badge">Series</div>
     <div class="pk-venture-header">
       <div class="pk-venture-logo">
-        <span class="pk-logo-icon"><Icon name="Sparkle" size={32} weight="duotone" color="white" /></span>
+        <span class="pk-logo-icon"><Icon name="PawPrint" size={32} weight="duotone" color="white" /></span>
       </div>
       <div>
         <h2 class="pk-venture-name">Boobo the Spinosaur</h2>
