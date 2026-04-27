@@ -7,7 +7,6 @@ externalUrl: "https://www.humansonly.fm/ii"
 outlet: "Humans Only"
 outletUrl: "https://humansonly.fm"
 spotifyUrl: "https://open.spotify.com/episode/1IvbRF0sxdPs0eSUYmzC6Q"
-appleUrl: "https://podcasts.apple.com/us/podcast/humans-only"
 tags: ["humans-only", "dark-patterns", "ux", "ethical-design", "attention"]
 featured: true
 relatedProjects: ["humansonly-fm"]

@@ -6,7 +6,7 @@ pubDate: 2026-02-01
 externalUrl: "https://www.humansonly.fm/iii"
 outlet: "Humans Only"
 outletUrl: "https://humansonly.fm"
-appleUrl: "https://podcasts.apple.com/us/podcast/humans-only"
+spotifyUrl: "https://open.spotify.com/episode/4axsoyaq5BwbEPmeRv6FSn"
 tags: ["humans-only", "attention-economy", "short-form-video", "media-history"]
 featured: true
 relatedProjects: ["humansonly-fm"]
