@@ -7,7 +7,7 @@ externalUrl: "https://www.humansonly.fm/i"
 outlet: "Humans Only"
 outletUrl: "https://humansonly.fm"
 spotifyUrl: "https://open.spotify.com/episode/6R5N9957YkGaSoAGyRnFeJ"
-youtubeUrl: "https://www.youtube.com/watch?v=yqPDuuMReKo&list=PLCnYURZ5KeTjo_ZcveQtWT5HFIBzgYYka&index=1"
+youtubeUrl: "https://www.youtube.com/watch?v=7Qtw1Bb77UI"
 tags: ["humans-only", "philosophy", "technology", "pilot"]
 featured: true
 relatedBlogPosts: ["2025-11-29-launching-humans-only-podcast"]
