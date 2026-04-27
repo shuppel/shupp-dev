@@ -1,18 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
 import { siteConfig } from '../config/site.ts';
 import LiquidHero from '../components/LiquidHero.astro';
-
-// Get latest blog post for press section
-const allPosts = await getCollection('blog');
-const latestPost = allPosts
-  .sort((a, b) => new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime())
-  [0];
-
-// Get thoughtful apps count
-const allApps = await getCollection('thoughtful-apps');
-const activeApps = allApps.filter(a => a.data.status !== 'shelved');
+import Icon from '../components/Icon/Icon.astro';
 ---
 
 <Layout title="Press Kit — Erikk Shupp">
@@ -39,34 +29,12 @@ const activeApps = allApps.filter(a => a.data.status !== 'shelved');
     </div>
   </section>
 
-  <!-- Thoughtful App Co. — Primary Spotlight -->
-  <section class="pk-section pk-venture pk-venture-primary">
-    <div class="pk-venture-badge">Featured Venture</div>
-    <div class="pk-venture-header">
-      <div class="pk-venture-logo">
-        <span class="pk-logo-icon">&#x1F9E0;</span>
-      </div>
-      <div>
-        <h2 class="pk-venture-name">Thoughtful App Co.</h2>
-        <p class="pk-venture-tagline">{siteConfig.ventures.thoughtfulAppCo.tagline}</p>
-      </div>
-    </div>
-    <p class="pk-venture-description">A product studio building thoughtful software that respects users' time and attention. Every concept starts with a real human problem and ends with a solution designed for people, not metrics. Currently exploring <strong>{activeApps.length} active concepts</strong> across health, finance, and digital wellness.</p>
-    <div class="pk-venture-links">
-      <a href="/thoughtful-app-co" class="pk-btn pk-btn-primary">View App Concepts</a>
-      <a href={siteConfig.ventures.thoughtfulAppCo.url} class="pk-btn pk-btn-outline" target="_blank" rel="noopener noreferrer">thoughtfulapp.co</a>
-      <a href={siteConfig.ventures.thoughtfulAppCo.youtube} class="pk-btn pk-btn-ghost" target="_blank" rel="noopener noreferrer">YouTube</a>
-      <a href={siteConfig.ventures.thoughtfulAppCo.tiktok} class="pk-btn pk-btn-ghost" target="_blank" rel="noopener noreferrer">TikTok</a>
-      <a href={siteConfig.ventures.thoughtfulAppCo.github} class="pk-btn pk-btn-ghost" target="_blank" rel="noopener noreferrer">GitHub</a>
-    </div>
-  </section>
-
   <!-- Humans Only Podcast -->
   <section class="pk-section pk-venture pk-venture-podcast">
     <div class="pk-venture-badge">Podcast</div>
     <div class="pk-venture-header">
       <div class="pk-venture-logo">
-        <span class="pk-logo-icon">&#x1F399;</span>
+        <span class="pk-logo-icon"><Icon name="Microphone" size={32} weight="duotone" color="white" /></span>
       </div>
       <div>
         <h2 class="pk-venture-name">Humans Only</h2>
@@ -77,9 +45,6 @@ const activeApps = allApps.filter(a => a.data.status !== 'shelved');
     <div class="pk-venture-links">
       <a href={siteConfig.ventures.humansOnlyPodcast.url} class="pk-btn pk-btn-primary" target="_blank" rel="noopener noreferrer">humansonly.fm</a>
       <a href={siteConfig.ventures.humansOnlyPodcast.spotify} class="pk-btn pk-btn-outline" target="_blank" rel="noopener noreferrer">Spotify</a>
-      {siteConfig.ventures.humansOnlyPodcast.apple && (
-        <a href={siteConfig.ventures.humansOnlyPodcast.apple} class="pk-btn pk-btn-ghost" target="_blank" rel="noopener noreferrer">Apple Podcasts</a>
-      )}
       {siteConfig.ventures.humansOnlyPodcast.youtube && (
         <a href={siteConfig.ventures.humansOnlyPodcast.youtube} class="pk-btn pk-btn-ghost" target="_blank" rel="noopener noreferrer">YouTube</a>
       )}
@@ -91,7 +56,7 @@ const activeApps = allApps.filter(a => a.data.status !== 'shelved');
     <div class="pk-venture-badge">Series</div>
     <div class="pk-venture-header">
       <div class="pk-venture-logo">
-        <span class="pk-logo-icon">&#x1F996;</span>
+        <span class="pk-logo-icon"><Icon name="PawPrint" size={32} weight="duotone" color="white" /></span>
       </div>
       <div>
         <h2 class="pk-venture-name">Boobo the Spinosaur</h2>
@@ -111,27 +76,27 @@ const activeApps = allApps.filter(a => a.data.status !== 'shelved');
         <h3 class="pk-social-group-title">Personal</h3>
         <div class="pk-social-links">
           <a href={`mailto:${siteConfig.email}`} class="pk-social-link">
-            <span class="pk-social-icon">&#x2709;</span>
+            <span class="pk-social-icon"><Icon name="Envelope" size={16} weight="duotone" /></span>
             <span class="pk-social-label">{siteConfig.email}</span>
           </a>
           <a href={siteConfig.social.linkedin} class="pk-social-link" target="_blank" rel="noopener noreferrer">
-            <span class="pk-social-icon">in</span>
+            <span class="pk-social-icon"><Icon name="LinkedinLogo" size={16} weight="duotone" /></span>
             <span class="pk-social-label">LinkedIn</span>
           </a>
           <a href={siteConfig.social.bluesky} class="pk-social-link" target="_blank" rel="noopener noreferrer">
-            <span class="pk-social-icon">&#x1F98B;</span>
+            <span class="pk-social-icon"><Icon name="Butterfly" size={16} weight="duotone" /></span>
             <span class="pk-social-label">Bluesky</span>
           </a>
           <a href={siteConfig.social.twitter} class="pk-social-link" target="_blank" rel="noopener noreferrer">
-            <span class="pk-social-icon">&#x1D54F;</span>
+            <span class="pk-social-icon"><Icon name="XLogo" size={16} weight="duotone" /></span>
             <span class="pk-social-label">X</span>
           </a>
           <a href={siteConfig.social.instagram} class="pk-social-link" target="_blank" rel="noopener noreferrer">
-            <span class="pk-social-icon">&#x1F4F7;</span>
+            <span class="pk-social-icon"><Icon name="InstagramLogo" size={16} weight="duotone" /></span>
             <span class="pk-social-label">Instagram</span>
           </a>
           <a href={siteConfig.social.github} class="pk-social-link" target="_blank" rel="noopener noreferrer">
-            <span class="pk-social-icon">&lt;/&gt;</span>
+            <span class="pk-social-icon"><Icon name="GithubLogo" size={16} weight="duotone" /></span>
             <span class="pk-social-label">GitHub</span>
           </a>
         </div>
@@ -140,23 +105,23 @@ const activeApps = allApps.filter(a => a.data.status !== 'shelved');
         <h3 class="pk-social-group-title">Thoughtful App Co.</h3>
         <div class="pk-social-links">
           <a href={`mailto:${siteConfig.ventures.thoughtfulAppCo.email}`} class="pk-social-link">
-            <span class="pk-social-icon">&#x2709;</span>
+            <span class="pk-social-icon"><Icon name="Envelope" size={16} weight="duotone" /></span>
             <span class="pk-social-label">{siteConfig.ventures.thoughtfulAppCo.email}</span>
           </a>
           <a href={siteConfig.ventures.thoughtfulAppCo.url} class="pk-social-link" target="_blank" rel="noopener noreferrer">
-            <span class="pk-social-icon">&#x1F310;</span>
+            <span class="pk-social-icon"><Icon name="Globe" size={16} weight="duotone" /></span>
             <span class="pk-social-label">thoughtfulapp.co</span>
           </a>
           <a href={siteConfig.ventures.thoughtfulAppCo.youtube} class="pk-social-link" target="_blank" rel="noopener noreferrer">
-            <span class="pk-social-icon">&#x25B6;</span>
+            <span class="pk-social-icon"><Icon name="YoutubeLogo" size={16} weight="duotone" /></span>
             <span class="pk-social-label">YouTube</span>
           </a>
           <a href={siteConfig.ventures.thoughtfulAppCo.tiktok} class="pk-social-link" target="_blank" rel="noopener noreferrer">
-            <span class="pk-social-icon">&#x266B;</span>
+            <span class="pk-social-icon"><Icon name="TiktokLogo" size={16} weight="duotone" /></span>
             <span class="pk-social-label">TikTok</span>
           </a>
           <a href={siteConfig.ventures.thoughtfulAppCo.github} class="pk-social-link" target="_blank" rel="noopener noreferrer">
-            <span class="pk-social-icon">&lt;/&gt;</span>
+            <span class="pk-social-icon"><Icon name="GithubLogo" size={16} weight="duotone" /></span>
             <span class="pk-social-label">GitHub</span>
           </a>
         </div>
@@ -165,19 +130,19 @@ const activeApps = allApps.filter(a => a.data.status !== 'shelved');
         <h3 class="pk-social-group-title">Humans Only Podcast</h3>
         <div class="pk-social-links">
           <a href={`mailto:${siteConfig.ventures.humansOnlyPodcast.email}`} class="pk-social-link">
-            <span class="pk-social-icon">&#x2709;</span>
+            <span class="pk-social-icon"><Icon name="Envelope" size={16} weight="duotone" /></span>
             <span class="pk-social-label">{siteConfig.ventures.humansOnlyPodcast.email}</span>
           </a>
           <a href={siteConfig.ventures.humansOnlyPodcast.url} class="pk-social-link" target="_blank" rel="noopener noreferrer">
-            <span class="pk-social-icon">&#x1F310;</span>
+            <span class="pk-social-icon"><Icon name="Globe" size={16} weight="duotone" /></span>
             <span class="pk-social-label">humansonly.fm</span>
           </a>
           <a href={siteConfig.ventures.humansOnlyPodcast.spotify} class="pk-social-link" target="_blank" rel="noopener noreferrer">
-            <span class="pk-social-icon">&#x1F3B5;</span>
+            <span class="pk-social-icon"><Icon name="SpotifyLogo" size={16} weight="duotone" /></span>
             <span class="pk-social-label">Spotify</span>
           </a>
           <a href={siteConfig.ventures.humansOnlyPodcast.youtube} class="pk-social-link" target="_blank" rel="noopener noreferrer">
-            <span class="pk-social-icon">&#x25B6;</span>
+            <span class="pk-social-icon"><Icon name="YoutubeLogo" size={16} weight="duotone" /></span>
             <span class="pk-social-label">YouTube</span>
           </a>
         </div>

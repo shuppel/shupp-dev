@@ -11,22 +11,24 @@ export interface Props {
   type?: 'website' | 'article';
   author?: string;
   keywords?: string;
-  jsonLdType?: 'website' | 'article' | 'person' | 'organization' | 'breadcrumb' | 'tool';
+  jsonLdType?: 'website' | 'article' | 'person' | 'organization' | 'breadcrumb' | 'tool' | 'press';
   jsonLdData?: any;
+  canonicalUrl?: string;
 }
 
-const { 
-  title, 
+const {
+  title,
   description = "Professional Portfolio and Blog for Software Engineer and Product Manager",
   image = "/og-default.png",
   type = "website",
   author = "Erikk Shupp",
   keywords = "software engineer, product manager, web development, thoughtful app company, TACo, apps, Arlington VA, local-first, human-first, human-centered design",
   jsonLdType = 'website',
-  jsonLdData = {}
+  jsonLdData = {},
+  canonicalUrl
 } = Astro.props;
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const canonicalURL = canonicalUrl ?? new URL(Astro.url.pathname, Astro.site).toString();
 ---
 
 <!DOCTYPE html>

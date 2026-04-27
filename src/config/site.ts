@@ -34,7 +34,6 @@ export const siteConfig = {
       email: 'human@humansonly.fm',
       tagline: 'How emerging tech can better serve humanity',
       spotify: 'https://open.spotify.com/show/5795Q9GCmotmDpParHL1v6?si=6930bfe903dc4286',
-      apple: 'https://podcasts.apple.com/us/podcast/humans-only',
       youtube: 'https://www.youtube.com/watch?v=yqPDuuMReKo&list=PLCnYURZ5KeTjo_ZcveQtWT5HFIBzgYYka&index=1',
     },
     booboTheSpinosaur: {

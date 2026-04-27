@@ -213,6 +213,43 @@ const thoughtfulAppsCollection = defineCollection({
   }),
 });
 
+// Define a schema for press / appearances / external publications
+const pressCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    type: z.enum([
+      'article',         // LinkedIn article, guest post, op-ed
+      'podcast-episode', // Hosted episode (e.g. Humans Only)
+      'podcast-guest',   // Guest appearance on someone else's podcast
+      'talk',            // Conference talk, keynote, panel
+      'interview',       // Interview where Erikk is interviewed
+      'mention',         // Press mention, quote, feature
+      'award',           // Award or recognition
+      'video',           // Video appearance / YouTube feature
+    ]),
+    pubDate: z.date(),
+    externalUrl: z.string().url(),               // The canonical destination
+    outlet: z.string().optional(),               // "LinkedIn", "Humans Only", "Stack Overflow Podcast", etc.
+    outletUrl: z.string().url().optional(),      // Link to the publishing outlet's home
+    location: z.string().optional(),             // For talks: city / venue
+    eventName: z.string().optional(),            // For talks: conference name
+    eventUrl: z.string().url().optional(),
+    coHosts: z.array(z.string()).optional(),     // For podcasts
+    guests: z.array(z.string()).optional(),      // For podcasts you host
+    coverImage: z.string().optional(),
+    embedUrl: z.string().url().optional(),       // Optional: Spotify/YouTube embed
+    spotifyUrl: z.string().url().optional(),
+    appleUrl: z.string().url().optional(),
+    youtubeUrl: z.string().url().optional(),
+    tags: z.array(z.string()).optional(),
+    featured: z.boolean().default(false),
+    relatedProjects: z.union([z.array(z.string()), z.null()]).optional(),
+    relatedBlogPosts: z.union([z.array(z.string()), z.null()]).optional(),
+  }),
+});
+
 // Define a schema for Open Source Tools
 const toolsCollection = defineCollection({
   type: 'content',
@@ -251,4 +288,5 @@ export const collections = {
   'principles': principleCollection,
   'thoughtful-apps': thoughtfulAppsCollection,
   'tools': toolsCollection,
+  'press': pressCollection,
 };
