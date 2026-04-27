@@ -7,6 +7,7 @@ externalUrl: "https://www.humansonly.fm/iii"
 outlet: "Humans Only"
 outletUrl: "https://humansonly.fm"
 spotifyUrl: "https://open.spotify.com/episode/4axsoyaq5BwbEPmeRv6FSn"
+youtubeUrl: "https://www.youtube.com/watch?v=yqPDuuMReKo"
 tags: ["humans-only", "attention-economy", "short-form-video", "media-history"]
 featured: true
 relatedProjects: ["humansonly-fm"]
