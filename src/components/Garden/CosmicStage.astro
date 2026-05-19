@@ -1,0 +1,134 @@
+---
+import Icon from '../Icon/Icon.astro';
+
+export interface Props {
+  stage: 'nebula' | 'protostar' | 'star' | 'galaxy';
+  showLabel?: boolean;
+  size?: 'small' | 'medium' | 'large';
+}
+
+const { stage, showLabel = true, size = 'medium' } = Astro.props;
+
+const stageConfig = {
+  nebula: {
+    icon: 'CloudFog',
+    label: 'Nebula',
+    description: 'Formless potential, raw idea cloud',
+    color: 'rgba(121, 148, 150, 0.4)',
+  },
+  protostar: {
+    icon: 'CircleHalf',
+    label: 'Protostar',
+    description: 'Taking shape, gaining mass',
+    color: 'rgba(121, 148, 150, 0.7)',
+  },
+  star: {
+    icon: 'Star',
+    label: 'Star',
+    description: 'Stable, radiating value',
+    color: 'rgba(172, 193, 150, 1)',
+  },
+  galaxy: {
+    icon: 'Spiral',
+    label: 'Galaxy',
+    description: 'Hub connecting many celestial bodies',
+    color: 'rgba(233, 235, 158, 1)',
+  },
+};
+
+const config = stageConfig[stage];
+const iconSize = size === 'small' ? 16 : size === 'medium' ? 20 : 24;
+---
+
+<div class={`cosmic-stage cosmic-stage-${stage} cosmic-stage-${size}`} title={config.description}>
+  <span class="stage-icon" style={`color: ${config.color}`}>
+    <Icon name={config.icon} size={iconSize} weight="duotone" />
+  </span>
+  {showLabel && <span class="stage-label">{config.label}</span>}
+</div>
+
+<style>
+  .cosmic-stage {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.3s ease;
+  }
+
+  .cosmic-stage-small {
+    padding: 0.15rem 0.5rem;
+    font-size: 0.75rem;
+    gap: 0.35rem;
+  }
+
+  .cosmic-stage-large {
+    padding: 0.35rem 1rem;
+    font-size: 1rem;
+    gap: 0.6rem;
+  }
+
+  .stage-icon {
+    display: inline-flex;
+    align-items: center;
+    transition: transform 0.3s ease;
+  }
+
+  .cosmic-stage:hover .stage-icon {
+    transform: scale(1.1);
+  }
+
+  .stage-label {
+    color: var(--text-color);
+  }
+
+  /* Stage-specific styling */
+  .cosmic-stage-nebula {
+    background: rgba(121, 148, 150, 0.1);
+    border: 1px dashed rgba(121, 148, 150, 0.3);
+  }
+
+  .cosmic-stage-protostar {
+    background: rgba(121, 148, 150, 0.15);
+    border: 1px solid rgba(121, 148, 150, 0.4);
+  }
+
+  .cosmic-stage-star {
+    background: rgba(172, 193, 150, 0.2);
+    border: 1px solid rgba(172, 193, 150, 0.5);
+  }
+
+  .cosmic-stage-galaxy {
+    background: rgba(233, 235, 158, 0.2);
+    border: 1px solid rgba(233, 235, 158, 0.6);
+    box-shadow: 0 0 10px rgba(233, 235, 158, 0.2);
+  }
+
+  html.dark .cosmic-stage-nebula {
+    background: rgba(121, 148, 150, 0.15);
+    border-color: rgba(121, 148, 150, 0.4);
+  }
+
+  html.dark .cosmic-stage-protostar {
+    background: rgba(121, 148, 150, 0.2);
+    border-color: rgba(121, 148, 150, 0.5);
+  }
+
+  html.dark .cosmic-stage-star {
+    background: rgba(172, 193, 150, 0.25);
+    border-color: rgba(172, 193, 150, 0.6);
+  }
+
+  html.dark .cosmic-stage-galaxy {
+    background: rgba(233, 235, 158, 0.25);
+    border-color: rgba(233, 235, 158, 0.7);
+    box-shadow: 0 0 15px rgba(233, 235, 158, 0.3);
+  }
+
+  html.dark .stage-label {
+    color: #f3f4f6;
+  }
+</style>

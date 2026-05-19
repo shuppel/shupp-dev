@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 
 // Get all the data
 const authorEntries = await getCollection('authors');
@@ -128,7 +128,7 @@ const sortedExperiences = experiences.sort((a, b) => (a.data.order || 999) - (b.
           .filter(edu => edu.data.institution === 'George Mason University' || edu.data.institution === 'Longwood University')
           .sort((a, b) => (a.data.order || 999) - (b.data.order || 999))
           .map(async (edu) => {
-            const { Content } = await edu.render();
+            const { Content } = await render(edu);
             const startYear = new Date(edu.data.startDate).getFullYear();
             const endYear = edu.data.endDate ? new Date(edu.data.endDate).getFullYear() : 'Present';
             

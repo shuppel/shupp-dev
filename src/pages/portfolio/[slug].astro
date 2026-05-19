@@ -1,5 +1,5 @@
 ---
-import { getCollection, getEntry } from 'astro:content';
+import { getCollection, getEntry, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import { type CollectionEntry } from 'astro:content';
 import RelatedBlogPosts from '../../components/RelatedBlogPosts.astro';
@@ -9,7 +9,7 @@ import '../../styles/prose.css';
 export async function getStaticPaths() {
   const projectEntries = await getCollection('projects');
   return projectEntries.map(entry => ({
-    params: { slug: entry.slug },
+    params: { slug: entry.id },
     props: { entry, allProjects: projectEntries },
   }));
 }
@@ -20,7 +20,7 @@ interface Props {
 }
 
 const { entry, allProjects } = Astro.props;
-const { Content } = await entry.render();
+const { Content } = await render(entry);
 
 // Get other projects for the sidebar (exclude current project)
 const otherProjects = allProjects.filter(project => project.slug !== entry.slug);

@@ -1,9 +1,10 @@
 // Import utilities from `astro:content`
 import { z, defineCollection } from 'astro:content';
+import { glob } from 'astro/loaders';
 
 // Define a `type` and `schema` for blog posts
 const blogCollection = defineCollection({
-  type: 'content', // v2.5.0 and later
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/blog' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
@@ -22,7 +23,7 @@ const blogCollection = defineCollection({
 
 // Define a schema for project items
 const projectCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/projects' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
@@ -39,7 +40,7 @@ const projectCollection = defineCollection({
 
 // Define a schema for roadmap items
 const roadmapCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/roadmap' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
@@ -56,7 +57,7 @@ const roadmapCollection = defineCollection({
 
 // Define a schema for author bio
 const authorCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/authors' }),
   schema: z.object({
     name: z.string(),
     title: z.string(),
@@ -81,7 +82,7 @@ const authorCollection = defineCollection({
 
 // Define a schema for resume sections
 const resumeCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/resume' }),
   schema: z.object({
     title: z.string(),
     order: z.number(), // To control display order
@@ -92,7 +93,7 @@ const resumeCollection = defineCollection({
 
 // Define a schema for experience entries
 const experienceCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/experience' }),
   schema: z.object({
     company: z.string(),
     position: z.string(),
@@ -110,7 +111,7 @@ const experienceCollection = defineCollection({
 
 // Define a schema for education entries
 const educationCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/education' }),
   schema: z.object({
     institution: z.string(),
     degree: z.string(),
@@ -128,7 +129,7 @@ const educationCollection = defineCollection({
 
 // Define a schema for credential badges
 const credentialCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/credentials' }),
   schema: z.object({
     title: z.string(), // Name of the credential
     organization: z.string(), // Issuing organization
@@ -147,7 +148,7 @@ const credentialCollection = defineCollection({
 
 // Define a schema for skills
 const skillCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/skills' }),
   schema: z.object({
     name: z.string(),
     category: z.string(), // Technical, Soft, etc.
@@ -162,7 +163,7 @@ const skillCollection = defineCollection({
 
 // Define a schema for principles
 const principleCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/principles' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
@@ -172,7 +173,7 @@ const principleCollection = defineCollection({
 
 // Define a schema for Thoughtful App Co. concepts
 const thoughtfulAppsCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/thoughtful-apps' }),
   schema: z.object({
     title: z.string(),
     oneLiner: z.string(),
@@ -217,7 +218,7 @@ const thoughtfulAppsCollection = defineCollection({
 
 // Define a schema for Open Source Tools
 const toolsCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/tools' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
@@ -241,7 +242,7 @@ const toolsCollection = defineCollection({
 
 // Define a schema for Digital Garden notes
 const gardenCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/garden' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),

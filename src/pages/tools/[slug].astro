@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import Icon from '../../components/Icon/Icon.astro';
 import type { CollectionEntry } from 'astro:content';
@@ -9,7 +9,7 @@ import RentVsSellTool from '../../components/tools/RentVsSell.astro';
 export async function getStaticPaths() {
   const toolEntries = await getCollection('tools');
   return toolEntries.map(entry => ({
-    params: { slug: entry.slug },
+    params: { slug: entry.id },
     props: { entry },
   }));
 }
@@ -19,7 +19,7 @@ interface Props {
 }
 
 const { entry } = Astro.props;
-const { Content } = await entry.render();
+const { Content } = await render(entry);
 
 // Status configuration with Phosphor icon names
 const statusConfig = {

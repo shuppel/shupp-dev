@@ -12,16 +12,16 @@
     "typecheck": "astro check && tsc --noEmit"
   },
   "dependencies": {
-    "@astrojs/react": "^4.3.0",
-    "@astrojs/rss": "^4.0.14",
-    "@astrojs/sitemap": "^3.6.0",
+    "@astrojs/react": "^5.0.5",
+    "@astrojs/rss": "^4.0.18",
+    "@astrojs/sitemap": "^3.7.2",
     "@hookform/resolvers": "^5.2.1",
     "@lyket/react": "^2.1.0",
     "@nanostores/react": "^1.0.0",
     "@phosphor-icons/react": "^2.1.10",
     "@types/three": "^0.180.0",
     "aceternity": "^1.0.1",
-    "astro": "^5.7.12",
+    "astro": "^6.3.5",
     "chart.js": "^4.5.0",
     "decimal.js": "^10.6.0",
     "nanostores": "^1.0.1",
@@ -35,7 +35,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.4",
+    "@astrojs/check": "^0.9.9",
     "@eslint/js": "^9.33.0",
     "@types/eslint": "^9.6.1",
     "@types/react": "^19.1.12",

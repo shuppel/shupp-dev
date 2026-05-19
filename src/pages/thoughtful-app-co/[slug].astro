@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import { type CollectionEntry } from 'astro:content';
 import LyketVote from '../../components/LyketVote.astro';
@@ -9,7 +9,7 @@ import { isFeatureEnabled } from '../../config/features';
 export async function getStaticPaths() {
   const appEntries = await getCollection('thoughtful-apps');
   return appEntries.map(entry => ({
-    params: { slug: entry.slug },
+    params: { slug: entry.id },
     props: { entry },
   }));
 }
@@ -19,7 +19,7 @@ interface Props {
 }
 
 const { entry } = Astro.props;
-const { Content } = await entry.render();
+const { Content } = await render(entry);
 
 // Check if app has GitHub repository
 const hasGitHub = entry.data.githubUrl;

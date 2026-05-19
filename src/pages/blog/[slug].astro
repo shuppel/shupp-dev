@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import type { CollectionEntry } from 'astro:content';
 import RelatedProjects from '../../components/RelatedProjects.astro';
@@ -9,7 +9,7 @@ import '../../styles/prose.css';
 export async function getStaticPaths() {
   const blogEntries = await getCollection('blog');
   return blogEntries.map(entry => ({
-    params: { slug: entry.slug },
+    params: { slug: entry.id },
     props: { entry },
   }));
 }
@@ -19,7 +19,7 @@ interface Props {
 }
 
 const { entry } = Astro.props;
-const { Content } = await entry.render();
+const { Content } = await render(entry);
 
 // Format the date
 const formattedDate = new Date(entry.data.pubDate).toLocaleDateString('en-US', {
