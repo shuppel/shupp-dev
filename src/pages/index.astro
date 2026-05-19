@@ -1,22 +1,25 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { siteConfig } from '../config/site.ts';
-import LiquidHero from '../components/LiquidHero.astro';
 import Icon from '../components/Icon/Icon.astro';
 ---
 
-<Layout title="Press Kit — Erikk Shupp" sideNav={true}>
+<Layout title="Press Kit — Erikk Shupp">
   <!-- Hero / Identity -->
   <section class="pk-hero">
-    <LiquidHero class="pk-hero-liquid" />
-    <div class="pk-hero-content">
-      <div class="pk-headshot">
+    <div class="pk-hero-card quantum-outline">
+      <div class="pk-hero-headshot">
         <img src="/images/about/esheadshot.jpg" alt="Erikk Shupp" width="160" height="160" />
       </div>
-      <h1>Erikk Shupp</h1>
-      <p class="pk-title">{siteConfig.author.title}</p>
-      <p class="pk-location">{siteConfig.author.location}</p>
-      <p class="pk-tagline">{siteConfig.tagline}</p>
+      <div class="pk-hero-info">
+        <h1>Erikk Shupp</h1>
+        <p class="pk-title">{siteConfig.author.title}</p>
+        <p class="pk-location">
+          <span class="pk-location-dot" aria-hidden="true"></span>
+          {siteConfig.author.location}
+        </p>
+        <p class="pk-tagline">{siteConfig.tagline}</p>
+      </div>
     </div>
   </section>
 
@@ -30,7 +33,7 @@ import Icon from '../components/Icon/Icon.astro';
   </section>
 
   <!-- Humans Only Podcast -->
-  <section class="pk-section pk-venture pk-venture-podcast">
+  <section class="pk-section pk-venture pk-venture-podcast quantum-outline">
     <div class="pk-venture-badge">Podcast</div>
     <div class="pk-venture-header">
       <div class="pk-venture-logo">
@@ -214,56 +217,130 @@ import Icon from '../components/Icon/Icon.astro';
 </Layout>
 
 <style>
-  /* ===== Press Kit Hero ===== */
-  .pk-hero {
-    position: relative;
-    text-align: center;
-    padding: 5rem 1.5rem 4rem;
-    min-height: 420px;
-    overflow: hidden;
-    margin-bottom: 0;
+  /* ===== Animated Quantum Outline =====
+     Lightweight CSS replacement for the heavy three.js hero —
+     a slow conic gradient sweeps around the border. */
+  @property --pk-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
   }
 
-  .pk-hero-liquid {
+  .quantum-outline {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .quantum-outline::before {
+    content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
+    inset: 0;
+    padding: 1.5px;
+    border-radius: inherit;
+    background: conic-gradient(
+      from var(--pk-angle),
+      rgba(121, 148, 150, 0.0) 0%,
+      rgba(121, 148, 150, 0.7) 18%,
+      rgba(172, 193, 150, 0.85) 30%,
+      rgba(233, 235, 158, 0.7) 42%,
+      rgba(121, 148, 150, 0.0) 60%,
+      rgba(121, 148, 150, 0.0) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: pk-rotate-outline 14s linear infinite;
     pointer-events: none;
-    opacity: 0.7;
+    z-index: 0;
   }
 
-  .pk-hero-content {
-    position: relative;
-    z-index: 2;
-    animation: pk-fade-up 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+  html.dark .quantum-outline::before {
+    background: conic-gradient(
+      from var(--pk-angle),
+      rgba(172, 193, 150, 0.0) 0%,
+      rgba(172, 193, 150, 0.55) 18%,
+      rgba(233, 235, 158, 0.75) 30%,
+      rgba(121, 148, 150, 0.6) 42%,
+      rgba(172, 193, 150, 0.0) 60%,
+      rgba(172, 193, 150, 0.0) 100%
+    );
   }
 
-  .pk-headshot {
-    width: 160px;
-    height: 160px;
-    margin: 0 auto 1.5rem;
+  @keyframes pk-rotate-outline {
+    to { --pk-angle: 360deg; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .quantum-outline::before {
+      animation: none;
+    }
+  }
+
+  /* Fallback for browsers without @property: render a static gradient ring */
+  @supports not (background: conic-gradient(from 0deg, red, blue)) {
+    .quantum-outline::before {
+      background: linear-gradient(135deg, rgba(121, 148, 150, 0.4), rgba(172, 193, 150, 0.4), rgba(233, 235, 158, 0.4));
+    }
+  }
+
+  /* ===== Press Kit Hero Card ===== */
+  .pk-hero {
+    max-width: 860px;
+    margin: 2.5rem auto 0;
+    padding: 0 1.5rem;
+  }
+
+  .pk-hero-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.75rem 2rem;
+    border-radius: 18px;
+    background: white;
+    box-shadow: 0 6px 28px rgba(20, 8, 14, 0.06);
+    animation: pk-fade-up 0.7s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  html.dark .pk-hero-card {
+    background: #23232b;
+  }
+
+  .pk-hero-headshot {
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     overflow: hidden;
-    border: 4px solid var(--color-accent);
-    box-shadow: 0 8px 30px rgba(20, 8, 14, 0.15);
+    border: 3px solid var(--color-accent);
+    box-shadow: 0 6px 22px rgba(20, 8, 14, 0.14);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
   }
 
-  .pk-headshot img {
+  .pk-hero-headshot img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
   }
 
+  .pk-hero-info {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+  }
+
   .pk-hero h1 {
-    font-size: 3rem;
+    font-size: 2.4rem;
     font-weight: 700;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.15em;
-    line-height: 1.2;
+    margin: 0 0 0.35rem;
+    line-height: 1.1;
     background: linear-gradient(45deg, var(--color-dark), var(--color-secondary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -278,11 +355,12 @@ import Icon from '../components/Icon/Icon.astro';
   }
 
   .pk-title {
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     font-weight: 600;
     color: var(--color-secondary);
-    margin-bottom: 0.25rem;
+    margin: 0 0 0.3rem;
     font-family: var(--font-secondary-header);
+    letter-spacing: 0.02em;
   }
 
   html.dark .pk-title {
@@ -290,19 +368,29 @@ import Icon from '../components/Icon/Icon.astro';
   }
 
   .pk-location {
-    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.88rem;
     color: var(--color-tertiary);
-    margin-bottom: 0.75rem;
+    margin: 0 0 0.65rem;
     font-family: var(--font-body);
   }
 
+  .pk-location-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-tertiary);
+    box-shadow: 0 0 0 3px rgba(121, 148, 150, 0.18);
+  }
+
   .pk-tagline {
-    font-size: 1.4rem;
+    font-size: 1.05rem;
     font-style: italic;
     color: var(--color-secondary);
     font-family: var(--font-body);
-    opacity: 0;
-    animation: pk-fade-up 0.8s 0.3s forwards cubic-bezier(0.25, 0.8, 0.25, 1);
+    margin: 0;
   }
 
   html.dark .pk-tagline {
@@ -822,23 +910,34 @@ import Icon from '../components/Icon/Icon.astro';
   }
 
   /* ===== Responsive ===== */
-  @media (max-width: 768px) {
+  @media (max-width: 640px) {
     .pk-hero {
-      padding: 4rem 1rem 3rem;
-      min-height: auto;
+      padding: 0 1rem;
+    }
+
+    .pk-hero-card {
+      grid-template-columns: 1fr;
+      text-align: center;
+      gap: 1rem;
+      padding: 1.75rem 1.5rem;
+    }
+
+    .pk-hero-headshot {
+      width: 96px;
+      height: 96px;
+      margin: 0 auto;
     }
 
     .pk-hero h1 {
-      font-size: 2.2rem;
+      font-size: 1.9rem;
     }
 
-    .pk-headshot {
-      width: 120px;
-      height: 120px;
+    .pk-location {
+      justify-content: center;
     }
 
     .pk-tagline {
-      font-size: 1.15rem;
+      font-size: 1rem;
     }
 
     .pk-venture {
