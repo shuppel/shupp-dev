@@ -3,7 +3,7 @@ title: "Ethical AI Development"
 description: "Exploring data rights, consent, and responsible AI practices in an era of models trained on scraped content."
 stage: "nebula"
 formed: 2025-12-21
-lastTended: 2025-12-21
+lastObserved: 2025-12-21
 constellation: "ai-ethics"
 connections: ["local-first-principles"]
 ---

@@ -32,42 +32,93 @@ import Icon from '../components/Icon/Icon.astro';
     </div>
   </section>
 
-  <!-- Humans Only Podcast -->
-  <section class="pk-section pk-venture pk-venture-podcast quantum-outline">
-    <div class="pk-venture-badge">Podcast</div>
-    <div class="pk-venture-header">
-      <div class="pk-venture-logo">
-        <span class="pk-logo-icon"><Icon name="Microphone" size={32} weight="duotone" color="white" /></span>
+  <!-- Ventures & Companies -->
+  <section class="pk-section">
+    <h2 class="pk-section-title">Companies & Ventures</h2>
+    <div class="pk-companies-grid">
+      <!-- Thoughtful App Co. -->
+      <div class="pk-company-card pk-company-taco">
+        <div class="pk-company-header">
+          <div class="pk-company-logo">
+            <Icon name="Brain" size={20} weight="duotone" color="white" />
+          </div>
+          <div class="pk-company-info">
+            <h3 class="pk-company-name">Thoughtful App Co.</h3>
+            <span class="pk-company-type">Product Studio</span>
+          </div>
+        </div>
+        <p class="pk-company-description">Building human-centered software that respects privacy and prioritizes user wellbeing.</p>
+        <div class="pk-company-links">
+          <a href={siteConfig.ventures.thoughtfulAppCo.url} class="pk-company-link" target="_blank" rel="noopener noreferrer">
+            <Icon name="Globe" size={14} weight="duotone" />
+            thoughtfulapp.co
+          </a>
+        </div>
       </div>
-      <div>
-        <h2 class="pk-venture-name">Humans Only</h2>
-        <p class="pk-venture-tagline">{siteConfig.ventures.humansOnlyPodcast.tagline}</p>
-      </div>
-    </div>
-    <p class="pk-venture-description">Exploring how emerging technology can better serve humanity. Conversations about the human side of tech — digital wellness, ethical AI, local-first software, and building products that actually matter.</p>
-    <div class="pk-venture-links">
-      <a href={siteConfig.ventures.humansOnlyPodcast.url} class="pk-btn pk-btn-primary" target="_blank" rel="noopener noreferrer">humansonly.fm</a>
-      <a href={siteConfig.ventures.humansOnlyPodcast.spotify} class="pk-btn pk-btn-outline" target="_blank" rel="noopener noreferrer">Spotify</a>
-      {siteConfig.ventures.humansOnlyPodcast.youtube && (
-        <a href={siteConfig.ventures.humansOnlyPodcast.youtube} class="pk-btn pk-btn-ghost" target="_blank" rel="noopener noreferrer">YouTube</a>
-      )}
-    </div>
-  </section>
 
-  <!-- Boobo the Spinosaur -->
-  <section class="pk-section pk-venture pk-venture-boobo">
-    <div class="pk-venture-badge">Series</div>
-    <div class="pk-venture-header">
-      <div class="pk-venture-logo">
-        <span class="pk-logo-icon"><Icon name="PawPrint" size={32} weight="duotone" color="white" /></span>
+      <!-- Nodetus -->
+      <div class="pk-company-card pk-company-nodetus">
+        <div class="pk-company-header">
+          <div class="pk-company-logo">
+            <Icon name="Building" size={20} weight="duotone" color="white" />
+          </div>
+          <div class="pk-company-info">
+            <h3 class="pk-company-name">Nodetus</h3>
+            <span class="pk-company-type">Federal Consulting</span>
+          </div>
+        </div>
+        <p class="pk-company-description">Strategic technology consulting for federal agencies and government contractors.</p>
+        <div class="pk-company-links">
+          <a href="https://nodetus.com" class="pk-company-link" target="_blank" rel="noopener noreferrer">
+            <Icon name="Globe" size={14} weight="duotone" />
+            nodetus.com
+          </a>
+        </div>
       </div>
-      <div>
-        <h2 class="pk-venture-name">Boobo the Spinosaur</h2>
-        <p class="pk-venture-tagline">A Thoughtful App Co. original</p>
+
+      <!-- Humans Only Podcast -->
+      <div class="pk-company-card pk-company-podcast">
+        <div class="pk-company-header">
+          <div class="pk-company-logo">
+            <Icon name="Microphone" size={20} weight="duotone" color="white" />
+          </div>
+          <div class="pk-company-info">
+            <h3 class="pk-company-name">Humans Only</h3>
+            <span class="pk-company-type">Podcast</span>
+          </div>
+        </div>
+        <p class="pk-company-description">Exploring how emerging technology can better serve humanity.</p>
+        <div class="pk-company-links">
+          <a href={siteConfig.ventures.humansOnlyPodcast.url} class="pk-company-link" target="_blank" rel="noopener noreferrer">
+            <Icon name="Globe" size={14} weight="duotone" />
+            humansonly.fm
+          </a>
+          <a href={siteConfig.ventures.humansOnlyPodcast.spotify} class="pk-company-link" target="_blank" rel="noopener noreferrer">
+            <Icon name="SpotifyLogo" size={14} weight="duotone" />
+            Spotify
+          </a>
+        </div>
       </div>
-    </div>
-    <div class="pk-venture-links">
-      <a href={siteConfig.ventures.booboTheSpinosaur.youtube} class="pk-btn pk-btn-primary" target="_blank" rel="noopener noreferrer">Watch on YouTube</a>
+
+      <!-- Boobo the Spinosaur -->
+      <div class="pk-company-card pk-company-boobo">
+        <div class="pk-company-header">
+          <div class="pk-company-logo">
+            <Icon name="PawPrint" size={20} weight="duotone" color="white" />
+          </div>
+          <div class="pk-company-info">
+            <h3 class="pk-company-name">Boobo the Spinosaur</h3>
+            <span class="pk-company-type">Original Series</span>
+          </div>
+        </div>
+        <p class="pk-company-description">A children's series about a thoughtful dinosaur navigating life's adventures.</p>
+        <div class="pk-company-links">
+          <a href={siteConfig.ventures.booboTheSpinosaur.youtube} class="pk-company-link" target="_blank" rel="noopener noreferrer">
+            <Icon name="YoutubeLogo" size={14} weight="duotone" />
+            YouTube
+          </a>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -444,58 +495,42 @@ import Icon from '../components/Icon/Icon.astro';
     color: #f3f4f6;
   }
 
-  /* ===== Venture Cards ===== */
-  .pk-venture {
-    max-width: 860px;
+  /* ===== Company Cards Grid ===== */
+  .pk-companies-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  .pk-company-card {
     background: white;
-    border-radius: 16px;
-    padding: 2.5rem;
-    box-shadow: 0 4px 20px rgba(20, 8, 14, 0.06);
+    border-radius: 12px;
+    padding: 1.25rem;
     border: 1px solid rgba(121, 148, 150, 0.12);
-    position: relative;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
-  .pk-venture:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 30px rgba(20, 8, 14, 0.1);
+  .pk-company-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(20, 8, 14, 0.08);
   }
 
-  html.dark .pk-venture {
+  html.dark .pk-company-card {
     background: #23232b;
-    border-color: rgba(233, 235, 158, 0.1);
+    border-color: rgba(233, 235, 158, 0.08);
   }
 
-  .pk-venture-badge {
-    position: absolute;
-    top: -12px;
-    left: 2rem;
-    background: linear-gradient(135deg, var(--color-tertiary), var(--color-accent));
-    color: white;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    padding: 0.3rem 1rem;
-    border-radius: 20px;
-    font-family: var(--font-secondary-header);
-  }
-
-  html.dark .pk-venture-badge {
-    color: #23232b;
-  }
-
-  .pk-venture-header {
+  .pk-company-header {
     display: flex;
     align-items: center;
-    gap: 1.25rem;
-    margin-bottom: 1.25rem;
+    gap: 0.875rem;
+    margin-bottom: 0.75rem;
   }
 
-  .pk-venture-logo {
-    width: 56px;
-    height: 56px;
-    border-radius: 14px;
+  .pk-company-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
     background: linear-gradient(135deg, var(--color-secondary), var(--color-tertiary));
     display: flex;
     align-items: center;
@@ -503,62 +538,99 @@ import Icon from '../components/Icon/Icon.astro';
     flex-shrink: 0;
   }
 
-  .pk-venture-podcast .pk-venture-logo {
+  .pk-company-taco .pk-company-logo {
+    background: linear-gradient(135deg, var(--color-tertiary), var(--color-accent));
+  }
+
+  .pk-company-nodetus .pk-company-logo {
+    background: linear-gradient(135deg, #49475B, #799496);
+  }
+
+  .pk-company-podcast .pk-company-logo {
     background: linear-gradient(135deg, var(--color-dark), var(--color-secondary));
   }
 
-  .pk-venture-boobo .pk-venture-logo {
+  .pk-company-boobo .pk-company-logo {
     background: linear-gradient(135deg, #4a7c59, var(--color-accent));
   }
 
-  .pk-logo-icon {
-    font-size: 1.6rem;
-    line-height: 1;
+  .pk-company-info {
+    min-width: 0;
   }
 
-  .pk-venture-name {
-    font-size: 1.5rem;
-    font-weight: 700;
+  .pk-company-name {
+    font-size: 1.1rem;
+    font-weight: 600;
     color: var(--color-dark);
     margin: 0;
     line-height: 1.2;
+    font-family: var(--font-secondary-header);
   }
 
-  html.dark .pk-venture-name {
+  html.dark .pk-company-name {
     color: #f3f4f6;
   }
 
-  .pk-venture-tagline {
-    font-size: 0.95rem;
+  .pk-company-type {
+    font-size: 0.75rem;
     color: var(--color-tertiary);
-    margin: 0.2rem 0 0;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     font-family: var(--font-body);
   }
 
-  .pk-venture-description {
-    font-size: 1rem;
-    line-height: 1.7;
+  html.dark .pk-company-type {
+    color: var(--color-accent);
+    opacity: 0.8;
+  }
+
+  .pk-company-description {
+    font-size: 0.9rem;
+    line-height: 1.5;
     color: var(--color-secondary);
-    margin-bottom: 1.5rem;
+    margin: 0 0 0.875rem 0;
     font-family: var(--font-body);
   }
 
-  html.dark .pk-venture-description {
+  html.dark .pk-company-description {
+    color: #a5a5b5;
+  }
+
+  .pk-company-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .pk-company-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    background: rgba(121, 148, 150, 0.08);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--color-secondary);
+    text-decoration: none;
+    font-family: var(--font-body);
+    transition: all 0.2s ease;
+  }
+
+  .pk-company-link:hover {
+    background: rgba(121, 148, 150, 0.15);
+    color: var(--color-dark);
+    transform: translateY(-1px);
+  }
+
+  html.dark .pk-company-link {
+    background: rgba(233, 235, 158, 0.08);
     color: #d1d5db;
   }
 
-  .pk-venture-description strong {
-    color: var(--color-dark);
-  }
-
-  html.dark .pk-venture-description strong {
+  html.dark .pk-company-link:hover {
+    background: rgba(233, 235, 158, 0.15);
     color: #f3f4f6;
-  }
-
-  .pk-venture-links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.75rem;
   }
 
   /* ===== Buttons ===== */
@@ -940,22 +1012,26 @@ import Icon from '../components/Icon/Icon.astro';
       font-size: 1rem;
     }
 
-    .pk-venture {
-      padding: 2rem 1.5rem;
+    .pk-companies-grid {
+      grid-template-columns: 1fr;
+      gap: 0.875rem;
     }
 
-    .pk-venture-header {
-      flex-direction: column;
-      text-align: center;
+    .pk-company-card {
+      padding: 1rem;
     }
 
-    .pk-venture-links {
-      justify-content: center;
+    .pk-company-header {
+      gap: 0.75rem;
     }
 
-    .pk-venture-badge {
-      left: 50%;
-      transform: translateX(-50%);
+    .pk-company-logo {
+      width: 36px;
+      height: 36px;
+    }
+
+    .pk-company-name {
+      font-size: 1rem;
     }
 
     .pk-socials-grid {
@@ -977,10 +1053,14 @@ import Icon from '../components/Icon/Icon.astro';
       grid-template-columns: 1fr;
     }
 
-    .pk-venture-links {
+    .pk-company-links {
       flex-direction: column;
       align-items: stretch;
+    }
+
+    .pk-company-link {
       text-align: center;
+      justify-content: center;
     }
   }
 </style>

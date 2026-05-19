@@ -3,7 +3,7 @@ title: "Local-First Principles"
 description: "Why user data should live locally, owned and controlled by users rather than centralized cloud providers."
 stage: "protostar"
 formed: 2025-12-21
-lastTended: 2025-12-21
+lastObserved: 2025-12-21
 constellation: "product-philosophy"
 connections: ["ethical-ai-development"]
 ---

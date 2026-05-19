@@ -5,14 +5,26 @@ import Icon from '../components/Icon/Icon.astro';
 
 const allPress = await getCollection('press');
 
+// Sort by date descending
 const items = allPress.sort(
   (a, b) => new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime()
 );
 
+// Group items by year
+const itemsByYear = items.reduce((acc, item) => {
+  const year = new Date(item.data.pubDate).getFullYear();
+  if (!acc[year]) acc[year] = [];
+  acc[year].push(item);
+  return acc;
+}, {} as Record<number, typeof items>);
+
+// Get years sorted descending
+const years = Object.keys(itemsByYear).map(Number).sort((a, b) => b - a);
+
 const TYPE_META: Record<string, { label: string; icon: string }> = {
   'article':         { label: 'Article',         icon: 'Article' },
   'podcast-episode': { label: 'Podcast',         icon: 'Microphone' },
-  'podcast-guest':   { label: 'Guest Spot',      icon: 'MicrophoneStage' },
+  'podcast-guest':   { label: 'Guest',           icon: 'MicrophoneStage' },
   'talk':            { label: 'Talk',            icon: 'Presentation' },
   'interview':       { label: 'Interview',       icon: 'ChatsCircle' },
   'mention':         { label: 'Mention',         icon: 'Quotes' },
@@ -20,340 +32,474 @@ const TYPE_META: Record<string, { label: string; icon: string }> = {
   'video':           { label: 'Video',           icon: 'PlayCircle' },
 };
 
-const types = Array.from(new Set(items.map(i => i.data.type)));
+// Helper to get favicon URL from outlet
+function getFaviconUrl(url: string | undefined): string {
+  if (!url) return '';
+  try {
+    const domain = new URL(url).hostname;
+    return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+  } catch {
+    return '';
+  }
+}
+
+// Helper to get display URL
+function getDisplayUrl(url: string | undefined): string {
+  if (!url) return '';
+  try {
+    const domain = new URL(url).hostname.replace(/^www\./, '');
+    return domain;
+  } catch {
+    return '';
+  }
+}
 ---
 
 <Layout
   title="Press"
   description="Articles, podcast episodes, talks, interviews, and other public appearances by Erikk Shupp."
 >
-  <div class="press-page">
-    <section class="press-hero">
-      <div class="press-header">
-        <Icon name="Newspaper" size={48} weight="duotone" liquid={true} inkEffect="medium" />
-        <h1>Press</h1>
-      </div>
-      <p class="lead">A running list of articles, podcast episodes, talks, and interviews — everywhere I show up beyond shupp.dev.</p>
-    </section>
-
-    <div class="press-filters" role="tablist" aria-label="Filter by type">
-      <button class="press-filter is-active" data-filter="all" role="tab" aria-selected="true">
-        All
-        <span class="press-filter-count">{items.length}</span>
-      </button>
-      {types.map(t => (
-        <button class="press-filter" data-filter={t} role="tab" aria-selected="false">
-          <Icon name={TYPE_META[t]?.icon ?? 'Bookmark'} size={16} weight="duotone" />
-          {TYPE_META[t]?.label ?? t}
-          <span class="press-filter-count">{items.filter(i => i.data.type === t).length}</span>
-        </button>
-      ))}
-    </div>
-
-    {items.length === 0 ? (
-      <div class="press-empty">
-        <p>Nothing here yet. Add Markdown files to <code>src/content/press/</code> and they'll show up automatically.</p>
-      </div>
-    ) : (
-      <ul class="press-list">
-        {items.map(item => {
-          const meta = TYPE_META[item.data.type];
-          const date = new Date(item.data.pubDate).toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-          });
-          return (
-            <li class="press-item" data-type={item.data.type}>
-              <a href={`/press/${item.slug}`} class="press-link">
-                <div class="press-item-header">
-                  <span class="press-type">
-                    <Icon name={meta?.icon ?? 'Bookmark'} size={16} weight="duotone" />
-                    {meta?.label ?? item.data.type}
-                  </span>
-                  <span class="press-date">{date}</span>
-                </div>
-                <h2 class="press-title">{item.data.title}</h2>
-                <p class="press-description">{item.data.description}</p>
-                <div class="press-meta">
-                  {item.data.outlet && (
-                    <span class="press-outlet">
-                      <Icon name="Globe" size={14} weight="duotone" />
-                      {item.data.outlet}
-                    </span>
-                  )}
-                  {item.data.eventName && (
-                    <span class="press-event">
-                      <Icon name="MapPin" size={14} weight="duotone" />
-                      {item.data.eventName}{item.data.location ? ` · ${item.data.location}` : ''}
-                    </span>
-                  )}
-                  {item.data.tags && item.data.tags.length > 0 && (
-                    <span class="press-tags">
-                      {item.data.tags.slice(0, 3).map(t => (
-                        <span class="press-tag">{t}</span>
-                      ))}
-                    </span>
-                  )}
-                </div>
+  <div class="press-layout">
+    <!-- Left sidebar with years -->
+    <aside class="press-sidebar">
+      <nav class="year-nav" aria-label="Filter by year">
+        <ul class="year-list">
+          <li>
+            <a href="#all" class="year-link is-active" data-year="all">
+              All
+              <span class="year-count">{items.length}</span>
+            </a>
+          </li>
+          {years.map(year => (
+            <li>
+              <a href={`#${year}`} class="year-link" data-year={year}>
+                {year}
+                <span class="year-count">{itemsByYear[year].length}</span>
               </a>
             </li>
-          );
-        })}
-      </ul>
-    )}
+          ))}
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main content -->
+    <main class="press-content">
+      <header class="press-header-section">
+        <h1>Press & Appearances</h1>
+        <p class="press-subtitle">Articles, podcasts, talks, and interviews</p>
+      </header>
+
+      {years.map(year => (
+        <section class="year-section" id={String(year)} data-year={year}>
+          <h2 class="year-heading">{year}</h2>
+          <ul class="appearance-list">
+            {itemsByYear[year].map(item => {
+              const meta = TYPE_META[item.data.type];
+              const favicon = getFaviconUrl(item.data.externalUrl);
+              const displayUrl = getDisplayUrl(item.data.externalUrl);
+              const date = new Date(item.data.pubDate).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+              });
+              return (
+                <li class="appearance-item">
+                  <a href={`/press/${item.id}`} class="appearance-link">
+                    <div class="appearance-preview">
+                      {favicon ? (
+                        <img src={favicon} alt="" class="appearance-favicon" loading="lazy" />
+                      ) : (
+                        <div class="appearance-icon-fallback">
+                          <Icon name={meta?.icon ?? 'Bookmark'} size={20} weight="duotone" />
+                        </div>
+                      )}
+                    </div>
+                    <div class="appearance-body">
+                      <div class="appearance-meta-row">
+                        <span class="appearance-type">{meta?.label ?? item.data.type}</span>
+                        <span class="appearance-date">{date}</span>
+                      </div>
+                      <h3 class="appearance-title">{item.data.title}</h3>
+                      <p class="appearance-description">{item.data.description}</p>
+                      <div class="appearance-outlet">
+                        <Icon name="Globe" size={12} weight="duotone" />
+                        <span>{item.data.outlet ?? displayUrl}</span>
+                      </div>
+                    </div>
+                    <div class="appearance-arrow">
+                      <Icon name="ArrowRight" size={20} weight="duotone" />
+                    </div>
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      ))}
+    </main>
   </div>
 </Layout>
 
 <script>
+  // Year navigation highlighting
   document.addEventListener('astro:page-load', () => {
-    const filters = document.querySelectorAll<HTMLButtonElement>('.press-filter');
-    const items = document.querySelectorAll<HTMLLIElement>('.press-item');
-
-    filters.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const filter = btn.dataset.filter;
-        filters.forEach(b => {
-          b.classList.toggle('is-active', b === btn);
-          b.setAttribute('aria-selected', b === btn ? 'true' : 'false');
-        });
-        items.forEach(li => {
-          if (filter === 'all' || li.dataset.type === filter) {
-            li.removeAttribute('hidden');
-          } else {
-            li.setAttribute('hidden', '');
-          }
-        });
+    const yearLinks = document.querySelectorAll<HTMLAnchorElement>('.year-link');
+    const sections = document.querySelectorAll<HTMLElement>('.year-section');
+    
+    // Click handling for year links
+    yearLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        const year = link.dataset.year;
+        
+        // Update active state
+        yearLinks.forEach(l => l.classList.remove('is-active'));
+        link.classList.add('is-active');
+        
+        // Show/hide sections
+        if (year === 'all') {
+          sections.forEach(s => s.removeAttribute('hidden'));
+        } else {
+          sections.forEach(s => {
+            if (s.dataset.year === year) {
+              s.removeAttribute('hidden');
+            } else {
+              s.setAttribute('hidden', '');
+            }
+          });
+        }
       });
     });
+
+    // Scroll spy to update active year
+    const observerOptions = {
+      root: null,
+      rootMargin: '-20% 0px -80% 0px',
+      threshold: 0
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const year = entry.target.getAttribute('id');
+          yearLinks.forEach(link => {
+            link.classList.toggle('is-active', link.getAttribute('href') === `#${year}`);
+          });
+        }
+      });
+    }, observerOptions);
+
+    sections.forEach(section => observer.observe(section));
   });
 </script>
 
 <style>
-  .press-page {
-    max-width: 1000px;
+  .press-layout {
+    display: grid;
+    grid-template-columns: 200px 1fr;
+    gap: 3rem;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 4rem 1.5rem;
+    padding: 3rem 2rem;
   }
 
-  .press-hero {
-    margin-bottom: 2.5rem;
+  /* Sidebar */
+  .press-sidebar {
+    position: sticky;
+    top: 2rem;
+    height: fit-content;
   }
 
-  .press-header {
+  .year-nav {
+    border-right: 1px solid var(--border-color);
+  }
+
+  .year-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .year-list li {
+    margin: 0;
+  }
+
+  .year-link {
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .press-hero h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin: 0;
-    color: var(--text-color);
-  }
-
-  .lead {
-    font-size: 1.2rem;
+    justify-content: space-between;
+    padding: 0.6rem 1rem;
     color: var(--text-light);
-    line-height: 1.6;
-    margin: 0;
-    max-width: 70ch;
+    text-decoration: none;
+    font-size: 0.95rem;
+    font-weight: 500;
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
   }
 
-  .press-filters {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
-    margin-bottom: 2rem;
+  .year-link:hover {
+    color: var(--text-color);
+    background: rgba(121, 148, 150, 0.05);
+  }
+
+  .year-link.is-active {
+    color: var(--color-tertiary);
+    border-left-color: var(--color-tertiary);
+    background: rgba(121, 148, 150, 0.08);
+    font-weight: 600;
+  }
+
+  html.dark .year-link.is-active {
+    color: var(--color-accent);
+    border-left-color: var(--color-accent);
+    background: rgba(233, 235, 158, 0.08);
+  }
+
+  .year-count {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    opacity: 0.6;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Main content */
+  .press-content {
+    min-width: 0;
+  }
+
+  .press-header-section {
+    margin-bottom: 3rem;
     padding-bottom: 1.5rem;
     border-bottom: 1px solid var(--border-color);
   }
 
-  .press-filter {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.5rem 0.9rem;
-    border-radius: 999px;
-    background: transparent;
-    border: 1px solid var(--border-color);
+  .press-header-section h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+    color: var(--text-color);
+  }
+
+  .press-subtitle {
+    font-size: 1.1rem;
     color: var(--text-light);
-    font-size: 0.85rem;
-    font-weight: 500;
-    font-family: var(--font-secondary-header);
-    cursor: pointer;
-    transition: all 0.2s ease;
+    margin: 0;
   }
 
-  .press-filter:hover {
-    border-color: var(--color-tertiary);
-    color: var(--color-tertiary);
+  .year-section {
+    margin-bottom: 3rem;
   }
 
-  .press-filter.is-active {
-    background: var(--color-tertiary);
-    border-color: var(--color-tertiary);
-    color: white;
+  .year-section[hidden] {
+    display: none;
   }
 
-  html.dark .press-filter.is-active {
-    background: var(--color-accent);
+  .year-heading {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin: 0 0 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-tertiary);
+    display: inline-block;
+  }
+
+  html.dark .year-heading {
     border-color: var(--color-accent);
-    color: #23232b;
   }
 
-  .press-filter-count {
-    font-size: 0.75rem;
-    opacity: 0.7;
-    font-variant-numeric: tabular-nums;
-  }
-
-  .press-list {
+  .appearance-list {
     list-style: none;
     padding: 0;
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 0.75rem;
   }
 
-  .press-item {
-    border-bottom: 1px solid var(--border-color);
+  .appearance-item {
+    margin: 0;
   }
 
-  .press-item:last-child {
-    border-bottom: none;
-  }
-
-  .press-link {
-    display: block;
-    padding: 1.75rem 0;
+  .appearance-link {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
     text-decoration: none;
     color: inherit;
     transition: all 0.2s ease;
+    border: 1px solid transparent;
   }
 
-  .press-link:hover {
+  .appearance-link:hover {
+    background: rgba(121, 148, 150, 0.03);
+    border-color: var(--border-color);
     transform: translateX(4px);
   }
 
-  .press-link:hover .press-title {
-    color: var(--color-tertiary);
+  html.dark .appearance-link:hover {
+    background: rgba(233, 235, 158, 0.03);
   }
 
-  html.dark .press-link:hover .press-title {
-    color: var(--color-accent);
-  }
-
-  .press-item-header {
+  .appearance-preview {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
     display: flex;
     align-items: center;
-    gap: 1rem;
-    margin-bottom: 0.5rem;
-    font-size: 0.85rem;
+    justify-content: center;
+    background: var(--background-alt);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .appearance-favicon {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+  }
+
+  .appearance-icon-fallback {
     color: var(--text-light);
   }
 
-  .press-type {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.2rem 0.65rem;
-    border-radius: 999px;
-    background: rgba(121, 148, 150, 0.12);
-    color: var(--color-tertiary);
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.7rem;
-    letter-spacing: 0.06em;
+  .appearance-body {
+    flex: 1;
+    min-width: 0;
   }
 
-  html.dark .press-type {
-    background: rgba(233, 235, 158, 0.12);
+  .appearance-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .appearance-type {
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-tertiary);
+  }
+
+  html.dark .appearance-type {
     color: var(--color-accent);
   }
 
-  .press-date {
+  .appearance-date {
+    font-size: 0.8rem;
+    color: var(--text-light);
     font-variant-numeric: tabular-nums;
   }
 
-  .press-title {
-    font-size: 1.4rem;
+  .appearance-title {
+    font-size: 1.1rem;
     font-weight: 600;
-    line-height: 1.3;
-    margin: 0.25rem 0 0.5rem;
+    margin: 0 0 0.35rem;
     color: var(--text-color);
+    line-height: 1.3;
     transition: color 0.2s ease;
   }
 
-  html.dark .press-title {
-    color: #f3f4f6;
+  .appearance-link:hover .appearance-title {
+    color: var(--color-tertiary);
   }
 
-  .press-description {
-    font-size: 1rem;
+  html.dark .appearance-link:hover .appearance-title {
+    color: var(--color-accent);
+  }
+
+  .appearance-description {
+    font-size: 0.9rem;
     color: var(--text-light);
-    line-height: 1.6;
-    margin: 0 0 0.75rem;
-    max-width: 70ch;
+    margin: 0 0 0.5rem;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
-  .press-meta {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 1rem;
-    font-size: 0.85rem;
-    color: var(--text-light);
-  }
-
-  .press-outlet,
-  .press-event {
+  .appearance-outlet {
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
-  }
-
-  .press-tags {
-    display: inline-flex;
-    gap: 0.4rem;
-  }
-
-  .press-tag {
-    background: var(--background-alt);
-    padding: 0.15rem 0.55rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: var(--text-light);
+    opacity: 0.8;
   }
 
-  .press-empty {
-    padding: 4rem 0;
-    text-align: center;
+  .appearance-arrow {
+    flex-shrink: 0;
     color: var(--text-light);
+    opacity: 0;
+    transition: all 0.2s ease;
+    transform: translateX(-8px);
   }
 
-  .press-empty code {
-    background: var(--background-alt);
-    padding: 0.15rem 0.4rem;
-    border-radius: 4px;
-    font-size: 0.9em;
+  .appearance-link:hover .appearance-arrow {
+    opacity: 1;
+    transform: translateX(0);
+    color: var(--color-tertiary);
   }
 
+  html.dark .appearance-link:hover .appearance-arrow {
+    color: var(--color-accent);
+  }
+
+  /* Mobile responsive */
   @media (max-width: 768px) {
-    .press-page {
-      padding: 3rem 1rem;
+    .press-layout {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+      padding: 2rem 1rem;
     }
-    .press-hero h1 {
+
+    .press-sidebar {
+      position: static;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1rem;
+    }
+
+    .year-nav {
+      border-right: none;
+    }
+
+    .year-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .year-link {
+      border-left: none;
+      border-radius: 999px;
+      padding: 0.4rem 0.8rem;
+      background: var(--background-alt);
+    }
+
+    .year-link.is-active {
+      border-left-color: transparent;
+      background: var(--color-tertiary);
+      color: white;
+    }
+
+    html.dark .year-link.is-active {
+      background: var(--color-accent);
+      color: #23232b;
+    }
+
+    .press-header-section h1 {
       font-size: 2rem;
     }
-    .press-title {
-      font-size: 1.2rem;
+
+    .appearance-link {
+      padding: 0.875rem;
     }
-    .press-link {
-      padding: 1.5rem 0;
+
+    .appearance-arrow {
+      display: none;
     }
   }
 </style>

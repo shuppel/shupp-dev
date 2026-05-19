@@ -142,7 +142,7 @@ const constellations = getConstellations(notes);
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
+    function initGalaxyFilters() {
       const cards = document.querySelectorAll('.galaxy-card');
       const stageButtons = document.querySelectorAll('#stage-filters .filter-btn');
       const constellationButtons = document.querySelectorAll('#constellation-filters .filter-btn');
@@ -193,7 +193,11 @@ const constellations = getConstellations(notes);
           filterCards();
         });
       });
-    });
+    }
+
+    // Initialize on both DOMContentLoaded (initial page load) and astro:page-load (View Transitions)
+    document.addEventListener('DOMContentLoaded', initGalaxyFilters);
+    document.addEventListener('astro:page-load', initGalaxyFilters);
   </script>
 </Layout>
 

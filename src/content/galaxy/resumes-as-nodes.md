@@ -3,7 +3,7 @@ title: "Resumes as Nodes vs. Narrative Chronology"
 description: "The tension between organizing professional identity as a knowledge graph versus the traditional reverse-chronological resume format."
 stage: "protostar"
 formed: 2025-12-22
-lastTended: 2025-12-22
+lastObserved: 2025-12-22
 constellation: "product-philosophy"
 connections: ["local-first-principles"]
 relatedProjects: ["portfolio-website"]

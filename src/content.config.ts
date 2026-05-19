@@ -2,24 +2,24 @@
 import { z, defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 
-// Define a `type` and `schema` for blog posts
-const blogCollection = defineCollection({
-  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/blog' }),
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    pubDate: z.date(),
-    updatedDate: z.date().optional(),
-    author: z.string(),
-    categories: z.array(z.string()),
-    tags: z.array(z.string()).optional(),
-    readTime: z.string().optional(),
-    featuredImage: z.string().optional(), // Display text/slug for featured image placeholder
-    ogImage: z.string().optional(), // Actual image path for OpenGraph (e.g., /images/blog/my-post.png)
-    featured: z.boolean().default(false), // Added featured flag for promoting posts
-    relatedProjects: z.union([z.array(z.string()), z.null()]).optional(), // Related project slugs or null if N/A
-  }),
-});
+// ARCHIVED: Blog collection - all posts moved to Galaxy
+// const blogCollection = defineCollection({
+//   loader: glob({ pattern: '**/[^_]*.md', base: './src/content/blog' }),
+//   schema: z.object({
+//     title: z.string(),
+//     description: z.string(),
+//     pubDate: z.date(),
+//     updatedDate: z.date().optional(),
+//     author: z.string(),
+//     categories: z.array(z.string()),
+//     tags: z.array(z.string()).optional(),
+//     readTime: z.string().optional(),
+//     featuredImage: z.string().optional(),
+//     ogImage: z.string().optional(),
+//     featured: z.boolean().default(false),
+//     relatedProjects: z.union([z.array(z.string()), z.null()]).optional(),
+//   }),
+// });
 
 // Define a schema for project items
 const projectCollection = defineCollection({
@@ -308,7 +308,7 @@ const galaxyCollection = defineCollection({
 
 // Export a single `collections` object to register your collections
 export const collections = {
-  'blog': blogCollection,
+  // 'blog': blogCollection, // ARCHIVED - moved to Galaxy
   'projects': projectCollection,
   // 'roadmap': roadmapCollection, // ARCHIVED
   'authors': authorCollection,
