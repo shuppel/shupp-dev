@@ -32,44 +32,15 @@ const TYPE_META: Record<string, { label: string; icon: string }> = {
   'video':           { label: 'Video',           icon: 'PlayCircle' },
 };
 
-// Helper to get thumbnail from various sources
-function getThumbnailUrl(item: typeof items[0]): { url: string; type: 'image' | 'favicon' } {
-  // 1. Check for manual cover image
-  if (item.data.coverImage) {
-    return { url: item.data.coverImage, type: 'image' };
+// Helper to get favicon URL from outlet
+function getFaviconUrl(url: string | undefined): string {
+  if (!url) return '';
+  try {
+    const domain = new URL(url).hostname;
+    return `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+  } catch {
+    return '';
   }
-
-  // 2. Extract Spotify episode artwork
-  if (item.data.spotifyUrl) {
-    const match = item.data.spotifyUrl.match(/episode\/(\w+)/);
-    if (match) {
-      const episodeId = match[1];
-      // Spotify embed artwork (300x300)
-      return { url: `https://embed.spotify.com/oembed?url=spotify:episode:${episodeId}`, type: 'image' };
-    }
-  }
-
-  // 3. Extract YouTube thumbnail
-  if (item.data.youtubeUrl) {
-    const match = item.data.youtubeUrl.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([\w-]+)/);
-    if (match) {
-      const videoId = match[1];
-      // YouTube max resolution thumbnail
-      return { url: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`, type: 'image' };
-    }
-  }
-
-  // 4. Fallback to favicon
-  if (item.data.externalUrl) {
-    try {
-      const domain = new URL(item.data.externalUrl).hostname.replace(/^www\./, '');
-      return { url: `https://www.google.com/s2/favicons?domain=${domain}&sz=64`, type: 'favicon' };
-    } catch {
-      // ignore
-    }
-  }
-
-  return { url: '', type: 'favicon' };
 }
 
 // Helper to get display URL
@@ -124,7 +95,7 @@ function getDisplayUrl(url: string | undefined): string {
           <ul class="appearance-list">
             {itemsByYear[year].map(item => {
               const meta = TYPE_META[item.data.type];
-              const thumbnail = getThumbnailUrl(item);
+              const favicon = getFaviconUrl(item.data.externalUrl);
               const displayUrl = getDisplayUrl(item.data.externalUrl);
               const date = new Date(item.data.pubDate).toLocaleDateString('en-US', {
                 month: 'short',
@@ -134,13 +105,10 @@ function getDisplayUrl(url: string | undefined): string {
                 <li class="appearance-item">
                   <a href={`/press/${item.id}`} class="appearance-link">
                     <div class="appearance-preview">
-                      {thumbnail.url ? (
-                        <img 
-                          src={thumbnail.url} 
-                          alt="" 
-                          class={thumbnail.type === 'favicon' ? 'appearance-favicon' : 'appearance-thumbnail'} 
-                          loading="lazy" 
-                        />
+                      {item.data.coverImage ? (
+                        <img src={item.data.coverImage} alt="" class="appearance-thumbnail" loading="lazy" />
+                      ) : favicon ? (
+                        <img src={favicon} alt="" class="appearance-favicon" loading="lazy" />
                       ) : (
                         <div class="appearance-icon-fallback">
                           <Icon name={meta?.icon ?? 'Bookmark'} size={20} weight="duotone" />
@@ -232,12 +200,12 @@ function getDisplayUrl(url: string | undefined): string {
 </script>
 
 <style>
-  /* Override Layout's side-nav max-width constraint but KEEP the margin-left */
+  /* Override Layout's side-nav max-width constraint but KEEP the margin */
   :global(body.has-side-nav main) {
     max-width: none !important;
     width: auto;
+    margin-left: 240px !important;
     padding: 0;
-    /* Keep margin-left: 240px from Layout.astro */
   }
 
   .press-layout {
@@ -247,7 +215,7 @@ function getDisplayUrl(url: string | undefined): string {
     width: 100%;
     max-width: none;
     margin: 0;
-    padding: 1rem;
+    padding: 1rem 2rem 1rem 1rem;
     box-sizing: border-box;
   }
 
@@ -439,13 +407,9 @@ function getDisplayUrl(url: string | undefined): string {
   }
 
   .appearance-favicon {
-    width: 48px;
-    height: 48px;
+    width: 32px;
+    height: 32px;
     object-fit: contain;
-    border-radius: 8px;
-    background: white;
-    padding: 4px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   }
 
   .appearance-icon-fallback {
