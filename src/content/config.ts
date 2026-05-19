@@ -239,6 +239,35 @@ const toolsCollection = defineCollection({
   }),
 });
 
+// Define a schema for Digital Garden notes
+const gardenCollection = defineCollection({
+  type: 'content',
+  schema: z.object({
+    title: z.string(),
+    description: z.string(),
+    
+    // Cosmic growth stages: nebula (raw idea) → protostar (developing) → star (mature) → galaxy (hub)
+    stage: z.enum(['nebula', 'protostar', 'star', 'galaxy']),
+    
+    // Cosmic temporal metadata (not publication dates, but formation)
+    formed: z.date(),            // First created
+    lastTended: z.date(),        // Last meaningful update
+    
+    // Thematic grouping (e.g., "ai-ethics", "product-philosophy", "technical-notes")
+    constellation: z.string(),
+    
+    // Explicit connections to other garden notes (slugs)
+    connections: z.array(z.string()).default([]),
+    
+    // Optional cross-linking to other content types
+    relatedBlogPosts: z.array(z.string()).optional(),  // Blog post slugs
+    relatedProjects: z.array(z.string()).optional(),   // Project slugs
+    
+    // Visibility
+    visible: z.boolean().default(true),
+  }),
+});
+
 // Export a single `collections` object to register your collections
 export const collections = {
   'blog': blogCollection,
@@ -253,4 +282,5 @@ export const collections = {
   'principles': principleCollection,
   'thoughtful-apps': thoughtfulAppsCollection,
   'tools': toolsCollection,
+  'garden': gardenCollection,
 };
