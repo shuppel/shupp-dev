@@ -200,12 +200,12 @@ function getDisplayUrl(url: string | undefined): string {
 </script>
 
 <style>
-  /* Override Layout's side-nav max-width constraint */
+  /* Override Layout's side-nav max-width constraint but KEEP the margin-left */
   :global(body.has-side-nav main) {
     max-width: none !important;
-    width: 100%;
+    width: auto;
     padding: 0;
-    margin: 0;
+    /* Keep margin-left: 240px from Layout.astro */
   }
 
   .press-layout {
