@@ -45,7 +45,7 @@ export const siteConfig = {
   // Default author
   author: {
     name: 'Erikk Shupp',
-    title: 'Product Manager & Software Engineer',
+    title: 'Fractional Founder',
     location: 'Arlington, Virginia',
   }
 } as const;
