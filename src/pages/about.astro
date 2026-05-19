@@ -30,16 +30,10 @@ const bioParagraphs = author.data.longBio.split('\n\n');
           <img src="/images/about/esheadshot.jpg" alt={author.data.name} />
         </div>
         <div class="photo-item photo-secondary">
-          <div class="photo-placeholder">
-            <Icon name="Camera" size={32} weight="duotone" />
-            <span>Work in progress</span>
-          </div>
+          <img src="/images/about/shupp-e-2.png" alt="Erikk Shupp" />
         </div>
         <div class="photo-item photo-secondary">
-          <div class="photo-placeholder">
-            <Icon name="Camera" size={32} weight="duotone" />
-            <span>Behind the scenes</span>
-          </div>
+          <img src="/images/about/shupp-e-3.png" alt="Erikk Shupp" />
         </div>
       </div>
     </section>
@@ -457,29 +451,12 @@ const bioParagraphs = author.data.longBio.split('\n\n');
     z-index: 0;
   }
 
-  .skills-list {
-    list-style: none;
-    padding: 1.5rem;
-    background: white;
-  }
-
   html.dark .skills-list {
     background: #23232b;
   }
 
-  .skills-list li {
-    padding: 0.75rem 0;
-    border-bottom: 1px solid rgba(121, 148, 150, 0.1);
-    display: flex;
-    align-items: center;
-  }
-
   html.dark .skills-list li {
     border-bottom: 1px solid rgba(172, 193, 150, 0.1);
-  }
-
-  .skills-list li:last-child {
-    border-bottom: none;
   }
 
   .skills-list li::before {
@@ -570,6 +547,13 @@ const bioParagraphs = author.data.longBio.split('\n\n');
   }
 
   /* Responsive */
+  @media (max-width: 1024px) {
+    .skills-categories {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+    }
+  }
+
   @media (max-width: 900px) {
     .photo-grid {
       grid-template-columns: 1fr 1fr;
@@ -579,11 +563,6 @@ const bioParagraphs = author.data.longBio.split('\n\n');
     .photo-main {
       grid-row: 1 / 2;
       grid-column: 1 / -1;
-    }
-
-    .skills-categories {
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
     }
   }
 
@@ -618,13 +597,14 @@ const bioParagraphs = author.data.longBio.split('\n\n');
     .contact-options {
       gap: 1.5rem;
     }
-
-    .about-hero h1 {
-      font-size: 2.5rem;
-    }
   }
 
   @media (max-width: 600px) {
+    .skills-categories {
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+    }
+
     .contact-options {
       gap: 1rem;
     }
