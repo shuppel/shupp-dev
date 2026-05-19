@@ -1,12 +1,13 @@
 ---
 title: "LLM Imposter Syndrome"
 description: "Reflections on building in the age of AI code agents, navigating the intersection of technical and non-technical development, and finding meaning in a sea of synthetic creation."
-pubDate: 2025-12-21
-author: "Erikk Shupp"
-categories: ["Reflection", "AI", "Product Management"]
-tags: ["llm", "imposter syndrome", "thoughtful app co", "ai development", "ethics"]
-readTime: "8 min"
-featured: true
+stage: "star"
+formed: 2025-12-21
+lastObserved: 2025-12-21
+constellation: "ai-ethics"
+connections: []
+# relatedProjects: []
+visible: true
 ---
 
 I've built many things since code agents emerged on the market in May 2025. With my product knowledge and ability to use Reddit, StackOverflow, and reasoning agents, I was able to create some applications. When DALL-E 2 was released in 2021, I utilized it to try to create anything under the sun. Same with Sora, Stable Diffusion... but it's been four years since I first used all of these tools.
@@ -61,7 +62,7 @@ I think the issue is I need to create these products. If it's one of those thing
 
 I was also thinking of using micro-marketing on existing platforms—like the ones I consistently bash. I could potentially take users off the brain rot and loneliness platforms and invite them to be more grounded in reality.
 
-## Conclusion
+## Summary
 
 The imposter syndrome is real. The feeling that I'm building on foundations I don't fully understand, using tools that do the heavy lifting, in a market that's oversaturated with synthetic ideas—it's all there. But maybe that's the point. Maybe the real value isn't in whether you can code everything from scratch, but in understanding what needs to be built, for whom, and why.
 

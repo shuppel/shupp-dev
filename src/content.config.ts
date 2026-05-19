@@ -38,22 +38,22 @@ const projectCollection = defineCollection({
   }),
 });
 
-// Define a schema for roadmap items
-const roadmapCollection = defineCollection({
-  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/roadmap' }),
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    phase: z.enum(['current', 'upcoming', 'future']),
-    status: z.enum(['now', 'next', 'later', 'exploring']),
-    order: z.number(),
-    features: z.array(z.string()).optional(),
-    goals: z.array(z.string()).optional(),
-    timeframe: z.string().optional(),
-    relatedRoadmapItems: z.array(z.string()).optional(),
-    completedItems: z.array(z.string()).default([]),
-  }),
-});
+// ARCHIVED: Roadmap collection - moved to _archive
+// const roadmapCollection = defineCollection({
+//   loader: glob({ pattern: '**/[^_]*.md', base: './src/content/roadmap' }),
+//   schema: z.object({
+//     title: z.string(),
+//     description: z.string(),
+//     phase: z.enum(['current', 'upcoming', 'future']),
+//     status: z.enum(['now', 'next', 'later', 'exploring']),
+//     order: z.number(),
+//     features: z.array(z.string()).optional(),
+//     goals: z.array(z.string()).optional(),
+//     timeframe: z.string().optional(),
+//     relatedRoadmapItems: z.array(z.string()).optional(),
+//     completedItems: z.array(z.string()).default([]),
+//   }),
+// });
 
 // Define a schema for author bio
 const authorCollection = defineCollection({
@@ -218,7 +218,7 @@ const thoughtfulAppsCollection = defineCollection({
 
 // Define a schema for press / appearances / external publications
 const pressCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/press' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
@@ -253,33 +253,33 @@ const pressCollection = defineCollection({
   }),
 });
 
-// Define a schema for Open Source Tools
-const toolsCollection = defineCollection({
-  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/tools' }),
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    category: z.enum(['Financial', 'Productivity', 'Health', 'Lifestyle', 'Analytics', 'Converter']),
-    status: z.enum(['active', 'beta', 'archived']).default('active'),
-    component: z.string(), // Component name to render (e.g., 'RentVsBuy')
-    githubUrl: z.string().url().optional(),
-    originalSource: z.object({
-      name: z.string(),
-      url: z.string().url(),
-    }).optional(), // Attribution if based on another tool
-    features: z.array(z.string()),
-    technologies: z.array(z.string()),
-    lastUpdated: z.date(),
-    popularity: z.number().default(0), // Usage metrics
-    embedEnabled: z.boolean().default(false), // Can be embedded on other sites
-    featured: z.boolean().default(false),
-    previewImage: z.string().optional(),
-  }),
-});
+// ARCHIVED: Tools collection - moved to _archive
+// const toolsCollection = defineCollection({
+//   loader: glob({ pattern: '**/[^_]*.md', base: './src/content/tools' }),
+//   schema: z.object({
+//     title: z.string(),
+//     description: z.string(),
+//     category: z.enum(['Financial', 'Productivity', 'Health', 'Lifestyle', 'Analytics', 'Converter']),
+//     status: z.enum(['active', 'beta', 'archived']).default('active'),
+//     component: z.string(), // Component name to render (e.g., 'RentVsBuy')
+//     githubUrl: z.string().url().optional(),
+//     originalSource: z.object({
+//       name: z.string(),
+//       url: z.string().url(),
+//     }).optional(), // Attribution if based on another tool
+//     features: z.array(z.string()),
+//     technologies: z.array(z.string()),
+//     lastUpdated: z.date(),
+//     popularity: z.number().default(0), // Usage metrics
+//     embedEnabled: z.boolean().default(false), // Can be embedded on other sites
+//     featured: z.boolean().default(false),
+//     previewImage: z.string().optional(),
+//   }),
+// });
 
-// Define a schema for Digital Garden notes
-const gardenCollection = defineCollection({
-  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/garden' }),
+// Define a schema for Galaxy notes (formerly Garden)
+const galaxyCollection = defineCollection({
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/galaxy' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
@@ -289,7 +289,7 @@ const gardenCollection = defineCollection({
     
     // Cosmic temporal metadata (not publication dates, but formation)
     formed: z.date(),            // First created
-    lastTended: z.date(),        // Last meaningful update
+    lastObserved: z.date(),        // Last meaningful update
     
     // Thematic grouping (e.g., "ai-ethics", "product-philosophy", "technical-notes")
     constellation: z.string(),
@@ -310,7 +310,7 @@ const gardenCollection = defineCollection({
 export const collections = {
   'blog': blogCollection,
   'projects': projectCollection,
-  'roadmap': roadmapCollection,
+  // 'roadmap': roadmapCollection, // ARCHIVED
   'authors': authorCollection,
   'resume': resumeCollection,
   'experience': experienceCollection,
@@ -319,7 +319,7 @@ export const collections = {
   'skills': skillCollection,
   'principles': principleCollection,
   'thoughtful-apps': thoughtfulAppsCollection,
-  'tools': toolsCollection,
-  'garden': gardenCollection,
+  // 'tools': toolsCollection, // ARCHIVED
+  'galaxy': galaxyCollection,
   'press': pressCollection,
 };

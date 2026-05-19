@@ -1,13 +1,13 @@
 ---
 title: "Building Better User Experiences"
 description: "Insights and best practices for designing user experiences that delight customers while driving business results"
-pubDate: 2025-04-25
-author: "Your Name"
-categories: ["UX/UI Design", "Product Management"]
-tags: ["User Experience", "Design", "Product Strategy", "Customer Satisfaction"]
-readTime: "5 min read"
-featuredImage: "better-ux"
+stage: "star"
+formed: 2025-04-25
+lastObserved: 2025-04-25
+constellation: "product-philosophy"
+connections: []
 relatedProjects: ["portfolio-website"]
+visible: true
 ---
 
 ## What Makes a Great User Experience?
@@ -98,7 +98,7 @@ Effective testing approaches include:
 
 Each round of testing provides insights that can be incorporated into the next iteration, creating a virtuous cycle of continuous improvement.
 
-## Conclusion
+## Summary
 
 Building better user experiences isn't a one-time project—it's an ongoing commitment to understanding your users and designing solutions that meet their needs while supporting your business goals. By starting with user research, focusing on goals rather than features, designing for accessibility, embracing simplicity, considering the emotional impact of your design, and continuously testing and iterating, you can create experiences that truly resonate with users.
 

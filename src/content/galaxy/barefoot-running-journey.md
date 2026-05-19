@@ -1,14 +1,13 @@
 ---
 title: "My Flat Feet Hurt: My Barefoot Running Journey on Four Mile Run"
 description: "Even when purchasing wide toe shoes, there is always pain my metatarsal. "
-pubDate: 2025-05-15
-author: "E L Shupp"
-categories: ["Health", "Fitness"]
-tags: ["Barefoot Running", "Natural Movement", "Running Technique", "Athletic Tape", "Minimalist Lifestyle"]
-readTime: "6 min read"
-featuredImage: "barefoot-running"
-featured: true
-relatedProjects: null
+stage: "star"
+formed: 2025-05-15
+lastObserved: 2025-05-15
+constellation: "technical-explorations"
+connections: []
+# relatedProjects: []
+visible: true
 ---
 
 ## What running looked like

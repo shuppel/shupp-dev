@@ -1,14 +1,13 @@
 ---
 title: "Product Manager by Nature: Reflections on Product School's PM Course"
 description: "How Product School's Product Management course confirmed what I already knew through experience and filled in the gaps in my product management knowledge."
-pubDate: 2025-05-16
-author: "E L Shupp"
-categories: ["Product Management", "Career Development"]
-tags: ["Product School", "Literary", "Interleaving"]
-readTime: "8 min read"
-featuredImage: "product-school-reflections"
-featured: true
-relatedProjects: null
+stage: "star"
+formed: 2025-05-16
+lastObserved: 2025-05-16
+constellation: "product-philosophy"
+connections: []
+# relatedProjects: []
+visible: true
 ---
 
 ## Validation Through Education

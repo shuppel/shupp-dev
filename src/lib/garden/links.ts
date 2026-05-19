@@ -12,13 +12,13 @@ export function parseWikiLinks(content: string): string[] {
 
 /**
  * Convert wiki-style links to HTML anchor tags
- * [[note-name]] -> <a href="/garden/note-name" class="wiki-link">note-name</a>
+ * [[note-name]] -> <a href="/galaxy/note-name" class="wiki-link">note-name</a>
  */
 export function renderWikiLinks(content: string): string {
   return content.replace(/\[\[([^\]]+)\]\]/g, (match, noteName) => {
     const slug = noteName.trim().toLowerCase().replace(/\s+/g, '-');
     const displayName = noteName.trim();
-    return `<a href="/garden/${slug}" class="wiki-link">${displayName}</a>`;
+    return `<a href="/galaxy/${slug}" class="wiki-link">${displayName}</a>`;
   });
 }
 
@@ -27,9 +27,9 @@ export function renderWikiLinks(content: string): string {
  * Returns all notes that link to the current note (either in connections array or via wiki-links in content)
  */
 export function generateBacklinks(
-  allNotes: CollectionEntry<'garden'>[],
+  allNotes: CollectionEntry<'galaxy'>[],
   currentSlug: string
-): CollectionEntry<'garden'>[] {
+): CollectionEntry<'galaxy'>[] {
   return allNotes.filter(note => {
     // Check explicit connections array
     if (note.data.connections.includes(currentSlug)) {
@@ -45,7 +45,7 @@ export function generateBacklinks(
 /**
  * Get all unique constellations from garden notes
  */
-export function getConstellations(notes: CollectionEntry<'garden'>[]): string[] {
+export function getConstellations(notes: CollectionEntry<'galaxy'>[]): string[] {
   const constellations = new Set(notes.map(note => note.data.constellation));
   return Array.from(constellations).sort();
 }
@@ -54,8 +54,8 @@ export function getConstellations(notes: CollectionEntry<'garden'>[]): string[] 
  * Group notes by constellation
  */
 export function groupByConstellation(
-  notes: CollectionEntry<'garden'>[]
-): Record<string, CollectionEntry<'garden'>[]> {
+  notes: CollectionEntry<'galaxy'>[]
+): Record<string, CollectionEntry<'galaxy'>[]> {
   return notes.reduce((groups, note) => {
     const constellation = note.data.constellation;
     if (!groups[constellation]) {
@@ -63,5 +63,5 @@ export function groupByConstellation(
     }
     groups[constellation].push(note);
     return groups;
-  }, {} as Record<string, CollectionEntry<'garden'>[]>);
+  }, {} as Record<string, CollectionEntry<'galaxy'>[]>);
 }

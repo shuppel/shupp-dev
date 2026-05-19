@@ -3,7 +3,7 @@ import Icon from '../Icon/Icon.astro';
 import type { CollectionEntry } from 'astro:content';
 
 export interface Props {
-  backlinks: CollectionEntry<'garden'>[];
+  backlinks: CollectionEntry<'galaxy'>[];
 }
 
 const { backlinks } = Astro.props;
@@ -16,11 +16,11 @@ const { backlinks } = Astro.props;
       Referenced By
     </h3>
     <p class="backlinks-description">
-      Other notes in the garden that link to this one
+      Other notes in the galaxy that link to this one
     </p>
     <div class="backlinks-list">
       {backlinks.map(note => (
-        <a href={`/garden/${note.slug}`} class="backlink-item">
+        <a href={`/galaxy/${note.id}`} class="backlink-item">
           <Icon name="ArrowRight" size={14} />
           <span class="backlink-title">{note.data.title}</span>
           <span class="backlink-constellation">{note.data.constellation}</span>

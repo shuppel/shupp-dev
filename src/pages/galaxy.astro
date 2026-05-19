@@ -5,13 +5,13 @@ import Icon from '../components/Icon/Icon.astro';
 import CosmicStage from '../components/Garden/CosmicStage.astro';
 import { getConstellations } from '../lib/garden/links';
 
-// Get all garden notes
-const allNotes = await getCollection('garden');
+// Get all galaxy notes
+const allNotes = await getCollection('galaxy');
 
 // Filter only visible notes and sort by last tended (most recent first)
 const notes = allNotes
   .filter(note => note.data.visible)
-  .sort((a, b) => new Date(b.data.lastTended).getTime() - new Date(a.data.lastTended).getTime());
+  .sort((a, b) => new Date(b.data.lastObserved).getTime() - new Date(a.data.lastObserved).getTime());
 
 // Get unique constellations
 const constellations = getConstellations(notes);
@@ -21,9 +21,9 @@ const constellations = getConstellations(notes);
   title="Scribe Galaxy" 
   description="A universe of interconnected ideas—evolving notes on AI ethics, product philosophy, and technical explorations"
 >
-  <div class="garden-page">
-    <section class="garden-hero">
-      <div class="garden-header">
+  <div class="galaxy-page">
+    <section class="galaxy-hero">
+      <div class="galaxy-header">
         <Icon name="Planet" size={48} weight="duotone" liquid={true} inkEffect="medium" />
         <h1>Scribe Galaxy</h1>
       </div>
@@ -38,9 +38,9 @@ const constellations = getConstellations(notes);
       </div>
     </section>
 
-    <div class="garden-container">
+    <div class="galaxy-container">
       <!-- Sidebar with filters -->
-      <aside class="garden-sidebar">
+      <aside class="galaxy-sidebar">
         <div class="sidebar-sticky">
           <div class="filter-section">
             <h3 class="filter-title">
@@ -87,25 +87,25 @@ const constellations = getConstellations(notes);
         </div>
       </aside>
 
-      <!-- Main garden content -->
-      <section class="garden-main">
-        <div class="garden-list">
+      <!-- Main galaxy content -->
+      <section class="galaxy-main">
+        <div class="galaxy-list">
           {notes.map(note => (
             <article 
-              class="garden-card" 
+              class="galaxy-card" 
               data-stage={note.data.stage}
               data-constellation={note.data.constellation}
             >
-              <a href={`/garden/${note.slug}`} class="garden-link">
-                <div class="garden-card-header">
+              <a href={`/galaxy/${note.id}`} class="galaxy-link">
+                <div class="galaxy-card-header">
                   <CosmicStage stage={note.data.stage} showLabel={false} size="small" />
                   <span class="constellation-tag">{note.data.constellation}</span>
                 </div>
                 
-                <h2 class="garden-title">{note.data.title}</h2>
-                <p class="garden-description">{note.data.description}</p>
+                <h2 class="galaxy-title">{note.data.title}</h2>
+                <p class="galaxy-description">{note.data.description}</p>
                 
-                <div class="garden-meta">
+                <div class="galaxy-meta">
                   <span class="meta-item">
                     <Icon name="Planet" size={14} />
                     Formed {new Date(note.data.formed).toLocaleDateString('en-US', { 
@@ -114,8 +114,8 @@ const constellations = getConstellations(notes);
                     })}
                   </span>
                   <span class="meta-item">
-                    <Icon name="Shovel" size={14} />
-                    Tended {new Date(note.data.lastTended).toLocaleDateString('en-US', { 
+                    <Icon name="Crosshair" size={14} />
+                    Observed {new Date(note.data.lastObserved).toLocaleDateString('en-US', { 
                       month: 'short', 
                       day: 'numeric', 
                       year: 'numeric' 
@@ -143,7 +143,7 @@ const constellations = getConstellations(notes);
 
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      const cards = document.querySelectorAll('.garden-card');
+      const cards = document.querySelectorAll('.galaxy-card');
       const stageButtons = document.querySelectorAll('#stage-filters .filter-btn');
       const constellationButtons = document.querySelectorAll('#constellation-filters .filter-btn');
       const noResults = document.getElementById('no-results');
@@ -198,7 +198,7 @@ const constellations = getConstellations(notes);
 </Layout>
 
 <style>
-  .garden-page {
+  .galaxy-page {
     max-width: 1400px;
     margin: 0 auto;
     padding: 4rem 1.5rem;
@@ -208,18 +208,18 @@ const constellations = getConstellations(notes);
   }
 
   /* Hero Section */
-  .garden-hero {
+  .galaxy-hero {
     margin-bottom: 3rem;
   }
 
-  .garden-header {
+  .galaxy-header {
     display: flex;
     align-items: center;
     gap: 1rem;
     margin-bottom: 1rem;
   }
 
-  .garden-hero h1 {
+  .galaxy-hero h1 {
     font-size: 2.5rem;
     font-weight: 700;
     color: var(--text-color);
@@ -250,7 +250,7 @@ const constellations = getConstellations(notes);
   }
 
   /* Container Layout */
-  .garden-container {
+  .galaxy-container {
     display: grid;
     grid-template-columns: 250px 1fr;
     gap: 3rem;
@@ -258,7 +258,7 @@ const constellations = getConstellations(notes);
   }
 
   /* Sidebar */
-  .garden-sidebar {
+  .galaxy-sidebar {
     position: sticky;
     top: 5rem;
   }
@@ -325,20 +325,20 @@ const constellations = getConstellations(notes);
   }
 
   /* Garden Cards */
-  .garden-list {
+  .galaxy-list {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
   }
 
-  .garden-card {
+  .galaxy-card {
     border: 1px solid var(--border-color);
     border-radius: 12px;
     transition: all 0.3s ease;
     overflow: hidden;
   }
 
-  .garden-link {
+  .galaxy-link {
     display: block;
     text-decoration: none;
     color: inherit;
@@ -346,13 +346,13 @@ const constellations = getConstellations(notes);
     transition: opacity 0.2s ease;
   }
 
-  .garden-card:hover {
+  .galaxy-card:hover {
     border-color: var(--primary-color);
     box-shadow: 0 4px 12px rgba(121, 148, 150, 0.15);
     transform: translateY(-2px);
   }
 
-  .garden-card-header {
+  .galaxy-card-header {
     display: flex;
     align-items: center;
     gap: 0.75rem;
@@ -369,24 +369,24 @@ const constellations = getConstellations(notes);
     border-radius: 12px;
   }
 
-  .garden-title {
+  .galaxy-title {
     font-size: 1.5rem;
     font-weight: 600;
     margin-bottom: 0.75rem;
     color: var(--text-color);
   }
 
-  .garden-card:hover .garden-title {
+  .galaxy-card:hover .galaxy-title {
     color: var(--primary-color);
   }
 
-  .garden-description {
+  .galaxy-description {
     color: var(--text-light);
     line-height: 1.6;
     margin-bottom: 1.25rem;
   }
 
-  .garden-meta {
+  .galaxy-meta {
     display: flex;
     flex-wrap: wrap;
     gap: 1.5rem;
@@ -422,11 +422,11 @@ const constellations = getConstellations(notes);
 
   /* Responsive */
   @media (max-width: 1024px) {
-    .garden-container {
+    .galaxy-container {
       grid-template-columns: 1fr;
     }
 
-    .garden-sidebar {
+    .galaxy-sidebar {
       position: static;
       margin-bottom: 2rem;
     }
@@ -442,16 +442,16 @@ const constellations = getConstellations(notes);
   }
 
   @media (max-width: 768px) {
-    .garden-page {
+    .galaxy-page {
       padding: 3rem 1rem;
     }
 
-    .garden-header {
+    .galaxy-header {
       flex-direction: column;
       text-align: center;
     }
 
-    .garden-hero h1 {
+    .galaxy-hero h1 {
       font-size: 2rem;
     }
 
@@ -459,21 +459,21 @@ const constellations = getConstellations(notes);
       font-size: 1.1rem;
     }
 
-    .garden-link {
+    .galaxy-link {
       padding: 1.5rem;
     }
 
-    .garden-title {
+    .galaxy-title {
       font-size: 1.25rem;
     }
   }
 
   /* Dark mode */
-  html.dark .garden-card {
+  html.dark .galaxy-card {
     border-color: rgba(255, 255, 255, 0.1);
   }
 
-  html.dark .garden-card:hover {
+  html.dark .galaxy-card:hover {
     background: rgba(255, 255, 255, 0.02);
     border-color: var(--primary-color);
   }

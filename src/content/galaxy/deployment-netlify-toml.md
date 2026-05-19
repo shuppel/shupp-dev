@@ -1,14 +1,13 @@
 ---
 title: "Common Netlify Deployment Mistakes: Don't Forget Your netlify.toml"
 description: "Learn how to avoid one of the most common Netlify deployment issues by properly configuring your netlify.toml file"
-pubDate: 2025-05-05
-author: "Your Name"
-categories: ["Web Development", "Deployment"]
-tags: ["Netlify", "DevOps", "JAMstack", "Astro", "Configuration"]
-readTime: "7 min read"
-featuredImage: "netlify-deployment"
-featured: false
+stage: "star"
+formed: 2025-05-05
+lastObserved: 2025-05-05
+constellation: "technical-explorations"
+connections: []
 relatedProjects: ["portfolio-website"]
+visible: true
 ---
 
 # Don't Forget Your netlify.toml: A Common Deployment Mistake
@@ -212,7 +211,7 @@ To avoid forgetting the `netlify.toml` file in future projects, consider these t
 3. **Include it in code reviews** to ensure it's correctly configured
 4. **Use local testing** with Netlify CLI to catch configuration issues early
 
-## Conclusion
+## Summary
 
 The `netlify.toml` file might seem like a small detail, but it's crucial for successful deployments on Netlify. By understanding and properly configuring this file, you can avoid many common deployment issues and create a smoother development workflow.
 

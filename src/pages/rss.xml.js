@@ -3,24 +3,23 @@ import { getCollection } from 'astro:content';
 import { siteConfig } from '../config/site';
 
 export async function GET(context) {
-  const blog = await getCollection('blog');
+  const galaxy = await getCollection('galaxy');
   
-  // Sort by date, newest first
-  const sortedPosts = blog.sort((a, b) => 
-    new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime()
+  // Sort by formed date, newest first
+  const sortedPosts = galaxy.sort((a, b) => 
+    new Date(b.data.formed).getTime() - new Date(a.data.formed).getTime()
   );
   
   return rss({
-    title: `${siteConfig.siteName} - Blog`,
-    description: 'Latest articles on software engineering, product management, and building thoughtful apps for hoomans.',
+    title: `${siteConfig.siteName} - Galaxy`,
+    description: 'A universe of interconnected ideas—celestial bodies of knowledge that form, evolve, and orbit together.',
     site: context.site || siteConfig.siteUrl,
     items: sortedPosts.map((post) => ({
       title: post.data.title,
-      pubDate: post.data.pubDate,
+      pubDate: post.data.formed,
       description: post.data.description,
-      link: `/blog/${post.slug}/`,
-      author: `${post.data.author} (${siteConfig.email})`,
-      categories: post.data.categories,
+      link: `/galaxy/${post.id}/`,
+      categories: [post.data.constellation],
     })),
     customData: `
       <language>en-us</language>
