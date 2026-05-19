@@ -5,65 +5,65 @@ import Icon from '../components/Icon/Icon.astro';
 
 // Get the author data
 const authorEntries = await getCollection('authors');
-const author = authorEntries[0]; // Using the first author as this is a personal site
+const author = authorEntries[0];
+
+// Split longBio into paragraphs for better layout
+const bioParagraphs = author.data.longBio.split('\n\n');
 ---
 
 <Layout title="About Me" description="Learn more about my professional background, skills, and experience">
-   <div class="about-page">
-     <section class="about-hero">
-       <div class="about-header">
-         <Icon name="User" size={48} weight="duotone" liquid={true} inkEffect="medium" />
-         <h1>About Me</h1>
-       </div>
-       <p class="lead">{author.data.shortBio}</p>
-     </section>
+  <div class="about-page">
+    
+    <!-- Hero Section -->
+    <section class="about-hero">
+      <div class="about-header">
+        <Icon name="User" size={48} weight="duotone" liquid={true} inkEffect="medium" />
+        <h1>About Me</h1>
+      </div>
+      <p class="lead">{author.data.shortBio}</p>
+    </section>
 
-     <div class="about-container">
-       <!-- Left sidebar with profile info -->
-       <aside class="about-sidebar">
-         <div class="sidebar-sticky">
-            <div class="profile-sidebar">
-              <div class="profile-image">
-                <img src="/images/about/esheadshot.jpg" alt={author.data.name} class="headshot" />
-              </div>
-             <div class="profile-details">
-               <h3>Quick Info</h3>
-               <ul class="profile-list">
-                 <li><strong>Name:</strong> {author.data.name}</li>
-                 <li><strong>Title:</strong> {author.data.title}</li>
-                 <li><strong>Location:</strong> {author.data.location}</li>
-                 <li><strong>Email:</strong> <a href={`mailto:${author.data.email}`}>{author.data.email}</a></li>
-               </ul>
+    <!-- Photo Grid -->
+    <section class="photo-section">
+      <div class="photo-grid">
+        <div class="photo-item photo-main">
+          <img src="/images/about/esheadshot.jpg" alt={author.data.name} />
+        </div>
+        <div class="photo-item photo-secondary">
+          <div class="photo-placeholder">
+            <Icon name="Camera" size={32} weight="duotone" />
+            <span>Work in progress</span>
+          </div>
+        </div>
+        <div class="photo-item photo-secondary">
+          <div class="photo-placeholder">
+            <Icon name="Camera" size={32} weight="duotone" />
+            <span>Behind the scenes</span>
+          </div>
+        </div>
+      </div>
+    </section>
 
-               <div class="profile-cta">
-                 <a href="/portfolio" class="btn btn-primary">View Portfolio</a>
-                  <a href="https://docs.google.com/document/d/YOUR_GOOGLE_DOC_ID/edit?usp=sharing" target="_blank" class="btn btn-secondary">View Resume</a>
-               </div>
-             </div>
-           </div>
-         </div>
-       </aside>
+    <!-- Story Section -->
+    <section class="story-section">
+      <div class="story-content">
+        <h2>My Story</h2>
+        {bioParagraphs.map(paragraph => (
+          <p>{paragraph}</p>
+        ))}
 
-       <!-- Main about content -->
-       <section class="about-main">
-         <div class="about-content">
-           <h2>My Story</h2>
-           {author.data.longBio.split('\n\n').map(paragraph => (
-             <p>{paragraph}</p>
-           ))}
+        <h3>Professional Philosophy</h3>
+        <ul class="philosophy-list">
+          <li><strong>Fitts Optimizing</strong> - Making the important things easy to reach</li>
+          <li><strong>Kotter × Parkinson's Law²</strong> - Create urgency to fill the day</li>
+          <li><strong>Optimize For Outcomes</strong> - Results over process, always</li>
+          <li><strong>All Meetings are F(x)'s</strong> - Every meeting must have inputs and outputs</li>
+          <li><strong>XML Prompt Chain Shotting</strong> - Structured thinking for complex problems</li>
+        </ul>
+      </div>
+    </section>
 
-           <h3>Professional Philosophy</h3>
-           <ul class="philosophy-list">
-             <li><strong>Fitts Optimizing</strong> - Making the important things easy to reach</li>
-             <li><strong>Kotter × Parkinson's Law²</strong> - Create urgency to fill the day</li>
-             <li><strong>Optimize For Outcomes</strong> - Results over process, always</li>
-             <li><strong>All Meetings are F(x)'s</strong> - Every meeting must have inputs and outputs</li>
-             <li><strong>XML Prompt Chain Shotting</strong> - Structured thinking for complex problems</li>
-           </ul>
-         </div>
-       </section>
-     </div>
-
+    <!-- Skills Section -->
     <section class="skills-section">
       <h2>Skills & Expertise</h2>
       
@@ -97,6 +97,24 @@ const author = authorEntries[0]; // Using the first author as this is a personal
       </div>
     </section>
 
+    <!-- Quick Info / CTA -->
+    <section class="quick-info-section">
+      <div class="quick-info-card">
+        <h3>Quick Info</h3>
+        <ul class="quick-info-list">
+          <li><strong>Name:</strong> {author.data.name}</li>
+          <li><strong>Title:</strong> {author.data.title}</li>
+          <li><strong>Location:</strong> {author.data.location}</li>
+          <li><strong>Email:</strong> <a href={`mailto:${author.data.email}`}>{author.data.email}</a></li>
+        </ul>
+        <div class="quick-info-cta">
+          <a href="/portfolio" class="btn btn-primary">View Portfolio</a>
+          <a href="/resume" class="btn btn-secondary">View Resume</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact Section -->
     <section class="contact-section">
       <h2>Let's Connect</h2>
       <p>I'm always open to discussing new projects, opportunities, and partnerships. Feel free to reach out!</p>
@@ -152,85 +170,107 @@ const author = authorEntries[0]; // Using the first author as this is a personal
 </Layout>
 
 <style>
-   .about-page {
-     max-width: 1400px;
-     margin: 0 auto;
-     padding: 4rem 1.5rem;
-   }
+  .about-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 4rem 1.5rem;
+  }
 
-    /* Hero Section */
-    .about-hero {
-      margin-bottom: 3rem;
-    }
+  /* Hero Section */
+  .about-hero {
+    margin-bottom: 3rem;
+  }
 
-    .about-header {
-      display: flex;
-      align-items: center;
-      gap: 1rem;
-      margin-bottom: 1rem;
-    }
+  .about-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
 
-   .about-hero h1 {
-     font-size: 2.5rem;
-     font-weight: 700;
-     margin: 0;
-     color: var(--text-color);
-   }
+  .about-hero h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-color);
+  }
 
-    .lead {
-      font-size: 1.25rem;
-      color: var(--text-light);
-      line-height: 1.6;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
+  .lead {
+    font-size: 1.25rem;
+    color: var(--text-light);
+    line-height: 1.6;
+    max-width: 1100px;
+    margin: 0;
+  }
 
-   /* Container Layout */
-   .about-container {
-     display: grid;
-     grid-template-columns: 280px 1fr;
-     gap: 3rem;
-     align-items: flex-start;
-   }
+  /* Photo Section */
+  .photo-section {
+    margin-bottom: 3rem;
+  }
 
-   /* About Sidebar */
-   .about-sidebar {
-     position: sticky;
-     top: 5rem;
-     max-height: calc(100vh - 6rem);
-     overflow-y: auto;
-   }
+  .photo-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    grid-template-rows: 200px 200px;
+    gap: 1rem;
+  }
 
-   .sidebar-sticky {
-     background: var(--card-bg, white);
-     border-radius: 12px;
-     padding: 1.5rem;
-     box-shadow: var(--card-shadow);
-   }
+  .photo-main {
+    grid-row: 1 / -1;
+  }
 
-   html.dark .sidebar-sticky {
-     background: #23232b;
-   }
+  .photo-item {
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--card-bg, white);
+    box-shadow: var(--card-shadow);
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
 
-   .about-main {
-     min-width: 0;
-   }
+  .photo-item:hover {
+    transform: translateY(-4px) scale(1.01);
+    box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 10px rgba(20, 8, 14, 0.05);
+  }
 
-   .about-section {
-     margin-bottom: 4rem;
-   }
+  .photo-item img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
 
-  .about-content h2 {
+  .photo-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    color: var(--text-light);
+    font-size: 0.85rem;
+  }
+
+  html.dark .photo-item {
+    background: #23232b;
+  }
+
+  /* Story Section */
+  .story-section {
+    margin-bottom: 4rem;
+  }
+
+  .story-content h2 {
     color: var(--text-color);
     margin-bottom: 1.5rem;
   }
 
-  .about-content h3 {
+  .story-content h3 {
     margin-top: 2rem;
     margin-bottom: 1rem;
   }
 
-  .about-content p {
+  .story-content p {
     margin-bottom: 1.2rem;
     line-height: 1.7;
   }
@@ -265,69 +305,78 @@ const author = authorEntries[0]; // Using the first author as this is a personal
     color: var(--color-accent);
   }
 
-   .profile-sidebar {
-     transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-     will-change: transform, box-shadow;
-   }
-
-   .profile-sidebar:hover {
-     transform: translateY(-7px) scale(1.01);
-     box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 10px rgba(20, 8, 14, 0.05);
-   }
-
-  .profile-image {
-    overflow: hidden;
-    border-radius: 8px 8px 0 0;
+  /* Quick Info Section */
+  .quick-info-section {
+    margin-bottom: 4rem;
+    display: flex;
+    justify-content: center;
   }
 
-  .headshot {
+  .quick-info-card {
+    background: var(--card-bg, white);
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: var(--card-shadow);
+    max-width: 500px;
     width: 100%;
-    height: auto;
-    display: block;
-    object-fit: cover;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
   }
 
-   .profile-details {
-     padding: 2rem 2rem 1rem 2rem;
-   }
+  .quick-info-card:hover {
+    transform: translateY(-7px) scale(1.01);
+    box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 10px rgba(20, 8, 14, 0.05);
+  }
 
-  .profile-details a {
+  html.dark .quick-info-card {
+    background: #23232b;
+  }
+
+  .quick-info-card h3 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .quick-info-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 1.5rem 0;
+  }
+
+  .quick-info-list li {
+    margin-bottom: 0.75rem;
+  }
+
+  .quick-info-list a {
     color: var(--primary-color);
     text-decoration: none;
   }
 
-  .profile-details a:hover {
+  .quick-info-list a:hover {
     text-decoration: underline;
   }
 
-  .profile-list {
-    list-style: none;
-    padding: 0;
-    margin: 1.5rem 0;
+  html.dark .quick-info-list a {
+    color: var(--color-accent);
   }
 
-  .profile-list li {
-    margin-bottom: 0.75rem;
-  }
-
-  .profile-cta {
+  .quick-info-cta {
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    margin-top: 1.5rem;
   }
 
-  .skills-section, .experience-section, .contact-section {
+  /* Skills Section */
+  .skills-section {
     margin-bottom: 4rem;
   }
 
-  .skills-section h2, .experience-section h2, .contact-section h2 {
+  .skills-section h2 {
     text-align: center;
     margin-bottom: 2.5rem;
     position: relative;
   }
 
-  .skills-section h2::after, .experience-section h2::after, .contact-section h2::after {
+  .skills-section h2::after {
     content: "";
     position: absolute;
     bottom: -10px;
@@ -420,8 +469,28 @@ const author = authorEntries[0]; // Using the first author as this is a personal
     color: var(--color-accent);
   }
 
+  /* Contact Section */
   .contact-section {
+    margin-bottom: 4rem;
     text-align: center;
+  }
+
+  .contact-section h2 {
+    text-align: center;
+    margin-bottom: 2.5rem;
+    position: relative;
+  }
+
+  .contact-section h2::after {
+    content: "";
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background: var(--primary-color);
+    border-radius: 3px;
   }
 
   .contact-section p {
@@ -476,31 +545,52 @@ const author = authorEntries[0]; // Using the first author as this is a personal
     color: #f3f4f6;
   }
 
-   /* Responsive */
-   @media (max-width: 1024px) {
-     .about-container {
-       grid-template-columns: 1fr;
-     }
+  /* Responsive */
+  @media (max-width: 900px) {
+    .photo-grid {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 180px 180px;
+    }
 
-     .about-sidebar {
-       position: static;
-       margin-bottom: 2rem;
-       max-height: none;
-     }
+    .photo-main {
+      grid-row: 1 / 2;
+      grid-column: 1 / -1;
+    }
 
-     .sidebar-sticky {
-       max-width: 100%;
-     }
-   }
+    .skills-categories {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+    }
+  }
 
-   @media (max-width: 900px) {
-     .skills-categories {
-       grid-template-columns: 1fr;
-       gap: 1.5rem;
-     }
-   }
+  @media (max-width: 768px) {
+    .about-page {
+      padding: 3rem 1rem;
+    }
 
-  @media (max-width: 600px) {
+    .about-header {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .about-hero h1 {
+      font-size: 2rem;
+    }
+
+    .lead {
+      font-size: 1.1rem;
+    }
+
+    .photo-grid {
+      grid-template-columns: 1fr;
+      grid-template-rows: 250px 150px 150px;
+    }
+
+    .photo-main {
+      grid-column: 1;
+      grid-row: 1;
+    }
+
     .contact-options {
       gap: 1.5rem;
     }
@@ -510,27 +600,9 @@ const author = authorEntries[0]; // Using the first author as this is a personal
     }
   }
 
-   html.dark .profile-details a {
-     color: var(--color-accent);
-   }
-
-   /* Responsive */
-    @media (max-width: 768px) {
-      .about-page {
-        padding: 3rem 1rem;
-      }
-
-      .about-header {
-        flex-direction: column;
-        text-align: center;
-      }
-
-      .about-hero h1 {
-        font-size: 2rem;
-      }
-
-      .lead {
-        font-size: 1.1rem;
-      }
+  @media (max-width: 600px) {
+    .contact-options {
+      gap: 1rem;
     }
+  }
 </style>

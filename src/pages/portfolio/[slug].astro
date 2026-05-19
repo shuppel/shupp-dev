@@ -23,7 +23,7 @@ const { entry, allProjects } = Astro.props;
 const { Content } = await render(entry);
 
 // Get other projects for the sidebar (exclude current project)
-const otherProjects = allProjects.filter(project => project.slug !== entry.slug);
+const otherProjects = allProjects.filter(project => project.id !== entry.id);
 
 // Format the date
 const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US', {
@@ -110,7 +110,7 @@ const formattedDate = new Date(entry.data.projectDate).toLocaleDateString('en-US
           <h3 class="widget-title">Other Projects</h3>
           <div class="related-projects-list">
             {otherProjects.map(project => (
-              <a href={`/portfolio/${project.slug}`} class="related-project">
+              <a href={`/portfolio/${project.id}`} class="related-project">
                 <div class="related-project-title">{project.data.title}</div>
                 <div class="related-project-tech">{project.data.technologies.slice(0, 3).join(', ')}</div>
               </a>
