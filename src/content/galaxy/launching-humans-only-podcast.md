@@ -1,12 +1,13 @@
 ---
 title: "Launching Humans Only"
 description: "Introducing the Humans Only podcast: an anti-technology technology show examining how emerging tech can actually benefit humans."
-pubDate: 2025-11-29
-author: "Erikk Shupp"
-categories: ["Podcast", "Philosophy", "Technology"]
-tags: ["humans only", "social media", "mindfulness", "audio"]
-readTime: "4 min"
-featured: false
+stage: "protostar"
+formed: 2025-11-29
+lastObserved: 2025-11-29
+constellation: "technical-explorations"
+connections: []
+# relatedProjects: []
+visible: true
 ---
 
 Today I started the **Humans Only** podcast, which has its [pilot live now on Spotify](https://open.spotify.com/episode/6R5N9957YkGaSoAGyRnFeJ?si=3Yg8umgrRe64ONvPaazCQQ)—almost an hour long. 

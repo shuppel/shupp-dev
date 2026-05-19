@@ -1,22 +1,25 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { siteConfig } from '../config/site.ts';
-import LiquidHero from '../components/LiquidHero.astro';
 import Icon from '../components/Icon/Icon.astro';
 ---
 
-<Layout title="Press Kit — Erikk Shupp" sideNav={true}>
+<Layout title="Press Kit — Erikk Shupp">
   <!-- Hero / Identity -->
   <section class="pk-hero">
-    <LiquidHero class="pk-hero-liquid" />
-    <div class="pk-hero-content">
-      <div class="pk-headshot">
+    <div class="pk-hero-card quantum-outline">
+      <div class="pk-hero-headshot">
         <img src="/images/about/esheadshot.jpg" alt="Erikk Shupp" width="160" height="160" />
       </div>
-      <h1>Erikk Shupp</h1>
-      <p class="pk-title">{siteConfig.author.title}</p>
-      <p class="pk-location">{siteConfig.author.location}</p>
-      <p class="pk-tagline">{siteConfig.tagline}</p>
+      <div class="pk-hero-info">
+        <h1>Erikk Shupp</h1>
+        <p class="pk-title">{siteConfig.author.title}</p>
+        <p class="pk-location">
+          <span class="pk-location-dot" aria-hidden="true"></span>
+          {siteConfig.author.location}
+        </p>
+        <p class="pk-tagline">{siteConfig.tagline}</p>
+      </div>
     </div>
   </section>
 
@@ -29,42 +32,93 @@ import Icon from '../components/Icon/Icon.astro';
     </div>
   </section>
 
-  <!-- Humans Only Podcast -->
-  <section class="pk-section pk-venture pk-venture-podcast">
-    <div class="pk-venture-badge">Podcast</div>
-    <div class="pk-venture-header">
-      <div class="pk-venture-logo">
-        <span class="pk-logo-icon"><Icon name="Microphone" size={32} weight="duotone" color="white" /></span>
+  <!-- Ventures & Companies -->
+  <section class="pk-section">
+    <h2 class="pk-section-title">Companies & Ventures</h2>
+    <div class="pk-companies-grid">
+      <!-- Thoughtful App Co. -->
+      <div class="pk-company-card pk-company-taco">
+        <div class="pk-company-header">
+          <div class="pk-company-logo">
+            <Icon name="Brain" size={20} weight="duotone" color="white" />
+          </div>
+          <div class="pk-company-info">
+            <h3 class="pk-company-name">Thoughtful App Co.</h3>
+            <span class="pk-company-type">Product Studio</span>
+          </div>
+        </div>
+        <p class="pk-company-description">Building human-centered software that respects privacy and prioritizes user wellbeing.</p>
+        <div class="pk-company-links">
+          <a href={siteConfig.ventures.thoughtfulAppCo.url} class="pk-company-link" target="_blank" rel="noopener noreferrer">
+            <Icon name="Globe" size={14} weight="duotone" />
+            thoughtfulapp.co
+          </a>
+        </div>
       </div>
-      <div>
-        <h2 class="pk-venture-name">Humans Only</h2>
-        <p class="pk-venture-tagline">{siteConfig.ventures.humansOnlyPodcast.tagline}</p>
-      </div>
-    </div>
-    <p class="pk-venture-description">Exploring how emerging technology can better serve humanity. Conversations about the human side of tech — digital wellness, ethical AI, local-first software, and building products that actually matter.</p>
-    <div class="pk-venture-links">
-      <a href={siteConfig.ventures.humansOnlyPodcast.url} class="pk-btn pk-btn-primary" target="_blank" rel="noopener noreferrer">humansonly.fm</a>
-      <a href={siteConfig.ventures.humansOnlyPodcast.spotify} class="pk-btn pk-btn-outline" target="_blank" rel="noopener noreferrer">Spotify</a>
-      {siteConfig.ventures.humansOnlyPodcast.youtube && (
-        <a href={siteConfig.ventures.humansOnlyPodcast.youtube} class="pk-btn pk-btn-ghost" target="_blank" rel="noopener noreferrer">YouTube</a>
-      )}
-    </div>
-  </section>
 
-  <!-- Boobo the Spinosaur -->
-  <section class="pk-section pk-venture pk-venture-boobo">
-    <div class="pk-venture-badge">Series</div>
-    <div class="pk-venture-header">
-      <div class="pk-venture-logo">
-        <span class="pk-logo-icon"><Icon name="PawPrint" size={32} weight="duotone" color="white" /></span>
+      <!-- Nodetus -->
+      <div class="pk-company-card pk-company-nodetus">
+        <div class="pk-company-header">
+          <div class="pk-company-logo">
+            <Icon name="Building" size={20} weight="duotone" color="white" />
+          </div>
+          <div class="pk-company-info">
+            <h3 class="pk-company-name">Nodetus</h3>
+            <span class="pk-company-type">Federal Consulting</span>
+          </div>
+        </div>
+        <p class="pk-company-description">Strategic technology consulting for federal agencies and government contractors.</p>
+        <div class="pk-company-links">
+          <a href="https://nodetus.com" class="pk-company-link" target="_blank" rel="noopener noreferrer">
+            <Icon name="Globe" size={14} weight="duotone" />
+            nodetus.com
+          </a>
+        </div>
       </div>
-      <div>
-        <h2 class="pk-venture-name">Boobo the Spinosaur</h2>
-        <p class="pk-venture-tagline">A Thoughtful App Co. original</p>
+
+      <!-- Humans Only Podcast -->
+      <div class="pk-company-card pk-company-podcast">
+        <div class="pk-company-header">
+          <div class="pk-company-logo">
+            <Icon name="Microphone" size={20} weight="duotone" color="white" />
+          </div>
+          <div class="pk-company-info">
+            <h3 class="pk-company-name">Humans Only</h3>
+            <span class="pk-company-type">Podcast</span>
+          </div>
+        </div>
+        <p class="pk-company-description">Exploring how emerging technology can better serve humanity.</p>
+        <div class="pk-company-links">
+          <a href={siteConfig.ventures.humansOnlyPodcast.url} class="pk-company-link" target="_blank" rel="noopener noreferrer">
+            <Icon name="Globe" size={14} weight="duotone" />
+            humansonly.fm
+          </a>
+          <a href={siteConfig.ventures.humansOnlyPodcast.spotify} class="pk-company-link" target="_blank" rel="noopener noreferrer">
+            <Icon name="SpotifyLogo" size={14} weight="duotone" />
+            Spotify
+          </a>
+        </div>
       </div>
-    </div>
-    <div class="pk-venture-links">
-      <a href={siteConfig.ventures.booboTheSpinosaur.youtube} class="pk-btn pk-btn-primary" target="_blank" rel="noopener noreferrer">Watch on YouTube</a>
+
+      <!-- Boobo the Spinosaur -->
+      <div class="pk-company-card pk-company-boobo">
+        <div class="pk-company-header">
+          <div class="pk-company-logo">
+            <Icon name="PawPrint" size={20} weight="duotone" color="white" />
+          </div>
+          <div class="pk-company-info">
+            <h3 class="pk-company-name">Boobo the Spinosaur</h3>
+            <span class="pk-company-type">Original Series</span>
+          </div>
+        </div>
+        <p class="pk-company-description">A children's series about a thoughtful dinosaur navigating life's adventures.</p>
+        <div class="pk-company-links">
+          <a href={siteConfig.ventures.booboTheSpinosaur.youtube} class="pk-company-link" target="_blank" rel="noopener noreferrer">
+            <Icon name="YoutubeLogo" size={14} weight="duotone" />
+            YouTube
+          </a>
+        </div>
+      </div>
     </div>
   </section>
 
@@ -174,7 +228,7 @@ import Icon from '../components/Icon/Icon.astro';
         </div>
       </div>
       <div class="pk-asset-card">
-        <div class="pk-asset-preview pk-asset-colors-preview">
+        <div class="pk-asset-preview pk-asset-colors-preview" role="img" aria-label="Brand palette: #14080E, #49475B, #799496, #ACC196, #E9EB9E">
           <div class="pk-color-swatch" style="background: #14080E;" title="#14080E"></div>
           <div class="pk-color-swatch" style="background: #49475B;" title="#49475B"></div>
           <div class="pk-color-swatch" style="background: #799496;" title="#799496"></div>
@@ -214,56 +268,132 @@ import Icon from '../components/Icon/Icon.astro';
 </Layout>
 
 <style>
-  /* ===== Press Kit Hero ===== */
-  .pk-hero {
-    position: relative;
-    text-align: center;
-    padding: 5rem 1.5rem 4rem;
-    min-height: 420px;
-    overflow: hidden;
-    margin-bottom: 0;
+  /* ===== Animated Quantum Outline =====
+     Lightweight CSS replacement for the heavy three.js hero —
+     a slow conic gradient sweeps around the border. */
+  @property --pk-angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
   }
 
-  .pk-hero-liquid {
+  .quantum-outline {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .quantum-outline::before {
+    content: '';
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
+    inset: 0;
+    padding: 1.5px;
+    border-radius: inherit;
+    background: conic-gradient(
+      from var(--pk-angle),
+      rgba(121, 148, 150, 0.0) 0%,
+      rgba(121, 148, 150, 0.7) 18%,
+      rgba(172, 193, 150, 0.85) 30%,
+      rgba(233, 235, 158, 0.7) 42%,
+      rgba(121, 148, 150, 0.0) 60%,
+      rgba(121, 148, 150, 0.0) 100%
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: pk-rotate-outline 14s linear infinite;
     pointer-events: none;
-    opacity: 0.7;
+    z-index: 0;
   }
 
-  .pk-hero-content {
-    position: relative;
-    z-index: 2;
-    animation: pk-fade-up 0.8s cubic-bezier(0.25, 0.8, 0.25, 1);
+  html.dark .quantum-outline::before {
+    background: conic-gradient(
+      from var(--pk-angle),
+      rgba(172, 193, 150, 0.0) 0%,
+      rgba(172, 193, 150, 0.55) 18%,
+      rgba(233, 235, 158, 0.75) 30%,
+      rgba(121, 148, 150, 0.6) 42%,
+      rgba(172, 193, 150, 0.0) 60%,
+      rgba(172, 193, 150, 0.0) 100%
+    );
   }
 
-  .pk-headshot {
-    width: 160px;
-    height: 160px;
-    margin: 0 auto 1.5rem;
+  @keyframes pk-rotate-outline {
+    to { --pk-angle: 360deg; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .quantum-outline::before {
+      animation: none;
+    }
+  }
+
+  /* Fallback for browsers without @property: render a static gradient ring */
+  @supports not (background: conic-gradient(from 0deg, red, blue)) {
+    .quantum-outline::before {
+      background: linear-gradient(135deg, rgba(121, 148, 150, 0.4), rgba(172, 193, 150, 0.4), rgba(233, 235, 158, 0.4));
+    }
+  }
+
+  /* ===== Press Kit Hero Card ===== */
+  .pk-hero {
+    max-width: 860px;
+    margin: 2.5rem auto 0;
+    padding: 0 1.5rem;
+  }
+
+  .pk-hero-card {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.75rem 2rem;
+    border-radius: 18px;
+    background: var(--surface);
+    box-shadow: 0 6px 28px rgba(20, 8, 14, 0.06);
+    animation: pk-fade-up 0.7s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pk-hero-card {
+      animation: none;
+    }
+  }
+
+  .pk-hero-headshot {
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
     overflow: hidden;
-    border: 4px solid var(--color-accent);
-    box-shadow: 0 8px 30px rgba(20, 8, 14, 0.15);
+    border: 3px solid var(--color-accent);
+    box-shadow: 0 6px 22px rgba(20, 8, 14, 0.14);
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
   }
 
-  .pk-headshot img {
+  .pk-hero-headshot img {
     width: 100%;
     height: 100%;
     object-fit: cover;
     display: block;
   }
 
+  .pk-hero-info {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+  }
+
   .pk-hero h1 {
-    font-size: 3rem;
+    font-size: 2.4rem;
     font-weight: 700;
-    margin-bottom: 0.5rem;
-    padding-bottom: 0.15em;
-    line-height: 1.2;
+    margin: 0 0 0.35rem;
+    line-height: 1.1;
     background: linear-gradient(45deg, var(--color-dark), var(--color-secondary));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -278,11 +408,12 @@ import Icon from '../components/Icon/Icon.astro';
   }
 
   .pk-title {
-    font-size: 1.15rem;
+    font-size: 1.05rem;
     font-weight: 600;
     color: var(--color-secondary);
-    margin-bottom: 0.25rem;
+    margin: 0 0 0.3rem;
     font-family: var(--font-secondary-header);
+    letter-spacing: 0.02em;
   }
 
   html.dark .pk-title {
@@ -290,23 +421,33 @@ import Icon from '../components/Icon/Icon.astro';
   }
 
   .pk-location {
-    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.88rem;
     color: var(--color-tertiary);
-    margin-bottom: 0.75rem;
+    margin: 0 0 0.65rem;
     font-family: var(--font-body);
+  }
+
+  .pk-location-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-tertiary);
+    box-shadow: 0 0 0 3px rgba(121, 148, 150, 0.18);
   }
 
   .pk-tagline {
-    font-size: 1.4rem;
+    font-size: 1.05rem;
     font-style: italic;
     color: var(--color-secondary);
     font-family: var(--font-body);
-    opacity: 0;
-    animation: pk-fade-up 0.8s 0.3s forwards cubic-bezier(0.25, 0.8, 0.25, 1);
+    margin: 0;
   }
 
   html.dark .pk-tagline {
-    color: #d1d5db;
+    color: var(--text-color);
   }
 
   /* ===== Shared Section Styles ===== */
@@ -344,70 +485,54 @@ import Icon from '../components/Icon/Icon.astro';
   }
 
   html.dark .pk-bio-content p {
-    color: #d1d5db;
+    color: var(--text-color);
   }
 
   .pk-bio-content strong {
-    color: var(--color-dark);
+    color: var(--text-strong);
     font-weight: 600;
   }
 
-  html.dark .pk-bio-content strong {
-    color: #f3f4f6;
+  /* ===== Company Cards Grid ===== */
+  .pk-companies-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
   }
 
-  /* ===== Venture Cards ===== */
-  .pk-venture {
-    max-width: 860px;
-    background: white;
-    border-radius: 16px;
-    padding: 2.5rem;
-    box-shadow: 0 4px 20px rgba(20, 8, 14, 0.06);
-    border: 1px solid rgba(121, 148, 150, 0.12);
-    position: relative;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+  .pk-company-card {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 1.25rem;
+    border: 1px solid var(--border-subtle);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
-  .pk-venture:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 30px rgba(20, 8, 14, 0.1);
+  .pk-company-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(20, 8, 14, 0.08);
   }
 
-  html.dark .pk-venture {
-    background: #23232b;
-    border-color: rgba(233, 235, 158, 0.1);
+  @media (prefers-reduced-motion: reduce) {
+    .pk-company-card {
+      transition: none;
+    }
+    .pk-company-card:hover {
+      transform: none;
+    }
   }
 
-  .pk-venture-badge {
-    position: absolute;
-    top: -12px;
-    left: 2rem;
-    background: linear-gradient(135deg, var(--color-tertiary), var(--color-accent));
-    color: white;
-    font-size: 0.75rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    padding: 0.3rem 1rem;
-    border-radius: 20px;
-    font-family: var(--font-secondary-header);
-  }
-
-  html.dark .pk-venture-badge {
-    color: #23232b;
-  }
-
-  .pk-venture-header {
+  .pk-company-header {
     display: flex;
     align-items: center;
-    gap: 1.25rem;
-    margin-bottom: 1.25rem;
+    gap: 0.875rem;
+    margin-bottom: 0.75rem;
   }
 
-  .pk-venture-logo {
-    width: 56px;
-    height: 56px;
-    border-radius: 14px;
+  .pk-company-logo {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
     background: linear-gradient(135deg, var(--color-secondary), var(--color-tertiary));
     display: flex;
     align-items: center;
@@ -415,62 +540,98 @@ import Icon from '../components/Icon/Icon.astro';
     flex-shrink: 0;
   }
 
-  .pk-venture-podcast .pk-venture-logo {
+  .pk-company-taco .pk-company-logo {
+    background: linear-gradient(135deg, var(--color-tertiary), var(--color-accent));
+  }
+
+  .pk-company-nodetus .pk-company-logo {
+    background: linear-gradient(135deg, #49475B, #799496);
+  }
+
+  .pk-company-podcast .pk-company-logo {
     background: linear-gradient(135deg, var(--color-dark), var(--color-secondary));
   }
 
-  .pk-venture-boobo .pk-venture-logo {
+  .pk-company-boobo .pk-company-logo {
     background: linear-gradient(135deg, #4a7c59, var(--color-accent));
   }
 
-  .pk-logo-icon {
-    font-size: 1.6rem;
-    line-height: 1;
+  .pk-company-info {
+    min-width: 0;
   }
 
-  .pk-venture-name {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--color-dark);
+  .pk-company-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-strong);
     margin: 0;
     line-height: 1.2;
+    font-family: var(--font-secondary-header);
   }
 
-  html.dark .pk-venture-name {
-    color: #f3f4f6;
-  }
-
-  .pk-venture-tagline {
-    font-size: 0.95rem;
+  .pk-company-type {
+    font-size: 0.75rem;
     color: var(--color-tertiary);
-    margin: 0.2rem 0 0;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
     font-family: var(--font-body);
   }
 
-  .pk-venture-description {
-    font-size: 1rem;
-    line-height: 1.7;
+  html.dark .pk-company-type {
+    color: var(--color-accent);
+    opacity: 0.8;
+  }
+
+  .pk-company-description {
+    font-size: 0.9rem;
+    line-height: 1.5;
     color: var(--color-secondary);
-    margin-bottom: 1.5rem;
+    margin: 0 0 0.875rem 0;
     font-family: var(--font-body);
   }
 
-  html.dark .pk-venture-description {
-    color: #d1d5db;
+  html.dark .pk-company-description {
+    color: var(--text-muted);
   }
 
-  .pk-venture-description strong {
-    color: var(--color-dark);
-  }
-
-  html.dark .pk-venture-description strong {
-    color: #f3f4f6;
-  }
-
-  .pk-venture-links {
+  .pk-company-links {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .pk-company-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    background: var(--hover-tint);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: var(--color-secondary);
+    text-decoration: none;
+    font-family: var(--font-body);
+    transition: all 0.2s ease;
+  }
+
+  .pk-company-link:hover {
+    background: rgba(121, 148, 150, 0.15);
+    color: var(--text-strong);
+    transform: translateY(-1px);
+  }
+
+  .pk-company-link:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+
+  html.dark .pk-company-link {
+    color: var(--text-color);
+  }
+
+  html.dark .pk-company-link:hover {
+    background: rgba(233, 235, 158, 0.15);
   }
 
   /* ===== Buttons ===== */
@@ -488,7 +649,7 @@ import Icon from '../components/Icon/Icon.astro';
 
   .pk-btn-primary {
     background: var(--color-tertiary);
-    color: white;
+    color: var(--surface);
     box-shadow: 0 4px 12px rgba(121, 148, 150, 0.3);
   }
 
@@ -500,7 +661,7 @@ import Icon from '../components/Icon/Icon.astro';
 
   html.dark .pk-btn-primary {
     background: var(--color-accent);
-    color: #23232b;
+    color: var(--color-dark);
   }
 
   html.dark .pk-btn-primary:hover {
@@ -515,7 +676,7 @@ import Icon from '../components/Icon/Icon.astro';
 
   .pk-btn-outline:hover {
     background: var(--color-tertiary);
-    color: white;
+    color: var(--surface);
     transform: translateY(-2px);
   }
 
@@ -526,7 +687,7 @@ import Icon from '../components/Icon/Icon.astro';
 
   html.dark .pk-btn-outline:hover {
     background: var(--color-accent);
-    color: #23232b;
+    color: var(--color-dark);
   }
 
   .pk-btn-ghost {
@@ -542,7 +703,7 @@ import Icon from '../components/Icon/Icon.astro';
   }
 
   html.dark .pk-btn-ghost {
-    color: #d1d5db;
+    color: var(--text-color);
     border-color: rgba(233, 235, 158, 0.2);
   }
 
@@ -555,7 +716,7 @@ import Icon from '../components/Icon/Icon.astro';
     padding: 0.4rem 1rem;
     font-size: 0.8rem;
     background: var(--color-tertiary);
-    color: white;
+    color: var(--surface);
     border-radius: 20px;
   }
 
@@ -564,9 +725,14 @@ import Icon from '../components/Icon/Icon.astro';
     transform: translateY(-1px);
   }
 
+  .pk-btn-small:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+
   html.dark .pk-btn-small {
     background: var(--color-accent);
-    color: #23232b;
+    color: var(--color-dark);
   }
 
   /* ===== Social Links ===== */
@@ -581,13 +747,9 @@ import Icon from '../components/Icon/Icon.astro';
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: var(--color-dark);
+    color: var(--text-strong);
     margin-bottom: 1rem;
     font-family: var(--font-secondary-header);
-  }
-
-  html.dark .pk-social-group-title {
-    color: #f3f4f6;
   }
 
   .pk-social-links {
@@ -610,17 +772,21 @@ import Icon from '../components/Icon/Icon.astro';
   }
 
   .pk-social-link:hover {
-    background: rgba(121, 148, 150, 0.08);
+    background: var(--hover-tint);
     color: var(--color-tertiary);
     transform: translateX(4px);
   }
 
+  .pk-social-link:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+
   html.dark .pk-social-link {
-    color: #d1d5db;
+    color: var(--text-color);
   }
 
   html.dark .pk-social-link:hover {
-    background: rgba(233, 235, 158, 0.08);
     color: var(--color-accent);
   }
 
@@ -652,7 +818,7 @@ import Icon from '../components/Icon/Icon.astro';
   }
 
   html.dark .pk-assets-intro {
-    color: #d1d5db;
+    color: var(--text-color);
   }
 
   .pk-assets-grid {
@@ -662,11 +828,11 @@ import Icon from '../components/Icon/Icon.astro';
   }
 
   .pk-asset-card {
-    background: white;
+    background: var(--surface);
     border-radius: 12px;
     overflow: hidden;
     box-shadow: 0 2px 10px rgba(20, 8, 14, 0.05);
-    border: 1px solid rgba(121, 148, 150, 0.1);
+    border: 1px solid var(--border-subtle);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
   }
 
@@ -675,9 +841,13 @@ import Icon from '../components/Icon/Icon.astro';
     box-shadow: 0 6px 20px rgba(20, 8, 14, 0.08);
   }
 
-  html.dark .pk-asset-card {
-    background: #23232b;
-    border-color: rgba(233, 235, 158, 0.08);
+  @media (prefers-reduced-motion: reduce) {
+    .pk-asset-card {
+      transition: none;
+    }
+    .pk-asset-card:hover {
+      transform: none;
+    }
   }
 
   .pk-asset-preview {
@@ -686,11 +856,11 @@ import Icon from '../components/Icon/Icon.astro';
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, #f8f8f6, #eef0e8);
+    background: linear-gradient(135deg, var(--surface-muted), #eef0e8);
   }
 
   html.dark .pk-asset-preview {
-    background: linear-gradient(135deg, #1a1a22, #23232b);
+    background: linear-gradient(135deg, var(--surface-muted), var(--surface));
   }
 
   .pk-asset-preview img {
@@ -706,7 +876,7 @@ import Icon from '../components/Icon/Icon.astro';
   .pk-brand-mark {
     font-family: var(--font-main-header);
     font-size: 1.6rem;
-    color: white;
+    color: var(--surface);
     letter-spacing: 0.15em;
     text-transform: lowercase;
   }
@@ -739,18 +909,18 @@ import Icon from '../components/Icon/Icon.astro';
   .pk-asset-name {
     font-size: 0.9rem;
     font-weight: 600;
-    color: var(--color-dark);
+    color: var(--text-strong);
     font-family: var(--font-secondary-header);
-  }
-
-  html.dark .pk-asset-name {
-    color: #f3f4f6;
   }
 
   .pk-asset-note {
     font-size: 0.8rem;
-    color: var(--color-tertiary);
+    color: var(--color-secondary);
     font-family: var(--font-body);
+  }
+
+  html.dark .pk-asset-note {
+    color: var(--text-muted);
   }
 
   /* ===== Quick Links ===== */
@@ -761,12 +931,12 @@ import Icon from '../components/Icon/Icon.astro';
   }
 
   .pk-link-card {
-    background: white;
+    background: var(--surface);
     padding: 1.5rem;
     border-radius: 12px;
     text-decoration: none;
     box-shadow: 0 2px 8px rgba(20, 8, 14, 0.04);
-    border: 1px solid rgba(121, 148, 150, 0.1);
+    border: 1px solid var(--border-subtle);
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
   }
 
@@ -776,25 +946,32 @@ import Icon from '../components/Icon/Icon.astro';
     border-color: var(--color-tertiary);
   }
 
-  html.dark .pk-link-card {
-    background: #23232b;
-    border-color: rgba(233, 235, 158, 0.08);
+  .pk-link-card:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+    border-color: var(--color-tertiary);
   }
 
-  html.dark .pk-link-card:hover {
+  @media (prefers-reduced-motion: reduce) {
+    .pk-link-card {
+      transition: none;
+    }
+    .pk-link-card:hover {
+      transform: none;
+    }
+  }
+
+  html.dark .pk-link-card:hover,
+  html.dark .pk-link-card:focus-visible {
     border-color: var(--color-accent);
   }
 
   .pk-link-card h3 {
     font-size: 1rem;
     font-weight: 700;
-    color: var(--color-dark);
+    color: var(--text-strong);
     margin-bottom: 0.4rem;
     font-family: var(--font-secondary-header);
-  }
-
-  html.dark .pk-link-card h3 {
-    color: #f3f4f6;
   }
 
   .pk-link-card p {
@@ -806,7 +983,7 @@ import Icon from '../components/Icon/Icon.astro';
   }
 
   html.dark .pk-link-card p {
-    color: #a5a5b5;
+    color: var(--text-muted);
   }
 
   /* ===== Animations ===== */
@@ -822,41 +999,56 @@ import Icon from '../components/Icon/Icon.astro';
   }
 
   /* ===== Responsive ===== */
-  @media (max-width: 768px) {
+  @media (max-width: 640px) {
     .pk-hero {
-      padding: 4rem 1rem 3rem;
-      min-height: auto;
+      padding: 0 1rem;
+    }
+
+    .pk-hero-card {
+      grid-template-columns: 1fr;
+      text-align: center;
+      gap: 1rem;
+      padding: 1.75rem 1.5rem;
+    }
+
+    .pk-hero-headshot {
+      width: 96px;
+      height: 96px;
+      margin: 0 auto;
     }
 
     .pk-hero h1 {
-      font-size: 2.2rem;
+      font-size: 1.9rem;
     }
 
-    .pk-headshot {
-      width: 120px;
-      height: 120px;
-    }
-
-    .pk-tagline {
-      font-size: 1.15rem;
-    }
-
-    .pk-venture {
-      padding: 2rem 1.5rem;
-    }
-
-    .pk-venture-header {
-      flex-direction: column;
-      text-align: center;
-    }
-
-    .pk-venture-links {
+    .pk-location {
       justify-content: center;
     }
 
-    .pk-venture-badge {
-      left: 50%;
-      transform: translateX(-50%);
+    .pk-tagline {
+      font-size: 1rem;
+    }
+
+    .pk-companies-grid {
+      grid-template-columns: 1fr;
+      gap: 0.875rem;
+    }
+
+    .pk-company-card {
+      padding: 1rem;
+    }
+
+    .pk-company-header {
+      gap: 0.75rem;
+    }
+
+    .pk-company-logo {
+      width: 36px;
+      height: 36px;
+    }
+
+    .pk-company-name {
+      font-size: 1rem;
     }
 
     .pk-socials-grid {
@@ -878,10 +1070,14 @@ import Icon from '../components/Icon/Icon.astro';
       grid-template-columns: 1fr;
     }
 
-    .pk-venture-links {
+    .pk-company-links {
       flex-direction: column;
       align-items: stretch;
+    }
+
+    .pk-company-link {
       text-align: center;
+      justify-content: center;
     }
   }
 </style>

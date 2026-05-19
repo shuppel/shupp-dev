@@ -1,0 +1,493 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import Icon from '../components/Icon/Icon.astro';
+import CosmicStage from '../components/Garden/CosmicStage.astro';
+import { getConstellations } from '../lib/garden/links';
+
+// Get all galaxy notes
+const allNotes = await getCollection('galaxy');
+
+// Filter only visible notes and sort by last tended (most recent first)
+const notes = allNotes
+  .filter(note => note.data.visible)
+  .sort((a, b) => new Date(b.data.lastObserved).getTime() - new Date(a.data.lastObserved).getTime());
+
+// Get unique constellations
+const constellations = getConstellations(notes);
+---
+
+<Layout 
+  title="Scribe Galaxy" 
+  description="A universe of interconnected ideas—evolving notes on AI ethics, product philosophy, and technical explorations"
+>
+  <div class="galaxy-page">
+    <section class="galaxy-hero">
+      <div class="galaxy-header">
+        <Icon name="Planet" size={48} weight="duotone" liquid={true} inkEffect="medium" />
+        <h1>Scribe Galaxy</h1>
+      </div>
+      <p class="lead">A universe of interconnected ideas—celestial bodies of knowledge that form, evolve, and orbit together</p>
+      
+      <div class="stage-legend">
+        <span class="legend-title">Celestial Stages:</span>
+        <CosmicStage stage="nebula" showLabel={true} size="small" />
+        <CosmicStage stage="protostar" showLabel={true} size="small" />
+        <CosmicStage stage="star" showLabel={true} size="small" />
+        <CosmicStage stage="galaxy" showLabel={true} size="small" />
+      </div>
+    </section>
+
+    <div class="galaxy-container">
+      <!-- Sidebar with filters -->
+      <aside class="galaxy-sidebar">
+        <div class="sidebar-sticky">
+          <div class="filter-section">
+            <h3 class="filter-title">
+              <Icon name="Funnel" size={18} weight="duotone" />
+              Filter by Stage
+            </h3>
+            <div class="filter-options" id="stage-filters">
+              <button class="filter-btn active" data-stage="all">All Notes</button>
+              <button class="filter-btn" data-stage="nebula">
+                <Icon name="CloudFog" size={14} />
+                Nebula
+              </button>
+              <button class="filter-btn" data-stage="protostar">
+                <Icon name="CircleHalf" size={14} />
+                Protostar
+              </button>
+              <button class="filter-btn" data-stage="star">
+                <Icon name="Star" size={14} />
+                Star
+              </button>
+              <button class="filter-btn" data-stage="galaxy">
+                <Icon name="Spiral" size={14} />
+                Galaxy
+              </button>
+            </div>
+          </div>
+
+          <div class="filter-section">
+            <h3 class="filter-title">
+              <Icon name="Stack" size={18} weight="duotone" />
+              Constellations
+            </h3>
+            <div class="filter-options" id="constellation-filters">
+              <button class="filter-btn active" data-constellation="all">All Themes</button>
+              {constellations.map(constellation => (
+                <button class="filter-btn" data-constellation={constellation}>
+                  {constellation.split('-').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1)
+                  ).join(' ')}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Main galaxy content -->
+      <section class="galaxy-main">
+        <div class="galaxy-list">
+          {notes.map(note => (
+            <article 
+              class="galaxy-card" 
+              data-stage={note.data.stage}
+              data-constellation={note.data.constellation}
+            >
+              <a href={`/galaxy/${note.id}`} class="galaxy-link">
+                <div class="galaxy-card-header">
+                  <CosmicStage stage={note.data.stage} showLabel={false} size="small" />
+                  <span class="constellation-tag">{note.data.constellation}</span>
+                </div>
+                
+                <h2 class="galaxy-title">{note.data.title}</h2>
+                <p class="galaxy-description">{note.data.description}</p>
+                
+                <div class="galaxy-meta">
+                  <span class="meta-item">
+                    <Icon name="Planet" size={14} />
+                    Formed {new Date(note.data.formed).toLocaleDateString('en-US', { 
+                      month: 'short', 
+                      year: 'numeric' 
+                    })}
+                  </span>
+                  <span class="meta-item">
+                    <Icon name="Crosshair" size={14} />
+                    Observed {new Date(note.data.lastObserved).toLocaleDateString('en-US', { 
+                      month: 'short', 
+                      day: 'numeric', 
+                      year: 'numeric' 
+                    })}
+                  </span>
+                  {note.data.connections.length > 0 && (
+                    <span class="meta-item connections-count">
+                      <Icon name="Graph" size={14} />
+                      {note.data.connections.length} {note.data.connections.length === 1 ? 'connection' : 'connections'}
+                    </span>
+                  )}
+                </div>
+              </a>
+            </article>
+          ))}
+        </div>
+
+        <div class="no-results" id="no-results" style="display: none;">
+          <Icon name="MagnifyingGlass" size={48} weight="duotone" />
+          <p>No notes match your filters</p>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    function initGalaxyFilters() {
+      const cards = document.querySelectorAll('.galaxy-card');
+      const stageButtons = document.querySelectorAll('#stage-filters .filter-btn');
+      const constellationButtons = document.querySelectorAll('#constellation-filters .filter-btn');
+      const noResults = document.getElementById('no-results');
+
+      let activeStage = 'all';
+      let activeConstellation = 'all';
+
+      function filterCards() {
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+          const cardStage = (card as HTMLElement).dataset.stage;
+          const cardConstellation = (card as HTMLElement).dataset.constellation;
+          
+          const stageMatch = activeStage === 'all' || cardStage === activeStage;
+          const constellationMatch = activeConstellation === 'all' || cardConstellation === activeConstellation;
+          
+          if (stageMatch && constellationMatch) {
+            (card as HTMLElement).style.display = 'block';
+            visibleCount++;
+          } else {
+            (card as HTMLElement).style.display = 'none';
+          }
+        });
+
+        if (noResults) {
+          noResults.style.display = visibleCount === 0 ? 'flex' : 'none';
+        }
+      }
+
+      // Stage filter handlers
+      stageButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          stageButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          activeStage = (btn as HTMLElement).dataset.stage || 'all';
+          filterCards();
+        });
+      });
+
+      // Constellation filter handlers
+      constellationButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          constellationButtons.forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          activeConstellation = (btn as HTMLElement).dataset.constellation || 'all';
+          filterCards();
+        });
+      });
+    }
+
+    // Initialize on both DOMContentLoaded (initial page load) and astro:page-load (View Transitions)
+    document.addEventListener('DOMContentLoaded', initGalaxyFilters);
+    document.addEventListener('astro:page-load', initGalaxyFilters);
+  </script>
+</Layout>
+
+<style>
+  .galaxy-page {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 4rem 1.5rem;
+    background: 
+      radial-gradient(circle at 20% 30%, rgba(121, 148, 150, 0.03) 0%, transparent 50%),
+      radial-gradient(circle at 80% 70%, rgba(172, 193, 150, 0.03) 0%, transparent 50%);
+  }
+
+  /* Hero Section */
+  .galaxy-hero {
+    margin-bottom: 3rem;
+  }
+
+  .galaxy-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .galaxy-hero h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
+  }
+
+  .lead {
+    font-size: 1.25rem;
+    color: var(--text-light);
+    line-height: 1.6;
+    margin: 0 0 1.5rem 0;
+  }
+
+  .stage-legend {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+    padding: 1rem;
+    background: var(--background-alt);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+  }
+
+  .legend-title {
+    font-weight: 600;
+    color: var(--text-color);
+  }
+
+  /* Container Layout */
+  .galaxy-container {
+    display: grid;
+    grid-template-columns: 250px 1fr;
+    gap: 3rem;
+    align-items: flex-start;
+  }
+
+  /* Sidebar */
+  .galaxy-sidebar {
+    position: sticky;
+    top: 5rem;
+  }
+
+  .sidebar-sticky {
+    background: var(--card-bg, white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+  }
+
+  html.dark .sidebar-sticky {
+    background: #23232b;
+  }
+
+  .filter-section {
+    margin-bottom: 2rem;
+  }
+
+  .filter-section:last-child {
+    margin-bottom: 0;
+  }
+
+  .filter-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+  }
+
+  .filter-options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .filter-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    color: var(--text-color);
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+  }
+
+  .filter-btn:hover {
+    background: var(--background-alt);
+    border-color: var(--primary-color);
+  }
+
+  .filter-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+  }
+
+  /* Garden Cards */
+  .galaxy-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .galaxy-card {
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    overflow: hidden;
+  }
+
+  .galaxy-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+    padding: 2rem;
+    transition: opacity 0.2s ease;
+  }
+
+  .galaxy-card:hover {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 12px rgba(121, 148, 150, 0.15);
+    transform: translateY(-2px);
+  }
+
+  .galaxy-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .constellation-tag {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-light);
+    text-transform: capitalize;
+    padding: 0.25rem 0.75rem;
+    background: var(--background-alt);
+    border-radius: 12px;
+  }
+
+  .galaxy-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    color: var(--text-color);
+  }
+
+  .galaxy-card:hover .galaxy-title {
+    color: var(--primary-color);
+  }
+
+  .galaxy-description {
+    color: var(--text-light);
+    line-height: 1.6;
+    margin-bottom: 1.25rem;
+  }
+
+  .galaxy-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    font-size: 0.875rem;
+    color: var(--text-light);
+  }
+
+  .meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+
+  .connections-count {
+    color: var(--primary-color);
+    font-weight: 500;
+  }
+
+  .no-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem 2rem;
+    color: var(--text-light);
+    text-align: center;
+  }
+
+  .no-results p {
+    margin-top: 1rem;
+    font-size: 1.125rem;
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .galaxy-container {
+      grid-template-columns: 1fr;
+    }
+
+    .galaxy-sidebar {
+      position: static;
+      margin-bottom: 2rem;
+    }
+
+    .sidebar-sticky {
+      max-width: 100%;
+    }
+
+    .filter-options {
+      flex-direction: row;
+      flex-wrap: wrap;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .galaxy-page {
+      padding: 3rem 1rem;
+    }
+
+    .galaxy-header {
+      flex-direction: column;
+      text-align: center;
+    }
+
+    .galaxy-hero h1 {
+      font-size: 2rem;
+    }
+
+    .lead {
+      font-size: 1.1rem;
+    }
+
+    .galaxy-link {
+      padding: 1.5rem;
+    }
+
+    .galaxy-title {
+      font-size: 1.25rem;
+    }
+  }
+
+  /* Dark mode */
+  html.dark .galaxy-card {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  html.dark .galaxy-card:hover {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: var(--primary-color);
+  }
+
+  html.dark .stage-legend {
+    background: #23232b;
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  html.dark .constellation-tag {
+    background: rgba(255, 255, 255, 0.05);
+  }
+</style>

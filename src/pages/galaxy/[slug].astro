@@ -1,0 +1,382 @@
+---
+import { getCollection, render } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import type { CollectionEntry } from 'astro:content';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import CosmicStage from '../../components/Garden/CosmicStage.astro';
+import Backlinks from '../../components/Garden/Backlinks.astro';
+import Icon from '../../components/Icon/Icon.astro';
+import { generateBacklinks, renderWikiLinks } from '../../lib/garden/links';
+import '../../styles/prose.css';
+
+export async function getStaticPaths() {
+  const galaxyEntries = await getCollection('galaxy');
+  return galaxyEntries.map(entry => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<'galaxy'>;
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+
+// Get all galaxy notes for backlinks
+const allNotes = await getCollection('galaxy');
+const backlinks = generateBacklinks(allNotes, entry.id);
+
+// Get connected notes (outgoing links)
+const connectedNotes = entry.data.connections
+  .map(id => allNotes.find(note => note.id === id))
+  .filter(note => note !== undefined) as CollectionEntry<'galaxy'>[];
+
+// Format dates
+const formedDate = new Date(entry.data.formed).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const tendedDate = new Date(entry.data.lastObserved).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+// Prepare breadcrumb data
+const breadcrumbs = [
+  { name: 'Galaxy', url: '/galaxy' },
+  { name: entry.data.title }
+];
+---
+
+<Layout 
+  title={entry.data.title} 
+  description={entry.data.description}
+>
+  <div class="galaxy-note-page">
+    <Breadcrumbs items={breadcrumbs} />
+    
+    <article class="note-content">
+      <header class="note-header">
+        <div class="note-meta-badges">
+          <CosmicStage stage={entry.data.stage} showLabel={true} size="medium" />
+          <span class="constellation-badge">{entry.data.constellation}</span>
+        </div>
+        
+        <h1 class="note-title">{entry.data.title}</h1>
+        <p class="note-description">{entry.data.description}</p>
+        
+        <div class="note-dates">
+          <span class="date-item">
+            <Icon name="Planet" size={16} weight="duotone" />
+            <span class="date-label">Formed:</span>
+            <time datetime={entry.data.formed.toISOString()}>{formedDate}</time>
+          </span>
+          <span class="date-item">
+            <Icon name="Crosshair" size={16} weight="duotone" />
+            <span class="date-label">Last Observed:</span>
+            <time datetime={entry.data.lastObserved.toISOString()}>{tendedDate}</time>
+          </span>
+        </div>
+      </header>
+
+      <div class="note-body prose">
+        <Content />
+      </div>
+
+      {/* Connections Section */}
+      {connectedNotes.length > 0 && (
+        <div class="connections-section">
+          <h3 class="connections-title">
+            <Icon name="Graph" size={20} weight="duotone" />
+            Connections
+          </h3>
+          <p class="connections-description">
+            Notes linked from this one
+          </p>
+          <div class="connections-list">
+            {connectedNotes.map(note => (
+              <a href={`/galaxy/${note.id}`} class="connection-item">
+                <CosmicStage stage={note.data.stage} showLabel={false} size="small" />
+                <span class="connection-title">{note.data.title}</span>
+                <span class="connection-constellation">{note.data.constellation}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Backlinks */}
+      <Backlinks backlinks={backlinks} />
+
+      {/* Related Blog Posts */}
+      {entry.data.relatedBlogPosts && entry.data.relatedBlogPosts.length > 0 && (
+        <div class="related-posts-section">
+          <h3 class="related-title">
+            <Icon name="Article" size={20} weight="duotone" />
+            Related Blog Posts
+          </h3>
+          <div class="related-posts-list">
+            {entry.data.relatedBlogPosts.map(slug => (
+              <a href={`/blog/${slug}`} class="related-post-item">
+                <Icon name="ArrowRight" size={14} />
+                {slug}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+    </article>
+  </div>
+</Layout>
+
+<style>
+  .garden-note-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    background: 
+      radial-gradient(circle at 90% 10%, rgba(121, 148, 150, 0.02) 0%, transparent 50%),
+      radial-gradient(circle at 10% 90%, rgba(172, 193, 150, 0.02) 0%, transparent 50%);
+  }
+
+  .note-content {
+    background: white;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    overflow: hidden;
+  }
+
+  html.dark .note-content {
+    background: #23232b;
+  }
+
+  .note-header {
+    padding: 2.5rem 2.5rem 2rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  html.dark .note-header {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .note-meta-badges {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .constellation-badge {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-light);
+    text-transform: capitalize;
+    padding: 0.35rem 1rem;
+    background: var(--background-alt);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+  }
+
+  html.dark .constellation-badge {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .note-title {
+    font-size: 2.5rem;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+    color: var(--text-color);
+  }
+
+  .note-description {
+    font-size: 1.25rem;
+    color: var(--text-light);
+    line-height: 1.6;
+    margin-bottom: 2rem;
+  }
+
+  .note-dates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    font-size: 0.9rem;
+    color: var(--text-light);
+  }
+
+  .date-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .date-label {
+    font-weight: 500;
+  }
+
+  .note-body {
+    padding: 2.5rem;
+  }
+
+  /* Wiki Links Styling */
+  .note-body :global(.wiki-link) {
+    color: var(--primary-color);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--primary-color);
+    transition: all 0.2s ease;
+  }
+
+  .note-body :global(.wiki-link:hover) {
+    border-bottom-style: solid;
+    color: var(--primary-dark);
+  }
+
+  html.dark .note-body :global(.wiki-link:hover) {
+    color: var(--color-accent);
+  }
+
+  /* Connections Section */
+  .connections-section {
+    padding: 2rem 2.5rem;
+    border-top: 1px solid var(--border-color);
+    background: var(--background-alt);
+  }
+
+  html.dark .connections-section {
+    background: rgba(255, 255, 255, 0.02);
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .connections-title,
+  .related-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--text-color);
+  }
+
+  .connections-description {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .connections-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .connection-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: white;
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-color);
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  html.dark .connection-item {
+    background: #23232b;
+  }
+
+  .connection-item:hover {
+    border-color: var(--primary-color);
+    transform: translateX(4px);
+  }
+
+  .connection-title {
+    flex: 1;
+    font-weight: 500;
+  }
+
+  .connection-constellation {
+    font-size: 0.75rem;
+    color: var(--text-light);
+    text-transform: capitalize;
+    padding: 0.25rem 0.75rem;
+    background: var(--background-alt);
+    border-radius: 12px;
+  }
+
+  html.dark .connection-constellation {
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  /* Related Posts Section */
+  .related-posts-section {
+    padding: 2rem 2.5rem;
+    border-top: 1px solid var(--border-color);
+  }
+
+  html.dark .related-posts-section {
+    border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .related-posts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .related-post-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--background-alt);
+    border-radius: 8px;
+    text-decoration: none;
+    color: var(--text-color);
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+  }
+
+  html.dark .related-post-item {
+    background: rgba(255, 255, 255, 0.03);
+  }
+
+  .related-post-item:hover {
+    border-color: var(--primary-color);
+    transform: translateX(4px);
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .garden-note-page {
+      padding: 1.5rem 1rem;
+    }
+
+    .note-header,
+    .note-body,
+    .connections-section,
+    .related-posts-section {
+      padding: 1.5rem;
+    }
+
+    .note-title {
+      font-size: 2rem;
+    }
+
+    .note-description {
+      font-size: 1.1rem;
+    }
+
+    .note-dates {
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+  }
+</style>

@@ -207,19 +207,19 @@ email: email@example.com
 location: City, State
 shortBio: Brief tagline or description
 longBio: |
-  Detailed biography with multiple paragraphs.
+   Detailed biography with multiple paragraphs.
 
-  This can span multiple lines and paragraphs.
+   This can span multiple lines and paragraphs.
 socialLinks:
-  github: https://github.com/username
-  linkedin: https://linkedin.com/in/username
-  twitter: https://twitter.com/username
+   github: https://github.com/username
+   linkedin: https://linkedin.com/in/username
+   twitter: https://twitter.com/username
 skills:
-  - Skill One
-  - Skill Two
+   - Skill One
+   - Skill Two
 interests:
-  - Interest One
-  - Interest Two
+   - Interest One
+   - Interest Two
 ---
 ```
 
@@ -240,8 +240,8 @@ All content uses Zod schema validation defined in `/src/content/config.ts` to en
 The site includes feature flags for controlling various features:
 
 - **`ENABLE_TLDRAW`** - Enable/disable TLDraw mockup embeds in Thoughtful App Co. pages (default: `false`)
-  - When disabled, mockup sections are completely hidden
-  - Set to `true` to show interactive TLDraw mockups
+   - When disabled, mockup sections are completely hidden
+   - Set to `true` to show interactive TLDraw mockups
 
 To enable feature flags:
 1. Copy `.env.example` to `.env`

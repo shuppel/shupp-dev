@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, render } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import Layout from '../../layouts/Layout.astro';
 import Icon from '../../components/Icon/Icon.astro';
@@ -11,7 +11,7 @@ import '../../styles/prose.css';
 export async function getStaticPaths() {
   const entries = await getCollection('press');
   return entries.map(entry => ({
-    params: { slug: entry.slug },
+    params: { slug: entry.id },
     props: { entry },
   }));
 }
@@ -21,7 +21,7 @@ interface Props {
 }
 
 const { entry } = Astro.props;
-const { Content } = await entry.render();
+const { Content } = await render(entry);
 
 const TYPE_META: Record<string, { label: string; icon: string; cta: string }> = {
   'article':         { label: 'Article',     icon: 'Article',         cta: 'Read on' },
@@ -64,7 +64,7 @@ const pressData = {
   breadcrumbs: [
     { name: 'Home', url: 'https://shupp.dev' },
     { name: 'Press', url: 'https://shupp.dev/press' },
-    { name: entry.data.title, url: `https://shupp.dev/press/${entry.slug}` }
+    { name: entry.data.title, url: `https://shupp.dev/press/${entry.id}` }
   ]
 };
 ---

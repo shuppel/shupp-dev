@@ -1,14 +1,13 @@
 ---
 title: "Supabase Select SF: Product Philosophy, LLMs, and Building at Y Combinator"
 description: "Notes and insights from Supabase Select at Y Combinator, featuring the Figma CEO's product philosophy, Guillermo Rauch's comprehensive vision, and the future of multi-modal applications."
-pubDate: 2025-10-03
-author: "E L Shupp"
-categories: ["Product Management", "Startup", "Technology"]
-tags: ["Supabase", "Y Combinator", "Product Design", "LLMs", "Local-First", "Multi-Modal", "Vercel"]
-readTime: "12 min read"
-featuredImage: "supabase-select-2025"
-featured: true
+stage: "star"
+formed: 2025-10-03
+lastObserved: 2025-10-03
+constellation: "product-philosophy"
+connections: []
 relatedProjects: ["thoughtful-app-co"]
+visible: true
 ---
 
 *As I write this under a super moon, the weather in DC finally mimicking the cool Bay Area weather...*

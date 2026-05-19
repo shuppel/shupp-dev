@@ -1,17 +1,14 @@
 ---
 title: "The Future of AI in Product Management"
 description: "Exploring how artificial intelligence is reshaping product development and creating new opportunities for innovation"
-pubDate: 2025-05-10
-author: "Your Name"
-categories: ["AI", "Product Management"]
-tags: ["Artificial Intelligence", "Product Management", "Innovation", "Technology Trends"]
-readTime: "6 min read"
-featuredImage: "ai-product-management"
-featured: true
+stage: "star"
+formed: 2025-05-10
+lastObserved: 2025-05-10
+constellation: "ai-ethics"
+connections: []
 relatedProjects: ["portfolio-website"]
+visible: true
 ---
-
-## Introduction
 
 Artificial Intelligence (AI) has rapidly evolved from a futuristic concept to an essential tool that's reshaping how we approach product management. As the technology continues to mature, it's creating new opportunities for innovation, efficiency, and user-centered design.
 
@@ -106,7 +103,7 @@ For product managers looking to leverage AI in their work, here are some practic
 
 The key is to approach AI as an ongoing journey of learning and adaptation, rather than a one-time implementation.
 
-## Conclusion
+## Summary
 
 AI is fundamentally changing product management, offering new ways to understand users, automate routine tasks, and make more informed decisions. As the technology continues to evolve, its impact on product development will only grow.
 

@@ -1,12 +1,13 @@
 ---
 title: "Launching Thoughtful App Co."
 description: "Announcing the official launch of Thoughtful App Company, a venture dedicated to building apps for hoomans."
-pubDate: 2025-11-30
-author: "Erikk Shupp"
-categories: ["Announcement", "Product Management", "Thoughtful App Co."]
-tags: ["startup", "product", "apps", "tac"]
-readTime: "3 min"
-featured: true
+stage: "protostar"
+formed: 2025-11-30
+lastObserved: 2025-11-30
+constellation: "product-philosophy"
+connections: []
+# relatedProjects: []
+visible: true
 ---
 
 After some thought and gradual rollout, I am starting to take the white papers and thought experiments and convert them into ideas. I think its definitely the time.

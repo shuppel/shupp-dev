@@ -1,27 +1,29 @@
 // Import utilities from `astro:content`
 import { z, defineCollection } from 'astro:content';
+import { glob } from 'astro/loaders';
 
-// Define a `type` and `schema` for blog posts
-const blogCollection = defineCollection({
-  type: 'content', // v2.5.0 and later
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    pubDate: z.date(),
-    updatedDate: z.date().optional(),
-    author: z.string(),
-    categories: z.array(z.string()),
-    tags: z.array(z.string()).optional(),
-    readTime: z.string().optional(),
-    featuredImage: z.string().optional(),
-    featured: z.boolean().default(false), // Added featured flag for promoting posts
-    relatedProjects: z.union([z.array(z.string()), z.null()]).optional(), // Related project slugs or null if N/A
-  }),
-});
+// ARCHIVED: Blog collection - all posts moved to Galaxy
+// const blogCollection = defineCollection({
+//   loader: glob({ pattern: '**/[^_]*.md', base: './src/content/blog' }),
+//   schema: z.object({
+//     title: z.string(),
+//     description: z.string(),
+//     pubDate: z.date(),
+//     updatedDate: z.date().optional(),
+//     author: z.string(),
+//     categories: z.array(z.string()),
+//     tags: z.array(z.string()).optional(),
+//     readTime: z.string().optional(),
+//     featuredImage: z.string().optional(),
+//     ogImage: z.string().optional(),
+//     featured: z.boolean().default(false),
+//     relatedProjects: z.union([z.array(z.string()), z.null()]).optional(),
+//   }),
+// });
 
 // Define a schema for project items
 const projectCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/projects' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
@@ -36,26 +38,26 @@ const projectCollection = defineCollection({
   }),
 });
 
-// Define a schema for roadmap items
-const roadmapCollection = defineCollection({
-  type: 'content',
-  schema: z.object({
-    title: z.string(),
-    description: z.string(),
-    phase: z.enum(['current', 'upcoming', 'future']),
-    status: z.enum(['now', 'next', 'later', 'exploring']),
-    order: z.number(),
-    features: z.array(z.string()).optional(),
-    goals: z.array(z.string()).optional(),
-    timeframe: z.string().optional(),
-    relatedRoadmapItems: z.array(z.string()).optional(),
-    completedItems: z.array(z.string()).default([]),
-  }),
-});
+// ARCHIVED: Roadmap collection - moved to _archive
+// const roadmapCollection = defineCollection({
+//   loader: glob({ pattern: '**/[^_]*.md', base: './src/content/roadmap' }),
+//   schema: z.object({
+//     title: z.string(),
+//     description: z.string(),
+//     phase: z.enum(['current', 'upcoming', 'future']),
+//     status: z.enum(['now', 'next', 'later', 'exploring']),
+//     order: z.number(),
+//     features: z.array(z.string()).optional(),
+//     goals: z.array(z.string()).optional(),
+//     timeframe: z.string().optional(),
+//     relatedRoadmapItems: z.array(z.string()).optional(),
+//     completedItems: z.array(z.string()).default([]),
+//   }),
+// });
 
 // Define a schema for author bio
 const authorCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/authors' }),
   schema: z.object({
     name: z.string(),
     title: z.string(),
@@ -80,7 +82,7 @@ const authorCollection = defineCollection({
 
 // Define a schema for resume sections
 const resumeCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/resume' }),
   schema: z.object({
     title: z.string(),
     order: z.number(), // To control display order
@@ -91,7 +93,7 @@ const resumeCollection = defineCollection({
 
 // Define a schema for experience entries
 const experienceCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/experience' }),
   schema: z.object({
     company: z.string(),
     position: z.string(),
@@ -109,7 +111,7 @@ const experienceCollection = defineCollection({
 
 // Define a schema for education entries
 const educationCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/education' }),
   schema: z.object({
     institution: z.string(),
     degree: z.string(),
@@ -127,7 +129,7 @@ const educationCollection = defineCollection({
 
 // Define a schema for credential badges
 const credentialCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/credentials' }),
   schema: z.object({
     title: z.string(), // Name of the credential
     organization: z.string(), // Issuing organization
@@ -146,7 +148,7 @@ const credentialCollection = defineCollection({
 
 // Define a schema for skills
 const skillCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/skills' }),
   schema: z.object({
     name: z.string(),
     category: z.string(), // Technical, Soft, etc.
@@ -161,7 +163,7 @@ const skillCollection = defineCollection({
 
 // Define a schema for principles
 const principleCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/principles' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
@@ -171,13 +173,14 @@ const principleCollection = defineCollection({
 
 // Define a schema for Thoughtful App Co. concepts
 const thoughtfulAppsCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/thoughtful-apps' }),
   schema: z.object({
     title: z.string(),
     oneLiner: z.string(),
     status: z.enum(['concept', 'exploring', 'prototyping', 'shelved']),
     category: z.string(),
     problem: z.string(),
+    ogImage: z.string().optional(), // OpenGraph image path (e.g., /images/thoughtful-apps/app-name.png)
     mainMockup: z.string().optional(), // TLDraw embed URL
     features: z.array(z.object({
       name: z.string(),
@@ -215,7 +218,7 @@ const thoughtfulAppsCollection = defineCollection({
 
 // Define a schema for press / appearances / external publications
 const pressCollection = defineCollection({
-  type: 'content',
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/press' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
@@ -250,35 +253,64 @@ const pressCollection = defineCollection({
   }),
 });
 
-// Define a schema for Open Source Tools
-const toolsCollection = defineCollection({
-  type: 'content',
+// ARCHIVED: Tools collection - moved to _archive
+// const toolsCollection = defineCollection({
+//   loader: glob({ pattern: '**/[^_]*.md', base: './src/content/tools' }),
+//   schema: z.object({
+//     title: z.string(),
+//     description: z.string(),
+//     category: z.enum(['Financial', 'Productivity', 'Health', 'Lifestyle', 'Analytics', 'Converter']),
+//     status: z.enum(['active', 'beta', 'archived']).default('active'),
+//     component: z.string(), // Component name to render (e.g., 'RentVsBuy')
+//     githubUrl: z.string().url().optional(),
+//     originalSource: z.object({
+//       name: z.string(),
+//       url: z.string().url(),
+//     }).optional(), // Attribution if based on another tool
+//     features: z.array(z.string()),
+//     technologies: z.array(z.string()),
+//     lastUpdated: z.date(),
+//     popularity: z.number().default(0), // Usage metrics
+//     embedEnabled: z.boolean().default(false), // Can be embedded on other sites
+//     featured: z.boolean().default(false),
+//     previewImage: z.string().optional(),
+//   }),
+// });
+
+// Define a schema for Galaxy notes (formerly Garden)
+const galaxyCollection = defineCollection({
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/galaxy' }),
   schema: z.object({
     title: z.string(),
     description: z.string(),
-    category: z.enum(['Financial', 'Productivity', 'Health', 'Lifestyle', 'Analytics', 'Converter']),
-    status: z.enum(['active', 'beta', 'archived']).default('active'),
-    component: z.string(), // Component name to render (e.g., 'RentVsBuy')
-    githubUrl: z.string().url().optional(),
-    originalSource: z.object({
-      name: z.string(),
-      url: z.string().url(),
-    }).optional(), // Attribution if based on another tool
-    features: z.array(z.string()),
-    technologies: z.array(z.string()),
-    lastUpdated: z.date(),
-    popularity: z.number().default(0), // Usage metrics
-    embedEnabled: z.boolean().default(false), // Can be embedded on other sites
-    featured: z.boolean().default(false),
-    previewImage: z.string().optional(),
+    
+    // Cosmic growth stages: nebula (raw idea) → protostar (developing) → star (mature) → galaxy (hub)
+    stage: z.enum(['nebula', 'protostar', 'star', 'galaxy']),
+    
+    // Cosmic temporal metadata (not publication dates, but formation)
+    formed: z.date(),            // First created
+    lastObserved: z.date(),        // Last meaningful update
+    
+    // Thematic grouping (e.g., "ai-ethics", "product-philosophy", "technical-notes")
+    constellation: z.string(),
+    
+    // Explicit connections to other garden notes (slugs)
+    connections: z.array(z.string()).default([]),
+    
+    // Optional cross-linking to other content types
+    relatedBlogPosts: z.array(z.string()).optional(),  // Blog post slugs
+    relatedProjects: z.array(z.string()).optional(),   // Project slugs
+    
+    // Visibility
+    visible: z.boolean().default(true),
   }),
 });
 
 // Export a single `collections` object to register your collections
 export const collections = {
-  'blog': blogCollection,
+  // 'blog': blogCollection, // ARCHIVED - moved to Galaxy
   'projects': projectCollection,
-  'roadmap': roadmapCollection,
+  // 'roadmap': roadmapCollection, // ARCHIVED
   'authors': authorCollection,
   'resume': resumeCollection,
   'experience': experienceCollection,
@@ -287,6 +319,7 @@ export const collections = {
   'skills': skillCollection,
   'principles': principleCollection,
   'thoughtful-apps': thoughtfulAppsCollection,
-  'tools': toolsCollection,
+  // 'tools': toolsCollection, // ARCHIVED
+  'galaxy': galaxyCollection,
   'press': pressCollection,
 };

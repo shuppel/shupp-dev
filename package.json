@@ -4,24 +4,25 @@
   "version": "0.0.5",
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "npm run sync:podcast && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "lint": "eslint . --ext .ts,.tsx,.astro",
     "lint:fix": "eslint . --ext .ts,.tsx,.astro --fix",
-    "typecheck": "astro check && tsc --noEmit"
+    "typecheck": "astro check && tsc --noEmit",
+    "sync:podcast": "node --import tsx scripts/sync-spotify-rss.ts"
   },
   "dependencies": {
-    "@astrojs/react": "^4.3.0",
-    "@astrojs/rss": "^4.0.14",
-    "@astrojs/sitemap": "^3.6.0",
+    "@astrojs/react": "^5.0.5",
+    "@astrojs/rss": "^4.0.18",
+    "@astrojs/sitemap": "^3.7.2",
     "@hookform/resolvers": "^5.2.1",
     "@lyket/react": "^2.1.0",
     "@nanostores/react": "^1.0.0",
     "@phosphor-icons/react": "^2.1.10",
     "@types/three": "^0.180.0",
     "aceternity": "^1.0.1",
-    "astro": "^5.7.12",
+    "astro": "^6.3.5",
     "chart.js": "^4.5.0",
     "decimal.js": "^10.6.0",
     "nanostores": "^1.0.1",
@@ -35,7 +36,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.4",
+    "@astrojs/check": "^0.9.9",
     "@eslint/js": "^9.33.0",
     "@types/eslint": "^9.6.1",
     "@types/react": "^19.1.12",
@@ -46,6 +47,7 @@
     "dotenv": "^17.2.2",
     "eslint": "^9.33.0",
     "eslint-plugin-astro": "^1.3.1",
+    "tsx": "^4.19.0",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.39.1"
   }
