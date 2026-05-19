@@ -152,13 +152,11 @@ const education = [
   {
     school: "George Mason University",
     degree: "MS, Technology Management",
-    date: "2014 - 2016",
     logo: "/images/education/gmu-logo.png"
   },
   {
     school: "Longwood University",
     degree: "BA, English Creative Writing",
-    date: "2009 - 2013",
     logo: "/images/education/longwood-logo.png"
   }
 ];
@@ -285,7 +283,6 @@ const certifications = [
             <div class="education-details">
               <h3>{edu.school}</h3>
               <p class="degree">{edu.degree}</p>
-              <p class="date">{edu.date}</p>
             </div>
           </div>
         ))}
@@ -321,9 +318,15 @@ const certifications = [
 
 <style>
   .resume-container {
-    max-width: 800px;
+    max-width: 100%;
     margin: 0 auto;
-    padding: 2rem 1.5rem;
+    padding: 2rem 3rem;
+  }
+
+  @media (min-width: 1200px) {
+    .resume-container {
+      padding: 2rem 4rem;
+    }
   }
 
   /* Back Link */
@@ -363,17 +366,20 @@ const certifications = [
   /* Header */
   .resume-header {
     margin-bottom: 2rem;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
   }
 
   .profile-section {
     display: flex;
-    gap: 1.5rem;
+    gap: 2rem;
     align-items: flex-start;
   }
 
   .profile-photo {
-    width: 120px;
-    height: 120px;
+    width: 140px;
+    height: 140px;
     border-radius: 50%;
     overflow: hidden;
     flex-shrink: 0;
@@ -463,21 +469,25 @@ const certifications = [
     display: flex;
     flex-direction: column;
     gap: 2.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
   }
 
   section h2 {
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: var(--text-color);
-    margin: 0 0 1.25rem;
+    margin: 0 0 1.5rem;
     padding-bottom: 0.75rem;
-    border-bottom: 1px solid var(--border-color);
+    border-bottom: 2px solid var(--border-color);
   }
 
   /* Experience Items */
   .experience-item {
-    display: flex;
-    gap: 1rem;
+    display: grid;
+    grid-template-columns: 56px 1fr;
+    gap: 1.25rem;
     margin-bottom: 2rem;
     padding-bottom: 2rem;
     border-bottom: 1px solid rgba(121, 148, 150, 0.1);
@@ -561,17 +571,19 @@ const certifications = [
   }
 
   .job-description p {
-    font-size: 0.95rem;
-    line-height: 1.6;
+    font-size: 1rem;
+    line-height: 1.7;
     color: var(--text-color);
-    margin: 0 0 0.75rem;
+    margin: 0 0 1rem;
+    max-width: 900px;
   }
 
   .tech-section {
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     color: var(--text-light);
-    margin-bottom: 0.35rem;
-    line-height: 1.5;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+    max-width: 900px;
   }
 
   .tech-section strong {
@@ -669,12 +681,6 @@ const certifications = [
     margin: 0 0 0.15rem;
   }
 
-  .date {
-    font-size: 0.85rem;
-    color: var(--text-light);
-    margin: 0;
-  }
-
   /* Certifications */
   .certifications-list {
     display: flex;
@@ -737,9 +743,9 @@ const certifications = [
   }
 
   /* Responsive */
-  @media (max-width: 640px) {
+  @media (max-width: 768px) {
     .resume-container {
-      padding: 1.5rem 1rem;
+      padding: 1.5rem 1.5rem;
     }
 
     .profile-section {
@@ -749,8 +755,8 @@ const certifications = [
     }
 
     .profile-photo {
-      width: 100px;
-      height: 100px;
+      width: 120px;
+      height: 120px;
     }
 
     .profile-info h1 {
@@ -762,7 +768,8 @@ const certifications = [
     }
 
     .experience-item {
-      gap: 0.75rem;
+      grid-template-columns: 48px 1fr;
+      gap: 1rem;
     }
 
     .company-logo {
@@ -771,12 +778,27 @@ const certifications = [
     }
 
     .education-item {
-      gap: 0.75rem;
+      gap: 1rem;
     }
 
     .school-logo {
       width: 48px;
       height: 48px;
+    }
+
+    .job-description p {
+      font-size: 0.95rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .resume-container {
+      padding: 1.5rem 1rem;
+    }
+
+    .profile-photo {
+      width: 100px;
+      height: 100px;
     }
   }
 </style>
