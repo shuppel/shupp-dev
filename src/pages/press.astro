@@ -85,7 +85,7 @@ function getDisplayUrl(url: string | undefined): string {
     <!-- Main content -->
     <main class="press-content">
       <header class="press-header-section">
-        <h1>Press & Appearances</h1>
+        <h1>Press</h1>
         <p class="press-subtitle">Articles, podcasts, talks, and interviews</p>
       </header>
 
@@ -105,7 +105,9 @@ function getDisplayUrl(url: string | undefined): string {
                 <li class="appearance-item">
                   <a href={`/press/${item.id}`} class="appearance-link">
                     <div class="appearance-preview">
-                      {favicon ? (
+                      {item.data.coverImage ? (
+                        <img src={item.data.coverImage} alt="" class="appearance-thumbnail" loading="lazy" />
+                      ) : favicon ? (
                         <img src={favicon} alt="" class="appearance-favicon" loading="lazy" />
                       ) : (
                         <div class="appearance-icon-fallback">
@@ -194,11 +196,13 @@ function getDisplayUrl(url: string | undefined): string {
 <style>
   .press-layout {
     display: grid;
-    grid-template-columns: 200px 1fr;
+    grid-template-columns: 180px minmax(0, 1fr);
     gap: 3rem;
-    max-width: 1200px;
+    width: 100%;
+    max-width: 1400px;
     margin: 0 auto;
-    padding: 3rem 2rem;
+    padding: 3rem 4rem;
+    box-sizing: border-box;
   }
 
   /* Sidebar */
@@ -322,13 +326,14 @@ function getDisplayUrl(url: string | undefined): string {
   .appearance-link {
     display: flex;
     align-items: flex-start;
-    gap: 1rem;
-    padding: 1rem;
-    border-radius: 8px;
+    gap: 1.25rem;
+    padding: 1.25rem;
+    border-radius: 12px;
     text-decoration: none;
     color: inherit;
     transition: all 0.2s ease;
     border: 1px solid transparent;
+    width: 100%;
   }
 
   .appearance-link:hover {
@@ -343,19 +348,26 @@ function getDisplayUrl(url: string | undefined): string {
 
   .appearance-preview {
     flex-shrink: 0;
-    width: 40px;
-    height: 40px;
+    width: 160px;
+    height: 100px;
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--background-alt);
-    border-radius: 8px;
+    border-radius: 10px;
     overflow: hidden;
   }
 
+  .appearance-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
   .appearance-favicon {
-    width: 24px;
-    height: 24px;
+    width: 32px;
+    height: 32px;
     object-fit: contain;
   }
 
@@ -394,11 +406,11 @@ function getDisplayUrl(url: string | undefined): string {
   }
 
   .appearance-title {
-    font-size: 1.1rem;
+    font-size: 1.25rem;
     font-weight: 600;
-    margin: 0 0 0.35rem;
+    margin: 0 0 0.5rem;
     color: var(--text-color);
-    line-height: 1.3;
+    line-height: 1.4;
     transition: color 0.2s ease;
   }
 
@@ -411,10 +423,10 @@ function getDisplayUrl(url: string | undefined): string {
   }
 
   .appearance-description {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     color: var(--text-light);
-    margin: 0 0 0.5rem;
-    line-height: 1.5;
+    margin: 0 0 0.75rem;
+    line-height: 1.6;
     display: -webkit-box;
     -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
@@ -453,7 +465,7 @@ function getDisplayUrl(url: string | undefined): string {
     .press-layout {
       grid-template-columns: 1fr;
       gap: 2rem;
-      padding: 2rem 1rem;
+      padding: 2rem 1.5rem;
     }
 
     .press-sidebar {
@@ -496,10 +508,23 @@ function getDisplayUrl(url: string | undefined): string {
 
     .appearance-link {
       padding: 0.875rem;
+      flex-wrap: wrap;
+    }
+
+    .appearance-preview {
+      width: 80px;
+      height: 60px;
     }
 
     .appearance-arrow {
       display: none;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .appearance-preview {
+      width: 60px;
+      height: 45px;
     }
   }
 </style>
