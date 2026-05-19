@@ -1,6 +1,5 @@
 ---
 import { ClientRouter } from 'astro:transitions';
-import Navigation from '../components/Header/Navigation.astro';
 import SideNav from '../components/Header/SideNav.astro';
 import Footer from '../components/Footer/Footer.astro';
 import JsonLd from '../components/SEO/JsonLd.astro';
@@ -15,7 +14,6 @@ export interface Props {
   jsonLdType?: 'website' | 'article' | 'person' | 'organization' | 'breadcrumb' | 'tool' | 'press';
   jsonLdData?: any;
   canonicalUrl?: string;
-  sideNav?: boolean;
 }
 
 const {
@@ -27,8 +25,7 @@ const {
   keywords = "fractional founder, product, design, software engineering, marketing, writing, thoughtful app company, TACo, apps, Arlington VA, local-first, human-first, human-centered design",
   jsonLdType = 'website',
   jsonLdData = {},
-  canonicalUrl,
-  sideNav = false
+  canonicalUrl
 } = Astro.props;
 
 const canonicalURL = canonicalUrl ?? new URL(Astro.url.pathname, Astro.site).toString();
@@ -99,9 +96,9 @@ const canonicalURL = canonicalUrl ?? new URL(Astro.url.pathname, Astro.site).toS
     
     <ClientRouter />
   </head>
-  <body class={sideNav ? 'has-side-nav' : ''}>
+  <body class="has-side-nav">
     <a href="#main-content" class="skip-to-content">Skip to main content</a>
-    {sideNav ? <SideNav /> : <Navigation />}
+    <SideNav />
     <main id="main-content">
       <slot />
     </main>
