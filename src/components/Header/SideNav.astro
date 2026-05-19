@@ -162,6 +162,7 @@ const socials = [
       const normalized = href === '/' ? '/' : href?.replace(/\/$/, '');
       if (normalized === currentPath) {
         link.classList.add('active');
+        link.setAttribute('aria-current', 'page');
       }
     });
   });
@@ -250,11 +251,12 @@ const socials = [
     font-size: 1.15rem;
     letter-spacing: 0.12em;
     text-transform: lowercase;
-    color: var(--color-dark);
+    color: var(--text-strong);
   }
 
-  html.dark .side-brand-name {
-    color: #f3f4f6;
+  .side-brand:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
   }
 
   .side-brand-sub {
@@ -320,17 +322,21 @@ const socials = [
   }
 
   html.dark .side-nav-link {
-    color: #c5c5d2;
+    color: var(--text-muted);
   }
 
   .side-nav-link:hover {
-    background-color: rgba(121, 148, 150, 0.09);
-    color: var(--color-dark);
+    background-color: var(--hover-tint);
+    color: var(--text-strong);
   }
 
   html.dark .side-nav-link:hover {
-    background-color: rgba(233, 235, 158, 0.06);
-    color: #f3f4f6;
+    color: var(--text-strong);
+  }
+
+  .side-nav-link:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
   }
 
   .side-nav-link.active {
@@ -339,7 +345,7 @@ const socials = [
       rgba(121, 148, 150, 0.16),
       rgba(172, 193, 150, 0.12)
     );
-    color: var(--color-dark);
+    color: var(--text-strong);
     box-shadow: inset 0 0 0 1px rgba(121, 148, 150, 0.2);
   }
 
@@ -349,7 +355,7 @@ const socials = [
       rgba(233, 235, 158, 0.14),
       rgba(172, 193, 150, 0.08)
     );
-    color: #f3f4f6;
+    color: var(--text-strong);
     box-shadow: inset 0 0 0 1px rgba(233, 235, 158, 0.18);
   }
 
@@ -500,6 +506,12 @@ const socials = [
     transform: scale(1.05);
   }
 
+  .side-theme-toggle:focus-visible,
+  .side-nav-mobile-toggle:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+
   html.dark .side-theme-toggle {
     border-color: var(--color-light);
     color: var(--color-light);
@@ -567,7 +579,7 @@ const socials = [
   }
 
   html.dark .side-nav-mobile-toggle .hamburger-line {
-    background-color: #c5c5d2;
+    background-color: var(--text-muted);
   }
 
   .side-nav-mobile-toggle.active .hamburger-line:nth-child(1) {
