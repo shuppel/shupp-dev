@@ -2,7 +2,7 @@
 import { siteConfig } from '../../config/site';
 
 export interface Props {
-  type?: 'website' | 'article' | 'person' | 'organization' | 'breadcrumb' | 'tool';
+  type?: 'website' | 'article' | 'person' | 'organization' | 'breadcrumb' | 'tool' | 'press';
   data?: any;
 }
 
@@ -117,6 +117,87 @@ const breadcrumbSchema = data.breadcrumbs ? {
   }))
 } : null;
 
+// Press / appearance schema — picks the right schema.org @type based on press item type.
+// canonical mainEntityOfPage points at the EXTERNAL url so search engines treat the
+// original (LinkedIn, Spotify, conference site) as the source of record.
+const pressSchema = (() => {
+  if (!data.press) return null;
+  const p = data.press;
+  const base = {
+    "@context": "https://schema.org",
+    headline: p.title,
+    name: p.title,
+    description: p.description,
+    datePublished: p.pubDate,
+    url: p.externalUrl,
+    mainEntityOfPage: {
+      "@type": "WebPage",
+      "@id": p.externalUrl,
+    },
+    author: {
+      "@type": "Person",
+      name: siteConfig.author.name,
+      url: siteConfig.siteUrl,
+    },
+    image: p.image || `${siteConfig.siteUrl}/og-default.png`,
+    keywords: p.tags?.join(', ') || '',
+  };
+
+  switch (p.type) {
+    case 'podcast-episode':
+    case 'podcast-guest':
+      return {
+        ...base,
+        "@type": "PodcastEpisode",
+        partOfSeries: {
+          "@type": "PodcastSeries",
+          name: p.outlet || 'Humans Only',
+        },
+        actor: p.guests?.map((name: string) => ({ "@type": "Person", name })) || undefined,
+      };
+    case 'talk':
+      return {
+        ...base,
+        "@type": "Event",
+        eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
+        eventStatus: "https://schema.org/EventScheduled",
+        startDate: p.pubDate,
+        location: p.location ? {
+          "@type": "Place",
+          name: p.eventName || p.location,
+          address: p.location,
+        } : undefined,
+        organizer: p.eventName ? { "@type": "Organization", name: p.eventName } : undefined,
+        performer: { "@type": "Person", name: siteConfig.author.name },
+      };
+    case 'video':
+      return {
+        ...base,
+        "@type": "VideoObject",
+        contentUrl: p.externalUrl,
+        uploadDate: p.pubDate,
+      };
+    case 'award':
+      return {
+        ...base,
+        "@type": "CreativeWork",
+        about: "Award",
+      };
+    case 'article':
+    case 'interview':
+    case 'mention':
+    default:
+      return {
+        ...base,
+        "@type": "Article",
+        publisher: p.outlet ? {
+          "@type": "Organization",
+          name: p.outlet,
+        } : organizationSchema,
+      };
+  }
+})();
+
 // SoftwareApplication schema for tools
 const toolSchema = data.tool ? {
   "@context": "https://schema.org",
@@ -160,6 +241,9 @@ switch(type) {
   case 'tool':
     selectedSchema = toolSchema;
     break;
+  case 'press':
+    selectedSchema = pressSchema;
+    break;
   case 'website':
   default:
     selectedSchema = websiteSchema;
@@ -168,7 +252,7 @@ switch(type) {
 // For articles, also include breadcrumbs if provided
 const schemas: any[] = [];
 if (selectedSchema) schemas.push(selectedSchema);
-if (type === 'article' && data.breadcrumbs) {
+if ((type === 'article' || type === 'press') && data.breadcrumbs) {
   schemas.push({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",

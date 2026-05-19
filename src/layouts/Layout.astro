@@ -1,6 +1,7 @@
 ---
 import { ClientRouter } from 'astro:transitions';
 import Navigation from '../components/Header/Navigation.astro';
+import SideNav from '../components/Header/SideNav.astro';
 import Footer from '../components/Footer/Footer.astro';
 import JsonLd from '../components/SEO/JsonLd.astro';
 
@@ -11,22 +12,26 @@ export interface Props {
   type?: 'website' | 'article';
   author?: string;
   keywords?: string;
-  jsonLdType?: 'website' | 'article' | 'person' | 'organization' | 'breadcrumb' | 'tool';
+  jsonLdType?: 'website' | 'article' | 'person' | 'organization' | 'breadcrumb' | 'tool' | 'press';
   jsonLdData?: any;
+  canonicalUrl?: string;
+  sideNav?: boolean;
 }
 
-const { 
-  title, 
-  description = "Professional Portfolio and Blog for Software Engineer and Product Manager",
+const {
+  title,
+  description = "Professional Portfolio and Blog for a Fractional Founder",
   image = "/og-default.png",
   type = "website",
   author = "Erikk Shupp",
-  keywords = "software engineer, product manager, web development, thoughtful app company, TACo, apps, Arlington VA, local-first, human-first, human-centered design",
+  keywords = "fractional founder, product, design, software engineering, marketing, writing, thoughtful app company, TACo, apps, Arlington VA, local-first, human-first, human-centered design",
   jsonLdType = 'website',
-  jsonLdData = {}
+  jsonLdData = {},
+  canonicalUrl,
+  sideNav = false
 } = Astro.props;
 
-const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+const canonicalURL = canonicalUrl ?? new URL(Astro.url.pathname, Astro.site).toString();
 const imageURL = new URL(image, Astro.site);
 ---
 
@@ -102,9 +107,9 @@ const imageURL = new URL(image, Astro.site);
     
     <ClientRouter />
   </head>
-  <body>
+  <body class={sideNav ? 'has-side-nav' : ''}>
     <a href="#main-content" class="skip-to-content">Skip to main content</a>
-    <Navigation />
+    {sideNav ? <SideNav /> : <Navigation />}
     <main id="main-content">
       <slot />
     </main>
@@ -404,6 +409,35 @@ const imageURL = new URL(image, Astro.site);
     min-height: calc(100vh - 180px);
     transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     animation: fluid-entry 0.8s ease-out;
+  }
+
+  /* Side nav layout: shift content right of the fixed side nav */
+  body.has-side-nav main {
+    margin-left: 220px;
+    max-width: calc(1200px - 220px);
+  }
+
+  body.has-side-nav .footer {
+    margin-left: 220px;
+  }
+
+  @media (max-width: 1100px) {
+    body.has-side-nav main {
+      max-width: none;
+      margin-right: 0;
+    }
+  }
+
+  @media (max-width: 768px) {
+    body.has-side-nav main {
+      margin-left: 0;
+      max-width: 100%;
+      padding-top: 4.5rem;
+    }
+
+    body.has-side-nav .footer {
+      margin-left: 0;
+    }
   }
 
   @keyframes fluid-entry {

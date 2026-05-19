@@ -71,6 +71,14 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
             <span class="nav-text">Galaxy</span>
           </a>
         </li>
+        <li class="nav-item">
+          <a href="/press" class="nav-link" data-tooltip="Press">
+            <span class="nav-icon">
+              <Icon name="Newspaper" size={20} weight="duotone" liquid={true} />
+            </span>
+            <span class="nav-text">Press</span>
+          </a>
+        </li>
         <li class="nav-item dropdown apps-dropdown">
           <a href="/thoughtful-app-co" class="nav-link" data-tooltip="Apps Co.">
             <span class="nav-icon brain-icon">
@@ -82,28 +90,12 @@ const sortedApps = apps.sort((a, b) => a.data.title.localeCompare(b.data.title))
             <a href="/thoughtful-app-co" class="dropdown-link">View All Apps</a>
             <div class="dropdown-divider"></div>
             {sortedApps.map(app => (
-              <a href={`/thoughtful-app-co/${app.slug}`} class="dropdown-link app-link">
+              <a href={`/thoughtful-app-co/${app.id}`} class="dropdown-link app-link">
                 <span class="app-status-dot" data-status={app.data.status}></span>
                 {app.data.title}
               </a>
             ))}
           </div>
-        </li>
-        <li class="nav-item">
-          <a href="/tools" class="nav-link" data-tooltip="Tools">
-            <span class="nav-icon tools-icon">
-              <Icon name="Wrench" size={20} weight="duotone" liquid={true} />
-            </span>
-            <span class="nav-text">Tools</span>
-          </a>
-        </li>
-        <li class="nav-item">
-          <a href="/roadmap" class="nav-link" data-tooltip="Roadmap">
-            <span class="nav-icon">
-              <Icon name="MapTrifold" size={20} weight="duotone" liquid={true} />
-            </span>
-            <span class="nav-text">Roadmap</span>
-          </a>
         </li>
       </ul>
       
