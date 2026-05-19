@@ -16,11 +16,26 @@ const bioParagraphs = author.data.longBio.split('\n\n');
     
     <!-- Hero Section -->
     <section class="about-hero">
-      <div class="about-header">
-        <Icon name="User" size={48} weight="duotone" liquid={true} inkEffect="medium" />
-        <h1>About Me</h1>
+      <div class="hero-content">
+        <div class="hero-text">
+          <div class="about-header">
+            <Icon name="User" size={48} weight="duotone" liquid={true} inkEffect="medium" />
+            <h1>About Me</h1>
+          </div>
+          <p class="lead">{author.data.shortBio}</p>
+        </div>
+        
+        <div class="hero-actions">
+          <a href="/portfolio" class="hero-action-link">
+            <Icon name="Briefcase" size={32} weight="duotone" liquid={true} />
+            <span>Portfolio</span>
+          </a>
+          <a href="/resume" class="hero-action-link">
+            <Icon name="FileText" size={32} weight="duotone" liquid={true} />
+            <span>Resume</span>
+          </a>
+        </div>
       </div>
-      <p class="lead">{author.data.shortBio}</p>
     </section>
 
     <!-- Photo Grid -->
@@ -91,75 +106,7 @@ const bioParagraphs = author.data.longBio.split('\n\n');
       </div>
     </section>
 
-    <!-- Quick Info / CTA -->
-    <section class="quick-info-section">
-      <div class="quick-info-card">
-        <h3>Quick Info</h3>
-        <ul class="quick-info-list">
-          <li><strong>Name:</strong> {author.data.name}</li>
-          <li><strong>Title:</strong> {author.data.title}</li>
-          <li><strong>Location:</strong> {author.data.location}</li>
-          <li><strong>Email:</strong> <a href={`mailto:${author.data.email}`}>{author.data.email}</a></li>
-        </ul>
-        <div class="quick-info-cta">
-          <a href="/portfolio" class="btn btn-primary">View Portfolio</a>
-          <a href="/resume" class="btn btn-secondary">View Resume</a>
-        </div>
-      </div>
-    </section>
 
-    <!-- Contact Section -->
-    <section class="contact-section">
-      <h2>Let's Connect</h2>
-      <p>I'm always open to discussing new projects, opportunities, and partnerships. Feel free to reach out!</p>
-      
-      <div class="contact-options">
-        {author.data.email && (
-          <a href={`mailto:${author.data.email}`} class="contact-option">
-            <div class="contact-icon">
-              <Icon name="Envelope" size={32} weight="duotone" liquid={true} />
-            </div>
-            <div class="contact-label">Email</div>
-          </a>
-        )}
-        
-        {author.data.socialLinks?.linkedin && (
-          <a href={author.data.socialLinks.linkedin} target="_blank" rel="noopener noreferrer" class="contact-option">
-            <div class="contact-icon">
-              <Icon name="LinkedinLogo" size={32} weight="duotone" liquid={true} />
-            </div>
-            <div class="contact-label">LinkedIn</div>
-          </a>
-        )}
-
-        {author.data.socialLinks?.github && (
-          <a href={author.data.socialLinks.github} target="_blank" rel="noopener noreferrer" class="contact-option">
-            <div class="contact-icon">
-              <Icon name="GithubLogo" size={32} weight="duotone" liquid={true} />
-            </div>
-            <div class="contact-label">GitHub</div>
-          </a>
-        )}
-
-        {author.data.socialLinks?.bluesky && (
-          <a href={author.data.socialLinks.bluesky} target="_blank" rel="noopener noreferrer" class="contact-option">
-            <div class="contact-icon">
-              <Icon name="Butterfly" size={32} weight="duotone" liquid={true} />
-            </div>
-            <div class="contact-label">Bluesky</div>
-          </a>
-        )}
-
-        {author.data.socialLinks?.podcast && (
-          <a href={author.data.socialLinks.podcast} target="_blank" rel="noopener noreferrer" class="contact-option">
-            <div class="contact-icon">
-              <Icon name="Microphone" size={32} weight="duotone" liquid={true} />
-            </div>
-            <div class="contact-label">Podcast</div>
-          </a>
-        )}
-      </div>
-    </section>
   </div>
 </Layout>
 
@@ -173,6 +120,17 @@ const bioParagraphs = author.data.longBio.split('\n\n');
   /* Hero Section */
   .about-hero {
     margin-bottom: 3rem;
+  }
+
+  .hero-content {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .hero-text {
+    min-width: 0;
   }
 
   .about-header {
@@ -193,8 +151,51 @@ const bioParagraphs = author.data.longBio.split('\n\n');
     font-size: 1.25rem;
     color: var(--text-light);
     line-height: 1.6;
-    max-width: 1100px;
     margin: 0;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .hero-action-link {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-decoration: none;
+    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    background: var(--card-bg, white);
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: var(--card-shadow);
+    width: 120px;
+    color: var(--text-color);
+  }
+
+  .hero-action-link:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 10px rgba(20, 8, 14, 0.05);
+  }
+
+  html.dark .hero-action-link {
+    background: #23232b;
+    color: #f3f4f6;
+  }
+
+  .hero-action-link svg {
+    font-size: 2rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-action-link span {
+    font-weight: 500;
+    font-size: 0.9rem;
   }
 
   /* Photo Section */
@@ -297,66 +298,6 @@ const bioParagraphs = author.data.longBio.split('\n\n');
 
   html.dark .philosophy-list strong {
     color: var(--color-accent);
-  }
-
-  /* Quick Info Section */
-  .quick-info-section {
-    margin-bottom: 4rem;
-    display: flex;
-    justify-content: center;
-  }
-
-  .quick-info-card {
-    background: var(--card-bg, white);
-    border-radius: 12px;
-    padding: 2rem;
-    box-shadow: var(--card-shadow);
-    max-width: 500px;
-    width: 100%;
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  }
-
-  .quick-info-card:hover {
-    transform: translateY(-7px) scale(1.01);
-    box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 10px rgba(20, 8, 14, 0.05);
-  }
-
-  html.dark .quick-info-card {
-    background: #23232b;
-  }
-
-  .quick-info-card h3 {
-    text-align: center;
-    margin-bottom: 1.5rem;
-  }
-
-  .quick-info-list {
-    list-style: none;
-    padding: 0;
-    margin: 0 0 1.5rem 0;
-  }
-
-  .quick-info-list li {
-    margin-bottom: 0.75rem;
-  }
-
-  .quick-info-list a {
-    color: var(--primary-color);
-    text-decoration: none;
-  }
-
-  .quick-info-list a:hover {
-    text-decoration: underline;
-  }
-
-  html.dark .quick-info-list a {
-    color: var(--color-accent);
-  }
-
-  .quick-info-cta {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
   }
 
   /* Skills Section */
@@ -470,82 +411,6 @@ const bioParagraphs = author.data.longBio.split('\n\n');
     color: var(--color-accent);
   }
 
-  /* Contact Section */
-  .contact-section {
-    margin-bottom: 4rem;
-    text-align: center;
-  }
-
-  .contact-section h2 {
-    text-align: center;
-    margin-bottom: 2.5rem;
-    position: relative;
-  }
-
-  .contact-section h2::after {
-    content: "";
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 3px;
-    background: var(--primary-color);
-    border-radius: 3px;
-  }
-
-  .contact-section p {
-    max-width: 600px;
-    margin: 0 auto 2rem;
-    color: var(--text-light);
-  }
-
-  .contact-options {
-    display: flex;
-    justify-content: center;
-    gap: 2rem;
-    flex-wrap: wrap;
-  }
-
-  .contact-option {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-decoration: none;
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    background: white;
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: var(--card-shadow);
-    width: 120px;
-  }
-
-  html.dark .contact-option {
-    background: #23232b;
-  }
-
-  .contact-option:hover {
-    transform: translateY(-7px);
-    box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 10px rgba(20, 8, 14, 0.05);
-  }
-
-  .contact-icon {
-    font-size: 2rem;
-    margin-bottom: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .contact-label {
-    color: var(--text-color);
-    font-weight: 500;
-  }
-
-  html.dark .contact-label {
-    color: #f3f4f6;
-  }
-
   /* Responsive */
   @media (max-width: 1024px) {
     .skills-categories {
@@ -569,6 +434,16 @@ const bioParagraphs = author.data.longBio.split('\n\n');
   @media (max-width: 768px) {
     .about-page {
       padding: 3rem 1rem;
+    }
+
+    .hero-content {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      text-align: center;
+    }
+
+    .hero-actions {
+      justify-content: center;
     }
 
     .about-header {
@@ -603,10 +478,6 @@ const bioParagraphs = author.data.longBio.split('\n\n');
     .skills-categories {
       grid-template-columns: 1fr;
       gap: 1.25rem;
-    }
-
-    .contact-options {
-      gap: 1rem;
     }
   }
 </style>
