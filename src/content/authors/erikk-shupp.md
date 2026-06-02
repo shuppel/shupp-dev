@@ -10,11 +10,9 @@ longBio: |
 
   I'm somewhat of a unicorn in these spaces: a true product manager with technical aptitude, stopping short of a devtools PM (though I do strive for that). My unconventional path—from storytelling to technology—has given me a unique perspective on building products that actually matter to people.
 
-  The technical skills came later, learned through necessity and curiosity. The storytelling came first, and maybe that's why I can see through the tech industry's tendency to solve problems that don't exist while ignoring the ones that do. As we evolve in an age where houses are luxury items, we should not let our morals get away from us. Technology should serve humanity, not the other way around.
+  The technical skills came later, learned through necessity and curiosity. The storytelling came first, and maybe that's why I tend to focus on whether products actually solve real problems. Technology should serve humanity, not the other way around.
 
-  Based in Arlington, VA, I work at the intersection of hooman needs and technical possibilities. My approach is pragmatic: I live for ideals echoed by the Ink and Switch team, live for O notation optimization, and hope to see all the big tech giants become swallowed by the sun. I use cloud technologies when necessary (despite my vendetta against their complexity and vendor lock-in), but always with an eye toward local-first alternatives.
-
-  There's a bit of libertarian in the social justice in me—there is autonomy and accountability. Free markets should really be free (except fuck all predatory businesses). Technology should empower individuals, not trap them in walled gardens or surveillance capitalism.
+  Based in Arlington, VA, I work at the intersection of hooman needs and technical possibilities. My approach is pragmatic: I draw inspiration from the Ink and Switch team, care deeply about performance, and lean toward local-first alternatives when they make sense.
 
   My work with Washington Rugby exemplifies this philosophy—transforming their digital infrastructure through strategic use of nonprofit resources, implementing zero-fee payment systems, and building automation that actually works. Not because it's technically impressive, but because it helps real people do real things better.
 
