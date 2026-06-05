@@ -11,322 +11,451 @@ interface ExperienceItem {
   endDate?: string;
   duration: string;
   location: string;
-  description: string;
-  stack?: string[];
+  context?: string;
+  bullets?: string[];
   governance?: string[];
-  aiTooling?: string[];
-  skills: string[];
   isCurrent?: boolean;
+  website?: string;
 }
 
 const experiences: ExperienceItem[] = [
   {
+    company: "A-Frame Solutions",
+    title: "AI Product Manager / GTM",
+    employmentType: "Contract",
+    startDate: "Mar 2025",
+    endDate: "Jun 2026",
+    duration: "1 yr 3 mos",
+    location: "Arlington, VA",
+    context: "ArcSuiteAI (@@$5.4M ARR@@) — AI procurement-lifecycle SaaS for federal agencies",
+    bullets: [
+      "Ran daily scrums and backlog discussions for an 11-person Agile pod through **FedRAMP Moderate** and **IRS ATO**.",
+      "Drove AI strategy and implementation: moved developers to multi-terminal TUI agents (OpenCode, Claude Code) alongside Cursor workflows — sharply increasing developer throughput. Researched prompt engineering and RAG (Pinecone / GraphRAG).",
+      "Built the product design and branding for the ArcSuiteAI line (ArcCompose, ArcInsight, ArcTracker, ArcSelect, ArcPropose) — messaging architecture, design system, and content strategy.",
+      "Shipped **20+ PRs** with agentic tooling to support the team. Built in TypeScript and Rust/WASM. Prisma → Postgres → AWS GovCloud.",
+      "Grew LinkedIn following **16x** in two weeks (12 → 200) including a viral thought-leadership piece — product walkthroughs validated B2G positioning vs. competitors.",
+      "Negotiated a FedRAMP partner from $250K to $155K (@@38% savings@@) via willingness-to-pay analysis; built the VC outreach strategy for angel investors.",
+    ],
+    governance: ["FedRAMP Moderate", "IRS ATO"],
+    isCurrent: false
+  },
+  {
     company: "Disca",
     title: "Fractional CTO",
     employmentType: "Contract",
-    startDate: "Jan 2026",
-    duration: "5 mos",
-    location: "Phoenix, Arizona, United States · Remote",
-    description: "Working with healthcare client, advising them on mvp application rebuild of legacy product.",
-    stack: ["React w/ MUI", "Vite", "Supabase", "Supabase Auth", "Docker", "Graphile (workers)", "Vercel", "AWS Healthlake", "FHIR"],
-    governance: ["HIPPA", "FISMA"],
-    aiTooling: ["Opencode", "Claude", "Warp Terminal"],
-    skills: ["Visual Design", "Agile Project Management"],
-    isCurrent: true
-  },
-  {
-    company: "A-Frame Solutions",
-    title: "Product Engineering Lead",
-    employmentType: "Contract",
     startDate: "Mar 2025",
-    duration: "1 yr 3 mos",
-    location: "Remote",
-    description: "Lead product development, development teams, product marketing, marketing, SEO, design and vendor management/negotiations for ArcSuiteAI and ArcProcure, a $5.4M ARR SaaS product, orchestrating cross-functional teams through FedRAMP and IRS ATO processes.",
-    stack: ["Next.js", "Prisma", "AWS GovCloud + Auth + Storage + Monitoring (Cognito, S3, PostGres, ECS, Queue, etc)"],
-    aiTooling: ["Cursor", "Claude Code", "Opencode", "Warp Terminal", "GovCloud AWS Bedrock", "Anthropic SDK"],
-    governance: ["FedRAMP Moderate"],
-    skills: ["Software Product Management", "Product Operations"],
-    isCurrent: true
-  },
-  {
-    company: "Thoughtful App Co.",
-    title: "Founder",
-    employmentType: "Self-employed",
-    startDate: "Jan 2026",
-    duration: "5 mos",
-    location: "United States · Remote",
-    description: "One agentic-fueled person doing growth, marketing, executive, development and design in his free time to developer local-first, human-first web apps that help people. Providing open-source context libraries to help people prompt llms better.",
-    stack: ["Rust + WASM", "Solid.js", "Cloudflare (R2,D1,KV, Queue, Workers)", "taco-sync"],
-    aiTooling: ["Warp → Opencode (custom agents) → Fireworks.AI"],
-    skills: ["Digital Strategy", "Product Operations"],
-    website: "thoughtfulapp.co",
+    duration: "Present",
+    location: "Remote / Phoenix, AZ",
+    context: "Clinical Trial Management Client",
+    bullets: [
+      "Working with 3 developers and two SMEs to build a Clinical Trials Data Platform.",
+      "Orchestrate meetings and demos with the business owner to showcase product features and value.",
+      "Provide strategy, technical architecture, and direction to developers to build better products.",
+      "Provide executive strategy across growth, operations, product, and marketing vectors.",
+    ],
+    governance: ["HIPAA", "FISMA"],
     isCurrent: true
   },
   {
     company: "Nodetus Integrators LLC",
-    title: "Founder",
-    employmentType: "Full-time",
-    startDate: "Feb 2017",
+    title: "Founder & Managing Director",
+    employmentType: "Self-employed",
+    startDate: "Jan 2017",
     endDate: "Present",
-    duration: "9 yrs 4 mos",
-    location: "Arlington, Virginia, United States · Hybrid",
-    description: "Clients: Maximus Federal, Sprezzatura, A-Frame Solutions, Disca, IME, AFS",
-    skills: ["Product Development", "Business Strategy"]
+    duration: "8+ yrs",
+    location: "Arlington, VA",
+    context: "AI services firm; federal B2B",
+    bullets: [
+      "Built enterprise GTM from zero: **$1.1M+** cumulative revenue (six subcontracts), @@40%@@ YoY growth, @@90%@@ renewal rate over 8+ years with 2.5 FTE peak headcount.",
+      "Clients: Disca, Sprezzatura, A-Frame Solutions, MAXIMUS, IME, AFI. Worked with HHS, NIH, Commerce, IRS.",
+      "Active participation at ACT-IAC community (Acquisitions and Project Management COIs).",
+    ],
+    isCurrent: true
   },
   {
-    company: "Tria Federal (Tria)",
-    title: "Sr Technical Project Manager",
-    employmentType: "Full-time",
-    startDate: "Apr 2023",
-    endDate: "Mar 2025",
-    duration: "2 yrs",
-    location: "Arlington, VA · Remote",
-    description: "Worked on the Cerner -> Oracle EHRM project for the VA. Managed over 15 interfaces",
-    skills: ["Agile Project Management", "Scrum"]
-  },
-  {
-    company: "Tria Federal (Tria)",
-    title: "Project Manager Scrum Master",
+    company: "Tria Federal",
+    title: "Sr. Technical Project Manager",
     employmentType: "Full-time",
     startDate: "Apr 2020",
-    endDate: "Apr 2023",
-    duration: "3 yrs 1 mo",
-    location: "Remote",
-    description: "Managed interface teams from Oracle (formerly Cerner) on VA EHRM project as teams configured/migrated to modern HL7/FHIR interfaces from legacy systems.",
-    skills: ["Agile Project Management", "Scrum"]
+    endDate: "Mar 2025",
+    duration: "5 yrs",
+    location: "Arlington, VA · Remote",
+    context: "VA EHR Modernization, multi-vendor program",
+    bullets: [
+      "Authored Scrum Master playbooks adopted program-wide across **20+ interface teams (400+ people)**; took **15+ interfaces LIVE** at VA Hospitals.",
+      "Migrated legacy languages to modern FHIR — crosswalked legacy systems (MUMPS) to Cerner/Oracle and built FHIR/HL7 calls from hospital systems.",
+      "Hand-coded a Python + Excel utility that cut new-interface setup from days to minutes — an estimated @@$160K@@ in annual cross-team labor savings.",
+      "Managed ATOs with security and compliance leads, maintaining **HIPAA** and **SOC2** compliance across hospital systems and patient data.",
+    ],
+    governance: ["HIPAA", "SOC2", "ATO"],
+    isCurrent: false
   },
   {
-    company: "Maximus",
-    title: "Product Engineering Manager",
+    company: "MAXIMUS",
+    title: "Technical Agile Product Delivery Lead",
     employmentType: "Full-time",
-    startDate: "Apr 2019",
-    endDate: "Apr 2020",
+    startDate: "2019",
+    endDate: "2020",
     duration: "1 yr 1 mo",
-    location: "On-site",
-    description: "Assumed leadership of Genesys Platform migration after PM departure, managing approx. 30 team members across the continental US, from On-Prem Datacenter Operators, to Security and Compliance Specialists; led AWS cloud migration for FedRAMP, PM for all MAXIMUS oral and tech presentations as part of the MAXIMUS 1B dollar BD team. Worked with VP of Agile Delivery to build out Delivery Playbooks utilized by entire organization (500+ people).",
-    skills: ["AWS", "FedRAMP", "Product Management"]
+    location: "Vienna, VA",
+    context: "Large billion-dollar GovTech & services firm",
+    bullets: [
+      "PM for Genesys FedRAMP: managed a **50-person team** spanning security, operations, data warehouse, on-prem, and AWS engineers/architects.",
+      "NIH Technical Help Desk liaison: single-handedly converted physical certification courses to online during COVID — process, testing, and videos — driving re-engagement across **6 subcontracts** (2019–2024).",
+      "Built digital and Agile strategy for a $1B company with the CTO, VP of Technology, and VP of Agile Services — playbooks used org-wide.",
+      "Served as scrum master and business analyst during tech demos and orals, building technical solutions from SME consultations.",
+    ],
+    governance: ["FedRAMP"],
+    isCurrent: false
   },
   {
-    company: "RWD Consulting, LLC",
-    title: "Technical Project Manager",
+    company: "RWD Consulting LLC",
+    title: "Proposal Manager / Technical PM",
     employmentType: "Full-time",
-    startDate: "Jan 2018",
-    endDate: "Feb 2019",
+    startDate: "2018",
+    endDate: "2019",
     duration: "1 yr 2 mos",
-    description: "Developed Federal CRM from scratch; DHS IT contracts, managed 6 FTEs; contributed to 165% revenue growth via proposal development and capture.",
-    skills: ["Federal CRM", "DHS Contracts"]
+    location: "Washington, DC",
+    context: "8(a) services firm",
+    bullets: [
+      "Proposal + capture: drove **14 contract wins**, @@165%@@ revenue growth ($8M → $21M). Submitted 30 proposals and assisted in orals.",
+      "Built a customized SharePoint platform with Flow automation to manage BD team opportunities.",
+      "Managed 6 FTEs (4 developers, 2 support) at DHS TSA in Crystal City, VA.",
+    ],
+    isCurrent: false
   },
   {
-    company: "Highlight",
-    title: "Product Owner",
+    company: "Highlight Technologies",
+    title: "Proposal Manager",
     employmentType: "Full-time",
-    startDate: "May 2016",
-    endDate: "May 2017",
+    startDate: "2016",
+    endDate: "2017",
     duration: "1 yr 1 mo",
-    description: "Owned proposal and capture products during high growth stage at Highlight. Supported 102% company growth ($10M to $20.12M), 12 contracts won; 35% increase in proposal win rate.",
-    skills: ["Capture Management", "Proposal Development"]
+    location: "Fairfax, VA",
+    context: "8(a) services firm",
+    bullets: [
+      "Drove a @@35%@@ increase in proposal win rate and supported @@102%@@ company growth ($10M → $20.12M) with **12 contract wins** — early sales-enablement and competitive-positioning at scale.",
+    ],
+    isCurrent: false
   },
   {
-    company: "Quick Services LLC (QSL)",
-    title: "Product Owner",
+    company: "Quick Services LLC",
+    title: "Proposal Manager",
     employmentType: "Full-time",
-    startDate: "Dec 2014",
-    endDate: "Dec 2015",
-    duration: "1 yr 1 mo",
-    description: "Owned the technical proposal products for the SDVOSB",
-    skills: ["Technical Proposals", "SDVOSB"]
-  },
-  {
-    company: "DRT Strategies",
-    title: "Jr Product Owner",
-    employmentType: "Full-time",
-    startDate: "Dec 2013",
-    endDate: "Dec 2014",
-    duration: "1 yr 1 mo",
-    description: "Owned the proposal product process as a jr, assisting the Director of Proposals",
-    skills: ["Proposal Process", "Capture Management"]
+    startDate: "2015",
+    endDate: "2016",
+    duration: "1 yr",
+    location: "Remote / Bozeman, MT",
+    context: "SDVOSB DoD contractor",
+    bullets: [
+      "Direct report to the VP of BD. The SDVOSB specialized in warfighter and asymmetric warfare support, with major clients at Fort Bragg, NC.",
+    ],
+    isCurrent: false
   }
+];
+
+const otherExperience = [
+  { company: "DRT Strategies", title: "Proposal Manager", dates: "2014 — 2015" },
+  { company: "CapRelo", title: "Proposal Coordinator", dates: "2013 — 2014" },
+];
+
+const coreCompetencies = [
+  "AI-Native Delivery",
+  "Agentic Tooling",
+  "Agile / Scrum",
+  "Health IT",
+  "Product Management",
+  "GTM Strategy",
+  "Capture Management",
+  "Proposal Development",
+  "Executive Strategy",
+  "Product Marketing",
+  "FedRAMP / ATO",
+  "Vendor Negotiation",
+];
+
+const techStack = [
+  "Prisma",
+  "PostgreSQL",
+  "Cloudflare",
+  "Rust / WASM",
+  "Solid.js",
+  "Next.js",
+  "Anthropic SDK",
+  "AWS GovCloud",
+  "FHIR / HL7",
+  "Supabase",
+  "Python",
+  "Claude Code",
 ];
 
 const education = [
   {
     school: "George Mason University",
-    degree: "MS, Technology Management",
-    logo: "/images/education/gmu-logo.png"
+    degree: "M.S., Technology Management",
+    detail: "Apr 2020 · 3.74 GPA",
   },
   {
     school: "Longwood University",
-    degree: "BA, English Creative Writing",
-    logo: "/images/education/longwood-logo.png"
+    degree: "B.A., English",
+    detail: "Apr 2012",
   }
 ];
 
 const certifications = [
-  "UX Master Certificate (UXMC) - Nielsen Norman Group",
-  "Product Management Certificate - Product School",
+  "AWS Certified Cloud Practitioner",
+  "Product School — PMC",
+  "Nielsen Norman Group — UXMC (~2,000 globally)",
   "SAFe 4 Practitioner",
   "ITIL v4 Foundation",
-  "FedRAMP Moderate Product Team",
-  "TryHackMe Pre-Security Certificate"
 ];
+
+const specializations = [
+  { title: "Digital Healthcare Informatics & AI", org: "Illinois Tech" },
+  { title: "AI Agents with Model Context Protocol", org: "Vanderbilt University" },
+  { title: "Supervised Machine Learning", org: "DeepLearning.AI" },
+  { title: "Algorithms & Data Structures", org: "UC San Diego" },
+  { title: "Python for Everybody", org: "University of Michigan" },
+  { title: "PostgreSQL for Everybody", org: "University of Michigan" },
+  { title: "Introduction to Computer Programming", org: "University of London" },
+  { title: "Computer Communications", org: "University of Colorado" },
+  { title: "Finance & Quantitative Modeling", org: "University of Pennsylvania" },
+  { title: "Precalculus through Data & Modeling", org: "Johns Hopkins University" },
+  { title: "Digital Marketing", org: "University of Illinois" },
+  { title: "Search Engine Optimization (SEO)", org: "UC Davis" },
+  { title: "RPA Specialization", org: "UiPath" },
+  { title: "Pre-Security Learning Path", org: "TryHackMe" },
+];
+
+const contactItems = [
+  { label: "erikk@shupp.dev", href: "mailto:erikk@shupp.dev" },
+  { label: "703-618-4953", href: "tel:+17036184953" },
+  { label: "shupp.dev", href: "https://www.shupp.dev" },
+  { label: "in/shupp-erikk", href: "https://www.linkedin.com/in/shupp-erikk" },
+  { label: "Washington, DC" },
+];
+
+// Inline emphasis: **bold** -> <strong>, @@metric@@ -> amber span
+const renderEmphasis = (s: string) =>
+  s
+    .replace(/@@(.+?)@@/g, '<span class="metric">$1</span>')
+    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
 ---
 
-<Layout title="Resume - Erikk Shupp" description="Professional resume of Erikk Shupp - Fractional CTO & Product Engineering Lead">
-  <div class="resume-container">
-    <a href="/about" class="back-link">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M19 12H5M12 19l-7-7 7-7"/>
-      </svg>
-      Back to About
-    </a>
+<Layout title="Resume - Erikk Shupp" description="Professional resume of Erikk Shupp - Sr. Technical Product Manager">
+  <div class="resume-sheet">
+    <div class="sheet-bar"></div>
 
-    <header class="resume-header">
-      <div class="profile-section">
-        <div class="profile-photo">
-          <img src="/images/about/esheadshot.jpg" alt="Erikk Shupp" />
-        </div>
-        <div class="profile-info">
-          <h1>Erikk Shupp</h1>
-          <p class="headline">Fractional CTO · Product Engineering Lead · Founder</p>
-          <p class="location">Arlington, Virginia · Remote/Hybrid</p>
-          <div class="profile-actions">
-            <a href={`mailto:erikk@shupp.dev`} class="btn btn-primary">Contact</a>
-            <a href="/portfolio" class="btn btn-secondary">Portfolio</a>
-          </div>
-        </div>
-      </div>
-    </header>
+    <div class="resume-shell">
+      <a href="/about" class="back-link">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M19 12H5M12 19l-7-7 7-7"/>
+        </svg>
+        Back to About
+      </a>
 
-    <main class="resume-content">
-      <section class="experience-section">
-        <h2>Experience</h2>
-        
-        {experiences.map((job) => (
-          <div class="experience-item">
-            <div class="company-logo">
-              {job.logo ? (
-                <img src={job.logo} alt={`${job.company} logo`} />
+      <header class="resume-header">
+        <h1 class="name">Erikk Shupp<span class="dot">.</span></h1>
+        <p class="role">Sr. Technical Product Manager</p>
+        <p class="tagline">AI-Native · Health IT · Procurement &amp; Acquisitions · Executive Strategy</p>
+
+        <div class="contact-row">
+          {contactItems.map((item) => (
+            <span class="contact-item">
+              <span class="diamond">◆</span>
+              {item.href ? (
+                <a href={item.href} target={item.href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer">{item.label}</a>
               ) : (
-                <div class="logo-placeholder">
+                <span>{item.label}</span>
+              )}
+            </span>
+          ))}
+        </div>
+
+        <p class="summary" set:html={renderEmphasis(
+          "Senior technical product manager spanning federal GovTech, health IT, and AI-native delivery. **8+ years** building enterprise GTM, modernizing clinical and EHR systems, and steering Agile programs through **FedRAMP** and **ATO** — pairing product strategy, design, and hands-on engineering."
+        )} />
+      </header>
+
+      <div class="resume-grid">
+        <main class="resume-main">
+          <section>
+            <div class="sec-head"><h2>Relevant Experience</h2></div>
+
+            {experiences.map((job, i) => (
+              <article class="exp-item">
+                <div class={`exp-logo ${i % 2 === 0 ? 'teal' : 'dark'}`}>
                   <span>{job.company.charAt(0)}</span>
                 </div>
-              )}
-            </div>
-            
-            <div class="experience-details">
-              <div class="job-header">
-                <h3 class="job-title">{job.title}</h3>
-                <p class="company-name">
-                  {job.company}
-                  <span class="separator">·</span>
-                  <span class="employment-type">{job.employmentType}</span>
-                </p>
-                <p class="date-location">
-                  {job.startDate} - {job.endDate || "Present"} · {job.duration}
-                  <span class="separator">·</span>
-                  {job.location}
-                </p>
-              </div>
-              
-              <div class="job-description">
-                <p>{job.description}</p>
-                
-                {job.stack && (
-                  <div class="tech-section">
-                    <strong>stack:</strong> {job.stack.join(", ")}
-                  </div>
-                )}
-                
-                {job.governance && (
-                  <div class="tech-section">
-                    <strong>governance:</strong> {job.governance.join(", ")}
-                  </div>
-                )}
-                
-                {job.aiTooling && (
-                  <div class="tech-section">
-                    <strong>ai tooling:</strong> {job.aiTooling.join(", ")}
-                  </div>
-                )}
-                
-                {job.website && (
-                  <a href={`https://${job.website}`} target="_blank" rel="noopener noreferrer" class="website-link">
-                    {job.website}
-                  </a>
-                )}
-              </div>
-              
-              <div class="skills-tags">
-                {job.skills.map((skill) => (
-                  <span class="skill-tag">{skill}</span>
-                ))}
-                <span class="more-skills">+{Math.floor(Math.random() * 10 + 3)} skills</span>
-              </div>
-            </div>
-          </div>
-        ))}
-      </section>
 
-      <section class="education-section">
-        <h2>Education</h2>
-        {education.map((edu) => (
-          <div class="education-item">
-            <div class="school-logo">
-              {edu.logo ? (
-                <img src={edu.logo} alt={`${edu.school} logo`} />
-              ) : (
-                <div class="logo-placeholder">
-                  <span>{edu.school.charAt(0)}</span>
+                <div class="exp-body">
+                  <div class="exp-top">
+                    <h3 class="exp-title">{job.title}</h3>
+                    <span class="exp-dates">{job.startDate} — {job.endDate || "Present"}</span>
+                  </div>
+                  <p class="exp-meta">
+                    {job.company}
+                    <span class="mid-dot">·</span>{job.employmentType}
+                    <span class="mid-dot">·</span>{job.location}
+                  </p>
+                  {job.context && (
+                    <p class="exp-context" set:html={renderEmphasis(job.context)} />
+                  )}
+
+                  {job.bullets && (
+                    <ul class="exp-bullets">
+                      {job.bullets.map((b) => (
+                        <li set:html={renderEmphasis(b)} />
+                      ))}
+                    </ul>
+                  )}
+
+                  {job.governance && (
+                    <p class="exp-gov">
+                      <span class="gov-label">governance</span>
+                      {job.governance.map((g) => (
+                        <span class="gov-chip">{g}</span>
+                      ))}
+                    </p>
+                  )}
                 </div>
-              )}
-            </div>
-            <div class="education-details">
-              <h3>{edu.school}</h3>
-              <p class="degree">{edu.degree}</p>
-            </div>
-          </div>
-        ))}
-      </section>
+              </article>
+            ))}
+          </section>
 
-      <section class="certifications-section">
-        <h2>Licenses & Certifications</h2>
-        <div class="certifications-list">
-          {certifications.map((cert) => (
-            <div class="certification-item">
-              <Icon name="Certificate" size={20} weight="duotone" />
-              <span>{cert}</span>
+          <section class="other-exp">
+            <div class="sec-head"><h2>Other Experience</h2></div>
+            {otherExperience.map((item) => (
+              <article class="exp-item compact">
+                <div class="exp-logo dark"><span>{item.company.charAt(0)}</span></div>
+                <div class="exp-body">
+                  <h3 class="exp-title small">{item.title}</h3>
+                  <p class="exp-meta">{item.company}<span class="mid-dot">·</span>{item.dates}</p>
+                </div>
+              </article>
+            ))}
+          </section>
+        </main>
+
+        <aside class="resume-aside">
+          <section class="aside-block">
+            <h4 class="aside-head">Core</h4>
+            <div class="pill-cloud">
+              {coreCompetencies.map((c) => (
+                <span class="pill core">{c}</span>
+              ))}
+            </div>
+          </section>
+
+          <section class="aside-block">
+            <h4 class="aside-head">Tech</h4>
+            <div class="pill-cloud">
+              {techStack.map((t) => (
+                <span class="pill">{t}</span>
+              ))}
+            </div>
+          </section>
+
+          <section class="aside-block">
+            <h4 class="aside-head">Education</h4>
+            {education.map((edu) => (
+              <div class="edu-item">
+                <p class="edu-degree">{edu.degree}</p>
+                <p class="edu-meta">{edu.school}</p>
+                <p class="edu-meta light">{edu.detail}</p>
+              </div>
+            ))}
+          </section>
+
+          <section class="aside-block">
+            <h4 class="aside-head">Certifications</h4>
+            <ul class="cert-list">
+              {certifications.map((cert) => (
+                <li><span class="diamond">◆</span>{cert}</li>
+              ))}
+            </ul>
+          </section>
+        </aside>
+      </div>
+
+      <section class="spec-section">
+        <div class="sec-head"><h2>Specializations</h2></div>
+        <div class="spec-grid">
+          {specializations.map((s) => (
+            <div class="spec-card">
+              <p class="spec-title">{s.title}</p>
+              <p class="spec-org">{s.org}</p>
             </div>
           ))}
         </div>
       </section>
-    </main>
 
-    <footer class="resume-footer">
-      <div class="resume-actions">
-        <button class="btn btn-primary" onclick="window.print()">
-          <Icon name="Printer" size={18} weight="duotone" />
-          Print
-        </button>
-        <a href="/api/resume.pdf" class="btn btn-secondary">
-          <Icon name="Download" size={18} weight="duotone" />
-          Download PDF
-        </a>
-      </div>
-    </footer>
+      <footer class="resume-footer">
+        <div class="resume-actions">
+          <button class="btn btn-primary" onclick="window.print()">
+            <Icon name="Printer" size={18} weight="duotone" />
+            Print
+          </button>
+          <a href="/api/resume.pdf" class="btn btn-secondary">
+            <Icon name="Download" size={18} weight="duotone" />
+            Download PDF
+          </a>
+        </div>
+      </footer>
+    </div>
   </div>
 </Layout>
 
 <style>
-  .resume-container {
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 2rem 3rem;
+  /* Load editorial typefaces matching the PDF (slab name + serif body + mono labels) */
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Roboto+Slab:wght@600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap');
+
+  .resume-sheet {
+    /* Resume-scoped palette (warm, editorial) */
+    --r-bg: #f5f3ec;
+    --r-surface: #faf8f2;
+    --r-ink: #262420;
+    --r-muted: #6f6d65;
+    --r-teal: #5f7d80;
+    --r-teal-soft: rgba(95, 125, 128, 0.10);
+    --r-teal-line: rgba(95, 125, 128, 0.28);
+    --r-amber: #bd6f31;
+    --r-border: #ddd8cb;
+    --r-dash: rgba(95, 125, 128, 0.22);
+
+    --r-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
+    --r-slab: 'Roboto Slab', 'Source Serif 4', Georgia, serif;
+    --r-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    background: var(--r-bg);
+    color: var(--r-ink);
+    min-height: 100vh;
+    margin: -2rem 0;
+    padding: 0;
   }
 
-  @media (min-width: 1200px) {
-    .resume-container {
-      padding: 2rem 4rem;
-    }
+  html.dark .resume-sheet {
+    --r-bg: #1b1a17;
+    --r-surface: #232220;
+    --r-ink: #e9e6df;
+    --r-muted: #a29f96;
+    --r-teal: #8fb1b3;
+    --r-teal-soft: rgba(143, 177, 179, 0.10);
+    --r-teal-line: rgba(143, 177, 179, 0.28);
+    --r-amber: #d9985a;
+    --r-border: #353330;
+    --r-dash: rgba(143, 177, 179, 0.22);
+  }
+
+  .sheet-bar {
+    height: 6px;
+    background: linear-gradient(90deg, var(--r-teal), color-mix(in srgb, var(--r-teal) 55%, #34484a));
+  }
+
+  .resume-shell {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 2rem 3rem 3.5rem;
   }
 
   /* Back Link */
@@ -334,471 +463,377 @@ const certifications = [
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    color: var(--text-light);
+    color: var(--r-muted);
     text-decoration: none;
-    font-size: 0.9rem;
-    font-weight: 500;
-    margin-bottom: 1.5rem;
-    padding: 0.5rem 0;
-    transition: color 0.2s ease;
+    font-family: var(--r-mono);
+    font-size: 0.78rem;
+    letter-spacing: 0.04em;
+    margin-bottom: 2rem;
+    transition: color 0.2s ease, transform 0.2s ease;
   }
-
-  .back-link:hover {
-    color: var(--color-tertiary);
-  }
-
-  .back-link svg {
-    transition: transform 0.2s ease;
-  }
-
-  .back-link:hover svg {
-    transform: translateX(-3px);
-  }
-
-  html.dark .back-link {
-    color: #a5a5b5;
-  }
-
-  html.dark .back-link:hover {
-    color: var(--color-accent);
-  }
+  .back-link:hover { color: var(--r-teal); }
+  .back-link:hover svg { transform: translateX(-3px); }
+  .back-link svg { transition: transform 0.2s ease; }
 
   /* Header */
-  .resume-header {
-    margin-bottom: 2rem;
-    max-width: 1200px;
-    margin-left: auto;
-    margin-right: auto;
+  .resume-header { margin-bottom: 2.25rem; }
+
+  .name {
+    font-family: var(--r-slab);
+    font-weight: 800;
+    font-size: clamp(2.6rem, 6vw, 4rem);
+    line-height: 1;
+    letter-spacing: -0.02em;
+    color: var(--r-ink);
+    margin: 0 0 0.5rem;
+  }
+  .name .dot { color: var(--r-teal); }
+
+  .role {
+    font-family: var(--r-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.22em;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--r-teal);
+    margin: 0 0 0.5rem;
   }
 
-  .profile-section {
-    display: flex;
-    gap: 2rem;
-    align-items: flex-start;
+  .tagline {
+    font-family: var(--r-mono);
+    font-size: 0.82rem;
+    letter-spacing: 0.02em;
+    color: var(--r-muted);
+    margin: 0 0 1.1rem;
   }
 
-  .profile-photo {
-    width: 140px;
-    height: 140px;
-    border-radius: 50%;
-    overflow: hidden;
-    flex-shrink: 0;
-    border: 3px solid var(--color-accent);
-  }
-
-  .profile-photo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .profile-info h1 {
-    font-size: 1.75rem;
-    font-weight: 700;
-    margin: 0 0 0.35rem;
-    color: var(--text-color);
-  }
-
-  .headline {
-    font-size: 1rem;
-    color: var(--text-color);
-    margin: 0 0 0.35rem;
-  }
-
-  .location {
-    font-size: 0.9rem;
-    color: var(--text-light);
-    margin: 0 0 1rem;
-  }
-
-  .profile-actions {
-    display: flex;
-    gap: 0.75rem;
-  }
-
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.25rem;
-    border-radius: 30px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    cursor: pointer;
-    border: none;
-    font-family: var(--font-secondary-header);
-  }
-
-  .btn-primary {
-    background: var(--color-tertiary);
-    color: white;
-  }
-
-  .btn-primary:hover {
-    background: var(--color-accent);
-    color: var(--color-dark);
-    transform: translateY(-2px);
-  }
-
-  .btn-secondary {
-    background: transparent;
-    color: var(--color-tertiary);
-    border: 2px solid var(--color-tertiary);
-  }
-
-  .btn-secondary:hover {
-    background: var(--color-tertiary);
-    color: white;
-    transform: translateY(-2px);
-  }
-
-  html.dark .btn-secondary {
-    color: var(--color-accent);
-    border-color: var(--color-accent);
-  }
-
-  html.dark .btn-secondary:hover {
-    background: var(--color-accent);
-    color: var(--color-dark);
-  }
-
-  /* Content Sections */
-  .resume-content {
-    display: flex;
-    flex-direction: column;
-    gap: 2.5rem;
-    max-width: 1200px;
-    margin: 0 auto;
-    width: 100%;
-  }
-
-  section h2 {
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: var(--text-color);
-    margin: 0 0 1.5rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 2px solid var(--border-color);
-  }
-
-  /* Experience Items */
-  .experience-item {
-    display: grid;
-    grid-template-columns: 56px 1fr;
-    gap: 1.25rem;
-    margin-bottom: 2rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid rgba(121, 148, 150, 0.1);
-  }
-
-  .experience-item:last-child {
-    border-bottom: none;
-    margin-bottom: 0;
-    padding-bottom: 0;
-  }
-
-  .company-logo {
-    width: 56px;
-    height: 56px;
-    border-radius: 8px;
-    overflow: hidden;
-    flex-shrink: 0;
-    background: var(--background-alt);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .company-logo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .logo-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--color-tertiary), var(--color-accent));
-    color: white;
-    font-weight: 700;
-    font-size: 1.25rem;
-  }
-
-  .experience-details {
-    flex: 1;
-    min-width: 0;
-  }
-
-  .job-header {
-    margin-bottom: 0.75rem;
-  }
-
-  .job-title {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-color);
-    margin: 0 0 0.25rem;
-  }
-
-  .company-name {
-    font-size: 0.95rem;
-    color: var(--text-color);
-    margin: 0 0 0.15rem;
-  }
-
-  .separator {
-    color: var(--text-light);
-    margin: 0 0.35rem;
-  }
-
-  .employment-type {
-    color: var(--text-light);
-  }
-
-  .date-location {
-    font-size: 0.85rem;
-    color: var(--text-light);
-    margin: 0;
-  }
-
-  .job-description {
-    margin-bottom: 1rem;
-  }
-
-  .job-description p {
-    font-size: 1rem;
-    line-height: 1.7;
-    color: var(--text-color);
-    margin: 0 0 1rem;
-    max-width: 900px;
-  }
-
-  .tech-section {
-    font-size: 0.9rem;
-    color: var(--text-light);
-    margin-bottom: 0.5rem;
-    line-height: 1.6;
-    max-width: 900px;
-  }
-
-  .tech-section strong {
-    color: var(--color-tertiary);
-    font-weight: 600;
-  }
-
-  html.dark .tech-section strong {
-    color: var(--color-accent);
-  }
-
-  .website-link {
-    display: inline-block;
-    color: var(--color-tertiary);
-    font-size: 0.9rem;
-    text-decoration: none;
-    margin-top: 0.5rem;
-  }
-
-  .website-link:hover {
-    text-decoration: underline;
-  }
-
-  html.dark .website-link {
-    color: var(--color-accent);
-  }
-
-  .skills-tags {
+  .contact-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.5rem;
-    align-items: center;
-  }
-
-  .skill-tag {
-    display: inline-block;
-    padding: 0.35rem 0.75rem;
-    background: rgba(121, 148, 150, 0.1);
-    border-radius: 4px;
-    font-size: 0.8rem;
-    color: var(--text-light);
-    font-weight: 500;
-  }
-
-  html.dark .skill-tag {
-    background: rgba(233, 235, 158, 0.1);
-    color: #a5a5b5;
-  }
-
-  .more-skills {
-    font-size: 0.8rem;
-    color: var(--color-tertiary);
-    font-weight: 500;
-  }
-
-  html.dark .more-skills {
-    color: var(--color-accent);
-  }
-
-  /* Education */
-  .education-item {
-    display: flex;
-    gap: 1rem;
+    gap: 0.4rem 1.1rem;
+    font-family: var(--r-mono);
+    font-size: 0.82rem;
     margin-bottom: 1.5rem;
   }
+  .contact-item { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--r-ink); }
+  .contact-item a { color: var(--r-ink); text-decoration: none; }
+  .contact-item a:hover { color: var(--r-teal); text-decoration: underline; }
+  .diamond { color: var(--r-teal); font-size: 0.6rem; line-height: 1; }
 
-  .school-logo {
-    width: 56px;
-    height: 56px;
-    border-radius: 8px;
-    overflow: hidden;
-    flex-shrink: 0;
-    background: var(--background-alt);
+  .summary {
+    font-family: var(--r-serif);
+    font-size: 1.08rem;
+    line-height: 1.7;
+    color: var(--r-ink);
+    max-width: 760px;
+    margin: 0;
+  }
+  .summary :global(strong) { font-weight: 700; }
+
+  /* Shared emphasis */
+  .resume-sheet :global(strong) { color: var(--r-ink); font-weight: 700; }
+  .resume-sheet :global(.metric) {
+    font-family: var(--r-mono);
+    font-weight: 700;
+    font-size: 0.92em;
+    color: var(--r-amber);
+  }
+
+  /* Grid */
+  .resume-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 3rem;
+    margin-top: 2.5rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--r-border);
+    position: relative;
+  }
+  .resume-aside {
+    border-left: 1px solid var(--r-border);
+    padding-left: 2.25rem;
+  }
+
+  /* Section heads */
+  .sec-head {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.75rem;
+  }
+  .sec-head h2 {
+    font-family: var(--r-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--r-teal);
+    margin: 0;
+    white-space: nowrap;
+  }
+  .sec-head::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--r-teal-line);
+  }
+
+  /* Experience */
+  .exp-item {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 1.1rem;
+    padding-bottom: 1.6rem;
+    margin-bottom: 1.6rem;
+    border-bottom: 1px dashed var(--r-dash);
+  }
+  .exp-item:last-child { border-bottom: none; margin-bottom: 0; }
+  .exp-item.compact { padding-bottom: 1.1rem; margin-bottom: 1.1rem; }
+
+  .exp-logo {
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-
-  .school-logo img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .education-details h3 {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: var(--text-color);
-    margin: 0 0 0.25rem;
-  }
-
-  .degree {
-    font-size: 0.95rem;
-    color: var(--text-color);
-    margin: 0 0 0.15rem;
-  }
-
-  /* Certifications */
-  .certifications-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-  }
-
-  .certification-item {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.75rem;
-    background: rgba(121, 148, 150, 0.05);
-    border-radius: 8px;
-    font-size: 0.9rem;
-    color: var(--text-color);
-  }
-
-  .certification-item svg {
-    color: var(--color-tertiary);
+    font-family: var(--r-slab);
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: #f7f5ef;
     flex-shrink: 0;
   }
+  .exp-logo.teal { background: var(--r-teal); }
+  .exp-logo.dark { background: #34322d; }
+  html.dark .exp-logo.dark { background: #45433d; }
 
-  html.dark .certification-item {
-    background: rgba(233, 235, 158, 0.05);
+  .exp-body { min-width: 0; }
+  .exp-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  .exp-title {
+    font-family: var(--r-serif);
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--r-ink);
+    margin: 0;
+    line-height: 1.2;
+  }
+  .exp-title.small { font-size: 1.1rem; }
+  .exp-dates {
+    font-family: var(--r-mono);
+    font-size: 0.78rem;
+    color: var(--r-muted);
+    white-space: nowrap;
+  }
+  .exp-meta {
+    font-family: var(--r-mono);
+    font-size: 0.78rem;
+    color: var(--r-teal);
+    margin: 0.3rem 0 0;
+  }
+  .mid-dot { color: var(--r-muted); margin: 0 0.45rem; opacity: 0.7; }
+
+  .exp-context {
+    font-family: var(--r-serif);
+    font-style: italic;
+    font-size: 0.92rem;
+    color: var(--r-muted);
+    margin: 0.55rem 0 0.65rem;
   }
 
-  html.dark .certification-item svg {
-    color: var(--color-accent);
+  .exp-bullets {
+    margin: 0.65rem 0 0;
+    padding: 0;
+    list-style: none;
+  }
+  .exp-bullets li {
+    position: relative;
+    padding-left: 1.25rem;
+    font-family: var(--r-serif);
+    font-size: 0.98rem;
+    line-height: 1.6;
+    color: var(--r-ink);
+    margin-bottom: 0.45rem;
+    max-width: 760px;
+  }
+  .exp-bullets li::before {
+    content: '◆';
+    position: absolute;
+    left: 0;
+    top: 0.05em;
+    font-size: 0.55rem;
+    color: var(--r-teal);
+  }
+
+  .exp-gov {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 0.85rem 0 0;
+  }
+  .gov-label {
+    font-family: var(--r-mono);
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: var(--r-muted);
+    margin-right: 0.25rem;
+  }
+  .gov-chip {
+    font-family: var(--r-mono);
+    font-size: 0.68rem;
+    padding: 0.18rem 0.5rem;
+    border: 1px solid var(--r-teal-line);
+    border-radius: 5px;
+    color: var(--r-teal);
+    background: var(--r-teal-soft);
+  }
+
+  /* Aside */
+  .aside-block { margin-bottom: 2rem; }
+  .aside-head {
+    font-family: var(--r-mono);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--r-teal);
+    margin: 0 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--r-teal-line);
+  }
+
+  .pill-cloud { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+  .pill {
+    font-family: var(--r-mono);
+    font-size: 0.72rem;
+    padding: 0.32rem 0.6rem;
+    border: 1px solid var(--r-border);
+    border-radius: 6px;
+    background: var(--r-surface);
+    color: var(--r-ink);
+  }
+  .pill.core {
+    background: var(--r-teal-soft);
+    border-color: var(--r-teal-line);
+    color: var(--r-teal);
+  }
+
+  .edu-item { margin-bottom: 1.1rem; }
+  .edu-item:last-child { margin-bottom: 0; }
+  .edu-degree {
+    font-family: var(--r-serif);
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--r-ink);
+    margin: 0 0 0.2rem;
+  }
+  .edu-meta {
+    font-family: var(--r-mono);
+    font-size: 0.76rem;
+    color: var(--r-muted);
+    margin: 0;
+  }
+  .edu-meta.light { opacity: 0.8; margin-top: 0.15rem; }
+
+  .cert-list { list-style: none; margin: 0; padding: 0; }
+  .cert-list li {
+    display: flex;
+    align-items: baseline;
+    gap: 0.55rem;
+    font-family: var(--r-mono);
+    font-size: 0.76rem;
+    line-height: 1.4;
+    color: var(--r-ink);
+    margin-bottom: 0.6rem;
+  }
+
+  /* Specializations */
+  .spec-section {
+    margin-top: 3rem;
+    padding-top: 2.5rem;
+    border-top: 1px solid var(--r-border);
+  }
+  .spec-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.85rem;
+  }
+  .spec-card {
+    background: var(--r-surface);
+    border: 1px solid var(--r-border);
+    border-left: 3px solid var(--r-teal);
+    border-radius: 8px;
+    padding: 0.85rem 1rem;
+  }
+  .spec-title {
+    font-family: var(--r-serif);
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--r-ink);
+    margin: 0 0 0.2rem;
+    line-height: 1.25;
+  }
+  .spec-org {
+    font-family: var(--r-mono);
+    font-size: 0.74rem;
+    color: var(--r-muted);
+    margin: 0;
   }
 
   /* Footer */
   .resume-footer {
     margin-top: 3rem;
     padding-top: 2rem;
-    border-top: 1px solid var(--border-color);
+    border-top: 1px solid var(--r-border);
   }
-
-  .resume-actions {
-    display: flex;
-    justify-content: center;
-    gap: 1rem;
+  .resume-actions { display: flex; justify-content: center; gap: 1rem; }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1.4rem;
+    border-radius: 30px;
+    font-family: var(--r-mono);
+    font-size: 0.82rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    text-decoration: none;
+    cursor: pointer;
+    border: none;
+    transition: all 0.25s ease;
   }
+  .btn-primary { background: var(--r-teal); color: #f7f5ef; }
+  .btn-primary:hover { transform: translateY(-2px); filter: brightness(1.08); }
+  .btn-secondary { background: transparent; color: var(--r-teal); border: 1.5px solid var(--r-teal); }
+  .btn-secondary:hover { background: var(--r-teal); color: #f7f5ef; transform: translateY(-2px); }
 
-  /* Print Styles */
+  /* Print */
   @media print {
-    .resume-container {
-      padding: 0;
-      max-width: 100%;
-    }
-
-    .back-link,
-    .resume-footer {
-      display: none;
-    }
-
-    .profile-actions {
-      display: none;
-    }
+    .resume-sheet { margin: 0; background: #ffffff; }
+    .back-link, .resume-footer { display: none; }
+    .resume-shell { padding: 1rem 1.5rem; max-width: 100%; }
+    .spec-section, .resume-grid { page-break-inside: auto; }
+    .exp-item { page-break-inside: avoid; }
   }
 
   /* Responsive */
-  @media (max-width: 768px) {
-    .resume-container {
-      padding: 1.5rem 1.5rem;
-    }
-
-    .profile-section {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-
-    .profile-photo {
-      width: 120px;
-      height: 120px;
-    }
-
-    .profile-info h1 {
-      font-size: 1.5rem;
-    }
-
-    .profile-actions {
-      justify-content: center;
-    }
-
-    .experience-item {
-      grid-template-columns: 48px 1fr;
-      gap: 1rem;
-    }
-
-    .company-logo {
-      width: 48px;
-      height: 48px;
-    }
-
-    .education-item {
-      gap: 1rem;
-    }
-
-    .school-logo {
-      width: 48px;
-      height: 48px;
-    }
-
-    .job-description p {
-      font-size: 0.95rem;
-    }
+  @media (max-width: 900px) {
+    .resume-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+    .resume-aside { border-left: none; padding-left: 0; border-top: 1px solid var(--r-border); padding-top: 2rem; }
   }
 
-  @media (max-width: 480px) {
-    .resume-container {
-      padding: 1.5rem 1rem;
-    }
-
-    .profile-photo {
-      width: 100px;
-      height: 100px;
-    }
+  @media (max-width: 640px) {
+    .resume-shell { padding: 1.5rem 1.25rem 2.5rem; }
+    .exp-item { grid-template-columns: 42px 1fr; gap: 0.85rem; }
+    .exp-logo { width: 42px; height: 42px; border-radius: 11px; font-size: 1.1rem; }
+    .exp-top { gap: 0.25rem; }
+    .summary { font-size: 1rem; }
   }
 </style>
