@@ -11,167 +11,210 @@ interface ExperienceItem {
   endDate?: string;
   duration: string;
   location: string;
-  description: string;
+  description?: string;
+  bullets?: string[];
   stack?: string[];
   governance?: string[];
   aiTooling?: string[];
   skills: string[];
   isCurrent?: boolean;
+  website?: string;
 }
 
 const experiences: ExperienceItem[] = [
   {
+    company: "A-Frame Solutions",
+    title: "AI Product Manager / GTM",
+    employmentType: "Contract",
+    startDate: "Mar 2025",
+    endDate: "June 2026",
+    duration: "1 yr 3 mos",
+    location: "Arlington, VA",
+    description: "ArcSuiteAI ($5.4M ARR) — AI procurement-lifecycle SaaS for federal agencies",
+    bullets: [
+      "Project Management: managed daily scrums, product backlog discussions for an 11-person Agile pod through FedRAMP Moderate and IRS ATO.",
+      "AI Strategy and Implementation: two junior developers had a very old-school setup and didn't understand how to use coding agents. Shared tooling options such as TUI-based agents in a multi-terminal layout (OpenCode, Claude Code) to augment their Cursor workflows — developers were then developing at light-speed. Performed research on platforms, prompt engineering, context usage, and RAG implementations using Pinecone/GraphRAG.",
+      "Product Design & Branding: for the ArcSuiteAI line (ArcCompose, ArcInsight, ArcTracker, ArcSelect, ArcPropose) — wrote the messaging architecture, built the design system, and developed the content strategy that anchors enterprise conversations.",
+      "Code Development: using agentic tools, created 20+ PRs to help the development team. Developed in TypeScript and Rust/WASM. Worked with Prisma → Postgres DB → AWS GovCloud.",
+      "Product Marketing Management: grew LinkedIn following 16x in two weeks (12 → 200) including a viral thought-leadership piece critiquing AI hype culture, plus product feature walkthroughs. B2G metrics confirmed the tone and positioning resonated vs. competitors.",
+      "Vendor Pricing Analysis: negotiated a FedRAMP partner from $250K to $155K (38% savings) — willingness-to-pay analysis informing internal pricing strategy.",
+      "VC Outreach & Liaison: created the VC outreach strategy for angel investors and potential investors. Leadership's overvaluation of the current product led the three founders to pivot to personal financing and bootstrapping.",
+    ],
+    stack: ["Next.js", "Prisma", "Postgres", "AWS GovCloud (Cognito, S3, ECS, SQS)", "Rust/WASM"],
+    aiTooling: ["Cursor", "Claude Code", "Opencode", "Warp Terminal", "AWS Bedrock", "Anthropic SDK"],
+    governance: ["FedRAMP Moderate", "IRS ATO"],
+    skills: ["AI Strategy", "Product Management", "GTM", "Product Marketing", "Agile / Scrum"],
+    isCurrent: false
+  },
+  {
     company: "Disca",
     title: "Fractional CTO",
     employmentType: "Contract",
-    startDate: "Jan 2026",
-    duration: "5 mos",
-    location: "Phoenix, Arizona, United States · Remote",
-    description: "Working with healthcare client, advising them on mvp application rebuild of legacy product.",
-    stack: ["React w/ MUI", "Vite", "Supabase", "Supabase Auth", "Docker", "Graphile (workers)", "Vercel", "AWS Healthlake", "FHIR"],
-    governance: ["HIPPA", "FISMA"],
-    aiTooling: ["Opencode", "Claude", "Warp Terminal"],
-    skills: ["Visual Design", "Agile Project Management"],
-    isCurrent: true
-  },
-  {
-    company: "A-Frame Solutions",
-    title: "Product Engineering Lead",
-    employmentType: "Contract",
     startDate: "Mar 2025",
-    duration: "1 yr 3 mos",
-    location: "Remote",
-    description: "Lead product development, development teams, product marketing, marketing, SEO, design and vendor management/negotiations for ArcSuiteAI and ArcProcure, a $5.4M ARR SaaS product, orchestrating cross-functional teams through FedRAMP and IRS ATO processes.",
-    stack: ["Next.js", "Prisma", "AWS GovCloud + Auth + Storage + Monitoring (Cognito, S3, PostGres, ECS, Queue, etc)"],
-    aiTooling: ["Cursor", "Claude Code", "Opencode", "Warp Terminal", "GovCloud AWS Bedrock", "Anthropic SDK"],
-    governance: ["FedRAMP Moderate"],
-    skills: ["Software Product Management", "Product Operations"],
-    isCurrent: true
-  },
-  {
-    company: "Thoughtful App Co.",
-    title: "Founder",
-    employmentType: "Self-employed",
-    startDate: "Jan 2026",
-    duration: "5 mos",
-    location: "United States · Remote",
-    description: "One agentic-fueled person doing growth, marketing, executive, development and design in his free time to developer local-first, human-first web apps that help people. Providing open-source context libraries to help people prompt llms better.",
-    stack: ["Rust + WASM", "Solid.js", "Cloudflare (R2,D1,KV, Queue, Workers)", "taco-sync"],
-    aiTooling: ["Warp → Opencode (custom agents) → Fireworks.AI"],
-    skills: ["Digital Strategy", "Product Operations"],
-    website: "thoughtfulapp.co",
+    duration: "Present",
+    location: "Remote / Phoenix, AZ",
+    description: "Clinical Trial Management Client",
+    bullets: [
+      "Working with 3 developers and two SMEs to build a Clinical Trials Data Platform.",
+      "Orchestrate meetings and demos with the business owner to showcase product features and value.",
+      "Provide strategy, insight, direction, and technical architecture to developers to build better products.",
+      "Provide executive strategy across growth, operations, product, and marketing vectors.",
+    ],
+    stack: ["React w/ MUI", "Vite", "Supabase", "Supabase Auth", "Docker", "Graphile Workers", "Vercel", "AWS Healthlake", "FHIR"],
+    aiTooling: ["Opencode", "Claude", "Warp Terminal"],
+    governance: ["HIPAA", "FISMA"],
+    skills: ["Executive Strategy", "Technical Architecture", "Clinical Informatics", "Agile Project Management"],
     isCurrent: true
   },
   {
     company: "Nodetus Integrators LLC",
-    title: "Founder",
-    employmentType: "Full-time",
-    startDate: "Feb 2017",
+    title: "Founder & Managing Director",
+    employmentType: "Self-employed",
+    startDate: "Jan 2017",
     endDate: "Present",
-    duration: "9 yrs 4 mos",
-    location: "Arlington, Virginia, United States · Hybrid",
-    description: "Clients: Maximus Federal, Sprezzatura, A-Frame Solutions, Disca, IME, AFS",
-    skills: ["Product Development", "Business Strategy"]
+    duration: "8+ yrs",
+    location: "Arlington, VA",
+    description: "AI services firm; federal B2B",
+    bullets: [
+      "Built enterprise GTM from zero: $1.1M+ cumulative revenue (six subcontracts), 40% YoY growth, 90% renewal rate over 8+ years with 2.5 FTE peak headcount.",
+      "Clients: Disca, Sprezzatura, A-Frame Solutions, MAXIMUS, IME, AFI.",
+      "Worked with HHS, NIH, Commerce, IRS.",
+      "Active participation at ACT-IAC community (Acquisitions and Project Management COIs).",
+    ],
+    skills: ["Business Development", "Federal Contracting", "Executive Strategy", "GTM"],
+    isCurrent: true
   },
   {
-    company: "Tria Federal (Tria)",
-    title: "Sr Technical Project Manager",
-    employmentType: "Full-time",
-    startDate: "Apr 2023",
-    endDate: "Mar 2025",
-    duration: "2 yrs",
-    location: "Arlington, VA · Remote",
-    description: "Worked on the Cerner -> Oracle EHRM project for the VA. Managed over 15 interfaces",
-    skills: ["Agile Project Management", "Scrum"]
-  },
-  {
-    company: "Tria Federal (Tria)",
-    title: "Project Manager Scrum Master",
+    company: "Tria Federal",
+    title: "Sr. Technical Project Manager",
     employmentType: "Full-time",
     startDate: "Apr 2020",
-    endDate: "Apr 2023",
-    duration: "3 yrs 1 mo",
-    location: "Remote",
-    description: "Managed interface teams from Oracle (formerly Cerner) on VA EHRM project as teams configured/migrated to modern HL7/FHIR interfaces from legacy systems.",
-    skills: ["Agile Project Management", "Scrum"]
+    endDate: "Mar 2025",
+    duration: "5 yrs",
+    location: "Arlington, VA · Remote",
+    description: "VA EHR Modernization, multi-vendor program",
+    bullets: [
+      "Authored Scrum Master playbooks adopted program-wide: content used by peers across 20+ interface teams (400+ people); coordinated across organizational boundaries on a multi-vendor enterprise program. Took 15+ interfaces LIVE at VA Hospitals.",
+      "Worked on migrating legacy languages to modern FHIR — crosswalked legacy systems (MUMS) to Cerner/Oracle products and created FHIR/HL7 calls to Oracle's products from hospital systems.",
+      "Hand-coded a utility for the Oracle team: new-interface setups were taking scrum masters literal days; built a Python + Excel automation utility that reduced project setup from hours to minutes. Estimated $160K annually in cross-team labor savings — code-driven workflow optimization within authorized technology boundaries.",
+      "ATO Management: worked with security leads and compliance officers to ensure proper authorizations on hospital systems and informatics platforms, maintaining HIPAA and SOC2 compliance.",
+    ],
+    skills: ["Agile Project Management", "Scrum", "FHIR / HL7", "Python", "ATO / Compliance", "VA EHRM"],
+    isCurrent: false
   },
   {
-    company: "Maximus",
-    title: "Product Engineering Manager",
+    company: "MAXIMUS",
+    title: "Technical Agile Product Delivery Lead",
     employmentType: "Full-time",
-    startDate: "Apr 2019",
-    endDate: "Apr 2020",
+    startDate: "2019",
+    endDate: "2020",
     duration: "1 yr 1 mo",
-    location: "On-site",
-    description: "Assumed leadership of Genesys Platform migration after PM departure, managing approx. 30 team members across the continental US, from On-Prem Datacenter Operators, to Security and Compliance Specialists; led AWS cloud migration for FedRAMP, PM for all MAXIMUS oral and tech presentations as part of the MAXIMUS 1B dollar BD team. Worked with VP of Agile Delivery to build out Delivery Playbooks utilized by entire organization (500+ people).",
-    skills: ["AWS", "FedRAMP", "Product Management"]
+    location: "Vienna, VA",
+    description: "Large Billion-Dollar GovTech & Services Firm",
+    bullets: [
+      "Project Manager for Genesys FedRAMP: managed 50-person team (security, operations, data warehouse, on-premises, AWS engineers and architects, Genesys Platform external teams and solutions architects).",
+      "NIH Technical Help Desk: served as liaison for the NIH Help Desk contract. During COVID, single-handedly converted physical certification courses to online format — created the entire process, testing, and online videos. This led to continuous re-engagement from 2019 to 2024 across 6 subcontracts to NIH OAMP.",
+      "Digital and Agile Strategy for $1B company: worked directly with CTO, VP of Technology, and VP of Agile Services to develop playbooks and service marketing deliverables. Developed high-level strategy utilized across the organization.",
+      "Orals and Proposal Support: designated scrum master and business analyst during tech demos and orals; built technical solutions by consulting SMEs on proposal bids and volumes.",
+    ],
+    skills: ["FedRAMP", "AWS", "Product Management", "Agile Delivery", "Proposal / Orals"],
+    isCurrent: false
   },
   {
-    company: "RWD Consulting, LLC",
-    title: "Technical Project Manager",
+    company: "RWD Consulting LLC",
+    title: "Proposal Manager / Technical Project Manager",
     employmentType: "Full-time",
-    startDate: "Jan 2018",
-    endDate: "Feb 2019",
+    startDate: "2018",
+    endDate: "2019",
     duration: "1 yr 2 mos",
-    description: "Developed Federal CRM from scratch; DHS IT contracts, managed 6 FTEs; contributed to 165% revenue growth via proposal development and capture.",
-    skills: ["Federal CRM", "DHS Contracts"]
+    location: "Washington, DC",
+    description: "8a Services Firm",
+    bullets: [
+      "Proposal + Capture: drove 14 contract wins, 165% revenue growth, 90% user adoption ($8M → $21M). Built a customized SharePoint platform using Flow automation to manage BD team opportunities. Submitted 30 proposals and assisted in orals.",
+      "Project Manager: managed a team of 6 FTEs (4 developers and 2 support roles) at DHS TSA in Crystal City, VA.",
+    ],
+    skills: ["Capture Management", "Proposal Development", "DHS Contracts", "SharePoint"],
+    isCurrent: false
   },
   {
-    company: "Highlight",
-    title: "Product Owner",
+    company: "Highlight Technologies",
+    title: "Proposal Manager",
     employmentType: "Full-time",
-    startDate: "May 2016",
-    endDate: "May 2017",
+    startDate: "2016",
+    endDate: "2017",
     duration: "1 yr 1 mo",
-    description: "Owned proposal and capture products during high growth stage at Highlight. Supported 102% company growth ($10M to $20.12M), 12 contracts won; 35% increase in proposal win rate.",
-    skills: ["Capture Management", "Proposal Development"]
+    location: "Fairfax, VA",
+    description: "8a Services Firm",
+    bullets: [
+      "Drove a 35% increase in proposal win rate and supported 102% company growth ($10M → $20.12M) with 12 contract wins — early sales-enablement and competitive-positioning work at scale.",
+    ],
+    skills: ["Proposal Development", "Competitive Positioning", "Capture Management"],
+    isCurrent: false
   },
   {
-    company: "Quick Services LLC (QSL)",
-    title: "Product Owner",
+    company: "Quick Services LLC",
+    title: "Proposal Manager",
     employmentType: "Full-time",
-    startDate: "Dec 2014",
-    endDate: "Dec 2015",
-    duration: "1 yr 1 mo",
-    description: "Owned the technical proposal products for the SDVOSB",
-    skills: ["Technical Proposals", "SDVOSB"]
-  },
-  {
-    company: "DRT Strategies",
-    title: "Jr Product Owner",
-    employmentType: "Full-time",
-    startDate: "Dec 2013",
-    endDate: "Dec 2014",
-    duration: "1 yr 1 mo",
-    description: "Owned the proposal product process as a jr, assisting the Director of Proposals",
-    skills: ["Proposal Process", "Capture Management"]
+    startDate: "2015",
+    endDate: "2016",
+    duration: "1 yr",
+    location: "Remote / Bozeman, MT",
+    description: "SDVOSB DoD Contractor",
+    bullets: [
+      "Direct report to VP of BD. The SDVOSB specialized in warfighter and asymmetric warfare support; major clients at Fort Bragg, NC.",
+    ],
+    skills: ["Proposals", "SDVOSB", "DoD"],
+    isCurrent: false
   }
+];
+
+const otherExperience = [
+  { company: "DRT Strategies", title: "Proposal Manager", dates: "2014–2015" },
+  { company: "CapRelo", title: "Proposal Coordinator", dates: "2013–2014" },
 ];
 
 const education = [
   {
     school: "George Mason University",
-    degree: "MS, Technology Management",
+    degree: "M.S., Technology Management",
+    detail: "Apr 2020 · 3.74 GPA",
     logo: "/images/education/gmu-logo.png"
   },
   {
     school: "Longwood University",
-    degree: "BA, English Creative Writing",
+    degree: "B.A., English",
+    detail: "Apr 2012",
     logo: "/images/education/longwood-logo.png"
   }
 ];
 
 const certifications = [
-  "UX Master Certificate (UXMC) - Nielsen Norman Group",
-  "Product Management Certificate - Product School",
+  "AWS Certified Cloud Practitioner",
+  "Product School — Product Management Certification (PMC)",
+  "Nielsen Norman Group — UX Master Certification (UXMC) — one of ~2,000 globally",
   "SAFe 4 Practitioner",
   "ITIL v4 Foundation",
-  "FedRAMP Moderate Product Team",
-  "TryHackMe Pre-Security Certificate"
+];
+
+const specializations = [
+  "Illinois Tech — Digital Healthcare Informatics and AI Specialization",
+  "University of London — Introduction to Computer Programming Specialization",
+  "University of Michigan — PostgreSQL for Everybody Specialization",
+  "University of Michigan — Python for Everybody Specialization",
+  "UC San Diego — Algorithms and Data Structures Specialization",
+  "University of Colorado — Computer Communications Specialization",
+  "University of Illinois — Digital Marketing Specialization",
+  "UIPath — RPA Specialization Certificate",
+  "UC Davis — Search Engine Optimization (SEO) Specialization",
+  "DeepLearning.AI — Supervised Machine Learning",
+  "Johns Hopkins — Precalculus through Data and Modelling Specialization",
+  "UPenn — Finance & Quantitative Modeling for Analysts Specialization",
+  "Vanderbilt University — AI Agents with Model Context Protocol Specialization",
+  "TryHackMe — Pre-Security Learning Path",
 ];
 ---
 
-<Layout title="Resume - Erikk Shupp" description="Professional resume of Erikk Shupp - Fractional CTO & Product Engineering Lead">
+<Layout title="Resume - Erikk Shupp" description="Professional resume of Erikk Shupp - Sr. Technical Product Manager">
   <div class="resume-container">
     <a href="/about" class="back-link">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -187,10 +230,21 @@ const certifications = [
         </div>
         <div class="profile-info">
           <h1>Erikk Shupp</h1>
-          <p class="headline">Fractional CTO · Product Engineering Lead · Founder</p>
-          <p class="location">Arlington, Virginia · Remote/Hybrid</p>
+          <p class="headline">Sr. Technical Product Manager</p>
+          <p class="subheadline">AI-Native &nbsp;·&nbsp; Health IT &nbsp;·&nbsp; Procurement &amp; Acquisitions &nbsp;·&nbsp; Executive Strategy</p>
+          <div class="contact-row">
+            <a href="mailto:erikk@shupp.dev" class="contact-link">erikk@shupp.dev</a>
+            <span class="dot">·</span>
+            <span class="contact-text">703-618-4953</span>
+            <span class="dot">·</span>
+            <a href="https://www.linkedin.com/in/shupp-erikk" target="_blank" rel="noopener noreferrer" class="contact-link">linkedin.com/in/shupp-erikk</a>
+            <span class="dot">·</span>
+            <a href="https://www.shupp.dev" target="_blank" rel="noopener noreferrer" class="contact-link">shupp.dev</a>
+            <span class="dot">·</span>
+            <span class="contact-text">Washington, DC</span>
+          </div>
           <div class="profile-actions">
-            <a href={`mailto:erikk@shupp.dev`} class="btn btn-primary">Contact</a>
+            <a href="mailto:erikk@shupp.dev" class="btn btn-primary">Contact</a>
             <a href="/portfolio" class="btn btn-secondary">Portfolio</a>
           </div>
         </div>
@@ -199,8 +253,8 @@ const certifications = [
 
     <main class="resume-content">
       <section class="experience-section">
-        <h2>Experience</h2>
-        
+        <h2>Relevant Experience</h2>
+
         {experiences.map((job) => (
           <div class="experience-item">
             <div class="company-logo">
@@ -212,7 +266,7 @@ const certifications = [
                 </div>
               )}
             </div>
-            
+
             <div class="experience-details">
               <div class="job-header">
                 <h3 class="job-title">{job.title}</h3>
@@ -222,49 +276,72 @@ const certifications = [
                   <span class="employment-type">{job.employmentType}</span>
                 </p>
                 <p class="date-location">
-                  {job.startDate} - {job.endDate || "Present"} · {job.duration}
+                  {job.startDate} – {job.endDate || "Present"} · {job.duration}
                   <span class="separator">·</span>
                   {job.location}
                 </p>
               </div>
-              
+
               <div class="job-description">
-                <p>{job.description}</p>
-                
+                {job.description && (
+                  <p class="job-context">{job.description}</p>
+                )}
+
+                {job.bullets && job.bullets.length > 0 && (
+                  <ul class="job-bullets">
+                    {job.bullets.map((bullet) => (
+                      <li>{bullet}</li>
+                    ))}
+                  </ul>
+                )}
+
                 {job.stack && (
                   <div class="tech-section">
                     <strong>stack:</strong> {job.stack.join(", ")}
                   </div>
                 )}
-                
+
                 {job.governance && (
                   <div class="tech-section">
                     <strong>governance:</strong> {job.governance.join(", ")}
                   </div>
                 )}
-                
+
                 {job.aiTooling && (
                   <div class="tech-section">
                     <strong>ai tooling:</strong> {job.aiTooling.join(", ")}
                   </div>
                 )}
-                
+
                 {job.website && (
                   <a href={`https://${job.website}`} target="_blank" rel="noopener noreferrer" class="website-link">
                     {job.website}
                   </a>
                 )}
               </div>
-              
+
               <div class="skills-tags">
                 {job.skills.map((skill) => (
                   <span class="skill-tag">{skill}</span>
                 ))}
-                <span class="more-skills">+{Math.floor(Math.random() * 10 + 3)} skills</span>
               </div>
             </div>
           </div>
         ))}
+      </section>
+
+      <section class="other-experience-section">
+        <h2>Other Experience</h2>
+        <div class="other-exp-list">
+          {otherExperience.map((item) => (
+            <div class="other-exp-item">
+              <span class="other-exp-title">{item.title}</span>
+              <span class="separator">—</span>
+              <span class="other-exp-company">{item.company}</span>
+              <span class="other-exp-dates">{item.dates}</span>
+            </div>
+          ))}
+        </div>
       </section>
 
       <section class="education-section">
@@ -283,18 +360,31 @@ const certifications = [
             <div class="education-details">
               <h3>{edu.school}</h3>
               <p class="degree">{edu.degree}</p>
+              {edu.detail && <p class="edu-detail">{edu.detail}</p>}
             </div>
           </div>
         ))}
       </section>
 
       <section class="certifications-section">
-        <h2>Licenses & Certifications</h2>
+        <h2>Certifications</h2>
         <div class="certifications-list">
           {certifications.map((cert) => (
             <div class="certification-item">
               <Icon name="Certificate" size={20} weight="duotone" />
               <span>{cert}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="specializations-section">
+        <h2>Specializations</h2>
+        <div class="certifications-list">
+          {specializations.map((spec) => (
+            <div class="certification-item">
+              <Icon name="BookOpen" size={20} weight="duotone" />
+              <span>{spec}</span>
             </div>
           ))}
         </div>
@@ -395,20 +485,53 @@ const certifications = [
   .profile-info h1 {
     font-size: 1.75rem;
     font-weight: 700;
-    margin: 0 0 0.35rem;
+    margin: 0 0 0.2rem;
     color: var(--text-color);
   }
 
   .headline {
-    font-size: 1rem;
+    font-size: 1.05rem;
+    font-weight: 600;
     color: var(--text-color);
-    margin: 0 0 0.35rem;
+    margin: 0 0 0.2rem;
   }
 
-  .location {
+  .subheadline {
     font-size: 0.9rem;
     color: var(--text-light);
-    margin: 0 0 1rem;
+    margin: 0 0 0.6rem;
+  }
+
+  .contact-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    color: var(--text-light);
+  }
+
+  .contact-link {
+    color: var(--color-tertiary);
+    text-decoration: none;
+  }
+
+  .contact-link:hover {
+    text-decoration: underline;
+  }
+
+  html.dark .contact-link {
+    color: var(--color-accent);
+  }
+
+  .contact-text {
+    color: var(--text-light);
+  }
+
+  .dot {
+    color: var(--text-light);
+    opacity: 0.5;
   }
 
   .profile-actions {
@@ -570,11 +693,28 @@ const certifications = [
     margin-bottom: 1rem;
   }
 
-  .job-description p {
-    font-size: 1rem;
+  .job-context {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-tertiary);
+    margin: 0 0 0.75rem;
+  }
+
+  html.dark .job-context {
+    color: var(--color-accent);
+  }
+
+  .job-bullets {
+    margin: 0 0 0.75rem;
+    padding-left: 1.25rem;
+    list-style: disc;
+  }
+
+  .job-bullets li {
+    font-size: 0.95rem;
     line-height: 1.7;
     color: var(--text-color);
-    margin: 0 0 1rem;
+    margin-bottom: 0.5rem;
     max-width: 900px;
   }
 
@@ -633,14 +773,34 @@ const certifications = [
     color: #a5a5b5;
   }
 
-  .more-skills {
-    font-size: 0.8rem;
-    color: var(--color-tertiary);
-    font-weight: 500;
+  /* Other Experience */
+  .other-exp-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
   }
 
-  html.dark .more-skills {
-    color: var(--color-accent);
+  .other-exp-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--text-light);
+  }
+
+  .other-exp-title {
+    font-weight: 500;
+    color: var(--text-color);
+  }
+
+  .other-exp-company {
+    color: var(--text-color);
+  }
+
+  .other-exp-dates {
+    margin-left: auto;
+    font-size: 0.85rem;
+    color: var(--text-light);
   }
 
   /* Education */
@@ -681,7 +841,13 @@ const certifications = [
     margin: 0 0 0.15rem;
   }
 
-  /* Certifications */
+  .edu-detail {
+    font-size: 0.85rem;
+    color: var(--text-light);
+    margin: 0;
+  }
+
+  /* Certifications & Specializations */
   .certifications-list {
     display: flex;
     flex-direction: column;
@@ -767,6 +933,10 @@ const certifications = [
       justify-content: center;
     }
 
+    .contact-row {
+      justify-content: center;
+    }
+
     .experience-item {
       grid-template-columns: 48px 1fr;
       gap: 1rem;
@@ -786,8 +956,12 @@ const certifications = [
       height: 48px;
     }
 
-    .job-description p {
-      font-size: 0.95rem;
+    .other-exp-item {
+      flex-wrap: wrap;
+    }
+
+    .other-exp-dates {
+      margin-left: 0;
     }
   }
 
