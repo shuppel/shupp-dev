@@ -430,8 +430,12 @@ const renderEmphasis = (s: string) =>
     background: var(--r-bg);
     color: var(--r-ink);
     min-height: 100vh;
-    margin: -2rem 0;
+    /* Break out of the Layout's centered, 960px-capped <main> so the
+       resume spans the full window to the right of the side nav. */
+    width: calc(100vw - 240px);
+    margin: -2rem 0 -2rem -2rem;
     padding: 0;
+    overflow-x: hidden;
   }
 
   html.dark .resume-sheet {
@@ -453,9 +457,9 @@ const renderEmphasis = (s: string) =>
   }
 
   .resume-shell {
-    max-width: 1180px;
+    max-width: 1500px;
     margin: 0 auto;
-    padding: 2rem 3rem 3.5rem;
+    padding: 2rem clamp(2rem, 4vw, 5rem) 3.5rem;
   }
 
   /* Back Link */
@@ -542,8 +546,8 @@ const renderEmphasis = (s: string) =>
   /* Grid */
   .resume-grid {
     display: grid;
-    grid-template-columns: 1fr 300px;
-    gap: 3rem;
+    grid-template-columns: minmax(0, 1fr) 320px;
+    gap: 3.5rem;
     margin-top: 2.5rem;
     padding-top: 2.5rem;
     border-top: 1px solid var(--r-border);
@@ -827,6 +831,12 @@ const renderEmphasis = (s: string) =>
   @media (max-width: 900px) {
     .resume-grid { grid-template-columns: 1fr; gap: 2.5rem; }
     .resume-aside { border-left: none; padding-left: 0; border-top: 1px solid var(--r-border); padding-top: 2rem; }
+  }
+
+  /* Below the side-nav breakpoint the Layout removes the 240px offset,
+     so the sheet should bleed to the full viewport instead. */
+  @media (max-width: 768px) {
+    .resume-sheet { width: calc(100% + 4rem); }
   }
 
   @media (max-width: 640px) {
