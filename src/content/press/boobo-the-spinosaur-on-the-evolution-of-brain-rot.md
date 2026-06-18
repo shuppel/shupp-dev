@@ -1,0 +1,18 @@
+---
+title: "Boobo the Spinosaur on the evolution of brain rot!"
+description: "Boobo explains why brain rot short circuits your brain into an oxytocin trap, and how engaging with thousands of people online does no real good for you."
+type: "video"
+pubDate: 2026-03-24
+externalUrl: "https://www.youtube.com/watch?v=-QdOZhui_44"
+outlet: "Thoughtful App Co."
+outletUrl: "https://www.thoughtfulapp.co"
+youtubeUrl: "https://www.youtube.com/watch?v=-QdOZhui_44"
+coverImage: "https://i2.ytimg.com/vi/-QdOZhui_44/hqdefault.jpg"
+tags: ["brain-rot", "boobo", "digital-ads", "attention-economy", "oxytocin"]
+featured: true
+relatedProjects: ["humansonly-fm"]
+---
+
+New video on YouTube: "Boobo the Spinosaur on the evolution of brain rot!".
+
+> NOTE: Auto-scaffolded from the YouTube channel feed. This appears to be a short promotional clip. The title and description should be verified against the published video page before this post goes live.
