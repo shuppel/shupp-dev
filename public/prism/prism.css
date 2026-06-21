@@ -1,0 +1,500 @@
+/* ============================================================================
+   PRISM — drop-in style layer (v0.6)
+   Light-mode-first prism/glass material model. All color in OKLCH.
+   One anchor hue (--h) drives the whole palette. Two modes via data-mode:
+   "day" (default) and "night" (redshift). --hr is computed in JS from --h.
+
+   This file encodes the LAWS as constraints. Read role tokens only
+   (--field, --surface, --ink, --elev-*, semantic vars). Never hardcode a
+   brand hex. See prism.tokens.json for authoritative values.
+   ========================================================================= */
+
+:root {
+  /* ---- PARAM: the single source hue + its redshift partner ---------------- */
+  --h: 185;            /* anchor hue, OKLCH degrees (0–360) */
+  --hr: 129;           /* redshift(--h); recomputed by JS on load + hue change */
+
+  /* ---- MOTION: quantized. q = 40ms. every duration is an integer * q ------ */
+  --q: 40ms;
+  --t-flash: 120ms;    /* 3q  hover, state flips, press-out */
+  --t-lag: 80ms;       /* 2q  shadow trails its object (causal propagation) */
+  --t-press: 60ms;     /* 1.5q press-in compression */
+  --t-arrive: 240ms;   /* 6q  transient enter */
+  --t-mass: 280ms;     /* 7q  immovable moves */
+  --t-settle: 400ms;   /* 10q standing enter, layout shifts */
+  --t-dissolve: 1400ms;/* 35q transient exit (afterimage) */
+  --t-exit: 320ms;     /* 8q  standing exit */
+  --t-sunset: 1000ms;  /* 25q day<->night mode change. snapping forbidden */
+  --t-string: 4400ms;  /* 110q idle color-space vibration period */
+  --stagger: 40ms;     /* 1q per child, capped at 6 */
+
+  --e-light: cubic-bezier(0.19, 1, 0.22, 1);   /* massless: arrives, decelerates */
+  --e-mass: cubic-bezier(0.6, 0, 0.3, 1);      /* heavy: reluctant start, firm stop */
+  --e-refract: cubic-bezier(0.45, 0, 0.55, 1); /* hue/gradient/mode drift only */
+
+  /* ---- FORM ---------------------------------------------------------------- */
+  --r-sm: 10px;
+  --r-md: 16px;
+  --r-lg: 24px;
+  --ring-w: 1.5px;     /* dichroic edge ring width */
+  --seam-w: 2px;       /* refraction seam on hovered/selected data rows */
+
+  /* ---- TYPE ---------------------------------------------------------------- */
+  --font-display: "Tilt Prism", "Instrument Sans", system-ui, sans-serif;
+  --font-sans: "Instrument Sans", system-ui, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, serif;
+  --font-mono: "Spline Sans Mono", ui-monospace, monospace;
+
+  --fs-body: 15.5px;
+  --fs-ui: 13.5px;
+  --fs-data: 13px;
+  --fs-eyebrow: 12px;
+  --fs-headline: 24px;
+  --fs-aside: 16px;
+
+  /* ---- QUANTUM: superposition ghosts (fixed short-λ / long-λ) -------------- */
+  --ghost-a: oklch(0.74 0.16 195 / 0.55);  /* short-wavelength loading ghost */
+  --ghost-b: oklch(0.66 0.18 25 / 0.45);   /* long-wavelength loading ghost */
+}
+
+/* ============================================================================
+   DISPERSION — brand bands at FIXED angular offsets from the anchor.
+   Day bands share L 0.70–0.78 / C 0.11–0.14 so contrast survives any rotation.
+   ========================================================================= */
+[data-mode="day"],
+:root {
+  --anchor:  oklch(0.74 0.125 var(--h));
+  --near:    oklch(0.76 0.14  calc(var(--h) - 35));
+  --far:     oklch(0.70 0.11  calc(var(--h) + 75));
+  --counter: oklch(0.78 0.13  calc(var(--h) - 140));
+}
+
+/* ---- DAY role tokens (ground/figure both near-white) ---------------------- */
+[data-mode="day"],
+:root {
+  --field:     oklch(0.962 0.008 var(--h));   /* page ground; carries 0.8% chroma */
+  --surface:   oklch(0.985 0.005 var(--h));   /* raised */
+  --ink:       oklch(0.28 0.03 var(--h));     /* text-primary; cool teal-black */
+  --ink-soft:  oklch(0.48 0.035 var(--h));    /* text-secondary */
+  --ink-faint: oklch(0.66 0.025 var(--h));    /* text-tertiary */
+  --on-ground: var(--ink);                     /* text sitting on the field */
+  --text:      var(--ink);
+  --hairline:  oklch(0.28 0.03 var(--h) / 0.12);
+  --dense:     oklch(0.44 0.10 var(--h));     /* immovable structural fill */
+  --on-dense:  #ffffff;
+  --standing-tint: oklch(0.74 0.125 var(--h) / 0.08); /* the one sanctioned wash */
+  --dichroic:  linear-gradient(135deg, var(--anchor), var(--near) 30%, var(--far) 70%, var(--counter));
+
+  /* SEMANTICS — fixed wavelengths. success 152 / danger 27 / warning 75.
+     Info alone inherits --h. */
+  --success: oklch(0.70 0.16 152);
+  --success-dense: oklch(0.46 0.13 152);  --on-success: #ffffff;
+  --danger:  oklch(0.60 0.19 27);
+  --danger-dense:  oklch(0.46 0.17 27);   --on-danger: #ffffff;
+  --warning: oklch(0.76 0.15 75);
+  --warning-dense: oklch(0.52 0.13 75);   --on-warning: #ffffff;
+  --info:    oklch(0.74 0.125 var(--h));
+  --info-dense: oklch(0.44 0.10 var(--h)); --on-info: #ffffff;
+
+  /* ELEVATION — chromatic CAST: 3 spectral layers along the 135° light axis. */
+  --elev-rest:  6px 8px 24px -6px oklch(0.74 0.125 var(--h) / 0.30),
+               14px 18px 40px -10px oklch(0.70 0.11 calc(var(--h) + 75) / 0.26),
+                2px 3px 10px -2px oklch(0.78 0.13 calc(var(--h) - 140) / 0.18);
+  --elev-lift: 10px 14px 32px -6px oklch(0.74 0.125 var(--h) / 0.40),
+               24px 32px 64px -12px oklch(0.70 0.11 calc(var(--h) + 75) / 0.36),
+                4px 5px 14px -2px oklch(0.78 0.13 calc(var(--h) - 140) / 0.26);
+  --elev-press: 2px 3px 8px -3px oklch(0.74 0.125 var(--h) / 0.30),
+                5px 7px 16px -6px oklch(0.70 0.11 calc(var(--h) + 75) / 0.28);
+  --elev-dense: 1px 2px 6px -2px oklch(0.28 0.03 var(--h) / 0.25);
+}
+
+/* ============================================================================
+   REDSHIFT (night) — figure/ground swap + wavelength shift. No new colors.
+   dense->field, field->surface, edge<->fill, cast->halo. Palette conserved.
+   Dispersion narrows at low energy (offsets compress).
+   ========================================================================= */
+[data-mode="night"] {
+  --anchor:  oklch(0.72 0.115 var(--hr));
+  --near:    oklch(0.74 0.125 calc(var(--hr) - 25));
+  --far:     oklch(0.66 0.09  calc(var(--hr) + 55));
+  --counter: oklch(0.76 0.12  calc(var(--hr) - 95));
+
+  --field:     oklch(0.235 0.052 var(--hr));                 /* was day.dense */
+  --surface:   oklch(0.875 0.045 calc(var(--hr) - 60));      /* was day.field — paper */
+  --ink:       oklch(0.26 0.05 var(--hr));                   /* text on paper surface */
+  --ink-soft:  oklch(0.40 0.05 var(--hr));
+  --ink-faint: oklch(0.56 0.04 var(--hr));
+  --on-ground: oklch(0.88 0.035 calc(var(--hr) - 60));       /* text on dark field */
+  --text:      var(--on-ground);
+  --hairline:  oklch(0.875 0.045 calc(var(--hr) - 60) / 0.16);
+  --dense:     oklch(0.875 0.045 calc(var(--hr) - 60));      /* immovable is paper now */
+  --on-dense:  oklch(0.235 0.052 var(--hr));
+  --standing-tint: oklch(0.72 0.115 var(--hr) / 0.12);
+  --dichroic:  linear-gradient(135deg, var(--anchor), var(--near) 30%, var(--far) 70%, var(--counter));
+
+  /* Semantics hold their wavelength; only SHADE adapts (dense-light on sky). */
+  --success: oklch(0.80 0.14 152);
+  --success-dense: oklch(0.82 0.11 152);  --on-success: oklch(0.30 0.09 152);
+  --danger:  oklch(0.74 0.16 27);
+  --danger-dense:  oklch(0.80 0.12 27);   --on-danger: oklch(0.32 0.13 27);
+  --warning: oklch(0.83 0.13 75);
+  --warning-dense: oklch(0.62 0.11 75);   --on-warning: oklch(0.28 0.10 75);
+  --info:    oklch(0.72 0.115 var(--hr));
+  --info-dense: oklch(0.72 0.115 var(--hr)); --on-info: oklch(0.235 0.052 var(--hr));
+
+  /* ELEVATION — HALO: emitted light, axis-free glow. */
+  --elev-rest: 0 0 26px -4px oklch(0.72 0.115 var(--hr) / 0.30),
+               0 0 60px -10px oklch(0.70 0.12 calc(var(--hr) - 60) / 0.22);
+  --elev-lift: 0 0 34px -4px oklch(0.72 0.115 var(--hr) / 0.45),
+               0 0 80px -8px oklch(0.70 0.12 calc(var(--hr) - 60) / 0.34);
+  --elev-press: 0 0 18px -6px oklch(0.72 0.115 var(--hr) / 0.30);
+  --elev-dense: 0 0 0 1px oklch(0.875 0.045 calc(var(--hr) - 60) / 0.25);
+}
+
+/* ============================================================================
+   BASE
+   ========================================================================= */
+* { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  background: var(--field);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* SUNSET: mode transitions refract over 25q. Scoped to .refracting so it never
+   fights the short hover/press transitions. JS adds the class for 1000ms. */
+html.refracting body,
+html.refracting .prism-card,
+html.refracting .prism-btn,
+html.refracting .prism-table,
+html.refracting .prism-row,
+html.refracting .prism-badge,
+html.refracting .prism-swatch,
+html.refracting .prism-edge::before {
+  transition: background-color var(--t-sunset) var(--e-refract),
+              background var(--t-sunset) var(--e-refract),
+              color var(--t-sunset) var(--e-refract),
+              box-shadow var(--t-sunset) var(--e-refract),
+              border-color var(--t-sunset) var(--e-refract),
+              -webkit-text-stroke-color var(--t-sunset) var(--e-refract) !important;
+}
+
+/* ============================================================================
+   TYPE — five roles. Display = line work, ≥40px only (else collapses to noise).
+   ========================================================================= */
+.prism-display {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 5.4vw, 58px);
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  line-height: 1.04;
+  color: var(--ink);
+  margin: 0;
+}
+/* Night: filled headline -> outline headline. */
+[data-mode="night"] .prism-display {
+  color: transparent;
+  -webkit-text-stroke: 1.2px var(--on-ground);
+  text-stroke: 1.2px var(--on-ground);
+}
+.prism-headline {
+  font-family: var(--font-sans);
+  font-size: var(--fs-headline);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: var(--text);
+  margin: 0;
+}
+.prism-body { font-size: var(--fs-body); line-height: 1.55; }
+.prism-ui   { font-size: var(--fs-ui); font-weight: 500; }
+.prism-data { font-family: var(--font-mono); font-size: var(--fs-data); font-weight: 400; }
+.prism-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+}
+.prism-aside {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: var(--fs-aside);
+  color: var(--ink-soft);
+}
+
+/* ============================================================================
+   EDGE — dichroic 1px ring via mask-composite exclude (crisp at any radius).
+   Day: color on edge, quiet body. Night INVERTS: paper edge, spectral body.
+   ========================================================================= */
+.prism-edge { position: relative; }
+.prism-edge::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: var(--ring-w);
+  background: var(--dichroic);
+  background-size: 200% 200%;
+  background-position: 0% 0%;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+          mask-composite: exclude;
+  pointer-events: none;
+  transition: background-position var(--t-arrive) var(--e-refract),
+              opacity var(--t-flash) var(--e-light);
+}
+/* Night inversion: the edge goes quiet/paper, the body carries the spectrum. */
+[data-mode="night"] .prism-edge::before {
+  background: oklch(0.875 0.045 calc(var(--hr) - 60) / 0.5);
+}
+[data-mode="night"] .prism-edge::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--dichroic);
+  opacity: 0.10;
+  pointer-events: none;
+}
+
+/* ============================================================================
+   CARD — standing/floating. Full cast => "floats above data".
+   Law 10: shadow trails object by 2q (delayed transition on box-shadow).
+   ========================================================================= */
+.prism-card {
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: var(--r-md);
+  padding: 1.5rem;
+  box-shadow: var(--elev-rest);
+  transition: transform var(--t-arrive) var(--e-light),
+              box-shadow var(--t-flash) var(--t-lag) var(--e-light);
+}
+.prism-card:hover { transform: translateY(-2px); box-shadow: var(--elev-lift); }
+/* Night: nothing to lift toward — hover glows brighter instead. */
+[data-mode="night"] .prism-card:hover { transform: none; box-shadow: var(--elev-lift); }
+
+/* ============================================================================
+   BUTTONS
+   ========================================================================= */
+.prism-btn {
+  font-family: var(--font-sans);
+  font-size: var(--fs-ui);
+  font-weight: 500;
+  line-height: 1;
+  padding: 0.7rem 1.2rem;
+  border: none;
+  border-radius: var(--r-sm);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  position: relative;
+  box-shadow: var(--elev-rest);
+  transition: filter var(--t-flash) var(--e-light),
+              transform var(--t-press) var(--e-light),
+              box-shadow var(--t-flash) var(--t-lag) var(--e-light);
+}
+.prism-btn:hover { filter: brightness(1.02); box-shadow: var(--elev-lift); }
+[data-mode="night"] .prism-btn:hover { filter: brightness(1.12); }
+.prism-btn:active {
+  transform: translate(1px, 1px) scale(0.99);
+  box-shadow: var(--elev-press);
+  transition: transform var(--t-press) var(--e-light);
+}
+
+/* Primary — transient: edge + spectral glow; the dichroic edge drifts on hover. */
+.prism-btn--primary { background: var(--surface); padding-block: 0.75rem; }
+/* the dichroic edge drifts on hover (refract easing) */
+.prism-btn--primary.prism-edge:hover::before { background-position: 100% 100%; }
+.prism-btn--primary:hover::after { opacity: 1; }
+.prism-btn--primary::after { /* spectral glow under the button */
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: var(--dichroic);
+  filter: blur(10px);
+  opacity: 0.45;
+  z-index: -1;
+  transition: opacity var(--t-flash) var(--e-light);
+}
+
+/* Dense / destructive — immovable. Opaque pigment, near-zero shadow, no spectra. */
+.prism-btn--dense {
+  background: var(--dense);
+  color: var(--on-dense);
+  box-shadow: var(--elev-dense);
+  padding: 0.6rem 1rem;
+}
+.prism-btn--dense:hover { filter: brightness(0.97); box-shadow: var(--elev-dense); }
+[data-mode="night"] .prism-btn--dense:hover { filter: brightness(1.04); }
+.prism-btn--danger { background: var(--danger-dense); color: var(--on-danger); }
+
+/* ============================================================================
+   TABLE / ROWS — HAIRLINE LAW. No casts inside data. Elevation = 1px rules.
+   Refraction enters only as a 2px left seam on hovered/selected rows.
+   ========================================================================= */
+.prism-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: var(--r-md);
+  overflow: hidden;
+  box-shadow: var(--elev-dense);
+  font-size: var(--fs-data);
+  font-family: var(--font-mono);
+}
+.prism-table th {
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  font-weight: 400;
+  padding: 0.6rem 0.9rem;
+  border-bottom: 1px solid var(--hairline);
+}
+.prism-row td { padding: 0.6rem 0.9rem; border-bottom: 1px solid var(--hairline); }
+.prism-row:last-child td { border-bottom: none; }
+.prism-row {
+  transition: background-color var(--t-flash) var(--e-light),
+              box-shadow var(--t-flash) var(--e-light);
+}
+.prism-row:hover,
+.prism-row.selected,
+.prism-row.lit {
+  background-color: var(--standing-tint);
+  box-shadow: inset var(--seam-w) 0 0 0 var(--anchor);
+}
+
+/* ============================================================================
+   BADGES — immovable, dense. Hue pinned by mode, shade flips. Carry words.
+   ========================================================================= */
+.prism-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4ch;
+  padding: 0.2rem 0.6rem;
+  border-radius: var(--r-sm);
+  font-family: var(--font-mono);
+  font-size: var(--fs-data);
+  font-weight: 500;
+  box-shadow: var(--elev-dense);
+}
+.prism-badge--ok { background: var(--success-dense); color: var(--on-success); }
+.prism-badge--no { background: var(--danger-dense);  color: var(--on-danger); }
+.prism-badge--warn { background: var(--warning-dense); color: var(--on-warning); }
+
+/* ============================================================================
+   SWATCH — band/role chips for the showcase.
+   ========================================================================= */
+.prism-swatch {
+  border-radius: var(--r-sm);
+  min-height: 64px;
+  display: flex;
+  align-items: flex-end;
+  padding: 0.5rem 0.6rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-eyebrow);
+  box-shadow: var(--elev-dense);
+}
+
+/* ============================================================================
+   QUANTUM — superposition loading. Two antiphase spectral ghosts (short λ + long
+   λ), never a gray skeleton. Observation collapses them in 5q.
+   ========================================================================= */
+.prism-ghost {
+  position: relative;
+  border-radius: var(--r-sm);
+  min-height: 1.2em;
+  overflow: hidden;
+  isolation: isolate;
+}
+.prism-ghost::before,
+.prism-ghost::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+}
+.prism-ghost::before { background: var(--ghost-a); animation: prism-ghost-osc 880ms var(--e-refract) infinite; }
+.prism-ghost::after  { background: var(--ghost-b); animation: prism-ghost-osc 880ms var(--e-refract) infinite; animation-delay: -440ms; }
+@keyframes prism-ghost-osc { 0%, 100% { opacity: 0.72; } 50% { opacity: 0.12; } }
+.prism-ghost.collapsed::before,
+.prism-ghost.collapsed::after {
+  animation: none;
+  opacity: 0;
+  transition: opacity 200ms var(--e-light); /* 5q collapse */
+}
+
+/* ============================================================================
+   MOTION — enter from the light source (−10,−12); exit toward the cast (+5,+7)
+   with blur. Asymmetry encodes lifespan.
+   ========================================================================= */
+@keyframes prism-enter {
+  from { opacity: 0; transform: translate(-10px, -12px); }
+  to   { opacity: 1; transform: translate(0, 0); }
+}
+@keyframes prism-exit {
+  from { opacity: 1; transform: translate(0, 0); filter: blur(0); }
+  to   { opacity: 0; transform: translate(5px, 7px); filter: blur(4px); }
+}
+.prism-enter { animation: prism-enter var(--t-arrive) var(--e-light) both; }
+.prism-exit  { animation: prism-exit var(--t-dissolve) var(--e-light) both; }
+
+/* Group entrance: 1q per child, capped at 6 (remainder enters as one body). */
+.prism-stagger > * { animation: prism-enter var(--t-settle) var(--e-light) both; }
+.prism-stagger > *:nth-child(1) { animation-delay: 0ms; }
+.prism-stagger > *:nth-child(2) { animation-delay: 40ms; }
+.prism-stagger > *:nth-child(3) { animation-delay: 80ms; }
+.prism-stagger > *:nth-child(4) { animation-delay: 120ms; }
+.prism-stagger > *:nth-child(5) { animation-delay: 160ms; }
+.prism-stagger > *:nth-child(6) { animation-delay: 200ms; }
+.prism-stagger > *:nth-child(n + 7) { animation-delay: 240ms; } /* 6q body */
+
+/* Strings vibrate in color, not space. Idle hue/opacity breathing on the 110q
+   cycle, phase-shifted per element. Position/scale/blur stay frozen. Cull hard. */
+@keyframes prism-string { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+.prism-string { animation: prism-string var(--t-string) var(--e-refract) infinite; }
+.prism-string:nth-of-type(2) { animation-delay: calc(var(--t-string) * -0.33); }
+.prism-string:nth-of-type(3) { animation-delay: calc(var(--t-string) * -0.66); }
+
+/* Entanglement: paired elements light with Δt = 0 (the only exception to lag). */
+[data-pair] { transition: background-color var(--t-flash) var(--e-light), box-shadow var(--t-flash) var(--e-light); }
+.prism-dot {
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--anchor);
+  box-shadow: var(--elev-dense);
+}
+.prism-dot.lit { box-shadow: 0 0 0 4px var(--standing-tint); transform: scale(1.15); }
+
+/* ============================================================================
+   FOCUS
+   ========================================================================= */
+:where(a, button, input, [tabindex]):focus-visible {
+  outline: 2px solid var(--anchor);
+  outline-offset: 3px;
+}
+.prism-row:focus-visible { outline: 2px solid var(--anchor); outline-offset: -2px; }
+
+/* ============================================================================
+   ACCESSIBILITY — prefers-reduced-motion neutralizes ALL animation incl. sunset.
+   ========================================================================= */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

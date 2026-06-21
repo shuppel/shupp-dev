@@ -24,7 +24,7 @@ const projects = allProjects.sort((a, b) => {
 
     <section class="portfolio-grid">
       {projects.map(project => (
-        <a href={`/portfolio/${project.id}`} class="portfolio-item">
+        <a href={project.data.customUrl ?? `/portfolio/${project.id}`} class="portfolio-item">
           <div class="portfolio-image">
             {project.data.image ? (
               <img
