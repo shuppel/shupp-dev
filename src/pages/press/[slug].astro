@@ -32,6 +32,7 @@ const TYPE_META: Record<string, { label: string; icon: string; cta: string }> = 
   'mention':         { label: 'Mention',     icon: 'Quotes',          cta: 'Read on' },
   'award':           { label: 'Award',       icon: 'Trophy',          cta: 'View on' },
   'video':           { label: 'Video',       icon: 'PlayCircle',      cta: 'Watch on' },
+  'short':           { label: 'Short',       icon: 'FilmStrip',       cta: 'Watch on' },
 };
 
 const meta = TYPE_META[entry.data.type] ?? { label: entry.data.type, icon: 'Bookmark', cta: 'View on' };
