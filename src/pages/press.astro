@@ -200,22 +200,32 @@ function getDisplayUrl(url: string | undefined): string {
 </script>
 
 <style>
-  /* Override Layout's side-nav max-width constraint but KEEP the margin */
+  /* Press uses a full-bleed layout. Drop Layout's centered max-width, but let
+     the side-nav margin stay responsive (240px desktop, 0 on mobile) instead of
+     forcing it at every breakpoint with !important. */
   :global(body.has-side-nav main) {
     max-width: none !important;
     width: auto;
-    margin-left: 240px !important;
+    margin-left: 240px;
     padding: 0;
+  }
+
+  /* On mobile the side nav is off-canvas, so reclaim the full viewport width.
+     The !important is required to beat the desktop margin-left above. */
+  @media (max-width: 768px) {
+    :global(body.has-side-nav main) {
+      margin-left: 0 !important;
+    }
   }
 
   .press-layout {
     display: grid;
-    grid-template-columns: 140px 1fr;
-    gap: 2rem;
+    grid-template-columns: 120px 1fr;
+    gap: 1.5rem;
     width: 100%;
     max-width: none;
     margin: 0;
-    padding: 1rem 2rem 1rem 1rem;
+    padding: 1rem 1.5rem;
     box-sizing: border-box;
   }
 
@@ -507,8 +517,9 @@ function getDisplayUrl(url: string | undefined): string {
   @media (max-width: 768px) {
     .press-layout {
       grid-template-columns: 1fr;
-      gap: 2rem;
-      padding: 2rem 1.5rem;
+      gap: 1.5rem;
+      /* Top padding clears the fixed hamburger toggle (top: 1rem, 44px tall) */
+      padding: 4.5rem 1.25rem 2rem;
     }
 
     .press-sidebar {
