@@ -1,10 +1,11 @@
 ---
-title: "PRISM — Prismatic Design System"
+title: "Prismatic"
 description: "A light-mode-first, prism/glass design system in OKLCH. One anchor hue drives the entire palette across day and redshift (night) modes."
 projectDate: 2026-06-21
 completed: true
 technologies: ["Design Systems", "OKLCH", "CSS", "Design Tokens", "Astro", "Accessibility"]
 featured: true
+image: "/images/projects/prismatic.png"
 customUrl: "/design/prismatic"
 ---
 
