@@ -231,6 +231,7 @@ const pressCollection = defineCollection({
       'mention',         // Press mention, quote, feature
       'award',           // Award or recognition
       'video',           // Video appearance / YouTube feature
+      'short',           // YouTube Short / short-form vertical clip
     ]),
     pubDate: z.date(),
     externalUrl: z.string().url(),               // The canonical destination
