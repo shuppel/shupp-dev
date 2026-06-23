@@ -14,5 +14,3 @@ relatedProjects: ["humansonly-fm"]
 ---
 
 New Short on YouTube: "Boobo the Spinosaur on the evolution of brain rot!".
-
-> NOTE: Auto-scaffolded from the YouTube channel feed. This appears to be a short promotional clip. The title and description should be verified against the published video page before this post goes live.

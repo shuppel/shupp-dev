@@ -14,5 +14,3 @@ relatedProjects: ["thoughtful-app-co"]
 ---
 
 New Short on YouTube: "Thoughtful App Co. | Apps for Humans".
-
-> NOTE: Auto-scaffolded from the YouTube channel feed. The title and description should be verified against the published video page before this post goes live.

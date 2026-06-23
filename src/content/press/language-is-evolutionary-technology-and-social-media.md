@@ -14,5 +14,3 @@ relatedProjects: ["humansonly-fm"]
 ---
 
 New Short on YouTube: "Language is evolutionary technology and social media inverts that in a negative way".
-
-> NOTE: Auto-scaffolded from the YouTube channel feed. This appears to be a short clip. The title and description should be verified against the published video page before this post goes live.

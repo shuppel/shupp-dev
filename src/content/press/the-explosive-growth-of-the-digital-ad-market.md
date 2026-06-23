@@ -14,5 +14,3 @@ relatedProjects: ["humansonly-fm"]
 ---
 
 New Short on YouTube: "The Explosive Growth of the Digital Ad Market".
-
-> NOTE: Auto-scaffolded from the YouTube channel feed. This appears to be a clip related to the Humans Only attention-economy episode. The title and description should be verified against the published video page before this post goes live.

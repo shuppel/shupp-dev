@@ -14,5 +14,3 @@ relatedProjects: ["thoughtful-app-co"]
 ---
 
 New Short on YouTube: "BIG TECH GOT KARMAMOGGED BY BOOBO THE SPINOSAUR AND THOUGHTFUL APP CO".
-
-> NOTE: Auto-scaffolded from the YouTube channel feed. This appears to be a short promotional clip. The title and description should be verified against the published video page before this post goes live.

@@ -14,5 +14,3 @@ relatedProjects: ["humansonly-fm"]
 ---
 
 New Short on YouTube: "Loneliness is like smoking 15 cigerettes a day".
-
-> NOTE: Auto-scaffolded from the YouTube channel feed. This appears to be a short clip, and the title preserves the original spelling. The title and description should be verified against the published video page before this post goes live.

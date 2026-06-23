@@ -13,5 +13,3 @@ featured: false
 ---
 
 New Short on YouTube: "WOULD YOU PAY TO GET HIRED? FOR A JOB?".
-
-> NOTE: Auto-scaffolded from the YouTube channel feed. The title and description should be verified against the published video page before this post goes live.
