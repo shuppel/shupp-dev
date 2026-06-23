@@ -1,0 +1,245 @@
+/* ============================================================
+   PRISM v0.6 — design system CSS layer
+   Drop-in. Set data-mode="day" | "night" on <html>.
+   Set --h (anchor hue, OKLCH deg) on :root to rotate the palette.
+   Set --hr (redshift hue) via the JS helper at the bottom.
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@1&family=Spline+Sans+Mono:wght@400;500&family=Tilt+Prism&display=swap");
+
+:root {
+  /* --- parametric hue --- */
+  --h: 185;   /* anchor hue, the one decision */
+  --hr: 136;  /* redshift hue, computed by prismRedshift(); see JS below */
+
+  /* --- motion (quantized: q = 40ms) --- */
+  --q: 40ms;
+  --t-flash: calc(var(--q) * 3);    /* 120ms */
+  --t-lag: calc(var(--q) * 2);      /* 80ms  */
+  --t-press: calc(var(--q) * 1.5);  /* 60ms  */
+  --t-arrive: calc(var(--q) * 6);   /* 240ms */
+  --t-mass: calc(var(--q) * 7);     /* 280ms */
+  --t-settle: calc(var(--q) * 10);  /* 400ms */
+  --t-dissolve: calc(var(--q) * 35);/* 1400ms*/
+  --t-exit: calc(var(--q) * 8);     /* 320ms */
+  --t-sunset: calc(var(--q) * 25);  /* 1000ms*/
+  --t-string: calc(var(--q) * 110); /* 4400ms*/
+  --e-light: cubic-bezier(0.19, 1, 0.22, 1);
+  --e-mass: cubic-bezier(0.6, 0, 0.3, 1);
+  --e-refract: cubic-bezier(0.45, 0, 0.55, 1);
+  --enter-from: translate(-10px, -12px);
+  --exit-to: translate(5px, 7px);
+
+  /* --- radii --- */
+  --r-sm: 10px; --r-md: 16px; --r-lg: 24px;
+
+  /* --- type --- */
+  --sans: "Instrument Sans", system-ui, sans-serif;
+  --serif: "Instrument Serif", Georgia, serif;
+  --mono: "Spline Sans Mono", ui-monospace, monospace;
+  --display: "Tilt Prism", var(--sans);
+
+  /* --- dispersion (brand bands, fixed offsets) --- */
+  --anchor:  oklch(0.74 0.125 var(--h));
+  --near:    oklch(0.76 0.14  calc(var(--h) - 35));
+  --far:     oklch(0.70 0.11  calc(var(--h) + 75));
+  --counter: oklch(0.78 0.13  calc(var(--h) - 140));
+  --edge: linear-gradient(135deg, var(--anchor), var(--near) 30%, var(--far) 70%, var(--counter));
+}
+
+/* ================= DAY ================= */
+[data-mode="day"] {
+  --field:    oklch(0.962 0.008 var(--h));
+  --surface:  oklch(0.985 0.005 var(--h));
+  --ink:      oklch(0.28 0.03 var(--h));
+  --ink-soft: oklch(0.48 0.035 var(--h));
+  --ink-faint:oklch(0.66 0.025 var(--h));
+  --on-ground: var(--ink);
+  --hairline: oklch(0.28 0.03 var(--h) / 0.12);
+  --dense:    oklch(0.44 0.10 var(--h));
+  --on-dense: #fff;
+
+  /* edge/fill roles — day: color on edge, quiet body */
+  --chip-bg: var(--surface);
+  --chip-edge: var(--edge);
+  --chip-ink: var(--ink);
+
+  /* elevation = chromatic cast */
+  --elev:
+    6px 8px 24px -6px  oklch(0.74 0.125 var(--h) / 0.30),
+    14px 18px 40px -10px oklch(0.70 0.11 calc(var(--h) + 75) / 0.26),
+    2px 3px 10px -2px  oklch(0.78 0.13 calc(var(--h) - 140) / 0.18);
+  --elev-hi:
+    10px 14px 32px -6px  oklch(0.74 0.125 var(--h) / 0.40),
+    24px 32px 64px -12px oklch(0.70 0.11 calc(var(--h) + 75) / 0.36),
+    4px 5px 14px -2px   oklch(0.78 0.13 calc(var(--h) - 140) / 0.26);
+  --elev-press:
+    2px 3px 8px -3px oklch(0.74 0.125 var(--h) / 0.30),
+    5px 7px 16px -6px oklch(0.70 0.11 calc(var(--h) + 75) / 0.28);
+  --elev-dense: 1px 2px 6px -2px oklch(0.28 0.03 var(--h) / 0.25);
+
+  /* semantics — day shading */
+  --success: oklch(0.70 0.16 152); --success-dense: oklch(0.46 0.13 152); --on-success-dense: #fff;
+  --danger:  oklch(0.60 0.19 27);  --danger-dense:  oklch(0.46 0.17 27);  --on-danger-dense:  #fff;
+  --warning: oklch(0.76 0.15 75);  --warning-dense: oklch(0.52 0.13 75);  --on-warning-dense: #fff;
+
+  /* type inversion */
+  --head-fill: var(--ink);
+  --head-stroke: 0px;
+}
+
+/* ================= REDSHIFT (night) ================= */
+/* No new colors minted. dense->field, field->surface, edge<->fill, cast->halo. */
+[data-mode="night"] {
+  --anchor:  oklch(0.72 0.115 var(--hr));
+  --near:    oklch(0.74 0.125 calc(var(--hr) - 25));
+  --far:     oklch(0.66 0.09  calc(var(--hr) + 55));
+  --counter: oklch(0.76 0.12  calc(var(--hr) - 95));
+  --edge: linear-gradient(135deg, var(--anchor), var(--near) 30%, var(--far) 70%, var(--counter));
+
+  --field:    oklch(0.235 0.052 var(--hr));
+  --surface:  oklch(0.875 0.045 calc(var(--hr) - 60));
+  --ink:      oklch(0.26 0.05 var(--hr));
+  --ink-soft: oklch(0.40 0.05 var(--hr));
+  --ink-faint:oklch(0.56 0.04 var(--hr));
+  --on-ground: oklch(0.88 0.035 calc(var(--hr) - 60));
+  --hairline: oklch(0.875 0.045 calc(var(--hr) - 60) / 0.16);
+  --dense:    oklch(0.875 0.045 calc(var(--hr) - 60));
+  --on-dense: oklch(0.235 0.052 var(--hr));
+
+  /* edge/fill INVERTED — night: spectral body, paper edge */
+  --chip-bg: linear-gradient(135deg,
+    oklch(0.72 0.115 var(--hr) / 0.22),
+    oklch(0.66 0.09 calc(var(--hr) + 55) / 0.18));
+  --chip-edge: linear-gradient(135deg,
+    oklch(0.875 0.045 calc(var(--hr) - 60) / 0.65),
+    oklch(0.875 0.045 calc(var(--hr) - 60) / 0.2));
+  --chip-ink: oklch(0.9 0.04 calc(var(--hr) - 60));
+
+  /* elevation = halo (emitted light, axis-free) */
+  --elev:
+    0 0 26px -4px oklch(0.72 0.115 var(--hr) / 0.30),
+    0 0 60px -10px oklch(0.70 0.12 calc(var(--hr) - 60) / 0.22);
+  --elev-hi:
+    0 0 34px -4px oklch(0.72 0.115 var(--hr) / 0.45),
+    0 0 80px -8px oklch(0.70 0.12 calc(var(--hr) - 60) / 0.34);
+  --elev-press: var(--elev-dense);
+  --elev-dense: 0 0 0 1px oklch(0.875 0.045 calc(var(--hr) - 60) / 0.25);
+
+  /* semantics — wavelength held, shade flipped light */
+  --success: oklch(0.80 0.14 152); --success-dense: oklch(0.82 0.11 152); --on-success-dense: oklch(0.30 0.09 152);
+  --danger:  oklch(0.74 0.16 27);  --danger-dense:  oklch(0.80 0.12 27);  --on-danger-dense:  oklch(0.32 0.13 27);
+  --warning: oklch(0.83 0.13 75);  --warning-dense: oklch(0.62 0.11 75);  --on-warning-dense: oklch(0.28 0.10 75);
+
+  /* type inversion — headline empties to outline */
+  --head-fill: transparent;
+  --head-stroke: 1.2px;
+}
+
+/* ================= BASE ================= */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--field);
+  color: var(--on-ground);
+  font-family: var(--sans);
+  font-size: 15.5px; line-height: 1.55;
+  transition: background var(--t-sunset) var(--e-refract), color var(--t-sunset) var(--e-refract);
+}
+
+/* ----- primitives ----- */
+
+/* dichroic edge ring — reuse on any element via .prism-edge */
+.prism-edge { position: relative; }
+.prism-edge::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px;
+  background: var(--chip-edge); background-size: 200% 200%;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  transition: background-position calc(var(--t-flash) * 3) var(--e-refract);
+  pointer-events: none;
+}
+
+/* button */
+.prism-btn {
+  font-family: var(--sans); font-weight: 600; font-size: 14.5px;
+  border: none; cursor: pointer; padding: 12px 24px; border-radius: var(--r-sm);
+  color: var(--chip-ink); background: var(--chip-bg); box-shadow: var(--elev);
+  position: relative;
+  transition: box-shadow var(--t-flash) var(--e-light), transform var(--t-flash) var(--e-light),
+              background var(--t-sunset) var(--e-refract), color var(--t-sunset) var(--e-refract);
+}
+.prism-btn:hover { box-shadow: var(--elev-hi); transform: var(--enter-from); transform: translate(-2px,-3px); }
+[data-mode="night"] .prism-btn:hover { transform: none; } /* night: glow, don't lift */
+.prism-btn:active { transform: translate(1px,2px); box-shadow: var(--elev-dense); transition-duration: var(--t-press); }
+.prism-btn:focus-visible { outline: 2px solid var(--anchor); outline-offset: 3px; }
+.prism-btn--primary { color: #fff; background: linear-gradient(150deg, var(--anchor), oklch(0.58 0.12 var(--h))); }
+.prism-btn--dense { color: var(--on-dense); background: var(--dense); box-shadow: var(--elev-dense); }
+
+/* surface card (floating) */
+.prism-card {
+  background: var(--surface); color: var(--ink);
+  border-radius: var(--r-lg); padding: 24px; box-shadow: var(--elev); position: relative;
+  transition: background var(--t-sunset) var(--e-refract), box-shadow var(--t-sunset) var(--e-refract), color var(--t-sunset) var(--e-refract);
+}
+
+/* display type (line-work) — never below 40px */
+.prism-display {
+  font-family: var(--display); font-weight: 400;
+  font-size: clamp(40px, 5.4vw, 58px); letter-spacing: 0.03em; line-height: 1.06;
+  color: var(--head-fill); -webkit-text-stroke: var(--head-stroke) var(--on-ground);
+  transition: color var(--t-sunset) var(--e-refract);
+}
+
+/* semantic badges — affirmative shades dark (day) / light (night) */
+.prism-badge { font-size: 12.5px; font-weight: 600; padding: 7px 14px; border-radius: 99px;
+  transition: background var(--t-sunset) var(--e-refract), color var(--t-sunset) var(--e-refract); }
+.prism-badge--ok { background: var(--success-dense); color: var(--on-success-dense); }
+.prism-badge--no { background: var(--danger-dense); color: var(--on-danger-dense); }
+
+/* DATA SURFACE — hairline law: no casts, light enters as a 2px seam */
+.prism-table { border-top: 1px solid var(--ink); }
+.prism-row { position: relative; cursor: pointer; padding: 14px 10px;
+  border-bottom: 1px solid var(--hairline); transition: background var(--t-flash) var(--e-light); }
+.prism-row::before { content: ""; position: absolute; left: 0; top: 12%; bottom: 12%; width: 2px;
+  border-radius: 2px; background: var(--edge); opacity: 0; transition: opacity var(--t-flash) var(--e-light); }
+.prism-row:hover::before, .prism-row[aria-selected="true"]::before { opacity: 1; }
+
+/* ----- motion keyframes ----- */
+@keyframes prism-arrive {
+  0%   { opacity: 0; transform: var(--enter-from) scale(0.97); filter: brightness(1.8) saturate(1.6); }
+  40%  { opacity: 1; filter: brightness(1.25) saturate(1.2); }
+  100% { opacity: 1; transform: translate(0,0) scale(1); filter: none; }
+}
+@keyframes prism-shadow-catch { 0%,35% { box-shadow: 0 0 0 0 transparent; } 100% { box-shadow: var(--elev-hi); } }
+@keyframes prism-dissolve { to { opacity: 0; filter: blur(6px) saturate(0.3); transform: var(--exit-to) scale(0.97); } }
+@keyframes prism-ghost-a { 0%,100% { transform: translate(-3px,-2px); opacity:.5 } 50% { transform: translate(2px,1px); opacity:.25 } }
+@keyframes prism-ghost-b { 0%,100% { transform: translate(3px,2px); opacity:.4 } 50% { transform: translate(-2px,-1px); opacity:.2 } }
+
+/* transient enter (brightness->form->shadow, shadow lagged by --t-lag) */
+.prism-enter {
+  animation: prism-arrive var(--t-arrive) var(--e-light) both,
+             prism-shadow-catch calc(var(--t-arrive) + var(--t-lag)) var(--e-light) both;
+}
+.prism-exit { animation: prism-dissolve var(--t-dissolve) var(--e-refract) both; }
+
+/* superposed loading block (replaces gray skeletons) */
+.prism-ghost { position: relative; border-radius: 6px; background: oklch(0.93 0.008 var(--h)); }
+.prism-ghost::before, .prism-ghost::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
+.prism-ghost::before { background: oklch(0.74 0.16 195 / 0.5); animation: prism-ghost-a calc(var(--q)*22) var(--e-refract) infinite; }
+.prism-ghost::after  { background: oklch(0.66 0.18 25 / 0.4); animation: prism-ghost-b calc(var(--q)*22) var(--e-refract) infinite; animation-delay: calc(var(--q)*-11); }
+
+/* ----- group stagger: 1q per child, cap at 6 ----- */
+.prism-stagger > * { animation: prism-arrive var(--t-arrive) var(--e-light) both; }
+.prism-stagger > :nth-child(1) { animation-delay: 0ms; }
+.prism-stagger > :nth-child(2) { animation-delay: calc(var(--q) * 1); }
+.prism-stagger > :nth-child(3) { animation-delay: calc(var(--q) * 2); }
+.prism-stagger > :nth-child(4) { animation-delay: calc(var(--q) * 3); }
+.prism-stagger > :nth-child(5) { animation-delay: calc(var(--q) * 4); }
+.prism-stagger > :nth-child(6) { animation-delay: calc(var(--q) * 5); }
+.prism-stagger > :nth-child(n+7) { animation-delay: calc(var(--q) * 5); } /* remainder enters as one body */
+
+/* ----- accessibility ----- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition-duration: 0.01ms !important; }
+}

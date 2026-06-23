@@ -1,0 +1,661 @@
+---
+// PRISM — design-system showcase (standalone document).
+// Self-contained: own <html> with data-mode, own day/night cascade. It does NOT
+// use the site Layout because PRISM owns the whole viewport + its own mode model.
+// Authoritative tokens: /prism/prism.tokens.json. Drop-in layer: /prism/prism.css.
+const title = 'PRISM — Prismatic Design System';
+const description =
+  'PRISM: a light-mode-first, prism/glass design system in OKLCH. One anchor hue drives the whole palette; day and redshift (night) modes. Built by Erikk Shupp.';
+---
+
+<!doctype html>
+<html lang="en" data-mode="day">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href="https://shupp.dev/design/prismatic" />
+
+    <!-- OpenGraph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content="https://shupp.dev/design/prismatic" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- PRISM drop-in layer (self-imports its own fonts) -->
+    <link rel="stylesheet" href="/prism/prism.css" />
+
+    <style is:global>
+      /* =====================================================================
+         Showcase-only supplement. Reads PRISM role tokens; mints no brand hex.
+         Helpers the drop-in layer leaves to the consumer: type roles, swatches,
+         info tokens, --standing-tint, entanglement, ghost collapse, string.
+         ===================================================================== */
+
+      /* Info inherits the anchor; --standing-tint is the one sanctioned wash. */
+      [data-mode="day"] {
+        --standing-tint: oklch(0.74 0.125 var(--h) / 0.08);
+        --info: var(--anchor);
+        --info-dense: oklch(0.44 0.10 var(--h));
+        --on-info: #fff;
+      }
+      [data-mode="night"] {
+        --standing-tint: oklch(0.72 0.115 var(--hr) / 0.14);
+        --info: var(--anchor);
+        --info-dense: var(--anchor);
+        --on-info: var(--field);
+      }
+
+      html, body { min-height: 100%; }
+      body { padding-bottom: 6rem; }
+
+      /* ---- Type roles (secondary text derives from currentColor so it adapts
+         to whichever ground it sits on — field or surface — in both modes). -- */
+      .prism-headline { font-family: var(--sans); font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+      .prism-body { font-size: 15.5px; line-height: 1.55; }
+      .prism-ui { font-size: 13.5px; font-weight: 500; }
+      .prism-data { font-family: var(--mono); font-size: 13px; }
+      .prism-eyebrow {
+        font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em;
+        text-transform: uppercase; color: color-mix(in oklch, currentColor 62%, transparent);
+      }
+      .prism-aside {
+        font-family: var(--serif); font-style: italic; font-size: 16px;
+        color: color-mix(in oklch, currentColor 72%, transparent);
+      }
+      .prism-muted { color: color-mix(in oklch, currentColor 68%, transparent); }
+
+      /* Card hover — day lifts toward the light; night glows brighter (no lift). */
+      .prism-card {
+        transition: background var(--t-sunset) var(--e-refract),
+                    box-shadow var(--t-flash) var(--t-lag) var(--e-light),
+                    transform var(--t-arrive) var(--e-light),
+                    color var(--t-sunset) var(--e-refract);
+      }
+      .prism-card.ds-lift:hover { box-shadow: var(--elev-hi); transform: translate(-2px, -3px); }
+      [data-mode="night"] .prism-card.ds-lift:hover { transform: none; }
+
+      /* Primary's dichroic edge drifts on hover (refract easing, via .prism-edge). */
+      .prism-btn--primary.prism-edge:hover::before { background-position: 100% 100%; }
+
+      /* Swatches (showcase chips). Label text stays dark ink on the light bands. */
+      .prism-swatch {
+        border-radius: var(--r-sm); min-height: 64px; display: flex; align-items: flex-end;
+        padding: 0.5rem 0.6rem; font-family: var(--mono); font-size: 12px;
+        color: var(--ink); box-shadow: var(--elev-dense);
+      }
+      .prism-swatch small { opacity: 0.7; }
+      .ds-swatch-label { display: flex; flex-direction: column; gap: 0.1rem; }
+
+      .prism-badge--warn { background: var(--warning-dense); color: var(--on-warning-dense); }
+      .prism-btn--danger { background: var(--danger-dense); color: var(--on-danger-dense); box-shadow: var(--elev-dense); }
+
+      /* ---- Data surface as a block grid (the drop-in's .prism-row is a block) -- */
+      .prism-table {
+        background: var(--surface); color: var(--ink); border-radius: var(--r-md);
+        overflow: hidden; box-shadow: var(--elev-dense);
+        font-family: var(--mono); font-size: 13px;
+      }
+      .prism-table .prism-row, .ds-thead {
+        display: grid; grid-template-columns: var(--cols, 1fr 1fr 1fr); gap: 1rem; align-items: center;
+      }
+      .ds-thead {
+        padding: 10px 10px; border-bottom: 1px solid var(--hairline);
+        font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase;
+        color: color-mix(in oklch, var(--ink) 60%, transparent);
+      }
+      .prism-table .prism-row:last-child { border-bottom: none; }
+      .prism-row.lit::before { opacity: 1; }
+      .prism-row.lit { background: var(--standing-tint); }
+      .prism-row:focus-visible { outline: 2px solid var(--anchor); outline-offset: -2px; }
+
+      /* ---- Entanglement dot ---- */
+      .prism-dot {
+        width: 14px; height: 14px; border-radius: 50%; background: var(--anchor);
+        box-shadow: var(--elev-dense); transition: box-shadow var(--t-flash) var(--e-light), transform var(--t-flash) var(--e-light);
+      }
+      .prism-dot.lit { box-shadow: 0 0 0 4px var(--standing-tint); transform: scale(1.15); }
+
+      /* ---- Superposition collapse (5q) ---- */
+      .prism-ghost.collapsed { background: transparent; }
+      .prism-ghost.collapsed::before, .prism-ghost.collapsed::after {
+        animation: none; opacity: 0; transition: opacity calc(var(--q) * 5) var(--e-light);
+      }
+
+      /* ---- Strings vibrate in color, not space (cull to a few elements) ---- */
+      @keyframes prism-string { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+      .prism-string { animation: prism-string var(--t-string) var(--e-refract) infinite; }
+
+      /* =====================================================================
+         Page chrome (ds-*)
+         ===================================================================== */
+      .ds-skip {
+        position: absolute; left: -999px; top: 0; background: var(--surface); color: var(--ink);
+        padding: 0.5rem 1rem; border-radius: var(--r-sm); z-index: 50;
+      }
+      .ds-skip:focus { left: 0.5rem; top: 0.5rem; }
+
+      .ds-controls {
+        position: sticky; top: 0; z-index: 40;
+        display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem;
+        padding: 0.85rem clamp(1rem, 4vw, 3rem);
+        background: color-mix(in oklch, var(--field) 86%, transparent);
+        backdrop-filter: blur(10px) saturate(140%); -webkit-backdrop-filter: blur(10px) saturate(140%);
+        border-bottom: 1px solid var(--hairline);
+        transition: background var(--t-sunset) var(--e-refract), border-color var(--t-sunset) var(--e-refract);
+      }
+      .ds-brand {
+        font-family: var(--mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
+        color: color-mix(in oklch, currentColor 60%, transparent); text-decoration: none; margin-right: auto;
+      }
+      .ds-brand:hover { color: currentColor; }
+
+      .ds-hue { display: flex; align-items: center; gap: 0.6rem; }
+      .ds-hue label {
+        font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
+        color: color-mix(in oklch, currentColor 60%, transparent);
+      }
+      .ds-hue input[type='range'] {
+        -webkit-appearance: none; appearance: none; width: clamp(120px, 22vw, 240px); height: 8px;
+        border-radius: 999px; outline-offset: 4px;
+        background: linear-gradient(to right,
+          oklch(0.72 0.16 0), oklch(0.72 0.16 60), oklch(0.72 0.16 120),
+          oklch(0.72 0.16 180), oklch(0.72 0.16 240), oklch(0.72 0.16 300), oklch(0.72 0.16 360));
+      }
+      .ds-hue input[type='range']::-webkit-slider-thumb {
+        -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%;
+        background: var(--anchor); border: 2px solid var(--surface); box-shadow: var(--elev-dense); cursor: pointer;
+      }
+      .ds-hue input[type='range']::-moz-range-thumb {
+        width: 20px; height: 20px; border-radius: 50%; background: var(--anchor);
+        border: 2px solid var(--surface); cursor: pointer;
+      }
+      .ds-readout { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
+      .ds-readout b { color: var(--anchor); font-weight: 500; }
+
+      .ds-mode {
+        font-family: var(--mono); font-size: 13px; letter-spacing: 0.04em;
+        padding: 0.5rem 0.9rem; border-radius: var(--r-sm); border: 1px solid var(--hairline);
+        background: var(--surface); color: var(--ink); cursor: pointer;
+        display: inline-flex; align-items: center; gap: 0.5ch;
+        transition: background var(--t-sunset) var(--e-refract), color var(--t-sunset) var(--e-refract);
+      }
+      .ds-mode .ds-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--anchor); }
+
+      .ds-page { max-width: 1080px; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 3rem); }
+      .ds-hero { padding: clamp(2.5rem, 7vw, 5rem) 0 2rem; }
+      .ds-hero .prism-aside { display: block; margin-top: 0.75rem; }
+      .ds-hero .ds-intro { max-width: 58ch; margin-top: 1.25rem; }
+
+      .ds-section { padding: 2.5rem 0; border-top: 1px solid var(--hairline); }
+      .ds-section > header { margin-bottom: 1.5rem; }
+      .ds-section h2 { font-family: var(--sans); font-size: 24px; font-weight: 600; letter-spacing: -0.02em; margin: 0.35rem 0 0; }
+      .ds-section header p { max-width: 64ch; margin: 0.5rem 0 0; color: color-mix(in oklch, currentColor 70%, transparent); }
+      .ds-law { font-family: var(--mono); font-size: 12px; color: color-mix(in oklch, currentColor 52%, transparent); }
+
+      .ds-grid { display: grid; gap: 1rem; }
+      .ds-grid--4 { grid-template-columns: repeat(4, 1fr); }
+      .ds-grid--3 { grid-template-columns: repeat(3, 1fr); }
+      .ds-grid--2 { grid-template-columns: repeat(2, 1fr); }
+      @media (max-width: 760px) {
+        .ds-grid--4 { grid-template-columns: repeat(2, 1fr); }
+        .ds-grid--3, .ds-grid--2 { grid-template-columns: 1fr; }
+      }
+
+      .ds-row-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+      .ds-stack { display: flex; flex-direction: column; gap: 0.6rem; }
+
+      .ds-replay {
+        font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+        padding: 0.35rem 0.7rem; border-radius: var(--r-sm); border: 1px solid var(--hairline);
+        background: transparent; color: color-mix(in oklch, currentColor 70%, transparent); cursor: pointer;
+      }
+      .ds-replay:hover { color: currentColor; border-color: var(--anchor); }
+
+      .ds-caption { font-family: var(--mono); font-size: 12px; margin-top: 0.6rem; color: color-mix(in oklch, currentColor 55%, transparent); }
+
+      .ds-type-stack { display: flex; flex-direction: column; gap: 1.1rem; }
+      .ds-type-stack > * { margin: 0; }
+      .ds-type-meta { color: color-mix(in oklch, currentColor 52%, transparent); font-family: var(--mono); font-size: 12px; }
+
+      .ds-footer {
+        max-width: 1080px; margin: 3rem auto 0; padding: 2rem clamp(1rem, 4vw, 3rem) 0;
+        border-top: 1px solid var(--hairline); font-family: var(--mono); font-size: 13px;
+        color: color-mix(in oklch, currentColor 70%, transparent);
+      }
+      .ds-footer a { color: var(--anchor); }
+      .ds-audit { margin-top: 1rem; line-height: 1.7; }
+      .ds-audit code { color: currentColor; }
+    </style>
+  </head>
+
+  <body>
+    <a class="ds-skip" href="#ds-main">Skip to content</a>
+
+    <!-- ===================== STICKY CONTROL BAR ========================= -->
+    <div class="ds-controls" role="region" aria-label="PRISM controls">
+      <a class="ds-brand" href="/portfolio">&larr; shupp.dev / portfolio</a>
+
+      <div class="ds-hue">
+        <label for="ds-hue-slider">Anchor hue</label>
+        <input id="ds-hue-slider" type="range" min="0" max="360" step="1" value="185"
+          aria-label="Anchor hue in OKLCH degrees" />
+      </div>
+
+      <p class="ds-readout" aria-live="polite">
+        day H <b id="ds-day-h">185°</b> &rarr; redshift H <b id="ds-night-h">129°</b>
+      </p>
+
+      <button id="ds-mode-toggle" class="ds-mode" type="button" aria-pressed="false">
+        <span class="ds-dot" aria-hidden="true"></span>
+        <span id="ds-mode-label">Day</span>
+      </button>
+    </div>
+
+    <main id="ds-main" class="ds-page">
+      <!-- =========================== HERO =============================== -->
+      <header class="ds-hero">
+        <p class="prism-eyebrow prism-string">PRISM · v0.6 · OKLCH</p>
+        <h1 class="prism-display">Prismatic</h1>
+        <span class="prism-aside">Light splits at the edges; shadows carry color, not gray.</span>
+        <p class="prism-body ds-intro prism-muted">
+          A light-mode-first design system built on a prism-glass material model. One
+          anchor hue drives the entire palette — rotate it and the whole system
+          re-derives. Two modes: day, and redshift (night) as a wavelength shift, not a
+          darkness. Drag the hue. Flip the mode. Nothing breaks.
+        </p>
+      </header>
+
+      <!-- ========================= DISPERSION =========================== -->
+      <section class="ds-section" aria-labelledby="ds-dispersion">
+        <header>
+          <span class="ds-law">LAW 1–2 · COLOR</span>
+          <h2 id="ds-dispersion">Dispersion</h2>
+          <p>
+            Brand bands sit at fixed angular offsets from the anchor (+0, &minus;35, +75,
+            &minus;140), all held in L&nbsp;0.70&ndash;0.78 / C&nbsp;0.11&ndash;0.14 so
+            contrast survives any rotation. Field and ink take the cast — never neutral gray.
+          </p>
+        </header>
+
+        <div class="ds-grid ds-grid--4" aria-label="Brand bands">
+          <div class="prism-swatch" style="background: var(--anchor);"><span class="ds-swatch-label">anchor<small>+0°</small></span></div>
+          <div class="prism-swatch" style="background: var(--near);"><span class="ds-swatch-label">near<small>&minus;35°</small></span></div>
+          <div class="prism-swatch" style="background: var(--far);"><span class="ds-swatch-label">far<small>+75°</small></span></div>
+          <div class="prism-swatch" style="background: var(--counter);"><span class="ds-swatch-label">counter<small>&minus;140°</small></span></div>
+        </div>
+
+        <div class="ds-grid ds-grid--4" style="margin-top: 1rem;" aria-label="Role tokens">
+          <div class="prism-swatch" style="background: var(--field);"><span class="ds-swatch-label">field<small>ground</small></span></div>
+          <div class="prism-swatch" style="background: var(--surface);"><span class="ds-swatch-label">surface<small>raised</small></span></div>
+          <div class="prism-swatch" style="background: var(--ink); color: var(--surface);"><span class="ds-swatch-label">ink<small>text</small></span></div>
+          <div class="prism-swatch" style="background: var(--dense); color: var(--on-dense);"><span class="ds-swatch-label">dense<small>immovable</small></span></div>
+        </div>
+      </section>
+
+      <!-- ========================== DENSITY ============================= -->
+      <section class="ds-section" aria-labelledby="ds-density">
+        <header>
+          <span class="ds-law">LAW 5 · DENSITY</span>
+          <h2 id="ds-density">Density — permanence condenses light into pigment</h2>
+          <p>
+            The more permanent a component, the more its color condenses: transient lives on
+            the edge and glow; standing earns a tinted wash and a 1px border; immovable is
+            opaque pigment with near-zero shadow. Destructive actions live in the immovable
+            tier — no spectral play.
+          </p>
+        </header>
+
+        <div class="ds-grid ds-grid--3">
+          <div class="prism-card ds-lift">
+            <p class="prism-eyebrow">Transient</p>
+            <p class="prism-body" style="color: var(--ink-soft); margin: 0.4rem 0 1rem;">Seconds. Edge + spectral glow only.</p>
+            <button class="prism-btn prism-btn--primary prism-edge" type="button">Primary action</button>
+          </div>
+
+          <div class="prism-card" style="border: 1px solid var(--hairline); background: var(--standing-tint); box-shadow: var(--elev-dense);">
+            <p class="prism-eyebrow">Standing</p>
+            <p class="prism-body" style="color: var(--ink-soft); margin: 0.4rem 0 1rem;">Session. Tinted wash + 1px border, short shadow.</p>
+            <button class="prism-btn" type="button" style="box-shadow: var(--elev-dense);">Secondary</button>
+          </div>
+
+          <div class="prism-card" style="background: var(--dense); color: var(--on-dense); box-shadow: var(--elev-dense);">
+            <p class="prism-eyebrow">Immovable</p>
+            <p class="prism-body" style="opacity: 0.85; margin: 0.4rem 0 1rem;">Structural. Opaque pigment, compact, no spectra.</p>
+            <div class="ds-row-actions">
+              <button class="prism-btn prism-btn--dense" type="button">Save</button>
+              <button class="prism-btn prism-btn--dense prism-btn--danger" type="button">Delete</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================= SEMANTICS ============================ -->
+      <section class="ds-section" aria-labelledby="ds-semantics">
+        <header>
+          <span class="ds-law">LAW 4 · SEMANTICS ARE PHYSICS</span>
+          <h2 id="ds-semantics">Semantics — fixed wavelengths</h2>
+          <p>
+            success&nbsp;152°, danger&nbsp;27°, warning&nbsp;75° are pinned in both modes —
+            they never rotate with the brand. Info alone inherits the anchor. Only the shade
+            adapts at night. State is never hue-only: badges carry words.
+          </p>
+        </header>
+
+        <div class="ds-grid ds-grid--4">
+          <div class="prism-card ds-stack" style="box-shadow: var(--elev-dense);">
+            <span class="prism-swatch" style="background: var(--success);">success<small> 152°</small></span>
+            <span class="prism-badge prism-badge--ok">✓ Approved</span>
+          </div>
+          <div class="prism-card ds-stack" style="box-shadow: var(--elev-dense);">
+            <span class="prism-swatch" style="background: var(--danger);">danger<small> 27°</small></span>
+            <span class="prism-badge prism-badge--no">✕ Rejected</span>
+          </div>
+          <div class="prism-card ds-stack" style="box-shadow: var(--elev-dense);">
+            <span class="prism-swatch" style="background: var(--warning);">warning<small> 75°</small></span>
+            <span class="prism-badge prism-badge--warn">! Pending</span>
+          </div>
+          <div class="prism-card ds-stack" style="box-shadow: var(--elev-dense);">
+            <span class="prism-swatch" style="background: var(--info);">info<small> = anchor</small></span>
+            <span class="prism-badge" style="background: var(--info-dense); color: var(--on-info);">i Info</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================= ELEVATION ============================ -->
+      <section class="ds-section" aria-labelledby="ds-elevation">
+        <header>
+          <span class="ds-law">LAW 6–7 · ELEVATION</span>
+          <h2 id="ds-elevation">Elevation — cast floats, hairline grounds</h2>
+          <p>
+            Day shadows are 3-layer chromatic casts along a 135° axis; night shadows are
+            axis-free halos. No black shadows, ever. Inside data, casts are forbidden —
+            elevation collapses to 1px hairlines, and refraction enters only as a 2px seam on
+            the hovered row. A cast now <em>means</em> "floats above the data."
+          </p>
+        </header>
+
+        <div class="ds-grid ds-grid--2" style="align-items: start;">
+          <div class="prism-card ds-lift prism-edge">
+            <p class="prism-eyebrow">Floating card</p>
+            <p class="prism-body" style="margin: 0.5rem 0 0; color: var(--ink-soft);">
+              Full cast (day) / halo (night). Hover to lift — at night it glows brighter
+              instead, because there's nothing to lift toward.
+            </p>
+          </div>
+
+          <div>
+            <div class="prism-table" role="table" aria-label="Dense data (hairline elevation)" style="--cols: 1fr 1fr 1fr;">
+              <div class="ds-thead" role="row">
+                <span role="columnheader">Run</span><span role="columnheader">Hue</span><span role="columnheader">State</span>
+              </div>
+              <div class="prism-row" role="row" tabindex="0"><span>0xA1</span><span>185°</span><span>ok</span></div>
+              <div class="prism-row" role="row" tabindex="0" aria-selected="true"><span>0xA2</span><span>150°</span><span>ok</span></div>
+              <div class="prism-row" role="row" tabindex="0"><span>0xA3</span><span>027°</span><span>fail</span></div>
+              <div class="prism-row" role="row" tabindex="0"><span>0xA4</span><span>075°</span><span>warn</span></div>
+            </div>
+            <p class="ds-caption">No cast inside the table. Hover a row → 2px left seam.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================== MOTION ============================= -->
+      <section class="ds-section" aria-labelledby="ds-motion">
+        <header>
+          <span class="ds-law">LAW 8–15 · MOTION + QUANTUM</span>
+          <h2 id="ds-motion">Motion — quantized, massless, causal</h2>
+          <p>
+            q&nbsp;=&nbsp;40ms; every duration is an integer multiple. Two easings, no springs.
+            Properties animate brightness → form → shadow, and the shadow trails its object by
+            2q. Unknown state is superposed; entangled elements break the lag.
+          </p>
+        </header>
+
+        <div class="ds-grid ds-grid--2">
+          <!-- Stagger -->
+          <div class="prism-card" style="box-shadow: var(--elev-dense);">
+            <div class="ds-row-actions" style="justify-content: space-between;">
+              <p class="prism-eyebrow">Group entrance · 1q/child, cap 6</p>
+              <button class="ds-replay" data-replay="stagger" type="button">Replay</button>
+            </div>
+            <div id="ds-stagger" class="prism-stagger ds-grid ds-grid--3" style="margin-top: 1rem;">
+              <span class="prism-swatch" style="background: var(--anchor);"></span>
+              <span class="prism-swatch" style="background: var(--near);"></span>
+              <span class="prism-swatch" style="background: var(--far);"></span>
+              <span class="prism-swatch" style="background: var(--counter);"></span>
+              <span class="prism-swatch" style="background: var(--info-dense);"></span>
+              <span class="prism-swatch" style="background: var(--dense);"></span>
+            </div>
+          </div>
+
+          <!-- Superposition -->
+          <div class="prism-card" style="box-shadow: var(--elev-dense);">
+            <div class="ds-row-actions" style="justify-content: space-between;">
+              <p class="prism-eyebrow">Superposition · collapse 5q</p>
+              <button class="ds-replay" data-replay="collapse" type="button">Observe</button>
+            </div>
+            <div class="ds-stack" style="margin-top: 1rem;">
+              <div class="prism-ghost" data-ghost style="height: 1.4rem;"></div>
+              <div class="prism-ghost" data-ghost style="height: 1.4rem; width: 80%;"></div>
+              <div class="prism-ghost" data-ghost style="height: 1.4rem; width: 60%;"></div>
+            </div>
+            <div id="ds-collapsed" hidden style="margin-top: 1rem;">
+              <p class="prism-data">↳ run 0xA2 · hue 150° · status ok</p>
+            </div>
+          </div>
+
+          <!-- Entanglement -->
+          <div class="prism-card" style="box-shadow: var(--elev-dense);">
+            <p class="prism-eyebrow">Entanglement · Δt = 0 on shared datum</p>
+            <p class="prism-body" style="color: var(--ink-soft); margin: 0.4rem 0 1rem;">
+              Hover a dot or its row — both light instantly. Unrelated neighbors still lag 2q.
+            </p>
+            <div class="ds-row-actions" style="gap: 1.25rem; margin-bottom: 1rem;">
+              <span class="prism-dot" data-pair="r1" tabindex="0" aria-label="datum r1"></span>
+              <span class="prism-dot" data-pair="r2" tabindex="0" aria-label="datum r2"></span>
+              <span class="prism-dot" data-pair="r3" tabindex="0" aria-label="datum r3"></span>
+            </div>
+            <div class="prism-table" role="table" style="--cols: 1fr 1fr;">
+              <div class="prism-row" role="row" data-pair="r1"><span>r1</span><span>185°</span></div>
+              <div class="prism-row" role="row" data-pair="r2"><span>r2</span><span>150°</span></div>
+              <div class="prism-row" role="row" data-pair="r3"><span>r3</span><span>027°</span></div>
+            </div>
+          </div>
+
+          <!-- Light order -->
+          <div class="prism-card" style="box-shadow: var(--elev-dense);">
+            <div class="ds-row-actions" style="justify-content: space-between;">
+              <p class="prism-eyebrow">Light order · enter from −10,−12</p>
+              <button class="ds-replay" data-replay="enter" type="button">Replay</button>
+            </div>
+            <div id="ds-enter" style="margin-top: 1rem;">
+              <div class="prism-card prism-edge" style="margin: 0;">
+                <p class="prism-body" style="margin: 0;">Arrives from the light source, decelerates, then its shadow settles 2q behind.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================= REDSHIFT ============================= -->
+      <section class="ds-section" aria-labelledby="ds-redshift">
+        <header>
+          <span class="ds-law">LAW 16–19 · REDSHIFT</span>
+          <h2 id="ds-redshift">Redshift — night is a wavelength, not a darkness</h2>
+          <p>
+            Toggle the mode (top right). Night mints zero new colors: dense→field,
+            field→surface, edge↔fill, cast→halo, filled display→outline. The hue slides toward
+            the long-wavelength end via <code class="prism-data">redshift(h)</code>. Sunsets
+            refract over 25q — never snap.
+          </p>
+        </header>
+
+        <div class="ds-grid ds-grid--2" style="align-items: start;">
+          <div class="prism-card prism-edge">
+            <p class="prism-eyebrow">Figure / ground swap</p>
+            <p class="prism-body" style="color: var(--ink-soft); margin: 0.5rem 0 0;">
+              In day this card is paper on a near-white field with a dichroic edge. In night
+              the field goes dark, this surface becomes the paper figure, and the edge inverts
+              to quiet while the body carries the spectrum.
+            </p>
+          </div>
+          <div class="prism-card ds-stack" style="box-shadow: var(--elev-dense);">
+            <p class="prism-eyebrow">Conserved palette</p>
+            <div class="ds-grid ds-grid--4">
+              <span class="prism-swatch" style="background: var(--anchor);"></span>
+              <span class="prism-swatch" style="background: var(--near);"></span>
+              <span class="prism-swatch" style="background: var(--far);"></span>
+              <span class="prism-swatch" style="background: var(--counter);"></span>
+            </div>
+            <p class="ds-caption">Same bands, recomputed from <code class="prism-data">--hr</code> at night.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================== TYPE ============================== -->
+      <section class="ds-section" aria-labelledby="ds-type">
+        <header>
+          <span class="ds-law">LAW 20 · TYPE</span>
+          <h2 id="ds-type">Type — five roles, line work on top</h2>
+          <p>
+            Display is constructed line work (Tilt&nbsp;Prism), allowed only ≥40px — below
+            that it falls back to Instrument&nbsp;Sans 600. Day fills it; night outlines it.
+          </p>
+        </header>
+
+        <div class="prism-card ds-type-stack" style="box-shadow: var(--elev-dense);">
+          <div>
+            <span class="ds-type-meta">display · line work · ≥40px</span>
+            <p class="prism-display">Refraction</p>
+          </div>
+          <div>
+            <span class="ds-type-meta">headline · Instrument Sans 600</span>
+            <p class="prism-headline">Light splits into spectra at the boundary.</p>
+          </div>
+          <div>
+            <span class="ds-type-meta">body · Sans 400</span>
+            <p class="prism-body" style="margin: 0;">The near-white field does the work. Color appears only at edges and in shadows.</p>
+          </div>
+          <div>
+            <span class="ds-type-meta">data · Spline Sans Mono</span>
+            <p class="prism-data" style="margin: 0;">--h: 185 → --hr: 129 · q = 40ms · AA ≥ 4.5:1</p>
+          </div>
+          <div>
+            <span class="ds-type-meta">aside · Instrument Serif italic · one phrase</span>
+            <p class="prism-aside" style="margin: 0;">the human voice, used sparingly.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="ds-footer">
+      <p>
+        PRISM v0.6 · all color OKLCH · tokens:
+        <a href="/prism/prism.tokens.json">prism.tokens.json</a> · layer:
+        <a href="/prism/prism.css">prism.css</a>
+      </p>
+      <div class="ds-audit">
+        <strong>Contrast audit (WCAG AA, body ink on field):</strong><br />
+        Verified across hues <code>{`{20, 60, 90, 150, 185, 260, 310}`}</code> in both modes via
+        <code>scripts/prism-contrast-audit.mjs</code>. The yellow-green band
+        (<code>60–90°</code>) is the known risk zone; <code>--ink</code> holds AA there because
+        its lightness (L&nbsp;0.28 day / paper-dark night) keeps the ratio above 4.5:1 across the
+        wheel — no ink-darkening fix was required. See the script output for per-hue ratios.
+      </div>
+    </footer>
+
+    <script is:inline>
+      (function () {
+        const root = document.documentElement;
+        const slider = document.getElementById('ds-hue-slider');
+        const dayH = document.getElementById('ds-day-h');
+        const nightH = document.getElementById('ds-night-h');
+        const modeBtn = document.getElementById('ds-mode-toggle');
+        const modeLabel = document.getElementById('ds-mode-label');
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)');
+
+        // Redshift: slide hue toward the long-wavelength (red) end. Spectral hues
+        // (45–300) descend toward red (45); non-spectral pinks (300–360) wrap forward.
+        function prismRedshift(h, k = 0.4) {
+          if (h <= 45) return h;
+          if (h > 300) return Math.round((h + (385 - h) * k) % 360);
+          return Math.round(h - (h - 45) * k);
+        }
+
+        function applyHue(h) {
+          root.style.setProperty('--h', h);
+          const hr = prismRedshift(h);
+          root.style.setProperty('--hr', hr);
+          dayH.textContent = h + '°';
+          nightH.textContent = hr + '°';
+        }
+
+        slider.addEventListener('input', function (e) { applyHue(parseInt(e.target.value, 10)); });
+        applyHue(parseInt(slider.value, 10));
+
+        // Mode toggle — refract over 25q (1000ms); never snap.
+        modeBtn.addEventListener('click', function () {
+          const next = root.dataset.mode === 'night' ? 'day' : 'night';
+          root.dataset.mode = next;
+          modeLabel.textContent = next === 'night' ? 'Redshift' : 'Day';
+          modeBtn.setAttribute('aria-pressed', String(next === 'night'));
+        });
+
+        // Replay helper: re-trigger an entrance animation by reflow.
+        function replay(el) {
+          el.style.animation = 'none';
+          el.querySelectorAll('*').forEach(function (n) { n.style.animation = 'none'; });
+          void el.offsetWidth; // force reflow
+          el.style.animation = '';
+          el.querySelectorAll('*').forEach(function (n) { n.style.animation = ''; });
+        }
+
+        document.querySelectorAll('[data-replay]').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            const kind = btn.getAttribute('data-replay');
+            if (kind === 'stagger') replay(document.getElementById('ds-stagger'));
+            if (kind === 'enter') {
+              const host = document.getElementById('ds-enter').firstElementChild;
+              host.classList.remove('prism-enter');
+              void host.offsetWidth;
+              host.classList.add('prism-enter');
+            }
+            if (kind === 'collapse') collapse();
+          });
+        });
+
+        // Superposition collapse + reset (toggles on the Observe button).
+        const ghosts = document.querySelectorAll('[data-ghost]');
+        const collapsed = document.getElementById('ds-collapsed');
+        let isCollapsed = false;
+        function collapse() {
+          isCollapsed = !isCollapsed;
+          ghosts.forEach(function (g) { g.classList.toggle('collapsed', isCollapsed); });
+          collapsed.hidden = !isCollapsed;
+          const btn = document.querySelector('[data-replay="collapse"]');
+          if (btn) btn.textContent = isCollapsed ? 'Superpose' : 'Observe';
+        }
+
+        // Entanglement: light all elements sharing a datum with Δt = 0.
+        function setLit(pair, on) {
+          document.querySelectorAll('[data-pair="' + pair + '"]').forEach(function (el) {
+            el.classList.toggle('lit', on);
+          });
+        }
+        document.querySelectorAll('[data-pair]').forEach(function (el) {
+          const pair = el.getAttribute('data-pair');
+          el.addEventListener('mouseenter', function () { setLit(pair, true); });
+          el.addEventListener('mouseleave', function () { setLit(pair, false); });
+          el.addEventListener('focus', function () { setLit(pair, true); });
+          el.addEventListener('blur', function () { setLit(pair, false); });
+        });
+      })();
+    </script>
+  </body>
+</html>

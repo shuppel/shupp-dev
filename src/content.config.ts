@@ -34,6 +34,7 @@ const projectCollection = defineCollection({
     image: z.string().optional(),
     projectUrl: z.string().url().optional(),
     githubUrl: z.string().url().optional(),
+    customUrl: z.string().optional(), // Internal route the portfolio card links to instead of /portfolio/[slug] (e.g. a self-contained showcase like /design/prismatic)
     relatedBlogPosts: z.union([z.array(z.string()), z.null()]).optional(), // Related blog post slugs or null if N/A
   }),
 });

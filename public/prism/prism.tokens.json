@@ -1,0 +1,169 @@
+{
+  "$schema": "https://design-tokens.org/schema.json",
+  "$description": "PRISM design system tokens. Light-mode-first, prism/glass material model. Two modes: day, redshift. All color in OKLCH. Hue is parametric: one anchor hue --h drives the entire palette.",
+  "meta": {
+    "name": "PRISM",
+    "version": "0.6.0",
+    "colorSpace": "oklch",
+    "anchorHueDefault": 185,
+    "modes": ["day", "redshift"]
+  },
+
+  "param": {
+    "anchorHue": { "$type": "number", "$value": 185, "$description": "The single source hue (OKLCH degrees, 0-360). Every brand color derives from this. Swapping it re-derives the whole system." },
+    "redshiftHue": { "$type": "number", "$value": 136, "$description": "Computed: redshift(anchorHue). Used by redshift mode only. See algorithm in prism.spec.md §REDSHIFT." }
+  },
+
+  "dispersion": {
+    "$description": "Brand bands sit at FIXED angular offsets from the anchor. All share L 0.70-0.78 / C 0.11-0.14 so contrast survives any rotation.",
+    "anchor":  { "$type": "color", "$value": "oklch(0.74 0.125 {param.anchorHue})", "offsetDeg": 0 },
+    "near":    { "$type": "color", "$value": "oklch(0.76 0.14 calc({param.anchorHue} - 35))", "offsetDeg": -35 },
+    "far":     { "$type": "color", "$value": "oklch(0.70 0.11 calc({param.anchorHue} + 75))", "offsetDeg": 75 },
+    "counter": { "$type": "color", "$value": "oklch(0.78 0.13 calc({param.anchorHue} - 140))", "offsetDeg": -140 }
+  },
+
+  "color": {
+    "day": {
+      "field":     { "$type": "color", "$value": "oklch(0.962 0.008 {param.anchorHue})", "role": "ground", "$description": "Page background. Never pure white; carries 0.8% anchor chroma." },
+      "surface":   { "$type": "color", "$value": "oklch(0.985 0.005 {param.anchorHue})", "role": "raised" },
+      "ink":       { "$type": "color", "$value": "oklch(0.28 0.03 {param.anchorHue})", "role": "text-primary", "$description": "Never #000. Cool teal-black, dyed by anchor." },
+      "inkSoft":   { "$type": "color", "$value": "oklch(0.48 0.035 {param.anchorHue})", "role": "text-secondary" },
+      "inkFaint":  { "$type": "color", "$value": "oklch(0.66 0.025 {param.anchorHue})", "role": "text-tertiary" },
+      "hairline":  { "$type": "color", "$value": "oklch(0.28 0.03 {param.anchorHue} / 0.12)", "role": "divider" },
+      "dense":     { "$type": "color", "$value": "oklch(0.44 0.10 {param.anchorHue})", "role": "immovable-fill" },
+      "onDense":   { "$type": "color", "$value": "#ffffff", "role": "immovable-text" }
+    },
+    "redshift": {
+      "$description": "NIGHT = figure/ground swap + wavelength shift. No new colors minted. dense->field, field->surface.",
+      "field":     { "$type": "color", "$value": "oklch(0.235 0.052 {param.redshiftHue})", "role": "ground", "swappedFrom": "day.dense" },
+      "surface":   { "$type": "color", "$value": "oklch(0.875 0.045 calc({param.redshiftHue} - 60))", "role": "raised", "swappedFrom": "day.field" },
+      "ink":       { "$type": "color", "$value": "oklch(0.26 0.05 {param.redshiftHue})", "role": "text-on-surface" },
+      "inkSoft":   { "$type": "color", "$value": "oklch(0.40 0.05 {param.redshiftHue})", "role": "text-secondary" },
+      "inkFaint":  { "$type": "color", "$value": "oklch(0.56 0.04 {param.redshiftHue})", "role": "text-tertiary" },
+      "onGround":  { "$type": "color", "$value": "oklch(0.88 0.035 calc({param.redshiftHue} - 60))", "role": "text-on-ground" },
+      "hairline":  { "$type": "color", "$value": "oklch(0.875 0.045 calc({param.redshiftHue} - 60) / 0.16)", "role": "divider" },
+      "dense":     { "$type": "color", "$value": "oklch(0.875 0.045 calc({param.redshiftHue} - 60))", "role": "immovable-fill", "$description": "Immovable is paper now." },
+      "onDense":   { "$type": "color", "$value": "oklch(0.235 0.052 {param.redshiftHue})", "role": "immovable-text" },
+      "dispersion": {
+        "$description": "Dispersion narrows at low energy — offsets compress.",
+        "anchor":  { "$type": "color", "$value": "oklch(0.72 0.115 {param.redshiftHue})", "offsetDeg": 0 },
+        "near":    { "$type": "color", "$value": "oklch(0.74 0.125 calc({param.redshiftHue} - 25))", "offsetDeg": -25 },
+        "far":     { "$type": "color", "$value": "oklch(0.66 0.09 calc({param.redshiftHue} + 55))", "offsetDeg": 55 },
+        "counter": { "$type": "color", "$value": "oklch(0.76 0.12 calc({param.redshiftHue} - 95))", "offsetDeg": -95 }
+      }
+    }
+  },
+
+  "semantic": {
+    "$description": "FIXED wavelengths. Never rotate with brand. Adapt only in SHADE between modes. Collision rule: if anchor lands within +/-25 deg of a semantic hue, semantic keeps its hue and brand expresses via other bands.",
+    "success": {
+      "hueDeg": 152,
+      "day":      { "$type": "color", "$value": "oklch(0.70 0.16 152)" },
+      "dayDense": { "$type": "color", "$value": "oklch(0.46 0.13 152)", "on": "#ffffff" },
+      "night":      { "$type": "color", "$value": "oklch(0.80 0.14 152)" },
+      "nightDense": { "$type": "color", "$value": "oklch(0.82 0.11 152)", "on": "oklch(0.30 0.09 152)" }
+    },
+    "danger": {
+      "hueDeg": 27,
+      "day":      { "$type": "color", "$value": "oklch(0.60 0.19 27)" },
+      "dayDense": { "$type": "color", "$value": "oklch(0.46 0.17 27)", "on": "#ffffff" },
+      "night":      { "$type": "color", "$value": "oklch(0.74 0.16 27)" },
+      "nightDense": { "$type": "color", "$value": "oklch(0.80 0.12 27)", "on": "oklch(0.32 0.13 27)" }
+    },
+    "warning": {
+      "hueDeg": 75,
+      "day":      { "$type": "color", "$value": "oklch(0.76 0.15 75)" },
+      "dayDense": { "$type": "color", "$value": "oklch(0.52 0.13 75)", "on": "#ffffff" },
+      "night":      { "$type": "color", "$value": "oklch(0.83 0.13 75)" },
+      "nightDense": { "$type": "color", "$value": "oklch(0.62 0.11 75)", "on": "oklch(0.28 0.10 75)" }
+    },
+    "info": {
+      "$description": "Info ALONE inherits the anchor hue (rotates with brand).",
+      "hueDeg": "{param.anchorHue}",
+      "day":      { "$type": "color", "$value": "oklch(0.74 0.125 {param.anchorHue})" },
+      "dayDense": { "$type": "color", "$value": "oklch(0.44 0.10 {param.anchorHue})", "on": "#ffffff" }
+    }
+  },
+
+  "elevation": {
+    "$description": "Day = chromatic CAST (blocked light, 135deg axis, 3 spectral layers). Night = HALO (emitted light, axis-free glow). Inside data surfaces ALL casts are forbidden — see spec §HAIRLINE.",
+    "day": {
+      "rest":  { "$type": "shadow", "$value": "6px 8px 24px -6px oklch(0.74 0.125 {param.anchorHue} / 0.30), 14px 18px 40px -10px oklch(0.70 0.11 calc({param.anchorHue} + 75) / 0.26), 2px 3px 10px -2px oklch(0.78 0.13 calc({param.anchorHue} - 140) / 0.18)" },
+      "lift":  { "$type": "shadow", "$value": "10px 14px 32px -6px oklch(0.74 0.125 {param.anchorHue} / 0.40), 24px 32px 64px -12px oklch(0.70 0.11 calc({param.anchorHue} + 75) / 0.36), 4px 5px 14px -2px oklch(0.78 0.13 calc({param.anchorHue} - 140) / 0.26)" },
+      "press": { "$type": "shadow", "$value": "2px 3px 8px -3px oklch(0.74 0.125 {param.anchorHue} / 0.30), 5px 7px 16px -6px oklch(0.70 0.11 calc({param.anchorHue} + 75) / 0.28)" },
+      "dense": { "$type": "shadow", "$value": "1px 2px 6px -2px oklch(0.28 0.03 {param.anchorHue} / 0.25)" }
+    },
+    "redshift": {
+      "rest":  { "$type": "shadow", "$value": "0 0 26px -4px oklch(0.72 0.115 {param.redshiftHue} / 0.30), 0 0 60px -10px oklch(0.70 0.12 calc({param.redshiftHue} - 60) / 0.22)" },
+      "lift":  { "$type": "shadow", "$value": "0 0 34px -4px oklch(0.72 0.115 {param.redshiftHue} / 0.45), 0 0 80px -8px oklch(0.70 0.12 calc({param.redshiftHue} - 60) / 0.34)" },
+      "dense": { "$type": "shadow", "$value": "0 0 0 1px oklch(0.875 0.045 calc({param.redshiftHue} - 60) / 0.25)" }
+    },
+    "lightAxisDeg": 135,
+    "shadowLagMs": 80
+  },
+
+  "edge": {
+    "$description": "Dichroic 1px ring. Day: color on EDGE, quiet body. Night INVERTS: spectral body, paper edge. Implemented via mask-composite exclude — see spec §EDGE-RECIPE.",
+    "dichroic":    { "$type": "gradient", "$value": "linear-gradient(135deg, {dispersion.anchor}, {dispersion.near} 30%, {dispersion.far} 70%, {dispersion.counter})" },
+    "lightSeamPx": { "$type": "dimension", "$value": "2px", "$description": "Refraction inside data surfaces: a 2px left-edge seam on hovered/selected rows. Replaces the forbidden cast." },
+    "ringWidthPx": { "$type": "dimension", "$value": "1.5px" }
+  },
+
+  "motion": {
+    "$description": "QUANTIZED. q = 40ms. Every duration is an integer multiple. Two easings only; springs/bounces forbidden system-wide.",
+    "quantumMs": { "$type": "number", "$value": 40 },
+    "duration": {
+      "flash":    { "$type": "duration", "$value": "120ms", "quanta": 3,  "use": "hover, state flips, press-out" },
+      "lag":      { "$type": "duration", "$value": "80ms",  "quanta": 2,  "use": "shadow trails its object (causal propagation)" },
+      "press":    { "$type": "duration", "$value": "60ms",  "quanta": 1.5, "use": "press-in compression" },
+      "arrive":   { "$type": "duration", "$value": "240ms", "quanta": 6,  "use": "transient enter" },
+      "mass":     { "$type": "duration", "$value": "280ms", "quanta": 7,  "use": "immovable moves" },
+      "settle":   { "$type": "duration", "$value": "400ms", "quanta": 10, "use": "standing enter, layout shifts" },
+      "dissolve": { "$type": "duration", "$value": "1400ms","quanta": 35, "use": "transient exit (afterimage)" },
+      "exit":     { "$type": "duration", "$value": "320ms", "quanta": 8,  "use": "standing exit" },
+      "sunset":   { "$type": "duration", "$value": "1000ms","quanta": 25, "use": "day<->redshift mode change. Snapping forbidden." },
+      "string":   { "$type": "duration", "$value": "4400ms","quanta": 110,"use": "idle color-space vibration period" },
+      "staggerStepMs": { "$type": "number", "$value": 40, "quanta": 1, "use": "per-child group entrance, capped at 6 children" }
+    },
+    "easing": {
+      "light":   { "$type": "cubicBezier", "$value": [0.19, 1, 0.22, 1], "use": "massless: arrives at speed, decelerates" },
+      "mass":    { "$type": "cubicBezier", "$value": [0.6, 0, 0.3, 1], "use": "heavy: reluctant start, firm stop" },
+      "refract": { "$type": "cubicBezier", "$value": [0.45, 0, 0.55, 1], "use": "hue/gradient/mode drift only" }
+    },
+    "translate": {
+      "enterFrom": { "$type": "dimension", "$value": "translate(-10px, -12px)", "$description": "Enter from the upper-left light source." },
+      "exitTo":    { "$type": "dimension", "$value": "translate(5px, 7px)", "$description": "Exit toward the lower-right cast, with blur." }
+    },
+    "superposition": {
+      "ghostA": { "$type": "color", "$value": "oklch(0.74 0.16 195 / 0.55)", "role": "short-wavelength loading ghost" },
+      "ghostB": { "$type": "color", "$value": "oklch(0.66 0.18 25 / 0.45)", "role": "long-wavelength loading ghost" },
+      "collapseQuanta": 5,
+      "oscillationQuanta": 22
+    }
+  },
+
+  "radius": {
+    "sm": { "$type": "dimension", "$value": "10px" },
+    "md": { "$type": "dimension", "$value": "16px" },
+    "lg": { "$type": "dimension", "$value": "24px" }
+  },
+
+  "type": {
+    "$description": "Line-work display = glass type. Display face is FORBIDDEN below 40px (collapses to noise); falls back to sans.",
+    "family": {
+      "display": { "$type": "fontFamily", "$value": "\"Tilt Prism\", \"Instrument Sans\", system-ui, sans-serif", "constraint": "minSize 40px; line-work/outline face only" },
+      "sans":    { "$type": "fontFamily", "$value": "\"Instrument Sans\", system-ui, sans-serif" },
+      "serif":   { "$type": "fontFamily", "$value": "\"Instrument Serif\", Georgia, serif", "constraint": "italic only; one phrase per view (the human voice)" },
+      "mono":    { "$type": "fontFamily", "$value": "\"Spline Sans Mono\", ui-monospace, monospace", "use": "data, numbers, labels, eyebrows" }
+    },
+    "role": {
+      "display":  { "family": "display", "size": "clamp(40px, 5.4vw, 58px)", "weight": 400, "tracking": "0.03em", "modeBehavior": "day=filled, redshift=outline (-webkit-text-stroke 1.2px, fill transparent)" },
+      "headline": { "family": "sans", "size": "24px", "weight": 600, "tracking": "-0.02em" },
+      "body":     { "family": "sans", "size": "15.5px", "weight": 400, "lineHeight": 1.55 },
+      "ui":       { "family": "sans", "size": "13.5px", "weight": 500 },
+      "data":     { "family": "mono", "size": "13px", "weight": 400 },
+      "eyebrow":  { "family": "mono", "size": "12px", "weight": 400, "tracking": "0.14em", "transform": "uppercase" },
+      "aside":    { "family": "serif", "style": "italic", "size": "16px" }
+    }
+  }
+}
