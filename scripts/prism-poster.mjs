@@ -4,6 +4,11 @@
  * the system's signature: one anchor hue, two wavelengths. OKLCH is converted to
  * sRGB hex so librsvg/resvg (via sharp) renders it everywhere.
  *
+ * The wordmark uses the real line-work display face (Tilt Prism); labels use
+ * Spline Sans Mono — the same faces as the showcase page. To regenerate, those
+ * Google fonts must be installed for fontconfig (e.g. dropped in ~/.fonts +
+ * `fc-cache -f`). The committed PNG already bakes them in.
+ *
  * Run: node scripts/prism-poster.mjs   ->  public/images/projects/prismatic.png
  */
 import sharp from 'sharp';
@@ -56,8 +61,9 @@ const night = {
 };
 
 const W = 1500, H = 1000, MID = W / 2;
-const serif = 'Liberation Serif, DejaVu Serif, serif';
-const mono = 'Liberation Mono, DejaVu Sans Mono, monospace';
+// the real PRISM type faces (registered via fontconfig), matching the page
+const display = 'Tilt Prism';
+const mono = 'Spline Sans Mono, Liberation Mono, monospace';
 
 // one band-swatch row (4 chips) anchored at (x,y)
 function bands(x, y, cw, gap, p, labelFill) {
@@ -130,12 +136,13 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" 
     </g>
   </g>
 
-  <!-- split wordmark: filled (day) | outline (night) -->
+  <!-- split wordmark in the real line-work display face (Tilt Prism):
+       day = dark line work on light, night = light line work on dark -->
   <g clip-path="url(#left)">
-    <text x="${MID}" y="640" text-anchor="middle" font-family="${serif}" font-size="158" letter-spacing="1" fill="${day.ink}">Prismatic</text>
+    <text x="${MID}" y="630" text-anchor="middle" font-family="${display}" font-size="128" letter-spacing="2" fill="${day.ink}">Prismatic</text>
   </g>
   <g clip-path="url(#right)">
-    <text x="${MID}" y="640" text-anchor="middle" font-family="${serif}" font-size="158" letter-spacing="1" fill="none" stroke="${night.onGround}" stroke-width="1.4">Prismatic</text>
+    <text x="${MID}" y="630" text-anchor="middle" font-family="${display}" font-size="128" letter-spacing="2" fill="${night.onGround}">Prismatic</text>
   </g>
 
   <!-- seam -->
