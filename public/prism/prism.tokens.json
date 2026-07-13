@@ -3,7 +3,7 @@
   "$description": "PRISM design system tokens. Light-mode-first, prism/glass material model. Two modes: day, redshift. All color in OKLCH. Hue is parametric: one anchor hue --h drives the entire palette.",
   "meta": {
     "name": "PRISM",
-    "version": "0.6.0",
+    "version": "0.7.0",
     "colorSpace": "oklch",
     "anchorHueDefault": 185,
     "modes": ["day", "redshift"]
@@ -12,6 +12,35 @@
   "param": {
     "anchorHue": { "$type": "number", "$value": 185, "$description": "The single source hue (OKLCH degrees, 0-360). Every brand color derives from this. Swapping it re-derives the whole system." },
     "redshiftHue": { "$type": "number", "$value": 136, "$description": "Computed: redshift(anchorHue). Used by redshift mode only. See algorithm in prism.spec.md §REDSHIFT." }
+  },
+
+  "holography": {
+    "$description": "The holographic reference beam. Six registered (@property) custom properties on :root are the ONLY runtime light API; every dichroic edge angle, chromatic cast vector, glint and tilt derives from them via var()/calc() cascade. A pointer driver writes them rAF-batched, at most once per frame, and only when a value crosses its quantum — the typed properties then refract between quanta over duration.flash. Without a driver the initial values reproduce the static 135° axis exactly.",
+    "ref": {
+      "castAngle":  { "$type": "number", "prop": "--la",  "initial": 135,    "$description": "Cast angle in CSS-gradient degrees. Driver keeps it UNWOUND (may exceed 0-360) so 359→1 never spins the page." },
+      "castVectorX": { "$type": "number", "prop": "--lvx", "initial": 0.7071, "$description": "Cast unit vector x. Shadows fall along (+lvx, +lvy); entrances arrive from (-lvx, -lvy)." },
+      "castVectorY": { "$type": "number", "prop": "--lvy", "initial": 0.7071 },
+      "intensity":   { "$type": "number", "prop": "--li",  "initial": 0.35,   "$description": "0-1. Scales the glint and foil highlight alpha." },
+      "lightX":      { "$type": "number", "prop": "--lxp", "initial": 30,     "$description": "Light position, viewport %." },
+      "lightY":      { "$type": "number", "prop": "--lyp", "initial": 20 }
+    },
+    "quantum": {
+      "$description": "Light is quantized (Law 21). Refs are written only on quantum crossings, so most pointer frames write nothing; @property typing interpolates between steps.",
+      "angleDeg": 3,
+      "vector": 0.02,
+      "intensity": 0.05,
+      "positionPct": 2
+    },
+    "night": { "$description": "Redshift conserves the physics: casts are already axis-free halos, so only the glint, foil and screen sheen answer the light at night." }
+  },
+
+  "display": {
+    "$description": "Pixel displays (after Ink & Switch's Tenfold). Icons live on coarse one-bit grids; displays EMIT rather than print, so the screen glass stays dark in BOTH modes and only the emission wavelength changes. Lit pixels take a dispersion band via --px and glow with a small same-color halo.",
+    "iconGrid": { "cols": 8, "rows": 8 },
+    "screenDay":   { "$type": "color", "$value": "oklch(0.21 0.035 {param.anchorHue})" },
+    "screenNight": { "$type": "color", "$value": "oklch(0.17 0.04 {param.redshiftHue})" },
+    "pixelOff":    { "$type": "color", "$value": "oklch(0.32 0.03 {param.anchorHue} / 0.45)" },
+    "bands": ["anchor", "near", "far", "counter"]
   },
 
   "dispersion": {

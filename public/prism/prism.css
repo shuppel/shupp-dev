@@ -1,16 +1,42 @@
 /* ============================================================
-   PRISM v0.6 — design system CSS layer
+   PRISM v0.7 — design system CSS layer
    Drop-in. Set data-mode="day" | "night" on <html>.
    Set --h (anchor hue, OKLCH deg) on :root to rotate the palette.
    Set --hr (redshift hue) via the JS helper at the bottom.
+
+   v0.7 — HOLOGRAPHY: a single light reference beam (six registered
+   custom properties on :root) drives every edge angle, cast vector,
+   glint and tilt by var()/calc() cascade. A driver writes the refs
+   at most once per frame, quantized; without a driver the statics
+   below reproduce the v0.6 look exactly (cast axis 135°).
    ============================================================ */
 
 @import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@1&family=Spline+Sans+Mono:wght@400;500&family=Tilt+Prism&display=swap");
+
+/* --- holographic reference beam: typed so quantized writes interpolate --- */
+@property --la  { syntax: "<number>"; inherits: true; initial-value: 135; }
+@property --lvx { syntax: "<number>"; inherits: true; initial-value: 0.7071; }
+@property --lvy { syntax: "<number>"; inherits: true; initial-value: 0.7071; }
+@property --li  { syntax: "<number>"; inherits: true; initial-value: 0.35; }
+@property --lxp { syntax: "<number>"; inherits: true; initial-value: 30; }
+@property --lyp { syntax: "<number>"; inherits: true; initial-value: 20; }
 
 :root {
   /* --- parametric hue --- */
   --h: 185;   /* anchor hue, the one decision */
   --hr: 136;  /* redshift hue, computed by prismRedshift(); see JS below */
+
+  /* --- holography (the reference beam; a pointer driver MAY write these) ---
+     --la  cast angle in CSS-gradient degrees (135 = light from upper-left)
+     --lvx/--lvy  cast unit vector — shadows fall along (+lvx, +lvy)
+     --li  light intensity 0–1 · --lxp/--lyp  light position, viewport % */
+  --la: 135; --lvx: 0.7071; --lvy: 0.7071;
+  --li: 0.35; --lxp: 30; --lyp: 20;
+  /* quantized writes land as Δ-steps; this transition refracts between quanta */
+  transition:
+    --la  var(--t-flash) var(--e-refract), --lvx var(--t-flash) var(--e-refract),
+    --lvy var(--t-flash) var(--e-refract), --li  var(--t-flash) var(--e-refract),
+    --lxp var(--t-flash) var(--e-refract), --lyp var(--t-flash) var(--e-refract);
 
   /* --- motion (quantized: q = 40ms) --- */
   --q: 40ms;
@@ -27,8 +53,9 @@
   --e-light: cubic-bezier(0.19, 1, 0.22, 1);
   --e-mass: cubic-bezier(0.6, 0, 0.3, 1);
   --e-refract: cubic-bezier(0.45, 0, 0.55, 1);
-  --enter-from: translate(-10px, -12px);
-  --exit-to: translate(5px, 7px);
+  /* objects enter FROM the light and exit along the cast (≈ -10,-12 / 5,7 at rest) */
+  --enter-from: translate(calc(var(--lvx) * -14px), calc(var(--lvy) * -17px));
+  --exit-to: translate(calc(var(--lvx) * 7px), calc(var(--lvy) * 10px));
 
   /* --- radii --- */
   --r-sm: 10px; --r-md: 16px; --r-lg: 24px;
@@ -44,7 +71,7 @@
   --near:    oklch(0.76 0.14  calc(var(--h) - 35));
   --far:     oklch(0.70 0.11  calc(var(--h) + 75));
   --counter: oklch(0.78 0.13  calc(var(--h) - 140));
-  --edge: linear-gradient(135deg, var(--anchor), var(--near) 30%, var(--far) 70%, var(--counter));
+  --edge: linear-gradient(calc(var(--la) * 1deg), var(--anchor), var(--near) 30%, var(--far) 70%, var(--counter));
 }
 
 /* ================= DAY ================= */
@@ -64,18 +91,19 @@
   --chip-edge: var(--edge);
   --chip-ink: var(--ink);
 
-  /* elevation = chromatic cast */
+  /* elevation = chromatic cast, thrown along the light vector (≈ v0.6 at rest).
+     Dense is immovable: its shadow does NOT follow the light. */
   --elev:
-    6px 8px 24px -6px  oklch(0.74 0.125 var(--h) / 0.30),
-    14px 18px 40px -10px oklch(0.70 0.11 calc(var(--h) + 75) / 0.26),
-    2px 3px 10px -2px  oklch(0.78 0.13 calc(var(--h) - 140) / 0.18);
+    calc(var(--lvx) * 8px)  calc(var(--lvy) * 11px) 24px -6px  oklch(0.74 0.125 var(--h) / 0.30),
+    calc(var(--lvx) * 20px) calc(var(--lvy) * 25px) 40px -10px oklch(0.70 0.11 calc(var(--h) + 75) / 0.26),
+    calc(var(--lvx) * 3px)  calc(var(--lvy) * 4px)  10px -2px  oklch(0.78 0.13 calc(var(--h) - 140) / 0.18);
   --elev-hi:
-    10px 14px 32px -6px  oklch(0.74 0.125 var(--h) / 0.40),
-    24px 32px 64px -12px oklch(0.70 0.11 calc(var(--h) + 75) / 0.36),
-    4px 5px 14px -2px   oklch(0.78 0.13 calc(var(--h) - 140) / 0.26);
+    calc(var(--lvx) * 14px) calc(var(--lvy) * 20px) 32px -6px  oklch(0.74 0.125 var(--h) / 0.40),
+    calc(var(--lvx) * 34px) calc(var(--lvy) * 45px) 64px -12px oklch(0.70 0.11 calc(var(--h) + 75) / 0.36),
+    calc(var(--lvx) * 5.5px) calc(var(--lvy) * 7px) 14px -2px  oklch(0.78 0.13 calc(var(--h) - 140) / 0.26);
   --elev-press:
-    2px 3px 8px -3px oklch(0.74 0.125 var(--h) / 0.30),
-    5px 7px 16px -6px oklch(0.70 0.11 calc(var(--h) + 75) / 0.28);
+    calc(var(--lvx) * 3px) calc(var(--lvy) * 4.5px) 8px -3px oklch(0.74 0.125 var(--h) / 0.30),
+    calc(var(--lvx) * 7px) calc(var(--lvy) * 10px) 16px -6px oklch(0.70 0.11 calc(var(--h) + 75) / 0.28);
   --elev-dense: 1px 2px 6px -2px oklch(0.28 0.03 var(--h) / 0.25);
 
   /* semantics — day shading */
@@ -95,7 +123,7 @@
   --near:    oklch(0.74 0.125 calc(var(--hr) - 25));
   --far:     oklch(0.66 0.09  calc(var(--hr) + 55));
   --counter: oklch(0.76 0.12  calc(var(--hr) - 95));
-  --edge: linear-gradient(135deg, var(--anchor), var(--near) 30%, var(--far) 70%, var(--counter));
+  --edge: linear-gradient(calc(var(--la) * 1deg), var(--anchor), var(--near) 30%, var(--far) 70%, var(--counter));
 
   --field:    oklch(0.235 0.052 var(--hr));
   --surface:  oklch(0.875 0.045 calc(var(--hr) - 60));
@@ -173,7 +201,7 @@ body {
 [data-mode="night"] .prism-btn:hover { transform: none; } /* night: glow, don't lift */
 .prism-btn:active { transform: translate(1px,2px); box-shadow: var(--elev-dense); transition-duration: var(--t-press); }
 .prism-btn:focus-visible { outline: 2px solid var(--anchor); outline-offset: 3px; }
-.prism-btn--primary { color: #fff; background: linear-gradient(150deg, var(--anchor), oklch(0.58 0.12 var(--h))); }
+.prism-btn--primary { color: #fff; background: linear-gradient(calc(var(--la) * 1deg + 15deg), var(--anchor), oklch(0.58 0.12 var(--h))); }
 .prism-btn--dense { color: var(--on-dense); background: var(--dense); box-shadow: var(--elev-dense); }
 
 /* surface card (floating) */
@@ -204,6 +232,58 @@ body {
 .prism-row::before { content: ""; position: absolute; left: 0; top: 12%; bottom: 12%; width: 2px;
   border-radius: 2px; background: var(--edge); opacity: 0; transition: opacity var(--t-flash) var(--e-light); }
 .prism-row:hover::before, .prism-row[aria-selected="true"]::before { opacity: 1; }
+
+/* HOLO FOIL — a chip whose spectrum, glint and tilt all derive from the
+   reference beam. No JS touches these elements, ever: angle = --la,
+   glint = --lxp/--lyp, tilt = cast vector. */
+.prism-holo {
+  position: relative; border-radius: var(--r-md); padding: 20px;
+  color: oklch(0.24 0.05 var(--h));
+  background:
+    radial-gradient(130% 130% at calc(var(--lxp) * 1%) calc(var(--lyp) * 1%),
+      oklch(0.99 0.02 var(--h) / calc(var(--li) * 0.9)), transparent 55%),
+    linear-gradient(calc(var(--la) * 1deg), var(--anchor), var(--near) 30%, var(--far) 65%, var(--counter));
+  box-shadow: var(--elev);
+  transform: perspective(700px)
+    rotateX(calc((var(--lyp) - 50) * -0.06deg))
+    rotateY(calc((var(--lxp) - 50) * 0.06deg));
+}
+[data-mode="night"] .prism-holo { color: oklch(0.22 0.05 var(--hr)); box-shadow: var(--elev); }
+
+/* PIXEL SCREEN — tiny emissive display (after Ink & Switch's Tenfold).
+   Icons live on coarse grids; displays EMIT, so the screen is dark in
+   both modes. Lit pixels take a band color via --px; a sheen from the
+   reference beam passes over the glass. */
+.prism-screen {
+  --cols: 8; --px-size: 9px; --px-gap: 2px;
+  display: grid; grid-template-columns: repeat(var(--cols), var(--px-size));
+  gap: var(--px-gap); padding: 9px; width: max-content;
+  background: oklch(0.21 0.035 var(--h)); border-radius: 8px;
+  box-shadow: inset 0 0 0 1px oklch(0.99 0.02 var(--h) / 0.10), var(--elev-dense);
+  position: relative; overflow: hidden;
+  transition: background var(--t-sunset) var(--e-refract);
+}
+[data-mode="night"] .prism-screen { background: oklch(0.17 0.04 var(--hr)); }
+.prism-screen b {
+  display: block; width: var(--px-size); height: var(--px-size); border-radius: 2px;
+  background: oklch(0.32 0.03 var(--h) / 0.45);
+  transition: background var(--t-flash) var(--e-light), box-shadow var(--t-flash) var(--t-lag) var(--e-light);
+}
+[data-mode="night"] .prism-screen b { background: oklch(0.30 0.04 var(--hr) / 0.45); }
+.prism-screen b.on {
+  background: var(--px, var(--anchor));
+  box-shadow: 0 0 calc(var(--px-size) * 0.8) 0 var(--px, var(--anchor));
+}
+.prism-screen::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(70% 70% at calc(var(--lxp) * 1%) calc(var(--lyp) * 1%),
+    oklch(0.92 0.05 var(--h) / calc(var(--li) * 0.35)), transparent 72%);
+}
+/* band selection — condensing a display re-tunes its emission wavelength */
+.prism-screen[data-band="anchor"]  { --px: var(--anchor); }
+.prism-screen[data-band="near"]    { --px: var(--near); }
+.prism-screen[data-band="far"]     { --px: var(--far); }
+.prism-screen[data-band="counter"] { --px: var(--counter); }
 
 /* ----- motion keyframes ----- */
 @keyframes prism-arrive {
