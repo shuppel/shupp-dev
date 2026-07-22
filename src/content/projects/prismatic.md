@@ -25,3 +25,11 @@ Explore the live, interactive showcase at [`/design/prismatic`](/design/prismati
 drag the anchor-hue slider and toggle the mode to watch the entire page — including
 hairlines, shadows, and the outline display type — recast in real time, all while
 holding WCAG AA contrast across the wheel.
+
+As of v0.7 the page is also a hologram: your pointer is the light source. Six
+registered custom properties on the root form a **holographic reference beam**,
+and every dichroic edge, chromatic cast, glint and tilt derives from them in pure
+CSS — the driver writes at most one quantized batch per frame, so the light play
+costs almost nothing. A companion **Icons & Displays** section (after Ink & Switch's
+*Tenfold*) renders one-bit icons on tiny emissive pixel screens, including a
+paintable display — click and drag everywhere.
