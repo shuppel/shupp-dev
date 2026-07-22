@@ -36,10 +36,6 @@ export const siteConfig = {
       spotify: 'https://open.spotify.com/show/5795Q9GCmotmDpParHL1v6?si=6930bfe903dc4286',
       youtube: 'https://www.youtube.com/watch?v=yqPDuuMReKo&list=PLCnYURZ5KeTjo_ZcveQtWT5HFIBzgYYka&index=1',
     },
-    booboTheSpinosaur: {
-      name: 'Boobo the Spinosaur',
-      youtube: 'https://www.youtube.com/playlist?list=PLCnYURZ5KeTixpbRBta_xmeHGj46WFuZI',
-    },
   },
 
   // Default author
