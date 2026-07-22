@@ -40,3 +40,51 @@ Episodes are saved as:
 ## Existing Episodes
 
 The script won't overwrite existing files, so you can manually edit episode descriptions or add custom cover images after they're created.
+
+---
+
+# Social RSS Feed Sync
+
+`sync-social-rss.ts` pulls recent posts from social platforms into the `social`
+content collection (`src/content/social/*.md`), which powers the **/feed** page.
+
+## Setup
+
+Add the feed URLs you want to sync to your `.env` (all are optional — any feed
+without a URL is skipped):
+
+```bash
+# Bluesky has a NATIVE RSS feed and works out of the box.
+BLUESKY_RSS_URL=https://bsky.app/profile/shupp.dev/rss
+
+# X (Twitter) and TikTok do NOT expose public RSS. Point these at a third-party
+# RSS bridge (e.g. rss.app, Nitter, RSSHub) for the accounts below:
+X_RSS_URL=            # @KimJungUzi
+TIKTOK_RSS_URL=       # @thoughtfulappco
+```
+
+## Run
+
+```bash
+npm run sync:social
+```
+
+The sync also runs automatically before each build (`npm run build`).
+
+## How It Works
+
+- Fetches each configured RSS feed and parses recent items
+- Creates one markdown file per post in `src/content/social/`
+- Won't overwrite existing files, so hand-edits/curation are preserved
+- File naming: `{platform}-{YYYY-MM-DD}-{slug}.md`
+
+## Notes on X / TikTok RSS
+
+Neither platform offers an official public RSS feed. To sync them you need a
+bridge that produces RSS. Common options:
+
+- **rss.app** — hosted, paste the account URL, get an RSS feed URL back
+- **Nitter** / **RSSHub** — self-hostable open-source bridges
+
+Paste the resulting feed URL into `X_RSS_URL` / `TIKTOK_RSS_URL`. Until then,
+those platforms are simply skipped and only Bluesky syncs.

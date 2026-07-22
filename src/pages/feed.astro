@@ -1,0 +1,517 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import Icon from '../components/Icon/Icon.astro';
+
+const allSocial = await getCollection('social');
+
+// Only show visible posts, newest first.
+const items = allSocial
+  .filter((item) => item.data.visible !== false)
+  .sort((a, b) => new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime());
+
+interface PlatformMeta {
+  label: string;
+  icon: string;
+  weight: 'duotone' | 'fill';
+}
+
+const PLATFORM_META: Record<string, PlatformMeta> = {
+  x:         { label: 'X',         icon: 'XLogo',         weight: 'fill' },
+  bluesky:   { label: 'Bluesky',   icon: 'Butterfly',     weight: 'fill' },
+  tiktok:    { label: 'TikTok',    icon: 'TiktokLogo',    weight: 'fill' },
+  instagram: { label: 'Instagram', icon: 'InstagramLogo', weight: 'fill' },
+  youtube:   { label: 'YouTube',   icon: 'YoutubeLogo',   weight: 'fill' },
+};
+
+// Count posts per platform, preserving a stable display order.
+const PLATFORM_ORDER = ['x', 'bluesky', 'tiktok', 'instagram', 'youtube'];
+const countsByPlatform = items.reduce((acc, item) => {
+  acc[item.data.platform] = (acc[item.data.platform] ?? 0) + 1;
+  return acc;
+}, {} as Record<string, number>);
+const platforms = PLATFORM_ORDER.filter((p) => (countsByPlatform[p] ?? 0) > 0);
+
+function formatDate(date: Date): string {
+  return new Date(date).toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  });
+}
+---
+
+<Layout
+  title="Feed"
+  description="Latest posts from Erikk Shupp and Thoughtful App Co. across X, Bluesky, and TikTok."
+>
+  <div class="feed-layout">
+    <!-- Left sidebar with platform filters -->
+    <aside class="feed-sidebar">
+      <nav class="platform-nav" aria-label="Filter by platform">
+        <ul class="platform-list">
+          <li>
+            <button class="platform-link is-active" data-platform="all" aria-pressed="true">
+              <span class="platform-link-label">
+                <Icon name="Broadcast" size={16} weight="duotone" />
+                All
+              </span>
+              <span class="platform-count">{items.length}</span>
+            </button>
+          </li>
+          {platforms.map((platform) => {
+            const meta = PLATFORM_META[platform];
+            return (
+              <li>
+                <button class="platform-link" data-platform={platform} aria-pressed="false">
+                  <span class="platform-link-label">
+                    <Icon name={meta?.icon ?? 'Globe'} size={16} weight="duotone" />
+                    {meta?.label ?? platform}
+                  </span>
+                  <span class="platform-count">{countsByPlatform[platform]}</span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Main content -->
+    <main class="feed-content">
+      <header class="feed-header-section">
+        <h1>Feed</h1>
+        <p class="feed-subtitle">Latest posts across X, Bluesky, and TikTok</p>
+      </header>
+
+      {items.length === 0 ? (
+        <div class="feed-empty">
+          <Icon name="Broadcast" size={40} weight="duotone" />
+          <p>No posts yet. Feeds sync in on the next build.</p>
+        </div>
+      ) : (
+        <ul class="post-list">
+          {items.map((item) => {
+            const meta = PLATFORM_META[item.data.platform];
+            return (
+              <li class="post-item" data-platform={item.data.platform}>
+                <a
+                  href={item.data.url}
+                  class="post-link"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  {item.data.image ? (
+                    <div class="post-preview">
+                      <img src={item.data.image} alt="" class="post-thumbnail" loading="lazy" />
+                    </div>
+                  ) : null}
+                  <div class="post-body">
+                    <div class="post-meta-row">
+                      <span class="post-platform">
+                        <Icon name={meta?.icon ?? 'Globe'} size={14} weight={meta?.weight ?? 'duotone'} />
+                        {meta?.label ?? item.data.platform}
+                      </span>
+                      <span class="post-author">{item.data.author}</span>
+                      <span class="post-date">{formatDate(item.data.pubDate)}</span>
+                    </div>
+                    <p class="post-text">{item.data.text}</p>
+                    {item.data.outlet ? (
+                      <div class="post-outlet">
+                        <Icon name="Globe" size={12} weight="duotone" />
+                        <span>{item.data.outlet}</span>
+                      </div>
+                    ) : null}
+                  </div>
+                  <div class="post-arrow">
+                    <Icon name="ArrowUpRight" size={20} weight="duotone" />
+                  </div>
+                </a>
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </main>
+  </div>
+</Layout>
+
+<script>
+  document.addEventListener('astro:page-load', () => {
+    const links = document.querySelectorAll<HTMLButtonElement>('.platform-link');
+    const posts = document.querySelectorAll<HTMLElement>('.post-item');
+
+    links.forEach((link) => {
+      link.addEventListener('click', () => {
+        const platform = link.dataset.platform;
+
+        links.forEach((l) => {
+          const active = l === link;
+          l.classList.toggle('is-active', active);
+          l.setAttribute('aria-pressed', active ? 'true' : 'false');
+        });
+
+        posts.forEach((post) => {
+          if (platform === 'all' || post.dataset.platform === platform) {
+            post.removeAttribute('hidden');
+          } else {
+            post.setAttribute('hidden', '');
+          }
+        });
+      });
+    });
+  });
+</script>
+
+<style>
+  /* Feed uses a full-bleed layout, matching /press. */
+  :global(body.has-side-nav main) {
+    max-width: none !important;
+    width: auto;
+    margin-left: 240px;
+    padding: 0;
+  }
+
+  @media (max-width: 768px) {
+    :global(body.has-side-nav main) {
+      margin-left: 0 !important;
+    }
+  }
+
+  .feed-layout {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 1.5rem;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    padding: 1rem 1.5rem;
+    box-sizing: border-box;
+  }
+
+  /* Sidebar */
+  .feed-sidebar {
+    position: sticky;
+    top: 2rem;
+    height: fit-content;
+  }
+
+  .platform-nav {
+    border-right: 1px solid var(--border-color);
+  }
+
+  .platform-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .platform-list li {
+    margin: 0;
+  }
+
+  .platform-link {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    padding: 0.6rem 1rem;
+    color: var(--text-light);
+    background: none;
+    border: none;
+    border-left: 3px solid transparent;
+    font-family: inherit;
+    font-size: 0.95rem;
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .platform-link-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .platform-link:hover {
+    color: var(--text-color);
+    background: var(--hover-tint);
+  }
+
+  .platform-link:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+    border-radius: 4px;
+  }
+
+  .platform-link.is-active {
+    color: var(--color-tertiary);
+    border-left-color: var(--color-tertiary);
+    background: var(--hover-tint);
+    font-weight: 600;
+  }
+
+  html.dark .platform-link.is-active {
+    color: var(--color-accent);
+    border-left-color: var(--color-accent);
+  }
+
+  .platform-count {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    opacity: 0.6;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Main content */
+  .feed-content {
+    min-width: 0;
+  }
+
+  .feed-header-section {
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .feed-header-section h1 {
+    font-family: var(--font-main-header);
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0 0 0.5rem;
+    color: var(--text-color);
+    letter-spacing: 0.01em;
+  }
+
+  .feed-subtitle {
+    font-family: var(--font-body);
+    font-size: 1.1rem;
+    color: var(--text-light);
+    margin: 0;
+  }
+
+  .feed-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 4rem 1rem;
+    color: var(--text-light);
+    text-align: center;
+  }
+
+  .post-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .post-item {
+    margin: 0;
+  }
+
+  .post-item[hidden] {
+    display: none;
+  }
+
+  .post-link {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    padding: 0.75rem 0;
+    text-decoration: none;
+    color: inherit;
+    border-bottom: 1px solid var(--border-color);
+    width: 100%;
+    transition: all 0.2s ease;
+  }
+
+  .post-item:last-child .post-link {
+    border-bottom: none;
+  }
+
+  .post-link:hover {
+    background: var(--hover-tint);
+    transform: translateX(4px);
+  }
+
+  .post-link:focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .post-link,
+    .post-arrow {
+      transition: none;
+    }
+    .post-link:hover {
+      transform: none;
+    }
+  }
+
+  .post-preview {
+    flex-shrink: 0;
+    width: 120px;
+    height: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--background-alt);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .post-thumbnail {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .post-body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .post-meta-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 0.4rem;
+  }
+
+  .post-platform {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--color-tertiary);
+  }
+
+  html.dark .post-platform {
+    color: var(--color-accent);
+  }
+
+  .post-author {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    font-weight: 500;
+  }
+
+  .post-date {
+    font-size: 0.8rem;
+    color: var(--text-light);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .post-text {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--text-color);
+    margin: 0 0 0.5rem;
+    line-height: 1.55;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .post-outlet {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.8rem;
+    color: var(--text-light);
+  }
+
+  .post-arrow {
+    flex-shrink: 0;
+    color: var(--text-light);
+    opacity: 0;
+    transition: all 0.2s ease;
+    transform: translateX(-8px);
+  }
+
+  .post-link:hover .post-arrow {
+    opacity: 1;
+    transform: translateX(0);
+    color: var(--color-tertiary);
+  }
+
+  html.dark .post-link:hover .post-arrow {
+    color: var(--color-accent);
+  }
+
+  /* Mobile responsive */
+  @media (max-width: 768px) {
+    .feed-layout {
+      grid-template-columns: 1fr;
+      gap: 1.5rem;
+      padding: 4.5rem 1.25rem 2rem;
+    }
+
+    .feed-sidebar {
+      position: static;
+      border-bottom: 1px solid var(--border-color);
+      padding-bottom: 1rem;
+    }
+
+    .platform-nav {
+      border-right: none;
+    }
+
+    .platform-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .platform-link {
+      width: auto;
+      border-left: none;
+      border-radius: 999px;
+      padding: 0.4rem 0.8rem;
+      background: var(--background-alt);
+    }
+
+    .platform-link.is-active {
+      border-left-color: transparent;
+      background: var(--color-tertiary);
+      color: var(--surface);
+    }
+
+    html.dark .platform-link.is-active {
+      background: var(--color-accent);
+      color: var(--color-dark);
+    }
+
+    .feed-header-section h1 {
+      font-size: 2rem;
+    }
+
+    .post-link {
+      padding: 0.875rem;
+      flex-wrap: wrap;
+    }
+
+    .post-preview {
+      width: 72px;
+      height: 72px;
+    }
+
+    .post-arrow {
+      display: none;
+    }
+  }
+</style>
