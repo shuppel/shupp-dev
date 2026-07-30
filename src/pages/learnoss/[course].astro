@@ -1,0 +1,779 @@
+---
+import { getCollection, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import Icon from '../../components/Icon/Icon.astro';
+import CourseDiagram from '../../components/LearnOSS/CourseDiagram.astro';
+import { features } from '../../config/features';
+import '../../styles/prose.css';
+
+export async function getStaticPaths() {
+  if (!features.enableLearnOSS) {
+    return [];
+  }
+  const courses = await getCollection('learnoss', ({ data }) => data.visible);
+  return courses.map(entry => ({
+    params: { course: entry.id },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<'learnoss'>;
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const { data } = entry;
+
+const lectureCount = data.units.reduce((n, unit) => n + unit.lectures.length, 0);
+
+const updatedDate = new Date(data.lastUpdated).toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+
+const linkTypeLabels: Record<string, string> = {
+  course: 'Course',
+  notes: 'Notes',
+  video: 'Video',
+  paper: 'Paper',
+  reference: 'Reference',
+  tool: 'Tool',
+};
+
+const breadcrumbs = [
+  { name: 'LearnOSS', url: '/learnoss' },
+  { name: `${data.courseCode} · ${data.school}` },
+];
+---
+
+<Layout
+  title={`${data.courseCode} ${data.title} — LearnOSS`}
+  description={data.description}
+>
+  <div class="course-page">
+    <Breadcrumbs items={breadcrumbs} />
+
+    <header class="course-header">
+      <div class="course-badges">
+        <span class="badge badge-code">{data.courseCode}</span>
+        <span class="badge">{data.schoolFull}</span>
+        {data.term !== undefined && <span class="badge">{data.term}</span>}
+        <span class="badge badge-soft">{data.discipline}</span>
+      </div>
+      <h1 class="course-title">{data.title}</h1>
+      <p class="course-description">{data.description}</p>
+      <div class="course-stats">
+        <span class="stat">
+          <Icon name="Signpost" size={16} weight="duotone" />
+          {data.units.length} units
+        </span>
+        <span class="stat">
+          <Icon name="Notebook" size={16} weight="duotone" />
+          {lectureCount} lectures
+        </span>
+        <span class="stat">
+          <Icon name="CalendarBlank" size={16} weight="duotone" />
+          Updated {updatedDate}
+        </span>
+      </div>
+    </header>
+
+    <aside class="source-card">
+      <div class="source-icon">
+        <Icon name="GitBranch" size={28} weight="duotone" liquid={true} />
+      </div>
+      <div class="source-body">
+        <h2 class="source-heading">Source &amp; attribution</h2>
+        <p class="source-text">
+          Compiled from the openly published lecture notes of{' '}
+          {data.source.authorUrl !== undefined ? (
+            <a href={data.source.authorUrl} target="_blank" rel="noopener noreferrer">{data.source.author}</a>
+          ) : (
+            data.source.author
+          )}.
+          {data.source.license !== undefined && <span> {data.source.license}</span>}
+        </p>
+        <div class="source-links">
+          <a href={data.source.repoUrl} target="_blank" rel="noopener noreferrer" class="source-link">
+            <Icon name="GithubLogo" size={16} weight="duotone" />
+            Original notes
+          </a>
+          {data.source.siteUrl !== undefined && (
+            <a href={data.source.siteUrl} target="_blank" rel="noopener noreferrer" class="source-link">
+              <Icon name="ArrowSquareOut" size={16} weight="duotone" />
+              Rendered site
+            </a>
+          )}
+        </div>
+      </div>
+    </aside>
+
+    {data.units.length > 0 && (
+      <nav class="unit-toc" aria-label="Course units">
+        <h2 class="section-heading">
+          <Icon name="Signpost" size={22} weight="duotone" liquid={true} />
+          The path
+        </h2>
+        <ol class="toc-list">
+          {data.units.map((unit, i) => (
+            <li class="toc-item">
+              <a href={`#unit-${i + 1}`} class="toc-link">
+                <span class="toc-number">{String(i + 1).padStart(2, '0')}</span>
+                <span class="toc-icon">
+                  <Icon name={unit.icon ?? 'BookOpen'} size={18} weight="duotone" />
+                </span>
+                <span class="toc-title">{unit.title}</span>
+              </a>
+            </li>
+          ))}
+        </ol>
+      </nav>
+    )}
+
+    <div class="course-intro prose">
+      <Content />
+    </div>
+
+    {data.units.length > 0 && (
+      <section class="units-section">
+        <h2 class="section-heading">
+          <Icon name="BookOpen" size={22} weight="duotone" liquid={true} />
+          Study units
+        </h2>
+        {data.units.map((unit, i) => (
+          <article class="unit" id={`unit-${i + 1}`}>
+            <header class="unit-header">
+              <span class="unit-number">{String(i + 1).padStart(2, '0')}</span>
+              <div class="unit-heading-group">
+                <h3 class="unit-title">
+                  <Icon name={unit.icon ?? 'BookOpen'} size={22} weight="duotone" />
+                  {unit.title}
+                </h3>
+                <p class="unit-summary">{unit.summary}</p>
+              </div>
+            </header>
+
+            <div class="lectures">
+              {unit.lectures.map(lecture => (
+                <div class="lecture">
+                  <div class="lecture-head">
+                    <h4 class="lecture-title">{lecture.title}</h4>
+                    <div class="lecture-meta">
+                      {lecture.date !== undefined && <span class="lecture-date">{lecture.date}</span>}
+                      {lecture.sourceUrl !== undefined && (
+                        <a href={lecture.sourceUrl} target="_blank" rel="noopener noreferrer" class="lecture-source">
+                          Original notes
+                          <Icon name="ArrowSquareOut" size={14} weight="regular" />
+                        </a>
+                      )}
+                    </div>
+                  </div>
+                  {lecture.keyIdeas.length > 0 && (
+                    <ul class="key-ideas">
+                      {lecture.keyIdeas.map(idea => (
+                        <li>{idea}</li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {unit.diagram !== undefined && <CourseDiagram name={unit.diagram} />}
+          </article>
+        ))}
+      </section>
+    )}
+
+    {data.books.length > 0 && (
+      <section class="books-section">
+        <h2 class="section-heading">
+          <Icon name="Books" size={22} weight="duotone" liquid={true} />
+          Book references
+        </h2>
+        <p class="section-lead">Free-first. Anything paid is clearly marked.</p>
+        <div class="books-grid">
+          {data.books.map(book => (
+            <div class="book-card">
+              <div class="book-top">
+                <Icon name="BookBookmark" size={20} weight="duotone" />
+                {book.free ? (
+                  <span class="free-badge">Free</span>
+                ) : (
+                  <span class="paid-badge">Paid</span>
+                )}
+              </div>
+              <h3 class="book-title">
+                {book.url !== undefined ? (
+                  <a href={book.url} target="_blank" rel="noopener noreferrer">{book.title}</a>
+                ) : (
+                  book.title
+                )}
+              </h3>
+              <p class="book-authors">{book.authors}</p>
+              {book.note !== undefined && <p class="book-note">{book.note}</p>}
+            </div>
+          ))}
+        </div>
+      </section>
+    )}
+
+    {data.links.length > 0 && (
+      <section class="links-section">
+        <h2 class="section-heading">
+          <Icon name="LinkSimple" size={22} weight="duotone" liquid={true} />
+          Linked data
+        </h2>
+        <p class="section-lead">The wider web of open resources around this course.</p>
+        <ul class="links-list">
+          {data.links.map(link => (
+            <li class="link-row">
+              <span class="link-type">{linkTypeLabels[link.type] ?? 'Link'}</span>
+              <div class="link-body">
+                <a href={link.url} target="_blank" rel="noopener noreferrer" class="link-title">
+                  {link.title}
+                  <Icon name="ArrowSquareOut" size={14} weight="regular" />
+                </a>
+                {link.note !== undefined && <p class="link-note">{link.note}</p>}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    )}
+
+    <footer class="course-footer">
+      <p>
+        LearnOSS compiles openly published learning material with attribution, links back to
+        every source, and free-first references. Spotted an error in a summary?{' '}
+        <a href="mailto:erikk@shupp.dev">Tell me</a> — the original notes are always canonical.
+      </p>
+    </footer>
+  </div>
+</Layout>
+
+<style>
+  .course-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 3rem 1.5rem 5rem;
+  }
+
+  /* Header */
+  .course-header {
+    margin: 1.5rem 0 2rem;
+  }
+
+  .course-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .badge {
+    font-family: var(--font-secondary-header);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    background: var(--hover-tint);
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    padding: 0.3rem 0.85rem;
+  }
+
+  .badge-code {
+    color: var(--color-dark);
+    background: var(--color-accent);
+    border-color: transparent;
+  }
+
+  html.dark .badge-code {
+    color: var(--color-dark);
+    background: var(--color-light);
+  }
+
+  .badge-soft {
+    text-transform: none;
+    letter-spacing: 0.02em;
+  }
+
+  .course-title {
+    font-size: 2.6rem;
+    font-weight: 700;
+    line-height: 1.15;
+    color: var(--text-color);
+    margin: 0 0 0.75rem;
+  }
+
+  .course-description {
+    font-size: 1.15rem;
+    line-height: 1.65;
+    color: var(--text-light);
+    margin: 0 0 1.25rem;
+    max-width: 46rem;
+  }
+
+  .course-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+  }
+
+  .stat {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+  }
+
+  /* Source & attribution card */
+  .source-card {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    background: var(--card-bg);
+    border: 1px solid var(--border-subtle);
+    border-left: 4px solid var(--color-tertiary);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 2.5rem;
+    box-shadow: var(--card-shadow);
+  }
+
+  .source-icon {
+    flex-shrink: 0;
+    margin-top: 0.15rem;
+  }
+
+  .source-heading {
+    font-family: var(--font-secondary-header);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin: 0 0 0.4rem;
+  }
+
+  .source-text {
+    font-size: 0.98rem;
+    line-height: 1.6;
+    color: var(--text-color);
+    margin: 0 0 0.75rem;
+  }
+
+  .source-text a {
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+
+  .source-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .source-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    text-decoration: none;
+  }
+
+  .source-link:hover {
+    text-decoration: underline;
+  }
+
+  /* Section headings */
+  .section-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0 0 0.5rem;
+  }
+
+  .section-lead {
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    margin: 0 0 1.25rem;
+  }
+
+  /* Unit TOC */
+  .unit-toc {
+    margin-bottom: 2.5rem;
+  }
+
+  .toc-list {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.5rem;
+  }
+
+  .toc-link {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.6rem 0.85rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    text-decoration: none;
+    color: var(--text-color);
+    background: var(--surface);
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .toc-link:hover {
+    background: var(--hover-tint);
+    transform: translateX(3px);
+  }
+
+  .toc-number {
+    font-family: var(--font-secondary-header);
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+  }
+
+  .toc-icon {
+    display: inline-flex;
+    color: var(--primary-color);
+  }
+
+  .toc-title {
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+
+  /* Intro prose */
+  .course-intro {
+    margin-bottom: 3rem;
+  }
+
+  /* Units */
+  .units-section {
+    margin-bottom: 3.5rem;
+  }
+
+  .unit {
+    margin: 2.5rem 0 0;
+    padding: 1.75rem;
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+    box-shadow: var(--card-shadow);
+    scroll-margin-top: 5rem;
+  }
+
+  .unit-header {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    margin-bottom: 1.25rem;
+  }
+
+  .unit-number {
+    font-family: var(--font-main-header);
+    font-size: 2rem;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--color-tertiary);
+    flex-shrink: 0;
+    margin-top: 0.2rem;
+  }
+
+  .unit-title {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0 0 0.5rem;
+  }
+
+  .unit-summary {
+    font-size: 0.98rem;
+    line-height: 1.65;
+    color: var(--text-light);
+    margin: 0;
+  }
+
+  .lectures {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+
+  .lecture {
+    padding: 1rem 1.15rem;
+    background: var(--surface-muted);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+  }
+
+  .lecture-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .lecture-title {
+    font-size: 1.02rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin: 0;
+  }
+
+  .lecture-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .lecture-date {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .lecture-source {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .lecture-source:hover {
+    text-decoration: underline;
+  }
+
+  .key-ideas {
+    margin: 0;
+    padding-left: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .key-ideas li {
+    font-size: 0.93rem;
+    line-height: 1.6;
+    color: var(--text-color);
+  }
+
+  .key-ideas li::marker {
+    color: var(--color-tertiary);
+  }
+
+  /* Books */
+  .books-section {
+    margin-bottom: 3.5rem;
+  }
+
+  .books-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  .book-card {
+    padding: 1.25rem;
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+  }
+
+  .book-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    color: var(--primary-color);
+    margin-bottom: 0.6rem;
+  }
+
+  .free-badge,
+  .paid-badge {
+    font-family: var(--font-secondary-header);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    border-radius: 999px;
+    padding: 0.2rem 0.7rem;
+  }
+
+  .free-badge {
+    color: var(--color-dark);
+    background: var(--color-accent);
+  }
+
+  html.dark .free-badge {
+    background: var(--color-light);
+  }
+
+  .paid-badge {
+    color: var(--text-muted);
+    background: transparent;
+    border: 1px solid var(--border-subtle);
+  }
+
+  .book-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.35;
+    margin: 0 0 0.25rem;
+  }
+
+  .book-title a {
+    color: var(--text-color);
+    text-decoration: none;
+  }
+
+  .book-title a:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+  }
+
+  .book-authors {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin: 0 0 0.6rem;
+  }
+
+  .book-note {
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--text-light);
+    margin: 0;
+  }
+
+  /* Links */
+  .links-section {
+    margin-bottom: 3.5rem;
+  }
+
+  .links-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .link-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 0.85rem 1rem;
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+  }
+
+  .link-type {
+    flex-shrink: 0;
+    font-family: var(--font-secondary-header);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: var(--hover-tint);
+    border-radius: 6px;
+    padding: 0.25rem 0.55rem;
+    margin-top: 0.1rem;
+    min-width: 5.2rem;
+    text-align: center;
+  }
+
+  .link-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.98rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    text-decoration: none;
+  }
+
+  .link-title:hover {
+    text-decoration: underline;
+  }
+
+  .link-note {
+    font-size: 0.88rem;
+    line-height: 1.55;
+    color: var(--text-muted);
+    margin: 0.2rem 0 0;
+  }
+
+  /* Footer */
+  .course-footer {
+    border-top: 1px solid var(--border-subtle);
+    padding-top: 1.5rem;
+  }
+
+  .course-footer p {
+    font-size: 0.9rem;
+    line-height: 1.65;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .course-footer a {
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    .course-page {
+      padding: 2rem 1rem 4rem;
+    }
+
+    .course-title {
+      font-size: 2rem;
+    }
+
+    .unit {
+      padding: 1.25rem;
+    }
+
+    .unit-header {
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .lecture-head {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+  }
+</style>
