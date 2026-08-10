@@ -1,5 +1,6 @@
 ---
 import Icon from '../Icon/Icon.astro';
+import SkinMenu from './SkinMenu.astro';
 import { siteConfig } from '../../config/site.ts';
 
 const socials = [
@@ -93,6 +94,7 @@ const socials = [
 
     <div class="side-nav-footer">
       <span class="side-nav-footnote">© {new Date().getFullYear()}</span>
+      <SkinMenu />
       <button id="side-nav-theme-toggle" class="side-theme-toggle" aria-label="Toggle dark mode">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="theme-icon-svg">
           <circle class="sun-icon" cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
