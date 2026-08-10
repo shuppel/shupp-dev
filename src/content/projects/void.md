@@ -1,18 +1,19 @@
 ---
-title: "Ceramic"
+title: "Void"
 description: "A dark, single-mode design system where depth is carried entirely by the boundary of an object — one absolute-black hairline with an asymmetric gradient pair, and not a single gradient in any fill."
 projectDate: 2026-08-10
 completed: true
 technologies: ["Design Systems", "CSS", "Design Tokens", "WebGL", "Perceptual Design", "Astro", "Accessibility"]
 featured: true
-image: "/images/projects/ceramic.png"
-customUrl: "/design/ceramic"
+image: "/images/projects/void.png"
+customUrl: "/design/void"
 ---
 
-## CERAMIC
+## VOID
 
-CERAMIC is a dark, single-mode design system built on one perceptual trick: **depth
-is carried entirely by the boundary of an object, never by its fill.** Every object
+VOID is a dark-mode ceramic: a single-mode design system built on one perceptual
+trick, where **depth is carried entirely by the boundary of an object, never by
+its fill.** Every object
 is drawn with a 1.5px hairline of absolute black; a hard, short light gradient sits
 immediately inside that hairline and a soft, long dark one immediately outside. The
 asymmetry drives lateral inhibition harder than a real edge would — the Cornsweet
@@ -40,11 +41,21 @@ automorphism: the silhouette stays a mathematically exact circle while the band
 thickens and thins, and the progress head accelerates and decelerates around the
 ring with no easing function anywhere in the source.
 
-Explore the live showcase at [`/design/ceramic`](/design/ceramic): strip the
+Three kinds of motion exist and no others. A **press** flips which side of the
+hairline receives light, so the surface takes the press while the object stays
+exactly where it is — no translate, no scale, no layout shift, and the incision
+inside a pressed surface flips sign with it. A **disclosure** grows an object out
+of nothing, hairline and black bleed drawn correctly at every intermediate height,
+because the element carrying the depth preset is the element being sized. And
+**scroll** produces readouts rather than animations: a rail that reports position,
+a group header that reports it has pinned. Entrances animate `--lift-scale` — the
+light finding an object that was already in place.
+
+Explore the live showcase at [`/design/void`](/design/void): strip the
 gradient pair away and watch the page fall flat, drag the light's resting azimuth,
-desaturate the status row to check that nothing depends on hue, and run the
-conformal ring through its three drive modes.
+desaturate the status row to check that nothing depends on hue, hold a button,
+open a menu, and run the conformal ring through its three drive modes.
 
 It is the deliberate inverse of [PRISM](/design/prismatic), the light-mode-first
-prism-glass system next door. PRISM spends a colour budget; CERAMIC has none —
+prism-glass system next door. PRISM spends a colour budget; VOID has none —
 every saturated pixel on screen belongs to a status ring or a dot.

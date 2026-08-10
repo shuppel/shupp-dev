@@ -1,11 +1,11 @@
 ---
-// CERAMIC — design-system showcase (standalone document).
+// VOID — design-system showcase (standalone document).
 // Self-contained: own <html>, own single-mode cascade. It does NOT use the site
-// Layout because CERAMIC owns the whole viewport and its own material model.
-// Authoritative tokens: /ceramic/ceramic.tokens.json. Drop-in layer: /ceramic/ceramic.css.
-const title = 'CERAMIC — Boundary-Depth Design System';
+// Layout because VOID owns the whole viewport and its own material model.
+// Authoritative tokens: /void/void.tokens.json. Drop-in layer: /void/void.css.
+const title = 'VOID — Boundary-Depth Design System';
 const description =
-  'CERAMIC: a dark, single-mode design system where depth is carried entirely by the boundary of an object — one absolute-black hairline with an asymmetric gradient pair. Built by Erikk Shupp.';
+  'VOID: a dark, single-mode design system where depth is carried entirely by the boundary of an object — one absolute-black hairline with an asymmetric gradient pair. Built by Erikk Shupp.';
 
 // The set. Stroke-only, 24×24, drawn once into a sprite below.
 const iconSet = [
@@ -45,6 +45,8 @@ const antiPatterns: [string, string][] = [
   ['Ship the default preset without dither', 'Visible banding on OLED.'],
   ['Mount a WebGL context per component', 'Context limits and mobile context loss. One per page.'],
   ['Use emoji or icon fonts for status', 'The ring and the dot are the status vocabulary.'],
+  ['Fade or scale a panel open', 'A scaled hairline is not 1.5px and a faded one was never there. The panel is an object: grow it.'],
+  ['Animate a wrapper instead of the object', 'The shadow detaches from the shape. Size the element that carries the depth preset.'],
 ];
 
 const acceptance = [
@@ -57,6 +59,8 @@ const acceptance = [
   'Screenshotting in greyscale leaves all status still legible.',
   'The determinate loader’s head visibly changes speed around the ring, with no easing function in the source.',
   'No banding on an OLED display at full brightness.',
+  'A pressed control has the same bounding box as a resting one — the material changed and nothing else.',
+  'A menu or fold that is opening has a correct 1.5px hairline around its real shape at every intermediate frame.',
   'At 375px, every interactive target is ≥ 44px.',
   'Under prefers-reduced-motion nothing moves, and the design still reads correctly.',
 ];
@@ -82,26 +86,26 @@ const activity: [string, string, string][] = [
     <meta name="color-scheme" content="dark" />
     <meta name="theme-color" content="#101118" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="canonical" href="https://shupp.dev/design/ceramic" />
+    <link rel="canonical" href="https://shupp.dev/design/void" />
 
     <!-- OpenGraph -->
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:url" content="https://shupp.dev/design/ceramic" />
-    <meta property="og:image" content="https://shupp.dev/images/projects/ceramic.png" />
+    <meta property="og:url" content="https://shupp.dev/design/void" />
+    <meta property="og:image" content="https://shupp.dev/images/projects/void.png" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="https://shupp.dev/images/projects/ceramic.png" />
+    <meta name="twitter:image" content="https://shupp.dev/images/projects/void.png" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <!-- CERAMIC drop-in layer (self-imports its own fonts) -->
-    <link rel="stylesheet" href="/ceramic/ceramic.css" />
+    <!-- VOID drop-in layer (self-imports its own fonts) -->
+    <link rel="stylesheet" href="/void/void.css" />
 
     <style is:global>
       /* =====================================================================
-         Showcase-only chrome (ds-*). Reads CERAMIC tokens; mints no new
+         Showcase-only chrome (ds-*). Reads VOID tokens; mints no new
          surface value and no new shadow. Every framed object below is one of
          the four presets plus layout — including the specimens.
          ===================================================================== */
@@ -121,8 +125,14 @@ const activity: [string, string, string][] = [
       .ds-skip:focus { left: 0.5rem; top: 0.5rem; }
 
       /* ---- sticky control bar ------------------------------------------- */
+      .ds-bar { position: sticky; top: 0; z-index: 80; }
+
+      /* The page rail is a readout that is always on screen, so it takes no
+         hue — I5 reserves tint for state, and "how far down am I" is not one. */
+      .ds-rail { height: 6px; border-radius: 0; }
+      .ds-rail i { border-radius: 0; box-shadow: 0 0 0 1.5px var(--edge); }
+
       .ds-controls {
-        position: sticky; top: 0; z-index: 80;
         display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.5rem;
         padding: 0.7rem clamp(0.9rem, 4vw, 3rem);
         background: var(--s1);
@@ -187,7 +197,7 @@ const activity: [string, string, string][] = [
       .ds-page { max-width: 1080px; margin: 0 auto; padding: 0 clamp(0.9rem, 4vw, 3rem); }
 
       .ds-hero { padding: clamp(2.2rem, 6vw, 4rem) 0 1.5rem; }
-      .ds-hero .cer-crumbs { margin-bottom: 1.1rem; }
+      .ds-hero .void-crumbs { margin-bottom: 1.1rem; }
       .ds-hero h1 { font-size: clamp(26px, 5vw, 44px); margin: 0.7rem 0 0; }
       .ds-aside {
         display: block; margin-top: 0.8rem;
@@ -197,7 +207,7 @@ const activity: [string, string, string][] = [
 
       .ds-section { padding: 2.6rem 0 0; }
       .ds-section > header { margin-bottom: 1.3rem; padding-top: 2.2rem; border-top: 1.5px solid var(--edge); }
-      .ds-section > header > .cer-eyebrow { margin-bottom: 0.55rem; }
+      .ds-section > header > .void-eyebrow { margin-bottom: 0.55rem; }
       .ds-section header p { max-width: 66ch; margin-top: 0.6rem; }
       .ds-section header p code, .ds-rule code, .ds-anti code {
         font: 400 0.92em/1 var(--font-mono); color: var(--ink);
@@ -363,7 +373,7 @@ const activity: [string, string, string][] = [
 
   <body>
     <!-- Dither. Mandatory: untreated, the default preset rings on OLED. -->
-    <div class="cer-dither" aria-hidden="true"></div>
+    <div class="void-dither" aria-hidden="true"></div>
 
     <a class="ds-skip" href="#ds-main">Skip to content</a>
 
@@ -489,7 +499,8 @@ const activity: [string, string, string][] = [
     </svg>
 
     <!-- ===================== STICKY CONTROL BAR ========================= -->
-    <div class="ds-controls" role="region" aria-label="CERAMIC controls">
+    <div class="ds-bar">
+    <div class="ds-controls" role="region" aria-label="VOID controls">
       <a class="ds-brand" href="/portfolio">
         <svg class="icon icon--xs icon--mark" aria-hidden="true"><use href="#i-chevron-left" /></svg>
         <span class="ds-brand-long">shupp.dev / </span>portfolio
@@ -509,26 +520,30 @@ const activity: [string, string, string][] = [
         --lx <b id="ds-lx">-0.220</b> · --ly <b id="ds-ly">-0.975</b> · loop <b id="ds-loop">asleep</b>
       </p>
 
-      <button id="ds-strip" class="cer-pill cer-pill--ghost" type="button" aria-pressed="false">
+      <button id="ds-strip" class="void-pill void-pill--ghost" type="button" aria-pressed="false">
         Strip the pair
       </button>
+    </div>
+
+    <!-- read position: a readout, not a decoration -->
+    <div class="ds-rail void-rail lit lit--sunk" data-rail aria-hidden="true"><i></i></div>
     </div>
 
     <main id="ds-main" class="ds-page">
       <!-- =========================== HERO =============================== -->
       <header class="ds-hero">
-        <nav class="cer-crumbs" aria-label="Breadcrumb">
+        <nav class="void-crumbs" aria-label="Breadcrumb">
           <a href="/">shupp.dev</a>
           <svg class="icon icon--xs icon--mark" aria-hidden="true"><use href="#i-chevron-right" /></svg>
           <a href="/portfolio">Design</a>
           <svg class="icon icon--xs icon--mark" aria-hidden="true"><use href="#i-chevron-right" /></svg>
-          <span aria-current="page">Ceramic</span>
+          <span aria-current="page">Void</span>
         </nav>
 
-        <p class="cer-eyebrow">CERAMIC · v1.0 · BOUNDARY DEPTH</p>
-        <h1 class="cer-display">Ceramic</h1>
+        <p class="void-eyebrow">VOID · v1.0 · CERAMIC MATERIAL</p>
+        <h1 class="void-display">Void</h1>
         <span class="ds-aside">Depth lives at the edge of a thing, never inside it.</span>
-        <p class="cer-text ds-intro">
+        <p class="void-text ds-intro">
           A dark, single-mode system built on one perceptual trick. Every object is
           drawn with a 1.5px hairline of absolute black; a hard, short light gradient
           sits immediately inside it and a soft, long dark one immediately outside.
@@ -543,9 +558,9 @@ const activity: [string, string, string][] = [
       <!-- ========================= 1 · BOUNDARY ========================== -->
       <section class="ds-section" aria-labelledby="ds-boundary">
         <header>
-          <p class="cer-eyebrow">INVARIANTS I1–I3 · THE BOUNDARY</p>
-          <h2 id="ds-boundary" class="cer-h2">One hairline, two unequal gradients</h2>
-          <p class="cer-text">
+          <p class="void-eyebrow">INVARIANTS I1–I3 · THE BOUNDARY</p>
+          <h2 id="ds-boundary" class="void-h2">One hairline, two unequal gradients</h2>
+          <p class="void-text">
             The mechanism is the Cornsweet illusion. All three discs below are filled
             with exactly <code>#1c1e26</code> — sample the centre of each with a colour
             picker and you get the same value. Only the twelve pixels either side of
@@ -572,7 +587,7 @@ const activity: [string, string, string][] = [
           </div>
         </div>
 
-        <div class="cer-card lit" style="margin-top: 22px">
+        <div class="void-card lit" style="margin-top: 22px">
           <div class="ds-rule">
             <span class="n">I1</span>
             <p><b>The hairline is #000000, 1.5px, always</b>On every object, at every size. It never scales, never takes a colour, never becomes a border-width token. It is a boundary marker, not a stroke weight.</p>
@@ -595,9 +610,9 @@ const activity: [string, string, string][] = [
       <!-- ========================= 2 · SURFACES ========================== -->
       <section class="ds-section" aria-labelledby="ds-surfaces">
         <header>
-          <p class="cer-eyebrow">§3 · SURFACE LADDER</p>
-          <h2 id="ds-surfaces" class="cer-h2">Four values, lightest object on darkest page</h2>
-          <p class="cer-text">
+          <p class="void-eyebrow">§3 · SURFACE LADDER</p>
+          <h2 id="ds-surfaces" class="void-h2">Four values, lightest object on darkest page</h2>
+          <p class="void-text">
             Each step is roughly +6 per channel. Four surfaces is the whole ladder — a
             design that appears to need a fifth needs a different depth preset instead.
             Status hues sit at low chroma deliberately: a 1.5px band at 42% alpha against
@@ -620,9 +635,9 @@ const activity: [string, string, string][] = [
       <!-- =========================== 3 · DEPTH =========================== -->
       <section class="ds-section" aria-labelledby="ds-depth">
         <header>
-          <p class="cer-eyebrow">§4 · THE DEPTH PRIMITIVE</p>
-          <h2 id="ds-depth" class="cer-h2">Three presets over one shadow structure</h2>
-          <p class="cer-text">
+          <p class="void-eyebrow">§4 · THE DEPTH PRIMITIVE</p>
+          <h2 id="ds-depth" class="void-h2">Three presets over one shadow structure</h2>
+          <p class="void-text">
             Material light is directional and always white (I4) — it describes what an
             object is made of, never what it is doing. <code>--decay</code> and
             <code>--bleed</code> are relative and scale with the object; the hairline is
@@ -632,31 +647,31 @@ const activity: [string, string, string][] = [
         </header>
 
         <div class="ds-grid ds-grid--3">
-          <div class="cer-card lit">
+          <div class="void-card lit">
             <h3>.lit</h3>
-            <p class="cer-text">The default. Four layers: black bleed, hairline, hard contact light, soft inward decay. Everything rectangular that is not an input.</p>
+            <p class="void-text">The default. Four layers: black bleed, hairline, hard contact light, soft inward decay. Everything rectangular that is not an input.</p>
             <pre class="ds-code">{`--lift: 0.19;
 --bleed: 12px;
 --decay: 15px;
 background: var(--s2);`}</pre>
           </div>
-          <div class="cer-card lit lit--ceramic">
+          <div class="void-card lit lit--ceramic">
             <h3>.lit--ceramic</h3>
-            <p class="cer-text">Decay zero. No interior information at all — the purest form of the thesis, the cheapest to draw, and the only preset that cannot band.</p>
+            <p class="void-text">Decay zero. No interior information at all — the purest form of the thesis, the cheapest to draw, and the only preset that cannot band.</p>
             <pre class="ds-code">{`--lift: 0.26;
 --bleed: 16px;
 /* no decay layer */`}</pre>
           </div>
-          <div class="cer-card lit lit--sunk">
+          <div class="void-card lit lit--sunk">
             <h3>.lit--sunk</h3>
-            <p class="cer-text">The pair inverted. One flip supplies the entire input vocabulary: field wells, toggle tracks, progress channels, log panels, pressed buttons.</p>
+            <p class="void-text">The pair inverted. One flip supplies the entire input vocabulary: field wells, toggle tracks, progress channels, log panels, pressed buttons.</p>
             <pre class="ds-code">{`background: var(--s1);
 inset (dark) · inside
 inset (light) · outside`}</pre>
           </div>
         </div>
 
-        <div class="cer-card lit ds-note">
+        <div class="void-card lit ds-note">
           <div class="ds-rule">
             <span class="n">↕</span>
             <p><b>Scale rule</b>decay ≈ 0.07 × min(w, h) · bleed ≈ 0.06 × min(w, h) · lift = clamp(0.19 + 0.14 × (1 − size/200), 0.19, 0.34). Small objects get a shorter, brighter band.</p>
@@ -671,9 +686,9 @@ inset (light) · outside`}</pre>
       <!-- ========================== 4 · STATUS =========================== -->
       <section class="ds-section" aria-labelledby="ds-status">
         <header>
-          <p class="cer-eyebrow">§5 · THE STATUS PRIMITIVE</p>
-          <h2 id="ds-status" class="cer-h2">State light is omnidirectional and tinted</h2>
-          <p class="cer-text">
+          <p class="void-eyebrow">§5 · THE STATUS PRIMITIVE</p>
+          <h2 id="ds-status" class="void-h2">State light is omnidirectional and tinted</h2>
+          <p class="void-text">
             <code>inset 0 0 0 1.5px</code> — no offset, no blur. A complete, even ring is
             something no light position could ever produce, which is precisely why hue can
             never be misread as lighting (I5). Status is a token, not a component, so the
@@ -686,34 +701,34 @@ inset (light) · outside`}</pre>
         <div id="ds-status-demo">
           <div class="ds-grid ds-grid--4">
             {statuses.map((s) => (
-              <div class="cer-card lit ds-stack">
+              <div class="void-card lit ds-stack">
                 <div class="ds-row" style="gap: 12px">
-                  <div class={`cer-disc lit--status is-${s.key}`} style="width: 62px; height: 62px">
+                  <div class={`void-disc lit--status is-${s.key}`} style="width: 62px; height: 62px">
                     <div>
                       <div class="v">{s.v}</div>
                     </div>
                   </div>
                   <div>
-                    <p class="cer-ui">{s.label}</p>
-                    <p class="cer-mono" style="font-size: 11px">{s.rgb}</p>
+                    <p class="void-ui">{s.label}</p>
+                    <p class="void-mono" style="font-size: 11px">{s.rgb}</p>
                   </div>
                 </div>
                 <div class="ds-row" style="gap: 9px">
-                  <span class={`cer-badge lit--status is-${s.key}`}>
-                    <i class="cer-dot"></i>{s.label}
+                  <span class={`void-badge lit--status is-${s.key}`}>
+                    <i class="void-dot"></i>{s.label}
                   </span>
                 </div>
-                <p class="cer-mono" style="font-size: 11px">.is-{s.key} · {s.note}</p>
+                <p class="void-mono" style="font-size: 11px">.is-{s.key} · {s.note}</p>
               </div>
             ))}
-            <div class="cer-card lit ds-stack">
-              <p class="cer-eyebrow">I8 · greyscale audit</p>
-              <p class="cer-text" style="font-size: 12.5px">
+            <div class="void-card lit ds-stack">
+              <p class="void-eyebrow">I8 · greyscale audit</p>
+              <p class="void-text" style="font-size: 12.5px">
                 The deuteranopic separation between the amber and the red at this luminance
                 is thinner than it looks in a swatch. Every ring is therefore paired with a
                 dot, a word, or both — desaturate the row above and nothing is lost.
               </p>
-              <button id="ds-grey" class="cer-pill lit" type="button" aria-pressed="false">
+              <button id="ds-grey" class="void-pill lit" type="button" aria-pressed="false">
                 <svg class="icon icon--sm" aria-hidden="true"><use href="#i-filter" /></svg>
                 Desaturate
               </button>
@@ -725,9 +740,9 @@ inset (light) · outside`}</pre>
       <!-- =========================== 5 · LIGHT =========================== -->
       <section class="ds-section" aria-labelledby="ds-light">
         <header>
-          <p class="cer-eyebrow">§6 · LIGHT MODEL</p>
-          <h2 id="ds-light" class="cer-h2">Fixed rest, impulse on action, asleep between</h2>
-          <p class="cer-text">
+          <p class="void-eyebrow">§6 · LIGHT MODEL</p>
+          <h2 id="ds-light" class="void-h2">Fixed rest, impulse on action, asleep between</h2>
+          <p class="void-text">
             One global vector, unit length, written by one rAF spring into
             <code>--lx</code> / <code>--ly</code>. It does <em>not</em> track the pointer:
             move your cursor across this page without clicking and nothing changes at all.
@@ -739,18 +754,18 @@ inset (light) · outside`}</pre>
         </header>
 
         <div class="ds-split">
-          <div class="cer-card lit">
+          <div class="void-card lit">
             <div class="ds-row" style="gap: 22px">
               <div class="ds-vector lit lit--sunk" aria-hidden="true">
                 <i id="ds-vec"></i>
                 <u></u>
               </div>
               <div class="ds-monitor ds-ring-meta">
-                <p class="cer-eyebrow">Reference monitor · live</p>
-                <p class="cer-mono">--lx <b id="ds-mon-lx">-0.220</b> · --ly <b id="ds-mon-ly">-0.975</b></p>
-                <p class="cer-mono">rest <b id="ds-mon-rest">347°</b> · stiff <b>0.14</b> · damp <b>0.76</b></p>
-                <p class="cer-mono">frames <b id="ds-mon-frames">0</b> · loop <b id="ds-mon-loop">asleep</b></p>
-                <p class="cer-text ds-note" style="font-size: 12.5px">
+                <p class="void-eyebrow">Reference monitor · live</p>
+                <p class="void-mono">--lx <b id="ds-mon-lx">-0.220</b> · --ly <b id="ds-mon-ly">-0.975</b></p>
+                <p class="void-mono">rest <b id="ds-mon-rest">347°</b> · stiff <b>0.14</b> · damp <b>0.76</b></p>
+                <p class="void-mono">frames <b id="ds-mon-frames">0</b> · loop <b id="ds-mon-loop">asleep</b></p>
+                <p class="void-text ds-note" style="font-size: 12.5px">
                   Every shadow on the page is a <code>calc()</code> of these two numbers.
                   No element is ever touched by JavaScript.
                 </p>
@@ -758,13 +773,13 @@ inset (light) · outside`}</pre>
             </div>
           </div>
 
-          <div class="cer-card lit">
-            <p class="cer-eyebrow">Impulse sources</p>
+          <div class="void-card lit">
+            <p class="void-eyebrow">Impulse sources</p>
             <div class="ds-row ds-note">
-              <button class="cer-pill lit" type="button">Press me</button>
-              <button class="cer-pill lit" type="button">And me</button>
+              <button class="void-pill lit" type="button">Press me</button>
+              <button class="void-pill lit" type="button">And me</button>
             </div>
-            <p class="cer-text ds-note" style="font-size: 12.5px">
+            <p class="void-text ds-note" style="font-size: 12.5px">
               <code>pointerdown</code> on a control injects velocity toward that
               element's screen position at gain 0.055; <code>focusin</code> does the same
               at 0.03, so keyboard navigation lights the page exactly like a click.
@@ -783,9 +798,9 @@ light.x  += light.vx;`}</pre>
       <!-- ============================ 6 · RING =========================== -->
       <section class="ds-section" aria-labelledby="ds-ring-h">
         <header>
-          <p class="cer-eyebrow">§7 · THE CONFORMAL RING</p>
-          <h2 id="ds-ring-h" class="cer-h2">One Möbius map, no easing function anywhere</h2>
-          <p class="cer-text">
+          <p class="void-eyebrow">§7 · THE CONFORMAL RING</p>
+          <h2 id="ds-ring-h" class="void-h2">One Möbius map, no easing function anywhere</h2>
+          <p class="void-text">
             The single WebGL surface on the page. Its falloff field is warped by a disc
             automorphism, <code>w = (z − a) / (1 − āz)</code>, which maps the unit disc to
             itself and fixes the boundary. The silhouette therefore stays a
@@ -800,35 +815,35 @@ light.x  += light.vx;`}</pre>
         </header>
 
         <div class="ds-split">
-          <div class="cer-card lit">
+          <div class="void-card lit">
             <h3>Release</h3>
-            <p class="cer-text" style="margin-bottom: 16px">api-gateway · main</p>
+            <p class="void-text" style="margin-bottom: 16px">api-gateway · main</p>
             <div class="ds-ring-wrap">
               <canvas
-                id="ds-ring" class="cer-ring" width="232" height="232"
+                id="ds-ring" class="void-ring" width="232" height="232"
                 style="width: 116px; height: 116px" aria-hidden="true"
               ></canvas>
               <div class="ds-ring-meta">
                 <div class="sha">3d10bb4</div>
                 <div class="msg">Batch ingest writes, drop per-row commit</div>
                 <div style="margin-top: 11px">
-                  <span id="ds-ring-badge" class="cer-badge lit--status is-idle"><i class="cer-dot"></i>ready</span>
+                  <span id="ds-ring-badge" class="void-badge lit--status is-idle"><i class="void-dot"></i>ready</span>
                 </div>
               </div>
             </div>
-            <div class="cer-bar lit lit--sunk is-info" style="margin-top: 18px">
+            <div class="void-bar lit lit--sunk is-info" style="margin-top: 18px">
               <i id="ds-ring-bar" style="width: 0%"></i>
             </div>
             <div class="ds-row" style="margin-top: 16px; gap: 10px">
-              <button class="cer-pill lit" type="button" data-ring="run">Run determinate</button>
-              <button class="cer-pill lit" type="button" data-ring="indeterminate">Indeterminate</button>
-              <button class="cer-pill lit--status is-danger" type="button" data-ring="fail">Fail</button>
-              <button class="cer-pill cer-pill--ghost" type="button" data-ring="reset">Reset</button>
+              <button class="void-pill lit" type="button" data-ring="run">Run determinate</button>
+              <button class="void-pill lit" type="button" data-ring="indeterminate">Indeterminate</button>
+              <button class="void-pill lit--status is-danger" type="button" data-ring="fail">Fail</button>
+              <button class="void-pill void-pill--ghost" type="button" data-ring="reset">Reset</button>
             </div>
           </div>
 
-          <div class="cer-card lit">
-            <p class="cer-eyebrow">Drive modes</p>
+          <div class="void-card lit">
+            <p class="void-eyebrow">Drive modes</p>
             <div class="ds-rule">
               <span class="n">01</span>
               <p><b>Still</b><code>a = 0</code>, arc off. Terminal states stop dead and switch to a still tinted ring, so motion unambiguously means “in progress”.</p>
@@ -841,7 +856,7 @@ light.x  += light.vx;`}</pre>
               <span class="n">03</span>
               <p><b>Determinate</b><code>a</code> follows the arc head; progress is the fraction. Watch the head slow at the top of the circle and quicken at the bottom.</p>
             </div>
-            <p class="cer-text ds-note" style="font-size: 12.5px">
+            <p class="void-text ds-note" style="font-size: 12.5px">
               At most one WebGL context per page — context limits are real and mobile
               browsers drop contexts on backgrounding. This canvas handles
               <code>webglcontextlost</code> by remounting, caps its backing store at 2×
@@ -857,9 +872,9 @@ light.x  += light.vx;`}</pre>
       <!-- ========================= 7 · COMPONENTS ======================== -->
       <section class="ds-section" aria-labelledby="ds-components">
         <header>
-          <p class="cer-eyebrow">§8 · COMPONENTS</p>
-          <h2 id="ds-components" class="cer-h2">Geometry is normative</h2>
-          <p class="cer-text">
+          <p class="void-eyebrow">§8 · COMPONENTS</p>
+          <h2 id="ds-components" class="void-h2">Geometry is normative</h2>
+          <p class="void-text">
             Every component is one of the four presets plus layout. There are no bespoke
             shadows below this line. A button press inverts the pair rather than moving
             the button, so a press can never cause layout shift; focus takes a tinted
@@ -869,89 +884,89 @@ light.x  += light.vx;`}</pre>
         </header>
 
         <div class="ds-grid ds-grid--2">
-          <div class="cer-card lit">
-            <p class="cer-eyebrow">Controls</p>
+          <div class="void-card lit">
+            <p class="void-eyebrow">Controls</p>
             <div class="ds-row ds-note" style="gap: 12px">
-              <button class="cer-pill lit" type="button">
+              <button class="void-pill lit" type="button">
                 <svg class="icon icon--sm" aria-hidden="true"><use href="#i-refresh" /></svg>Re-run
               </button>
-              <button class="cer-pill cer-pill--ghost" type="button">
+              <button class="void-pill void-pill--ghost" type="button">
                 <svg class="icon icon--sm" aria-hidden="true"><use href="#i-download" /></svg>Export
               </button>
-              <button class="cer-pill lit" type="button" disabled>Disabled</button>
+              <button class="void-pill lit" type="button" disabled>Disabled</button>
             </div>
             <div class="ds-row ds-note" style="gap: 12px; margin-top: 16px">
-              <input class="cer-field lit lit--sunk" placeholder="Filter services…" aria-label="Filter services" />
+              <input class="void-field lit lit--sunk" placeholder="Filter services…" aria-label="Filter services" />
               <button
-                class="cer-toggle lit lit--sunk" type="button"
+                class="void-toggle lit lit--sunk" type="button"
                 aria-checked="true" role="switch" aria-label="Auto-rollback"
               ><span></span></button>
               <button
-                class="cer-toggle lit lit--sunk" type="button"
+                class="void-toggle lit lit--sunk" type="button"
                 aria-checked="false" role="switch" aria-label="Require approval"
               ><span></span></button>
             </div>
-            <p class="cer-mono ds-note" style="font-size: 11px">
+            <p class="void-mono ds-note" style="font-size: 11px">
               pill 37 × r19 · field 37 × r10 · toggle 46 × 27, travel 3.5 → 22.5
             </p>
           </div>
 
-          <div class="cer-card lit">
-            <p class="cer-eyebrow">Knobs · thresholds</p>
+          <div class="void-card lit">
+            <p class="void-eyebrow">Knobs · thresholds</p>
             <div class="ds-row ds-note" style="gap: 26px; margin-top: 14px">
               <div class="ds-spec">
-                <div class="cer-knob lit--status is-warning"><i style="transform: rotate(48deg)"></i></div>
+                <div class="void-knob lit--status is-warning"><i style="transform: rotate(48deg)"></i></div>
                 <p class="ds-cap">Error budget · 68%</p>
               </div>
               <div class="ds-spec">
-                <div class="cer-knob lit"><i style="transform: rotate(-14deg)"></i></div>
+                <div class="void-knob lit"><i style="transform: rotate(-14deg)"></i></div>
                 <p class="ds-cap">CPU target · 45%</p>
               </div>
               <div class="ds-spec">
-                <div class="cer-knob lit"><i style="transform: rotate(87deg)"></i></div>
+                <div class="void-knob lit"><i style="transform: rotate(87deg)"></i></div>
                 <p class="ds-cap">Scale ceiling · 82%</p>
               </div>
             </div>
-            <p class="cer-mono ds-note" style="font-size: 11px">
+            <p class="void-mono ds-note" style="font-size: 11px">
               78px · indicator 2 × 15px in --edge, so it reads as a cut
             </p>
           </div>
 
-          <div class="cer-card lit">
-            <p class="cer-eyebrow">Rows · discs · avatars</p>
+          <div class="void-card lit">
+            <p class="void-eyebrow">Rows · discs · avatars</p>
             <div class="ds-stack ds-note" style="margin-top: 12px">
-              <div class="cer-row lit is-interactive">
-                <span class="cer-dot" style="--glow: var(--hue-success)"></span>
+              <div class="void-row lit is-interactive">
+                <span class="void-dot" style="--glow: var(--hue-success)"></span>
                 <div class="name">api-gateway<small>us-east-1 · 12 tasks</small></div>
                 <div class="num">42ms</div>
-                <span class="cer-badge lit--status is-success">healthy</span>
+                <span class="void-badge lit--status is-success">healthy</span>
               </div>
-              <div class="cer-row lit is-interactive">
-                <span class="cer-dot" style="--glow: var(--hue-warning)"></span>
+              <div class="void-row lit is-interactive">
+                <span class="void-dot" style="--glow: var(--hue-warning)"></span>
                 <div class="name">ingest<small>us-west-2 · 24 tasks</small></div>
                 <div class="num">840ms</div>
-                <span class="cer-badge lit--status is-warning">degraded</span>
+                <span class="void-badge lit--status is-warning">degraded</span>
               </div>
             </div>
             <div class="ds-row" style="margin-top: 16px; gap: 18px">
-              <div class="cer-disc lit--status is-success" style="width: 78px; height: 78px">
+              <div class="void-disc lit--status is-success" style="width: 78px; height: 78px">
                 <div><div class="v">99.94%</div><div class="k">UPTIME</div></div>
               </div>
-              <div class="cer-disc lit lit--ceramic" style="width: 78px; height: 78px">
+              <div class="void-disc lit lit--ceramic" style="width: 78px; height: 78px">
                 <div><div class="v">4.2k</div><div class="k">RPS</div></div>
               </div>
-              <div class="cer-avatar lit lit--ceramic">ES</div>
+              <div class="void-avatar lit lit--ceramic">ES</div>
             </div>
           </div>
 
-          <div class="cer-card lit">
-            <p class="cer-eyebrow">Well · machine text</p>
-            <div class="cer-log lit lit--sunk ds-note" style="margin-top: 12px">
+          <div class="void-card lit">
+            <p class="void-eyebrow">Well · machine text</p>
+            <div class="void-log lit lit--sunk ds-note" style="margin-top: 12px">
               {activity.map(([t, cls, msg]) => (
                 <div><time>{t}</time><span class={cls}>{msg}</span></div>
               ))}
             </div>
-            <p class="cer-eyebrow" style="margin-top: 18px">Nav rail · ≤720px projection</p>
+            <p class="void-eyebrow" style="margin-top: 18px">Nav rail · ≤720px projection</p>
             <div class="ds-rail lit lit--sunk ds-note" style="margin-top: 10px">
               <button class="ds-chip" aria-current="true" type="button">Overview</button>
               <button class="ds-chip" type="button" style="--glow: var(--hue-warning)">
@@ -964,12 +979,189 @@ light.x  += light.vx;`}</pre>
         </div>
       </section>
 
+      <!-- ====================== 7.5 · MOVEMENT =========================== -->
+      <section class="ds-section" aria-labelledby="ds-move">
+        <header>
+          <p class="void-eyebrow">§7–9 · PRESS, DISCLOSURE, SCROLL</p>
+          <h2 id="ds-move" class="void-h2">Everything that moves, moves as material</h2>
+          <p class="void-text">
+            Three kinds of motion exist in this system and no others. A
+            <strong>press</strong> flips which side of the hairline receives light, so
+            the surface takes the press while the object stays exactly where it is. A
+            <strong>disclosure</strong> grows an object out of nothing, hairline and
+            black bleed drawn correctly at every intermediate height — never a fade,
+            never a scale. And <strong>scroll</strong> produces readouts, not
+            animations: a rail that reports position and a header that reports it has
+            pinned. Behaviour ships in
+            <a href="/void/void.js"><code>void.js</code></a>, which owns the page's
+            single rAF loop; the components below are legible without it.
+          </p>
+        </header>
+
+        <div class="ds-grid ds-grid--2">
+          <!-- ---------------------------- press --------------------------- -->
+          <div class="void-card lit" data-reveal>
+            <p class="void-eyebrow">Press · the detent</p>
+            <p class="void-text ds-note" style="font-size: 12.5px">
+              Hold either button. Down is instant, the release settles over 170ms —
+              that asymmetry is what makes it read as a detent rather than a fade. The
+              black bleed goes first, because a pressed object is no longer above the
+              surface and casts nothing.
+            </p>
+            <div class="ds-row ds-note" style="gap: 12px; margin-top: 16px">
+              <button class="void-pill lit" type="button">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#i-download" /></svg>Hold me
+              </button>
+              <button class="void-pill lit is-pressed" type="button" aria-pressed="true">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#i-download" /></svg>Held
+              </button>
+            </div>
+            <p class="void-mono ds-note" style="font-size: 11px; margin-top: 14px">
+              .is-pressed · no translate, no scale, no layout shift
+            </p>
+            <p class="void-text ds-note" style="font-size: 12.5px; margin-top: 12px">
+              Look at the two icons: the incision inverts with the surface it is cut
+              into. On the raised button the light sits above the stroke; on the
+              pressed one it sits below it.
+            </p>
+          </div>
+
+          <!-- --------------------------- menus ---------------------------- -->
+          <div class="void-card lit" data-reveal>
+            <p class="void-eyebrow">Disclosure · menu</p>
+            <p class="void-text ds-note" style="font-size: 12.5px">
+              The panel is the element that carries the depth preset, and it is the
+              element being sized — so the hairline is drawn around the real shape at
+              every frame. Animate a wrapper instead and the shadow detaches from the
+              object.
+            </p>
+            <div class="ds-row ds-note" style="gap: 12px; margin-top: 18px">
+              <div class="void-menu" data-menu>
+                <button class="void-pill lit" type="button" data-menu-trigger>
+                  <span data-menu-value>us-east-1</span>
+                  <svg class="icon icon--sm void-caret" aria-hidden="true"><use href="#i-chevron-down" /></svg>
+                </button>
+                <div class="void-menu__panel lit" role="menu" aria-label="Region">
+                  <div class="void-menu__inner">
+                    <div class="void-menu__list">
+                      {['us-east-1', 'us-west-2', 'eu-west-1', 'ap-south-1'].map((r, i) => (
+                        <button class="void-menu__item" type="button" role="menuitemradio" aria-checked={i === 0 ? 'true' : 'false'}>
+                          <svg class="icon icon--xs" aria-hidden="true"><use href="#i-check" /></svg>
+                          {r}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="void-menu" data-menu>
+                <button class="void-pill void-pill--ghost" type="button" data-menu-trigger aria-label="Actions">
+                  <svg class="icon icon--sm" aria-hidden="true"><use href="#i-more" /></svg>
+                </button>
+                <div class="void-menu__panel lit" role="menu" aria-label="Actions">
+                  <div class="void-menu__inner">
+                    <div class="void-menu__list">
+                      <button class="void-menu__item" type="button" role="menuitem">
+                        <svg class="icon icon--xs" aria-hidden="true"><use href="#i-refresh" /></svg>Re-run
+                      </button>
+                      <button class="void-menu__item" type="button" role="menuitem">
+                        <svg class="icon icon--xs" aria-hidden="true"><use href="#i-download" /></svg>Export
+                      </button>
+                      <button class="void-menu__item" type="button" role="menuitem">
+                        <svg class="icon icon--xs" aria-hidden="true"><use href="#i-lock" /></svg>Freeze
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <p class="void-mono ds-note" style="font-size: 11px; margin-top: 18px">
+              220ms open · Esc, ↑ ↓, Home, End · focus returns to the trigger
+            </p>
+          </div>
+
+          <!-- --------------------------- folds ---------------------------- -->
+          <div class="void-card lit" data-reveal>
+            <p class="void-eyebrow">Disclosure · fold</p>
+            <p class="void-text ds-note" style="font-size: 12.5px; margin-bottom: 16px">
+              Revealed content sits <em>below</em> the surface that revealed it: the
+              panel is a well, not a raised card. One open at a time within a group.
+            </p>
+            {[
+              ['Auto-rollback', 'Reverts the revision automatically when the error rate crosses the threshold for two consecutive intervals. The rollback itself is a deploy, and it shows up in history as one.'],
+              ['Canary routing', 'Routes 5% of traffic to the new revision, holds for the bake window, then either promotes or reverts. No manual step in between.'],
+              ['Approval policy', 'Production deploys need a second reviewer. The requester cannot approve their own change, including via an automation token.'],
+            ].map(([title, body], i) => (
+              <div class="void-fold" data-fold data-fold-group="policy" data-open={i === 0 ? '' : undefined}>
+                <button class="void-fold__head lit" type="button">
+                  <span class="void-fold__title">{title}</span>
+                  <svg class="icon icon--sm void-caret" aria-hidden="true"><use href="#i-chevron-down" /></svg>
+                </button>
+                <div class="void-fold__panel">
+                  <div class="void-fold__clip">
+                    <div class="void-fold__body lit lit--sunk">{body}</div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <!-- --------------------------- scroll --------------------------- -->
+          <div class="void-card lit" data-reveal>
+            <p class="void-eyebrow">Scroll · two readouts</p>
+            <p class="void-text ds-note" style="font-size: 12.5px; margin-bottom: 14px">
+              Scroll the list. Each group header gains a hairline the moment it pins —
+              a material change that says “you have crossed into this group”, not a
+              transition that plays while you scroll. The rail beneath it reports the
+              list's position, exactly as the rail under the control bar reports this
+              page's.
+            </p>
+            <div class="void-scroller lit lit--sunk" id="ds-scroller" data-scroller style="max-height: 208px">
+              {[
+                ['us-east-1', ['api-gateway', 'auth', 'billing', 'notifier']],
+                ['us-west-2', ['ingest', 'compactor', 'archiver']],
+                ['eu-west-1', ['search', 'indexer', 'suggest']],
+              ].map(([region, svcs]) => (
+                <div>
+                  <div class="void-group">{region}</div>
+                  {(svcs as string[]).map((s) => (
+                    <div class="void-row is-interactive" style="border-radius: 0; padding: 11px 15px">
+                      <span class="void-dot" style="--glow: var(--hue-success)"></span>
+                      <div class="name">{s}</div>
+                      <div class="num">ok</div>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+            <div class="void-rail lit lit--sunk is-info" data-rail="#ds-scroller" style="margin-top: 12px" aria-hidden="true">
+              <i></i>
+            </div>
+            <p class="void-mono ds-note" style="font-size: 11px; margin-top: 14px">
+              writes coalesce to one rAF and skip below Δ0.4% — a settled list writes nothing
+            </p>
+          </div>
+        </div>
+
+        <div class="void-card lit ds-note" style="margin-top: 14px" data-reveal>
+          <div class="ds-rule">
+            <span class="n">◐</span>
+            <p><b>The entrance animates the light, not the object</b>Every card in this section arrived by taking <code>--lift-scale</code> from 0 to 1 — a registered custom property, so it interpolates. The object was already in place at its final size and position; the light simply had not found it yet. Nothing translates, so nothing reflows, and the layout is identical at every frame of the entrance.</p>
+          </div>
+          <div class="ds-rule">
+            <span class="n">⏻</span>
+            <p><b>Everything above still sleeps</b>Presses, menus, folds and pins are CSS transitions on discrete state changes — they need no loop at all. The rAF loop exists only for the light spring and the ring, and it cancels itself the moment both are done.</p>
+          </div>
+        </div>
+      </section>
+
       <!-- =========================== 8 · ICONS =========================== -->
       <section class="ds-section" aria-labelledby="ds-icons">
         <header>
-          <p class="cer-eyebrow">§8.1 · ICONS &amp; BREADCRUMBS</p>
-          <h2 id="ds-icons" class="cer-h2">An icon is an incision, not a drawing</h2>
-          <p class="cer-text">
+          <p class="void-eyebrow">§8.1 · ICONS &amp; BREADCRUMBS</p>
+          <h2 id="ds-icons" class="void-h2">An icon is an incision, not a drawing</h2>
+          <p class="void-text">
             The path is absolute black — the same ink as the hairline — and it carries the
             same asymmetric pair: dark line, light edge offset opposite the light vector.
             That is what makes it read as cut into the surface rather than printed on it.
@@ -979,22 +1171,22 @@ light.x  += light.vx;`}</pre>
         </header>
 
         <div class="ds-split">
-          <div class="cer-card lit">
+          <div class="void-card lit">
             <div class="ds-row" style="gap: 26px">
               <div class="ds-spec">
-                <div class="cer-glyph lit lit--sunk" style="width: 66px; height: 66px; border-radius: 18px">
+                <div class="void-glyph lit lit--sunk" style="width: 66px; height: 66px; border-radius: 18px">
                   <svg class="icon icon--xl" aria-hidden="true"><use href="#i-target" /></svg>
                 </div>
                 <p class="ds-cap">incised — default</p>
               </div>
               <div class="ds-spec">
-                <div class="cer-glyph lit" style="width: 66px; height: 66px; border-radius: 18px">
+                <div class="void-glyph lit" style="width: 66px; height: 66px; border-radius: 18px">
                   <svg class="icon icon--xl icon--raised" aria-hidden="true"><use href="#i-target" /></svg>
                 </div>
                 <p class="ds-cap">raised — sign flipped</p>
               </div>
               <div class="ds-spec">
-                <div class="cer-glyph lit lit--ceramic" style="width: 66px; height: 66px; border-radius: 18px">
+                <div class="void-glyph lit lit--ceramic" style="width: 66px; height: 66px; border-radius: 18px">
                   <svg class="icon icon--xl" style="--icon-lift: 0" aria-hidden="true"><use href="#i-target" /></svg>
                 </div>
                 <p class="ds-cap">flat — no pair</p>
@@ -1009,7 +1201,7 @@ light.x  += light.vx;`}</pre>
             </div>
           </div>
 
-          <div class="cer-card lit">
+          <div class="void-card lit">
             <div class="ds-rule">
               <span class="n">01</span>
               <p><b>24 × 24 grid, 2px safe margin</b>Live area is 20 × 20. Nothing touches the frame.</p>
@@ -1043,30 +1235,30 @@ light.x  += light.vx;`}</pre>
         </div>
 
         <div class="ds-grid ds-grid--2" style="margin-top: 14px">
-          <div class="cer-card lit">
-            <p class="cer-eyebrow">Breadcrumb · desktop projection</p>
-            <nav class="cer-crumbs ds-note" aria-label="Example breadcrumb" style="margin-top: 12px">
+          <div class="void-card lit">
+            <p class="void-eyebrow">Breadcrumb · desktop projection</p>
+            <nav class="void-crumbs ds-note" aria-label="Example breadcrumb" style="margin-top: 12px">
               <a>Pursue</a>
               <svg class="icon icon--xs icon--mark" aria-hidden="true"><use href="#i-chevron-right" /></svg>
               <a>Discover</a>
               <svg class="icon icon--xs icon--mark" aria-hidden="true"><use href="#i-chevron-right" /></svg>
               <span aria-current="page">IT Support Services BPA</span>
             </nav>
-            <p class="cer-text ds-note" style="font-size: 12.5px; margin-top: 12px">
+            <p class="void-text ds-note" style="font-size: 12.5px; margin-top: 12px">
               Ancestors dim, current node bright and never a link. The separator is a
               <code>.icon--mark</code>: a dim stroke, not a cut, because a separator is
               not an object and does not get the light treatment.
             </p>
           </div>
-          <div class="cer-card lit">
-            <p class="cer-eyebrow">Breadcrumb · mobile projection</p>
+          <div class="void-card lit">
+            <p class="void-eyebrow">Breadcrumb · mobile projection</p>
             <div class="ds-note" style="margin-top: 12px">
-              <button class="cer-crumb-back lit lit--ceramic" type="button">
+              <button class="void-crumb-back lit lit--ceramic" type="button">
                 <svg class="icon icon--xs" aria-hidden="true"><use href="#i-chevron-left" /></svg>Discover
               </button>
-              <p class="cer-display" style="font-size: 19px; margin-top: 12px">IT Support Services BPA</p>
+              <p class="void-display" style="font-size: 19px; margin-top: 12px">IT Support Services BPA</p>
             </div>
-            <p class="cer-text ds-note" style="font-size: 12.5px; margin-top: 12px">
+            <p class="void-text ds-note" style="font-size: 12.5px; margin-top: 12px">
               The back control <em>names</em> the parent — never a bare chevron — so the
               hierarchy stays legible with only one node visible. Item names truncate;
               ancestors never do.
@@ -1078,9 +1270,9 @@ light.x  += light.vx;`}</pre>
       <!-- ============================ 9 · TYPE =========================== -->
       <section class="ds-section" aria-labelledby="ds-type-h">
         <header>
-          <p class="cer-eyebrow">§9 · TYPE</p>
-          <h2 id="ds-type-h" class="cer-h2">Four roles, and a display face that blooms</h2>
-          <p class="cer-text">
+          <p class="void-eyebrow">§9 · TYPE</p>
+          <h2 id="ds-type-h" class="void-h2">Four roles, and a display face that blooms</h2>
+          <p class="void-text">
             Heavy display type blooms on near-black, so the display role gets its own,
             dimmer ink (<code>--ink-display</code>) and a hard floor at 16px, below which
             the face loses its shape. Supporting prose runs at 300 weight and never sits
@@ -1090,22 +1282,22 @@ light.x  += light.vx;`}</pre>
           </p>
         </header>
 
-        <div class="cer-card lit ds-type">
+        <div class="void-card lit ds-type">
           <div>
             <span class="meta">display · Rammetto One 400 · ≥16px · --ink-display · tracking −0.015em</span>
-            <p class="cer-display" style="font-size: 32px">Boundary</p>
+            <p class="void-display" style="font-size: 32px">Boundary</p>
           </div>
           <div>
             <span class="meta">ui · Cabin 400/500/600 · anything you click, label or scan</span>
-            <p class="cer-ui" style="font-size: 15px">Deploy to production · Require approval · 6 services across 3 regions</p>
+            <p class="void-ui" style="font-size: 15px">Deploy to production · Require approval · 6 services across 3 regions</p>
           </div>
           <div>
             <span class="meta">text · Titillium Web 300 · ≥12px · supporting prose</span>
-            <p class="cer-text">The fill is one value edge to edge; all the signal is at the boundary.</p>
+            <p class="void-text">The fill is one value edge to edge; all the signal is at the boundary.</p>
           </div>
           <div>
             <span class="meta">mono · machine text only: SHAs, timestamps, log lines</span>
-            <p class="cer-mono">3d10bb4 · 14:22:07Z · p95 840ms · --lift 0.42</p>
+            <p class="void-mono">3d10bb4 · 14:22:07Z · p95 840ms · --lift 0.42</p>
           </div>
         </div>
       </section>
@@ -1113,15 +1305,15 @@ light.x  += light.vx;`}</pre>
       <!-- ======================= 10 · ANTI-PATTERNS ====================== -->
       <section class="ds-section" aria-labelledby="ds-anti">
         <header>
-          <p class="cer-eyebrow">§12 · ANTI-PATTERNS</p>
-          <h2 id="ds-anti" class="cer-h2">The failures that collapse it into a generic dark theme</h2>
-          <p class="cer-text">
+          <p class="void-eyebrow">§12 · ANTI-PATTERNS</p>
+          <h2 id="ds-anti" class="void-h2">The failures that collapse it into a generic dark theme</h2>
+          <p class="void-text">
             These are what implementing from a description rather than from the rules
             produces. Each one is individually reasonable and collectively fatal.
           </p>
         </header>
 
-        <div class="cer-card lit">
+        <div class="void-card lit">
           {antiPatterns.map(([dont, why]) => (
             <div class="ds-anti">
               <svg class="icon icon--sm x" aria-hidden="true"><use href="#i-close" /></svg>
@@ -1134,9 +1326,9 @@ light.x  += light.vx;`}</pre>
 
     <footer class="ds-footer">
       <p>
-        CERAMIC v1.0 · single mode · tokens:
-        <a href="/ceramic/ceramic.tokens.json">ceramic.tokens.json</a> · layer:
-        <a href="/ceramic/ceramic.css">ceramic.css</a> · sibling system:
+        VOID v1.0 · single mode · tokens:
+        <a href="/void/void.tokens.json">void.tokens.json</a> · layer:
+        <a href="/void/void.css">void.css</a> · sibling system:
         <a href="/design/prismatic">PRISM</a>
       </p>
 
@@ -1150,28 +1342,21 @@ light.x  += light.vx;`}</pre>
       </ul>
     </footer>
 
+    <!-- behaviour layer: the light spring, menus, folds, rails, reveals -->
+    <script is:inline src="/void/void.js"></script>
+
     <script is:inline>
       (function () {
         'use strict';
 
-        var root = document.documentElement;
         var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
         /* =============================================================
-           LIGHT — fixed rest, impulse on action, sleeps when settled.
-           This loop is the only thing that writes --lx / --ly, and it
-           is the only rAF on the page. It also drives the ring, so the
-           page never has two clocks.
+           MONITOR — the light itself lives in /void/void.js, which owns
+           the page's single rAF loop. This page only reads it: the
+           readouts, the needle and the ring below all hang off the
+           driver's callbacks, so there is still exactly one clock.
         ============================================================= */
-
-        var FIXED = { x: -0.22, y: 0.97 }; // y-up; --ly is written negated
-        var STIFF = 0.14;
-        var DAMP = 0.76;
-
-        var light = { x: FIXED.x, y: FIXED.y, vx: 0, vy: 0 };
-        var running = false;
-        var last = 0;
-        var frames = 0;
 
         var el = {
           lx: document.getElementById('ds-lx'),
@@ -1185,52 +1370,25 @@ light.x  += light.vx;`}</pre>
           vec: document.getElementById('ds-vec'),
         };
 
-        function writeLight() {
-          var m = Math.hypot(light.x, light.y) || 1;
-          var lx = (light.x / m).toFixed(3);
-          var ly = (-light.y / m).toFixed(3);
-          root.style.setProperty('--lx', lx);
-          root.style.setProperty('--ly', ly);
-          el.lx.textContent = lx;
-          el.ly.textContent = ly;
-          el.monLx.textContent = lx;
-          el.monLy.textContent = ly;
-          /* the monitor needle points AT the light source */
-          el.vec.style.transform = 'rotate(' + (Math.atan2(light.x, light.y) * 180) / Math.PI + 'deg)';
-        }
-
         function setLoopState(on) {
           var word = on ? 'running' : 'asleep';
           el.loop.textContent = word;
           el.monLoop.textContent = word;
         }
 
-        function wake() {
-          if (reduced || running) return;
-          running = true;
-          setLoopState(true);
-          last = performance.now();
-          requestAnimationFrame(frame);
-        }
-
-        function nudge(node, gain) {
-          if (reduced) return;
-          var r = node.getBoundingClientRect();
-          var x = ((r.left + r.width / 2) / innerWidth) * 2 - 1;
-          var y = -(((r.top + r.height / 2) / innerHeight) * 2 - 1);
-          light.vx += x * (gain || 0.055);
-          light.vy += y * (gain || 0.055);
-          wake();
-        }
-
-        document.addEventListener('pointerdown', function (e) {
-          var node = e.target.closest('button, input, a, .cer-row, .cer-knob, .cer-card, .cer-disc');
-          if (node) nudge(node);
+        Void.onLight(function (lx, ly) {
+          el.lx.textContent = lx;
+          el.ly.textContent = ly;
+          el.monLx.textContent = lx;
+          el.monLy.textContent = ly;
+          el.monFrames.textContent = String(Void.state().frames);
+          /* the needle points AT the light source */
+          el.vec.style.transform =
+            'rotate(' + (Math.atan2(Number(lx), -Number(ly)) * 180) / Math.PI + 'deg)';
         });
 
-        document.addEventListener('focusin', function (e) {
-          if (e.target.matches('input, button, a')) nudge(e.target, 0.03);
-        });
+        Void.onWake(function () { setLoopState(true); });
+        Void.onSleep(function () { setLoopState(false); });
 
         /* =============================================================
            RING — the one WebGL surface on the page.
@@ -1327,7 +1485,7 @@ light.x  += light.vx;`}</pre>
 
           if (!gl) {
             var div = document.createElement('div');
-            div.className = 'cer-ring-fallback';
+            div.className = 'void-ring-fallback';
             div.style.width = cssW + 'px';
             div.style.height = cssW + 'px';
             div.style.setProperty('--glow', 'var(--hue-info)');
@@ -1424,11 +1582,11 @@ light.x  += light.vx;`}</pre>
         function paintJob() {
           var meta = BADGE[job.state];
           var pct = Math.round(job.progress * 100);
-          badgeEl.className = 'cer-badge lit--status ' + meta[0];
+          badgeEl.className = 'void-badge lit--status ' + meta[0];
           badgeEl.innerHTML =
-            '<i class="cer-dot"></i>' + meta[1] + (job.state === 'running' ? ' ' + pct + '%' : '');
+            '<i class="void-dot"></i>' + meta[1] + (job.state === 'running' ? ' ' + pct + '%' : '');
           barTrack.className =
-            'cer-bar lit lit--sunk is-' +
+            'void-bar lit lit--sunk is-' +
             (job.state === 'done' ? 'success' : job.state === 'failed' ? 'danger' : 'info');
           barEl.style.width =
             (job.state === 'idle' ? 0 : job.state === 'running' ? pct : job.state === 'indeterminate' ? 0 : 100) + '%';
@@ -1461,28 +1619,18 @@ light.x  += light.vx;`}</pre>
             drawRing();
             return;
           }
-          wake();
+          Void.wake();
         });
 
         /* =============================================================
-           LOOP — one clock for the spring and the ring.
+           FRAME — the ring rides the driver's clock rather than
+           starting a second one. Returning true keeps the loop alive;
+           when the job is terminal the loop sleeps with the light.
         ============================================================= */
 
-        function frame(now) {
-          var dt = Math.min((now - last) / 1000, 0.05);
-          last = now;
-          frames++;
-
-          light.vx += (FIXED.x - light.x) * STIFF;
-          light.vy += (FIXED.y - light.y) * STIFF;
-          light.vx *= DAMP;
-          light.vy *= DAMP;
-          light.x += light.vx;
-          light.y += light.vy;
-          writeLight();
-          el.monFrames.textContent = String(frames);
-
+        Void.registerFrame(function (dt) {
           var busy = job.state === 'running' || job.state === 'indeterminate';
+
           if (job.state === 'running') {
             job.progress += dt * 0.3;
             if (job.progress >= 1) {
@@ -1496,24 +1644,8 @@ light.x  += light.vx;`}</pre>
           }
 
           drawRing();
-
-          var settled =
-            Math.hypot(light.x - FIXED.x, light.y - FIXED.y) < 0.002 &&
-            Math.hypot(light.vx, light.vy) < 0.002;
-
-          if (settled && !busy) {
-            light.x = FIXED.x;
-            light.y = FIXED.y;
-            light.vx = light.vy = 0;
-            writeLight();
-            drawRing();
-            running = false;
-            setLoopState(false);
-            return;
-          }
-
-          requestAnimationFrame(frame);
-        }
+          return busy;
+        });
 
         /* =============================================================
            SHOWCASE CONTROLS
@@ -1524,17 +1656,8 @@ light.x  += light.vx;`}</pre>
         var azimuth = document.getElementById('ds-azimuth');
         azimuth.addEventListener('input', function (e) {
           var deg = parseInt(e.target.value, 10);
-          var rad = (deg * Math.PI) / 180;
-          FIXED.x = Math.sin(rad);
-          FIXED.y = Math.cos(rad);
           el.monRest.textContent = deg + '°';
-          if (reduced) {
-            light.x = FIXED.x;
-            light.y = FIXED.y;
-            writeLight();
-          } else {
-            wake();
-          }
+          Void.rest(deg);
         });
 
         /* Strip the pair — leaves the hairline and the flat fill alone. */
@@ -1554,7 +1677,7 @@ light.x  += light.vx;`}</pre>
         });
 
         /* Toggles are buttons with aria-checked; they carry a label. */
-        document.querySelectorAll('.cer-toggle').forEach(function (t) {
+        document.querySelectorAll('.void-toggle').forEach(function (t) {
           t.addEventListener('click', function () {
             t.setAttribute('aria-checked', t.getAttribute('aria-checked') === 'true' ? 'false' : 'true');
           });
@@ -1570,7 +1693,6 @@ light.x  += light.vx;`}</pre>
           resizeTimer = setTimeout(mountRing, 180);
         });
 
-        writeLight();
         setLoopState(false);
         paintJob();
         mountRing();

@@ -1,5 +1,5 @@
 /* ============================================================
-   CERAMIC v1.0 — design system CSS layer
+   VOID v1.0 — design system CSS layer
    Drop-in. Nothing to initialise: the system has one mode.
 
    Thesis: depth is carried entirely by the BOUNDARY of an object,
@@ -13,12 +13,14 @@
    Public API — spec-normative names, do not rename:
      .lit  .lit--ceramic  .lit--sunk  .lit--status  .is-*
      .icon .icon--raised  .icon--mark
-   Everything else is prefixed cer-* so this layer can be dropped
+   Everything else is prefixed void-* so this layer can be dropped
    into a page that already has its own .card / .row / .badge.
 
    Runtime contract: --lx / --ly (the light vector) are written by
    ONE rAF spring, at rest by default, asleep when settled. Without
    a driver the initial values reproduce the resting look exactly.
+   Behaviour (menus, folds, rails, reveals) ships in void.js, which
+   is optional — every component below is legible without it.
    ============================================================ */
 
 @import url("https://fonts.googleapis.com/css2?family=Rammetto+One&family=Cabin:wght@400;500;600&family=Titillium+Web:wght@200;300;400&display=swap");
@@ -28,6 +30,12 @@
    interpolator, and a second one would fight it. */
 @property --lx { syntax: "<number>"; inherits: true; initial-value: -0.22; }
 @property --ly { syntax: "<number>"; inherits: true; initial-value: -0.97; }
+
+/* --lift-scale dims the contact light of a whole subtree without
+   touching any preset's own --lift. Typed, so it interpolates: this
+   is what lets an entrance animate the LIGHT rather than the
+   position of the thing. 1 = fully lit, 0 = hairline only. */
+@property --lift-scale { syntax: "<number>"; inherits: true; initial-value: 1; }
 
 :root {
   /* --- ink: absolute, never varies (I1) --- */
@@ -80,6 +88,8 @@
   /* --- motion: evidence that something happened, never ambience (I7) --- */
   --t-thumb: 200ms;
   --t-fill: 260ms;
+  --t-open: 220ms;   /* material growing out of nothing */
+  --t-reveal: 520ms; /* the light finding an object, once */
   --e-settle: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
@@ -112,9 +122,10 @@ body {
   box-shadow:
     0 0 0 1.5px var(--edge),
     calc(var(--lx) * -7px) calc(var(--ly) * -7px) var(--bleed) rgba(0, 0, 0, 0.7),
-    inset calc(var(--lx) * 1.5px) calc(var(--ly) * 1.5px) 0 rgba(255, 255, 255, var(--lift)),
+    inset calc(var(--lx) * 1.5px) calc(var(--ly) * 1.5px) 0
+      rgba(255, 255, 255, calc(var(--lift) * var(--lift-scale))),
     inset calc(var(--lx) * 9px) calc(var(--ly) * 9px) var(--decay) -11px
-      rgba(255, 255, 255, var(--lift));
+      rgba(255, 255, 255, calc(var(--lift) * var(--lift-scale)));
 }
 
 /* decay 0 — zero interior information, all signal at the boundary.
@@ -126,7 +137,8 @@ body {
   box-shadow:
     0 0 0 1.5px var(--edge),
     calc(var(--lx) * -9px) calc(var(--ly) * -9px) var(--bleed) rgba(0, 0, 0, 0.85),
-    inset calc(var(--lx) * 1.5px) calc(var(--ly) * 1.5px) 0 rgba(255, 255, 255, var(--lift));
+    inset calc(var(--lx) * 1.5px) calc(var(--ly) * 1.5px) 0
+      rgba(255, 255, 255, calc(var(--lift) * var(--lift-scale)));
 }
 
 /* the pair inverted — the object sits below the surface. This single
@@ -164,7 +176,7 @@ body {
     calc(var(--lx) * -9px) calc(var(--ly) * -9px) var(--bleed) rgba(0, 0, 0, 0.85),
     /* no offset, no blur — a complete, even ring. That evenness is
        what makes it unreadable as lighting. */
-    inset 0 0 0 1.5px rgb(var(--glow) / var(--lift));
+    inset 0 0 0 1.5px rgb(var(--glow) / calc(var(--lift) * var(--lift-scale)));
 }
 
 /* is-* sets --glow and nothing else. Never the hairline, the black
@@ -182,7 +194,7 @@ body {
    every CSS gradient on the page. (WebGL surfaces dither in-shader.)
    ============================================================ */
 
-.cer-dither {
+.void-dither {
   position: fixed;
   inset: 0;
   z-index: 90;
@@ -195,7 +207,7 @@ body {
    4 · TYPE
    ============================================================ */
 
-.cer-display {
+.void-display {
   font-family: var(--font-display);
   font-weight: 400;
   color: var(--ink-display);
@@ -205,7 +217,7 @@ body {
   margin: 0;
 }
 
-.cer-h2 {
+.void-h2 {
   font-family: var(--font-display);
   font-weight: 400;
   font-size: 22px;
@@ -215,25 +227,25 @@ body {
   margin: 0;
 }
 
-.cer-text {
+.void-text {
   font: 300 14px/1.6 var(--font-text);
   color: var(--ink-2);
   margin: 0;
 }
 
-.cer-ui {
+.void-ui {
   font: 500 13.5px/1.35 var(--font-ui);
   margin: 0;
 }
 
-.cer-mono {
+.void-mono {
   font: 400 12.5px/1.7 var(--font-mono);
   color: var(--ink-2);
   font-variant-numeric: tabular-nums;
   margin: 0;
 }
 
-.cer-eyebrow {
+.void-eyebrow {
   font: 600 10.5px/1 var(--font-ui);
   color: var(--ink-3);
   letter-spacing: 0.14em;
@@ -243,7 +255,7 @@ body {
 
 /* Every value that updates in place takes tabular figures —
    proportional digits jitter, which reads as flicker here. */
-.cer-num { font-variant-numeric: tabular-nums; }
+.void-num { font-variant-numeric: tabular-nums; }
 
 /* ============================================================
    5 · ICON PRIMITIVE — an incision, not a drawing.
@@ -290,8 +302,19 @@ body {
   filter: none;
 }
 
+/* An incision needs a surface to be cut into. A ghost control has no
+   fill, so its icon has nothing to be cut into and falls back to a
+   mark — matching the ink of the label beside it. Without this, a
+   short-stroked glyph on a transparent control is a black mark on a
+   near-black ground and effectively disappears. */
+.void-pill--ghost .icon,
+.void-menu__item .icon {
+  stroke: var(--ink-2);
+  filter: none;
+}
+
 /* an icon inside a lit tile */
-.cer-glyph {
+.void-glyph {
   width: 34px;
   height: 34px;
   border-radius: 10px;
@@ -299,7 +322,7 @@ body {
   place-items: center;
 }
 
-.cer-glyph--round { border-radius: 50%; }
+.void-glyph--round { border-radius: 50%; }
 
 /* ============================================================
    6 · COMPONENTS
@@ -308,25 +331,25 @@ body {
    ============================================================ */
 
 /* --- card / tile: the rectangular sibling of the disc --- */
-.cer-card {
+.void-card {
   border-radius: var(--r-md);
   padding: 20px;
 }
 
-.cer-card > h3 {
+.void-card > h3 {
   margin: 0 0 3px;
   font: 600 13.5px/1.3 var(--font-ui);
 }
 
 /* --- disc: the primary object. One value plus a caption. --- */
-.cer-disc {
+.void-disc {
   border-radius: 50%;
   display: grid;
   place-items: center;
   text-align: center;
 }
 
-.cer-disc .v {
+.void-disc .v {
   font-family: var(--font-display);
   font-size: 17px;
   line-height: 1.15;
@@ -335,7 +358,7 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.cer-disc .k {
+.void-disc .k {
   font: 500 10px/1 var(--font-ui);
   color: var(--ink-3);
   letter-spacing: 0.14em;
@@ -343,7 +366,7 @@ body {
 }
 
 /* --- metric tile --- */
-.cer-metric .k {
+.void-metric .k {
   margin: 0 0 12px;
   font: 500 11.5px/1 var(--font-ui);
   color: var(--ink-3);
@@ -351,7 +374,7 @@ body {
   text-transform: uppercase;
 }
 
-.cer-metric .v {
+.void-metric .v {
   margin: 0;
   font-family: var(--font-display);
   font-size: 24px;
@@ -361,7 +384,7 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-.cer-metric .d {
+.void-metric .d {
   margin: 9px 0 0;
   font: 300 12.5px/1.4 var(--font-text);
   color: var(--ink-2);
@@ -370,7 +393,7 @@ body {
 
 /* --- button: press inverts the pair. No translate, no scale, so a
        press can never cause layout shift. --- */
-.cer-pill {
+.void-pill {
   height: 37px;
   padding: 0 18px;
   border: 0;
@@ -384,28 +407,26 @@ body {
   gap: 9px;
 }
 
-.cer-pill--ghost {
+.void-pill--ghost {
   background: transparent;
   box-shadow: 0 0 0 1.5px var(--edge), inset 0 1px 0 rgba(255, 255, 255, 0.07);
   color: var(--ink-2);
 }
 
-.cer-pill:disabled {
+.void-pill:disabled {
   color: var(--ink-3);
   cursor: default;
   opacity: 0.5;
 }
 
-.cer-pill:not(:disabled):active {
-  box-shadow:
-    0 0 0 1.5px var(--edge),
-    inset 0 3px 9px -4px rgba(0, 0, 0, 0.9),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+/* the press material lives in §7 — a pill is not a special case */
+.void-pill {
+  transition: box-shadow 170ms var(--e-settle), background 170ms var(--e-settle);
 }
 
-.cer-pill:focus-visible,
-.cer-toggle:focus-visible,
-.cer-row:focus-visible {
+.void-pill:focus-visible,
+.void-toggle:focus-visible,
+.void-row:focus-visible {
   outline: none;
   box-shadow:
     0 0 0 1.5px var(--edge),
@@ -415,7 +436,7 @@ body {
 /* --- field: focus and error are tinted omnidirectional rings.
        White contact light at 0.16 over --s2 cannot clear WCAG
        2.4.11's 3:1; the tinted ring can. --- */
-.cer-field {
+.void-field {
   height: 37px;
   border-radius: 10px;
   border: 0;
@@ -427,13 +448,13 @@ body {
   max-width: 260px;
 }
 
-.cer-field::placeholder {
+.void-field::placeholder {
   font-family: var(--font-text);
   font-weight: 300;
   color: var(--ink-3);
 }
 
-.cer-field:focus-visible {
+.void-field:focus-visible {
   box-shadow:
     0 0 0 1.5px var(--edge),
     inset 0 2px 8px -3px rgba(0, 0, 0, 0.9),
@@ -441,7 +462,7 @@ body {
 }
 
 /* --- toggle: track sunk, thumb raised, on-state ring on the thumb --- */
-.cer-toggle {
+.void-toggle {
   width: 46px;
   height: 27px;
   border-radius: 14px;
@@ -452,7 +473,7 @@ body {
   flex: 0 0 auto;
 }
 
-.cer-toggle span {
+.void-toggle span {
   position: absolute;
   top: 3.5px;
   left: 3.5px;
@@ -466,7 +487,7 @@ body {
   transition: left var(--t-thumb) var(--e-settle);
 }
 
-.cer-toggle[aria-checked="true"] span {
+.void-toggle[aria-checked="true"] span {
   left: 22.5px;
   box-shadow:
     0 0 0 1.5px var(--edge),
@@ -475,7 +496,7 @@ body {
 
 /* --- knob: the indicator is --edge, the same ink as the hairline,
        so it reads as a cut rather than a printed mark. --- */
-.cer-knob {
+.void-knob {
   width: 78px;
   height: 78px;
   border-radius: 50%;
@@ -483,7 +504,7 @@ body {
   flex: 0 0 auto;
 }
 
-.cer-knob i {
+.void-knob i {
   position: absolute;
   left: 50%;
   top: 10px;
@@ -496,7 +517,7 @@ body {
 }
 
 /* --- badge + dot: hue is never the sole carrier of meaning (I8) --- */
-.cer-badge {
+.void-badge {
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -509,7 +530,7 @@ body {
   white-space: nowrap;
 }
 
-.cer-dot {
+.void-dot {
   width: 7px;
   height: 7px;
   border-radius: 50%;
@@ -519,14 +540,14 @@ body {
 }
 
 /* --- progress: track sunk, fill raised with its own hairline --- */
-.cer-bar {
+.void-bar {
   height: 10px;
   border-radius: 5px;
   position: relative;
   width: 100%;
 }
 
-.cer-bar i {
+.void-bar i {
   position: absolute;
   inset: 0 auto 0 0;
   border-radius: 5px;
@@ -538,7 +559,7 @@ body {
 }
 
 /* --- avatar: ceramic always; presence uses .lit--status --- */
-.cer-avatar {
+.void-avatar {
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -551,7 +572,7 @@ body {
 }
 
 /* --- row --- */
-.cer-row {
+.void-row {
   display: flex;
   align-items: center;
   gap: 14px;
@@ -559,20 +580,20 @@ body {
   padding: 13px 15px;
 }
 
-.cer-row .name {
+.void-row .name {
   font: 500 13.5px/1.25 var(--font-ui);
   min-width: 0;
   flex: 1;
 }
 
-.cer-row .name small {
+.void-row .name small {
   display: block;
   font: 300 12px/1.4 var(--font-text);
   color: var(--ink-2);
   margin-top: 2px;
 }
 
-.cer-row .num {
+.void-row .num {
   font: 400 12.5px/1 var(--font-mono);
   color: var(--ink-2);
   font-variant-numeric: tabular-nums;
@@ -581,7 +602,7 @@ body {
 }
 
 /* --- log / well --- */
-.cer-log {
+.void-log {
   display: grid;
   gap: 2px;
   font: 400 12px/1.9 var(--font-mono);
@@ -592,22 +613,22 @@ body {
   padding: 13px 15px;
 }
 
-.cer-log div { display: flex; gap: 12px; color: var(--ink-2); }
-.cer-log time { color: var(--ink-3); flex: 0 0 auto; }
-.cer-log .ok { color: rgb(var(--hue-success) / 0.9); }
-.cer-log .warn { color: rgb(var(--hue-warning) / 0.9); }
-.cer-log .err { color: rgb(var(--hue-danger) / 0.9); }
+.void-log div { display: flex; gap: 12px; color: var(--ink-2); }
+.void-log time { color: var(--ink-3); flex: 0 0 auto; }
+.void-log .ok { color: rgb(var(--hue-success) / 0.9); }
+.void-log .warn { color: rgb(var(--hue-warning) / 0.9); }
+.void-log .err { color: rgb(var(--hue-danger) / 0.9); }
 
 /* --- breadcrumbs: one trail per screen, always above the title --- */
-.cer-crumbs {
+.void-crumbs {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-.cer-crumbs a,
-.cer-crumbs span {
+.void-crumbs a,
+.void-crumbs span {
   font: 500 12px/1 var(--font-ui);
   letter-spacing: 0.02em;
   color: var(--ink-3);
@@ -615,11 +636,11 @@ body {
   white-space: nowrap;
 }
 
-.cer-crumbs a { cursor: pointer; }
-.cer-crumbs [aria-current="page"] { color: var(--ink); cursor: default; }
+.void-crumbs a { cursor: pointer; }
+.void-crumbs [aria-current="page"] { color: var(--ink); cursor: default; }
 
 /* mobile projection: the back control NAMES the parent, never a bare chevron */
-.cer-crumb-back {
+.void-crumb-back {
   position: relative;
   display: inline-flex;
   align-items: center;
@@ -634,7 +655,7 @@ body {
 }
 
 /* --- WebGL ring fallback: degrade to a static ring, never a blank box --- */
-.cer-ring-fallback {
+.void-ring-fallback {
   border-radius: 50%;
   background: var(--s2);
   box-shadow:
@@ -643,25 +664,296 @@ body {
     inset 0 0 0 1.5px rgb(var(--glow, var(--hue-neutral)) / 0.4);
 }
 
-canvas.cer-ring {
+canvas.void-ring {
   display: block;
   border-radius: 50%;
   flex: 0 0 auto;
 }
 
 /* ============================================================
-   7 · POINTERS
+   7 · PRESS — the surface takes the press, the object never moves
+
+   A press flips which side of the hairline receives light: the
+   object stops catching light and starts catching shadow, which is
+   the same operation as .lit--sunk, driven harder. Nothing
+   translates and nothing scales, so a press can never cause layout
+   shift — and because the incision inside a pressed surface is now
+   below the surrounding material, its icon flips sign with it.
+
+   Down is instant (0s); the release settles. That asymmetry is what
+   makes it feel like a physical detent rather than a fade.
+   ============================================================ */
+
+.void-pressable {
+  transition: box-shadow 170ms var(--e-settle), background 170ms var(--e-settle);
+}
+
+.is-pressed,
+.void-pressable:not(:disabled):active,
+.void-pill:not(:disabled):active,
+.void-chip:not(:disabled):active,
+.void-crumb-back:active,
+.void-row.is-interactive:active {
+  background: var(--s1);
+  transition-duration: 0s;
+  box-shadow:
+    0 0 0 1.5px var(--edge),
+    /* the black bleed is gone: a pressed object is no longer above
+       the surface, so it casts nothing */
+    inset calc(var(--lx) * 6px) calc(var(--ly) * 6px) 11px -2px rgba(0, 0, 0, 1),
+    inset calc(var(--lx) * 2px) calc(var(--ly) * 2px) 0 rgba(0, 0, 0, 0.9),
+    inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 0 rgba(255, 255, 255, 0.14);
+}
+
+/* the incision inverts with the surface it is cut into */
+.is-pressed .icon,
+.void-pressable:not(:disabled):active .icon,
+.void-pill:not(:disabled):active .icon,
+.void-chip:not(:disabled):active .icon {
+  filter: drop-shadow(
+    calc(var(--lx) * 1px) calc(var(--ly) * 1px) 0
+    rgba(255, 255, 255, var(--icon-lift, 0.24))
+  );
+}
+
+/* a raised part inside a pressed control sinks with it */
+.void-toggle:active span {
+  box-shadow:
+    0 0 0 1.5px var(--edge),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.16);
+}
+
+/* ============================================================
+   8 · DISCLOSURE — menus and folds
+
+   Revealed material is not faded in and not scaled up: the panel is
+   an object that grows out of nothing, so its hairline and its black
+   bleed are drawn correctly at every intermediate height. The
+   element that carries the depth preset is the element being sized,
+   which is the whole trick — animate a wrapper instead and the
+   shadow detaches from the shape.
+
+   Content that has been revealed sits BELOW the surface that
+   revealed it: a fold's panel is a well, not a raised card.
+   ============================================================ */
+
+.void-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.void-menu__panel {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 100%;
+  border-radius: var(--r-md);
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows var(--t-open) var(--e-settle),
+    box-shadow var(--t-open) var(--e-settle),
+    opacity 110ms linear,
+    visibility 0s linear var(--t-open);
+}
+
+.void-menu__panel--right { left: auto; right: 0; }
+
+.void-menu[data-open] .void-menu__panel {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    grid-template-rows var(--t-open) var(--e-settle),
+    box-shadow var(--t-open) var(--e-settle),
+    opacity 90ms linear,
+    visibility 0s;
+}
+
+.void-menu__inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.void-menu__list {
+  display: grid;
+  gap: 2px;
+  padding: 6px;
+}
+
+.void-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--ink-2);
+  font: 500 13px/1.3 var(--font-ui);
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.void-menu__item[aria-checked="true"] { color: var(--ink); }
+
+/* the check is present but unlit until it means something */
+.void-menu__item .icon { opacity: 0; }
+.void-menu__item[aria-checked="true"] .icon { opacity: 1; }
+
+.void-menu__item:focus-visible,
+.void-fold__head:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 1.5px var(--edge),
+    inset 0 0 0 1.5px rgb(var(--hue-info) / 0.75);
+}
+
+/* the caret is the one mark allowed to rotate: it is a state
+   indicator, and its rotation is the state */
+.void-caret { transition: transform var(--t-open) var(--e-settle); }
+.void-menu[data-open] .void-caret,
+.void-fold[data-open] .void-caret { transform: rotate(180deg); }
+
+/* ---- fold (disclosure) ---- */
+
+.void-fold + .void-fold { margin-top: 8px; }
+
+.void-fold__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 46px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: var(--r-sm);
+  color: var(--ink);
+  font: 500 13.5px/1.35 var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+}
+
+.void-fold__head .void-fold__title { flex: 1; min-width: 0; }
+
+.void-fold__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--t-open) var(--e-settle);
+}
+
+.void-fold[data-open] .void-fold__panel { grid-template-rows: 1fr; }
+
+.void-fold__clip {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.void-fold__body {
+  margin: 8px 0 2px;
+  border-radius: var(--r-sm);
+  padding: 14px 15px;
+  font: 300 13.5px/1.55 var(--font-text);
+  color: var(--ink-2);
+}
+
+/* ============================================================
+   9 · SCROLL
+
+   I7 stands: nothing on this page decorates a scroll. Two things
+   are allowed, and both are readouts rather than animations —
+   a rail that reports position, and a group header that reports it
+   has pinned. The third, .void-reveal, fires once per object and
+   animates the LIGHT, not the geometry: the object is already in
+   place, and the light arrives to find it.
+   ============================================================ */
+
+.void-rail {
+  position: relative;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.void-rail i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--p, 0) * 100%);
+  border-radius: 2px;
+  background: #2b3040;
+  box-shadow:
+    0 0 0 1.5px var(--edge),
+    inset 0 0 0 1.5px rgb(var(--glow, var(--hue-info)) / 0.5);
+}
+
+/* a scroll region with pinned group headers */
+.void-scroller {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: var(--r-sm);
+}
+
+.void-group {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 9px 15px;
+  background: var(--s1);
+  font: 600 10px/1.4 var(--font-ui);
+  color: var(--ink-3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  /* unpinned it is part of the well; pinned it becomes an object,
+     and gains the boundary that says so */
+  box-shadow: 0 0 0 0 var(--edge);
+  transition: box-shadow 160ms var(--e-settle), color 160ms var(--e-settle);
+}
+
+.void-group[data-pinned] {
+  color: var(--ink-2);
+  box-shadow:
+    0 1.5px 0 0 var(--edge),
+    0 8px 14px -10px rgba(0, 0, 0, 0.9);
+}
+
+/* one-shot entrance: --lift-scale 0 → 1 is the light finding the
+   object. Nothing translates, so nothing reflows, and the layout is
+   identical at every frame. */
+[data-void] .void-reveal {
+  --lift-scale: 0;
+  opacity: 0;
+}
+
+[data-void] .void-reveal.is-revealed {
+  --lift-scale: 1;
+  opacity: 1;
+  transition:
+    --lift-scale var(--t-reveal) var(--e-settle),
+    opacity 240ms linear;
+}
+
+/* ============================================================
+   10 · POINTERS
    Nothing animates on pointer movement, hover, or scroll (I7).
    Hover may only change material, and only where a pointer exists.
    ============================================================ */
 
 @media (hover: hover) {
-  .cer-row.is-interactive:hover { --lift: 0.24; }
-  .cer-crumbs a:hover { color: var(--ink-2); }
+  .void-row.is-interactive:hover { --lift: 0.24; }
+  .void-crumbs a:hover { color: var(--ink-2); }
+  .void-menu__item:hover { color: var(--ink); background: rgba(255, 255, 255, 0.035); }
+  .void-fold__head:hover { --lift: 0.24; }
 }
 
 @media (hover: none) {
-  .cer-row.is-interactive:hover { --lift: 0.19; }
+  .void-row.is-interactive:hover { --lift: 0.19; }
+  .void-menu__item:hover { color: var(--ink-2); background: transparent; }
 }
 
 /* ============================================================
@@ -673,22 +965,22 @@ canvas.cer-ring {
 @media (max-width: 720px) {
   .lit { --decay: 10px; --bleed: 9px; }
 
-  .cer-pill { height: 44px; border-radius: 22px; }
+  .void-pill { height: 44px; border-radius: 22px; }
 
-  .cer-toggle { width: 52px; height: 31px; }
-  .cer-toggle span { width: 24px; height: 24px; }
-  .cer-toggle[aria-checked="true"] span { left: 24.5px; }
+  .void-toggle { width: 52px; height: 31px; }
+  .void-toggle span { width: 24px; height: 24px; }
+  .void-toggle[aria-checked="true"] span { left: 24.5px; }
 
-  .cer-field { height: 44px; }
+  .void-field { height: 44px; }
 }
 
 /* Minimum touch target is 44px on coarse pointers. Objects whose geometry is
    normative — the toggle at 46×27, the crumb-back at 34 — keep their drawn
    size and gain an invisible hit area instead, so the material is unchanged. */
 @media (pointer: coarse) {
-  .cer-toggle::after,
-  .cer-crumb-back::after,
-  .cer-crumbs a::after {
+  .void-toggle::after,
+  .void-crumb-back::after,
+  .void-crumbs a::after {
     content: "";
     position: absolute;
     left: 0;
@@ -698,7 +990,11 @@ canvas.cer-ring {
     transform: translateY(-50%);
   }
 
-  .cer-crumbs a { position: relative; }
+  .void-crumbs a { position: relative; }
+
+  /* a menu item cannot take an invisible hit area — it would overlap the
+     item above it — so on touch it simply gets taller */
+  .void-menu__item { min-height: 44px; }
 }
 
 /* ============================================================
@@ -709,8 +1005,21 @@ canvas.cer-ring {
    ============================================================ */
 
 @media (prefers-reduced-motion: reduce) {
-  .cer-toggle span,
-  .cer-bar i {
+  .void-toggle span,
+  .void-bar i,
+  .void-pill,
+  .void-pressable,
+  .void-caret,
+  .void-group,
+  .void-menu__panel,
+  .void-fold__panel {
     transition: none;
+  }
+
+  /* the reveal is the light arriving; with motion suppressed it has
+     already arrived. Nothing is hidden from anyone. */
+  [data-void] .void-reveal {
+    --lift-scale: 1;
+    opacity: 1;
   }
 }
