@@ -1,0 +1,50 @@
+---
+title: "Ceramic"
+description: "A dark, single-mode design system where depth is carried entirely by the boundary of an object — one absolute-black hairline with an asymmetric gradient pair, and not a single gradient in any fill."
+projectDate: 2026-08-10
+completed: true
+technologies: ["Design Systems", "CSS", "Design Tokens", "WebGL", "Perceptual Design", "Astro", "Accessibility"]
+featured: true
+image: "/images/projects/ceramic.png"
+customUrl: "/design/ceramic"
+---
+
+## CERAMIC
+
+CERAMIC is a dark, single-mode design system built on one perceptual trick: **depth
+is carried entirely by the boundary of an object, never by its fill.** Every object
+is drawn with a 1.5px hairline of absolute black; a hard, short light gradient sits
+immediately inside that hairline and a soft, long dark one immediately outside. The
+asymmetry drives lateral inhibition harder than a real edge would — the Cornsweet
+illusion — so a face that is one flat colour value edge to edge reads as glazed,
+lifted material.
+
+The consequence is that two discs filled with the same `#1c1e26` can read as two
+different substances, depending only on what happens in the twelve pixels either
+side of their edge. Sample the centre of any object on the page with a colour
+picker and you get the same value back.
+
+Three presets over one shadow structure do the whole job — `.lit`,
+`.lit--ceramic` (decay zero, the purest form of the thesis), and `.lit--sunk`
+(the pair inverted, which supplies the entire input vocabulary). State is a
+separate primitive: an **omnidirectional, tinted ring inside the hairline**, even
+and complete, which no light position could ever produce — so hue can never be
+misread as lighting.
+
+Light is one global vector written by a single spring that never tracks the
+pointer. Moving the cursor across the page does nothing at all; pressing a control
+injects an impulse toward it and the spring returns to rest, then **cancels its own
+rAF loop** — zero scripting cost between interactions. The one WebGL surface on the
+page is a conformal loader whose falloff field is warped by a Möbius disc
+automorphism: the silhouette stays a mathematically exact circle while the band
+thickens and thins, and the progress head accelerates and decelerates around the
+ring with no easing function anywhere in the source.
+
+Explore the live showcase at [`/design/ceramic`](/design/ceramic): strip the
+gradient pair away and watch the page fall flat, drag the light's resting azimuth,
+desaturate the status row to check that nothing depends on hue, and run the
+conformal ring through its three drive modes.
+
+It is the deliberate inverse of [PRISM](/design/prismatic), the light-mode-first
+prism-glass system next door. PRISM spends a colour budget; CERAMIC has none —
+every saturated pixel on screen belongs to a status ring or a dot.

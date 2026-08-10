@@ -1,0 +1,1581 @@
+---
+// CERAMIC — design-system showcase (standalone document).
+// Self-contained: own <html>, own single-mode cascade. It does NOT use the site
+// Layout because CERAMIC owns the whole viewport and its own material model.
+// Authoritative tokens: /ceramic/ceramic.tokens.json. Drop-in layer: /ceramic/ceramic.css.
+const title = 'CERAMIC — Boundary-Depth Design System';
+const description =
+  'CERAMIC: a dark, single-mode design system where depth is carried entirely by the boundary of an object — one absolute-black hairline with an asymmetric gradient pair. Built by Erikk Shupp.';
+
+// The set. Stroke-only, 24×24, drawn once into a sprite below.
+const iconSet = [
+  'discover', 'radar', 'capture', 'pipeline', 'profile', 'agency', 'calendar',
+  'clock', 'bell', 'filter', 'flag', 'track', 'target', 'trend', 'check',
+  'close', 'plus', 'chevron-right', 'chevron-left', 'chevron-down', 'external',
+  'download', 'refresh', 'sliders', 'lock', 'warning', 'info', 'more',
+];
+
+// §5 — one token, every size. Each row is rendered as disc + badge + dot + word.
+const statuses: { key: string; label: string; rgb: string; note: string; v: string }[] = [
+  { key: 'success', label: 'healthy', rgb: '122 214 160', note: 'lift 0.42', v: '4' },
+  { key: 'warning', label: 'degraded', rgb: '236 194 106', note: 'lift 0.42', v: '1' },
+  { key: 'danger', label: 'failed', rgb: '240 138 128', note: 'lift 0.42', v: '1' },
+  { key: 'info', label: 'running', rgb: '138 180 240', note: 'lift 0.42', v: '2' },
+  { key: 'idle', label: 'paused', rgb: '255 255 255', note: 'lift 0.10', v: '—' },
+];
+
+// §3 — the whole ladder. There is no fifth value.
+const surfaces = [
+  { name: '--s0', hex: '#101118', role: 'page' },
+  { name: '--s1', hex: '#16181f', role: 'panel · well · nav' },
+  { name: '--s2', hex: '#1c1e26', role: 'component' },
+  { name: '--s3', hex: '#23262f', role: 'raised part' },
+];
+
+const antiPatterns: [string, string][] = [
+  ['Give the hairline a colour to show status', 'Breaks I1 and I5. Status goes inside the hairline.'],
+  ['Scale the hairline with element size', 'It is a boundary marker, not a stroke weight. Scaling turns the language from “flat with an edge” into “outlined”.'],
+  ['Make the page background black', 'Absolute black must be darker than its surround (I2).'],
+  ['Use symmetric blur on both sides of the edge', 'Cancels the illusion; looks merely blurry.'],
+  ['Add a gradient to a fill', 'All variation lives in box-shadow (I6).'],
+  ['Track the cursor with the light', 'Ambient motion during reading (I7).'],
+  ['Translate or scale a button on press', 'Layout shift. The system changes material instead.'],
+  ['Add a fifth surface value', 'Use a different depth preset.'],
+  ['Raise status saturation for clarity', 'Blooms on OLED. Raise --lift instead.'],
+  ['Ship the default preset without dither', 'Visible banding on OLED.'],
+  ['Mount a WebGL context per component', 'Context limits and mobile context loss. One per page.'],
+  ['Use emoji or icon fonts for status', 'The ring and the dot are the status vocabulary.'],
+];
+
+const acceptance = [
+  'Two objects with identical fill, one with the lift pair and one with the hairline alone, are perceptibly different materials.',
+  'A colour picker sampling the centre of every disc on the page returns the same value.',
+  'Moving the pointer across the page, without clicking, produces no visual change whatsoever.',
+  'Clicking a control shifts the whole page’s lighting and settles within ~400ms.',
+  'The rAF loop is cancelled at rest — zero scripting activity between interactions.',
+  'Every saturated pixel on screen belongs to a status ring or a dot.',
+  'Screenshotting in greyscale leaves all status still legible.',
+  'The determinate loader’s head visibly changes speed around the ring, with no easing function in the source.',
+  'No banding on an OLED display at full brightness.',
+  'At 375px, every interactive target is ≥ 44px.',
+  'Under prefers-reduced-motion nothing moves, and the design still reads correctly.',
+];
+
+// Activity well (§8 · log)
+const activity: [string, string, string][] = [
+  ['14:22', 'ok', 'ingest scaled to 24 tasks'],
+  ['14:19', 'warn', 'ingest p95 above 500ms threshold'],
+  ['14:04', '', 'search reindex complete — 4.1M docs'],
+  ['13:51', 'err', 'billing health check failed (3/3)'],
+  ['13:32', 'ok', 'auth deployed — 8f2c91a'],
+  ['12:57', 'ok', 'api-gateway deployed — 3d10bb4'],
+];
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="dark" />
+    <meta name="theme-color" content="#101118" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href="https://shupp.dev/design/ceramic" />
+
+    <!-- OpenGraph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content="https://shupp.dev/design/ceramic" />
+    <meta property="og:image" content="https://shupp.dev/images/projects/ceramic.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://shupp.dev/images/projects/ceramic.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- CERAMIC drop-in layer (self-imports its own fonts) -->
+    <link rel="stylesheet" href="/ceramic/ceramic.css" />
+
+    <style is:global>
+      /* =====================================================================
+         Showcase-only chrome (ds-*). Reads CERAMIC tokens; mints no new
+         surface value and no new shadow. Every framed object below is one of
+         the four presets plus layout — including the specimens.
+         ===================================================================== */
+
+      html { scroll-behavior: smooth; }
+      body { padding-bottom: 5rem; }
+
+      @media (prefers-reduced-motion: reduce) {
+        html { scroll-behavior: auto; }
+      }
+
+      .ds-skip {
+        position: absolute; left: -999px; top: 0; z-index: 100;
+        background: var(--s2); color: var(--ink);
+        padding: 0.6rem 1rem; border-radius: var(--r-sm);
+      }
+      .ds-skip:focus { left: 0.5rem; top: 0.5rem; }
+
+      /* ---- sticky control bar ------------------------------------------- */
+      .ds-controls {
+        position: sticky; top: 0; z-index: 80;
+        display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem 1.5rem;
+        padding: 0.7rem clamp(0.9rem, 4vw, 3rem);
+        background: var(--s1);
+        border-bottom: 1.5px solid var(--edge);
+      }
+      .ds-brand {
+        display: inline-flex; align-items: center; gap: 0.55rem;
+        font: 500 12px/1 var(--font-ui); letter-spacing: 0.12em; text-transform: uppercase;
+        color: var(--ink-3); text-decoration: none; margin-right: auto;
+      }
+      .ds-brand:hover { color: var(--ink-2); }
+
+      .ds-lightctl { display: flex; align-items: center; gap: 0.7rem; }
+      .ds-lightctl label {
+        font: 500 11px/1 var(--font-ui); letter-spacing: 0.12em; text-transform: uppercase;
+        color: var(--ink-3);
+      }
+      /* The track is a sunk well and the thumb is a ceramic disc — the slider
+         is not a special case, it is two presets. The well is drawn on the
+         wrapper so the input itself can be a 44px hit target at 10px of ink. */
+      .ds-track {
+        position: relative; display: flex; align-items: center;
+        height: 44px; width: clamp(110px, 18vw, 190px);
+      }
+      .ds-track::before {
+        content: ''; position: absolute; left: 0; right: 0; top: 50%;
+        height: 10px; margin-top: -5px; border-radius: 5px;
+        background: var(--s1); pointer-events: none;
+        box-shadow:
+          0 0 0 1.5px var(--edge),
+          inset calc(var(--lx) * 3px) calc(var(--ly) * 3px) 10px -4px rgba(0, 0, 0, 0.9),
+          inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 0 rgba(255, 255, 255, 0.09);
+      }
+      .ds-lightctl input[type='range'] {
+        -webkit-appearance: none; appearance: none;
+        position: relative; width: 100%; height: 44px; margin: 0;
+        background: transparent; outline: none; border-radius: 5px;
+      }
+      .ds-lightctl input[type='range']::-webkit-slider-thumb {
+        -webkit-appearance: none; appearance: none;
+        width: 20px; height: 20px; border-radius: 50%; cursor: pointer;
+        background: var(--s3);
+        box-shadow: 0 0 0 1.5px var(--edge), inset 0 1.5px 0 rgba(255, 255, 255, 0.26);
+      }
+      .ds-lightctl input[type='range']::-moz-range-thumb {
+        width: 20px; height: 20px; border-radius: 50%; cursor: pointer; border: 0;
+        background: var(--s3);
+        box-shadow: 0 0 0 1.5px var(--edge), inset 0 1.5px 0 rgba(255, 255, 255, 0.26);
+      }
+      .ds-lightctl input[type='range']:focus-visible {
+        box-shadow: 0 0 0 1.5px var(--edge), inset 0 0 0 1.5px rgb(var(--hue-info) / 0.75);
+      }
+      .ds-brand { min-height: 44px; }
+
+      .ds-readout {
+        margin: 0; font: 400 12px/1 var(--font-mono); color: var(--ink-3);
+        font-variant-numeric: tabular-nums; white-space: nowrap;
+      }
+      .ds-readout b { color: var(--ink-2); font-weight: 400; }
+
+      /* ---- page ---------------------------------------------------------- */
+      .ds-page { max-width: 1080px; margin: 0 auto; padding: 0 clamp(0.9rem, 4vw, 3rem); }
+
+      .ds-hero { padding: clamp(2.2rem, 6vw, 4rem) 0 1.5rem; }
+      .ds-hero .cer-crumbs { margin-bottom: 1.1rem; }
+      .ds-hero h1 { font-size: clamp(26px, 5vw, 44px); margin: 0.7rem 0 0; }
+      .ds-aside {
+        display: block; margin-top: 0.8rem;
+        font: 200 italic 16px/1.4 var(--font-text); color: var(--ink-2);
+      }
+      .ds-intro { max-width: 62ch; margin-top: 1.1rem; }
+
+      .ds-section { padding: 2.6rem 0 0; }
+      .ds-section > header { margin-bottom: 1.3rem; padding-top: 2.2rem; border-top: 1.5px solid var(--edge); }
+      .ds-section > header > .cer-eyebrow { margin-bottom: 0.55rem; }
+      .ds-section header p { max-width: 66ch; margin-top: 0.6rem; }
+      .ds-section header p code, .ds-rule code, .ds-anti code {
+        font: 400 0.92em/1 var(--font-mono); color: var(--ink);
+      }
+
+      .ds-grid { display: grid; gap: 14px; }
+      .ds-grid--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .ds-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .ds-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .ds-split { display: grid; gap: 14px; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); }
+
+      @media (max-width: 860px) {
+        .ds-grid--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .ds-grid--3, .ds-grid--2, .ds-split { grid-template-columns: minmax(0, 1fr); }
+      }
+
+      .ds-row { display: flex; flex-wrap: wrap; align-items: center; gap: 14px; }
+      .ds-stack { display: flex; flex-direction: column; gap: 10px; }
+      .ds-spec { display: grid; gap: 10px; justify-items: center; text-align: center; }
+      .ds-cap { font: 300 12px/1.4 var(--font-text); color: var(--ink-2); margin: 0; }
+      .ds-note { margin-top: 0.7rem; }
+
+      pre.ds-code {
+        margin: 14px 0 0; padding: 15px 17px; border-radius: var(--r-sm);
+        overflow-x: auto; font: 400 11.5px/1.7 var(--font-mono); color: #b9bdc9;
+        overscroll-behavior-x: contain;
+      }
+
+      /* ---- numbered rules / anti-pattern table ---------------------------- */
+      .ds-rule, .ds-anti {
+        display: flex; gap: 14px; align-items: flex-start;
+        padding: 12px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .ds-rule:last-child, .ds-anti:last-child { border-bottom: 0; }
+      .ds-rule .n { font: 400 11px/1.6 var(--font-mono); color: var(--ink-3); width: 26px; flex: 0 0 auto; }
+      .ds-rule p, .ds-anti p { margin: 0; font: 300 13.5px/1.55 var(--font-text); color: var(--ink); }
+      .ds-rule p b, .ds-anti p b { font: 500 13.5px/1.55 var(--font-ui); display: block; }
+      .ds-anti .x { flex: 0 0 auto; margin-top: 2px; }
+      .ds-anti p span { color: var(--ink-2); }
+
+      /* ---- §1 boundary A/B ------------------------------------------------ */
+      .ds-ab { display: flex; flex-wrap: wrap; gap: 26px; align-items: flex-end; }
+      .ds-slab {
+        width: 132px; height: 132px; border-radius: 50%;
+        display: grid; place-items: center;
+      }
+      /* the control: same fill, hairline alone, no pair */
+      .ds-bare { background: var(--s2); box-shadow: 0 0 0 1.5px var(--edge); }
+      .ds-swatch-hex { font: 400 11px/1 var(--font-mono); color: var(--ink-3); }
+
+      /* strip the pair — proves the fill is doing none of the work */
+      body.ds-stripped .lit,
+      body.ds-stripped .lit--ceramic,
+      body.ds-stripped .lit--sunk,
+      body.ds-stripped .lit--status { box-shadow: 0 0 0 1.5px var(--edge) !important; }
+      body.ds-stripped .icon { filter: none !important; }
+
+      /* greyscale audit — I8: hue is never the sole carrier of meaning */
+      .ds-greyscale { filter: grayscale(1); }
+
+      /* ---- §3 surfaces ---------------------------------------------------- */
+      .ds-surface {
+        min-height: 92px; border-radius: var(--r-md); padding: 12px 13px;
+        display: flex; flex-direction: column; justify-content: flex-end; gap: 2px;
+      }
+      .ds-surface .nm { font: 400 12px/1 var(--font-mono); color: var(--ink); }
+      .ds-surface .rl { font: 300 11.5px/1.3 var(--font-text); color: var(--ink-3); }
+
+      /* ---- §6 light monitor ---------------------------------------------- */
+      .ds-monitor p { margin: 0.3rem 0 0; }
+      .ds-monitor b { color: var(--ink); font-weight: 400; }
+      .ds-vector {
+        width: 118px; height: 118px; border-radius: 50%;
+        position: relative; display: grid; place-items: center; flex: 0 0 auto;
+      }
+      /* The needle pivots on the disc centre: it spans from 42px above the
+         centre down to it, with its origin at the bottom end. */
+      .ds-vector i {
+        position: absolute; left: 50%; top: calc(50% - 42px);
+        width: 2px; height: 42px;
+        margin-left: -1px; border-radius: 1px; background: var(--edge);
+        transform-origin: 50% 100%;
+      }
+      .ds-vector u {
+        display: block; width: 9px; height: 9px; border-radius: 50%;
+        background: var(--s3); box-shadow: 0 0 0 1.5px var(--edge); position: relative;
+      }
+
+      /* ---- §7 ring -------------------------------------------------------- */
+      .ds-ring-wrap { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+      .ds-ring-meta { min-width: 0; flex: 1; }
+      .ds-ring-meta .sha { font: 400 12px/1 var(--font-mono); color: var(--ink-3); }
+      .ds-ring-meta .msg { font: 300 13.5px/1.45 var(--font-text); color: var(--ink); margin-top: 6px; }
+
+      /* ---- §8 nav rail ---------------------------------------------------- */
+      .ds-rail {
+        display: flex; gap: 8px; overflow-x: auto; padding: 9px;
+        border-radius: var(--r-md); scrollbar-width: none; overscroll-behavior-x: contain;
+      }
+      .ds-rail::-webkit-scrollbar { display: none; }
+      .ds-chip {
+        display: inline-flex; align-items: center; gap: 9px; flex: 0 0 auto;
+        min-height: 40px; padding: 0 15px; border: 0; border-radius: 20px;
+        background: transparent; color: var(--ink-2);
+        font: 500 13px/1 var(--font-ui); cursor: pointer; white-space: nowrap;
+      }
+      .ds-chip[aria-current='true'] {
+        color: var(--ink); background: var(--s2);
+        box-shadow: 0 0 0 1.5px var(--edge), inset 0 1.5px 0 rgba(255, 255, 255, 0.14);
+      }
+      .ds-chip .tick {
+        width: 6px; height: 6px; border-radius: 50%;
+        background: rgb(var(--glow, var(--hue-neutral)) / 0.8);
+        box-shadow: 0 0 0 1.5px var(--edge); flex: 0 0 auto;
+      }
+
+      /* ---- §9 icons ------------------------------------------------------- */
+      .ds-set { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 10px; }
+      .ds-cell {
+        border-radius: var(--r-md); padding: 16px 8px 11px;
+        display: grid; justify-items: center; gap: 11px;
+      }
+      .ds-cell .nm { font: 400 10px/1.3 var(--font-mono); color: var(--ink-3); text-align: center; word-break: break-word; }
+
+      /* ---- §10 type ------------------------------------------------------- */
+      .ds-type > div + div { margin-top: 1.2rem; }
+      .ds-type .meta { font: 400 11px/1 var(--font-mono); color: var(--ink-3); }
+      .ds-type p { margin: 0.45rem 0 0; }
+
+      /* ---- footer --------------------------------------------------------- */
+      .ds-footer {
+        max-width: 1080px; margin: 3.5rem auto 0;
+        padding: 2rem clamp(0.9rem, 4vw, 3rem) 0;
+        border-top: 1.5px solid var(--edge);
+      }
+      .ds-footer a { color: var(--ink-2); }
+      .ds-footer p { font: 400 12.5px/1.8 var(--font-mono); color: var(--ink-3); margin: 0; }
+      /* the checklist sits in a well: an incision needs a surface to cut into,
+         and the page floor is not one */
+      .ds-check {
+        list-style: none; margin: 1.2rem 0 0; padding: 14px 18px;
+        max-width: 82ch; border-radius: var(--r-md);
+      }
+      .ds-check li {
+        display: flex; gap: 11px; align-items: flex-start; padding: 6px 0;
+        font: 300 13px/1.5 var(--font-text); color: var(--ink-2);
+      }
+      .ds-check .icon { margin-top: 3px; }
+
+      @media (max-width: 720px) {
+        .ds-controls { gap: 0.4rem 0.5rem; padding: 0.4rem clamp(0.9rem, 4vw, 3rem); }
+        /* the live readout is duplicated by §6's monitor, and the label is
+           carried by the input's aria-label — at this width the sticky bar
+           is worth more than either duplicate. One 44px row, not three. */
+        .ds-readout, .ds-brand-long, .ds-lightctl label { display: none; }
+        .ds-track { width: 84px; }
+        .ds-lightctl { gap: 0; }
+        .ds-slab { width: 106px; height: 106px; }
+        .ds-ab { gap: 18px; }
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Dither. Mandatory: untreated, the default preset rings on OLED. -->
+    <div class="cer-dither" aria-hidden="true"></div>
+
+    <a class="ds-skip" href="#ds-main">Skip to content</a>
+
+    <!-- =========================================================
+         SPRITE — 24×24 viewBox, stroke only, round terminals,
+         angles at 0/45/90 with arcs otherwise.
+    ========================================================== -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs>
+        <symbol id="i-discover" viewBox="0 0 24 24">
+          <circle cx="10.5" cy="10.5" r="5.75" />
+          <path d="M14.7 14.7 L19 19" />
+        </symbol>
+        <symbol id="i-radar" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="3" />
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="M12 12 L18.3 5.7" />
+        </symbol>
+        <symbol id="i-capture" viewBox="0 0 24 24">
+          <path d="M6 5.5 a2 2 0 0 1 2-2 h6 L18.5 8 v10.5 a2 2 0 0 1-2 2 H8 a2 2 0 0 1-2-2 z" />
+          <path d="M14 3.5 V8 H18.5" />
+          <path d="M9.5 13 h5.5 M9.5 16.5 h3.5" />
+        </symbol>
+        <symbol id="i-pipeline" viewBox="0 0 24 24">
+          <path d="M12 3.5 L20 7.75 L12 12 L4 7.75 Z" />
+          <path d="M4 12 L12 16.25 L20 12" />
+          <path d="M4 16.25 L12 20.5 L20 16.25" />
+        </symbol>
+        <symbol id="i-profile" viewBox="0 0 24 24">
+          <circle cx="12" cy="8.75" r="3.75" />
+          <path d="M5.25 20.5 a6.75 6.75 0 0 1 13.5 0" />
+        </symbol>
+        <symbol id="i-agency" viewBox="0 0 24 24">
+          <path d="M4.5 20.5 h15" />
+          <path d="M6 20.5 V8.5 L12 4.5 L18 8.5 V20.5" />
+          <path d="M10 20.5 v-5 h4 v5" />
+          <path d="M9 11 h1.5 M13.5 11 h1.5" />
+        </symbol>
+        <symbol id="i-calendar" viewBox="0 0 24 24">
+          <rect x="4.5" y="5.5" width="15" height="15" rx="2.5" />
+          <path d="M4.5 10.25 H19.5" />
+          <path d="M9 3.5 V7 M15 3.5 V7" />
+        </symbol>
+        <symbol id="i-clock" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="M12 6.75 V12 L15.75 14.25" />
+        </symbol>
+        <symbol id="i-bell" viewBox="0 0 24 24">
+          <path d="M7.75 10.25 a4.25 4.25 0 0 1 8.5 0 c0 4.25 1.75 5.5 2.25 6.5 H5.5 c.5-1 2.25-2.25 2.25-6.5 z" />
+          <path d="M10.25 19.5 a2 2 0 0 0 3.5 0" />
+        </symbol>
+        <symbol id="i-filter" viewBox="0 0 24 24">
+          <path d="M4.5 6.25 H19.5 L14 12.75 V19.5 L10 20.75 V12.75 Z" />
+        </symbol>
+        <symbol id="i-flag" viewBox="0 0 24 24">
+          <path d="M6.5 3.75 V20.75" />
+          <path d="M6.5 5.25 h10.5 l-2.25 3.75 2.25 3.75 h-10.5" />
+        </symbol>
+        <symbol id="i-track" viewBox="0 0 24 24">
+          <path d="M7 4.5 a1 1 0 0 1 1-1 h8 a1 1 0 0 1 1 1 V20.5 L12 16.25 L7 20.5 Z" />
+        </symbol>
+        <symbol id="i-target" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="8.5" />
+          <circle cx="12" cy="12" r="4.25" />
+          <path d="M12 11.4 v1.2" />
+        </symbol>
+        <symbol id="i-trend" viewBox="0 0 24 24">
+          <path d="M4.5 16.5 L10 11 L13.5 14.5 L19.5 8.5" />
+          <path d="M14.75 8.5 H19.5 V13.25" />
+        </symbol>
+        <symbol id="i-check" viewBox="0 0 24 24">
+          <path d="M5.75 12.5 L10 16.75 L18.25 7.5" />
+        </symbol>
+        <symbol id="i-close" viewBox="0 0 24 24">
+          <path d="M6.75 6.75 L17.25 17.25 M17.25 6.75 L6.75 17.25" />
+        </symbol>
+        <symbol id="i-plus" viewBox="0 0 24 24">
+          <path d="M12 5.75 V18.25 M5.75 12 H18.25" />
+        </symbol>
+        <symbol id="i-chevron-right" viewBox="0 0 24 24">
+          <path d="M9.5 5.75 L15.75 12 L9.5 18.25" />
+        </symbol>
+        <symbol id="i-chevron-left" viewBox="0 0 24 24">
+          <path d="M14.5 5.75 L8.25 12 L14.5 18.25" />
+        </symbol>
+        <symbol id="i-chevron-down" viewBox="0 0 24 24">
+          <path d="M5.75 9.5 L12 15.75 L18.25 9.5" />
+        </symbol>
+        <symbol id="i-external" viewBox="0 0 24 24">
+          <path d="M8 16 L16.5 7.5" />
+          <path d="M9.75 7.5 H16.5 V14.25" />
+        </symbol>
+        <symbol id="i-download" viewBox="0 0 24 24">
+          <path d="M12 4.25 V15.25" />
+          <path d="M7.5 10.75 L12 15.25 L16.5 10.75" />
+          <path d="M5 19.75 H19" />
+        </symbol>
+        <symbol id="i-refresh" viewBox="0 0 24 24">
+          <path d="M19.25 12 a7.25 7.25 0 1 1-2.5-5.5" />
+          <path d="M19.25 4 V7.5 H15.75" />
+        </symbol>
+        <symbol id="i-sliders" viewBox="0 0 24 24">
+          <path d="M4.5 8 H19.5 M4.5 16 H19.5" />
+          <circle cx="9.5" cy="8" r="2.5" />
+          <circle cx="15" cy="16" r="2.5" />
+        </symbol>
+        <symbol id="i-lock" viewBox="0 0 24 24">
+          <rect x="5.5" y="10.25" width="13" height="10.25" rx="2.5" />
+          <path d="M8.5 10.25 V7.75 a3.5 3.5 0 0 1 7 0 v2.5" />
+        </symbol>
+        <symbol id="i-warning" viewBox="0 0 24 24">
+          <path d="M12 4.5 L20.75 19.5 H3.25 Z" />
+          <path d="M12 10 V13.75 M12 16.6 v.2" />
+        </symbol>
+        <symbol id="i-info" viewBox="0 0 24 24">
+          <circle cx="12" cy="12" r="8.5" />
+          <path d="M12 11 V16.25 M12 7.8 v.2" />
+        </symbol>
+        <symbol id="i-more" viewBox="0 0 24 24">
+          <path d="M6 12 v.01 M12 12 v.01 M18 12 v.01" />
+        </symbol>
+      </defs>
+    </svg>
+
+    <!-- ===================== STICKY CONTROL BAR ========================= -->
+    <div class="ds-controls" role="region" aria-label="CERAMIC controls">
+      <a class="ds-brand" href="/portfolio">
+        <svg class="icon icon--xs icon--mark" aria-hidden="true"><use href="#i-chevron-left" /></svg>
+        <span class="ds-brand-long">shupp.dev / </span>portfolio
+      </a>
+
+      <div class="ds-lightctl">
+        <label for="ds-azimuth">Light</label>
+        <span class="ds-track">
+          <input
+            id="ds-azimuth" type="range" min="0" max="359" step="1" value="347"
+            aria-label="Resting azimuth of the global light, in degrees clockwise from overhead"
+          />
+        </span>
+      </div>
+
+      <p class="ds-readout" aria-live="off">
+        --lx <b id="ds-lx">-0.220</b> · --ly <b id="ds-ly">-0.975</b> · loop <b id="ds-loop">asleep</b>
+      </p>
+
+      <button id="ds-strip" class="cer-pill cer-pill--ghost" type="button" aria-pressed="false">
+        Strip the pair
+      </button>
+    </div>
+
+    <main id="ds-main" class="ds-page">
+      <!-- =========================== HERO =============================== -->
+      <header class="ds-hero">
+        <nav class="cer-crumbs" aria-label="Breadcrumb">
+          <a href="/">shupp.dev</a>
+          <svg class="icon icon--xs icon--mark" aria-hidden="true"><use href="#i-chevron-right" /></svg>
+          <a href="/portfolio">Design</a>
+          <svg class="icon icon--xs icon--mark" aria-hidden="true"><use href="#i-chevron-right" /></svg>
+          <span aria-current="page">Ceramic</span>
+        </nav>
+
+        <p class="cer-eyebrow">CERAMIC · v1.0 · BOUNDARY DEPTH</p>
+        <h1 class="cer-display">Ceramic</h1>
+        <span class="ds-aside">Depth lives at the edge of a thing, never inside it.</span>
+        <p class="cer-text ds-intro">
+          A dark, single-mode system built on one perceptual trick. Every object is
+          drawn with a 1.5px hairline of absolute black; a hard, short light gradient
+          sits immediately inside it and a soft, long dark one immediately outside.
+          The asymmetry drives lateral inhibition harder than a real edge would, so a
+          face that is one flat colour edge to edge reads as glazed, lifted material.
+          Two objects filled with the same hex can be two different substances.
+          Press <span style="color: var(--ink)">Strip the pair</span> above to take the
+          gradients away and watch the page fall flat — the fill never changes.
+        </p>
+      </header>
+
+      <!-- ========================= 1 · BOUNDARY ========================== -->
+      <section class="ds-section" aria-labelledby="ds-boundary">
+        <header>
+          <p class="cer-eyebrow">INVARIANTS I1–I3 · THE BOUNDARY</p>
+          <h2 id="ds-boundary" class="cer-h2">One hairline, two unequal gradients</h2>
+          <p class="cer-text">
+            The mechanism is the Cornsweet illusion. All three discs below are filled
+            with exactly <code>#1c1e26</code> — sample the centre of each with a colour
+            picker and you get the same value. Only the twelve pixels either side of
+            their edge differ.
+          </p>
+        </header>
+
+        <div class="ds-ab">
+          <div class="ds-spec">
+            <div class="ds-slab ds-bare"></div>
+            <p class="ds-cap">hairline alone<br /><span class="ds-swatch-hex">#1c1e26</span></p>
+          </div>
+          <div class="ds-spec">
+            <div class="ds-slab lit lit--sz-sm"></div>
+            <p class="ds-cap">.lit — pair + decay<br /><span class="ds-swatch-hex">#1c1e26</span></p>
+          </div>
+          <div class="ds-spec">
+            <div class="ds-slab lit lit--ceramic"></div>
+            <p class="ds-cap">.lit--ceramic — decay 0<br /><span class="ds-swatch-hex">#1c1e26</span></p>
+          </div>
+          <div class="ds-spec">
+            <div class="ds-slab lit lit--sunk"></div>
+            <p class="ds-cap">.lit--sunk — pair inverted<br /><span class="ds-swatch-hex">#16181f</span></p>
+          </div>
+        </div>
+
+        <div class="cer-card lit" style="margin-top: 22px">
+          <div class="ds-rule">
+            <span class="n">I1</span>
+            <p><b>The hairline is #000000, 1.5px, always</b>On every object, at every size. It never scales, never takes a colour, never becomes a border-width token. It is a boundary marker, not a stroke weight.</p>
+          </div>
+          <div class="ds-rule">
+            <span class="n">I2</span>
+            <p><b>The page is never black</b>Absolute black has to be darker than its surround, or the hairline stops reading as a void and starts reading as fill. The page floor is <code>--s0</code>, #101118.</p>
+          </div>
+          <div class="ds-rule">
+            <span class="n">I3</span>
+            <p><b>The pair is asymmetric</b>Inside: hard and short — 1.5px offset, zero blur. Outside: soft and long — 7 to 9px offset, 12 to 16px blur. Symmetric decay cancels the illusion and leaves you with something merely blurry.</p>
+          </div>
+          <div class="ds-rule">
+            <span class="n">I6</span>
+            <p><b>Fills are flat</b>A component has one background value. All variation lives in <code>box-shadow</code>. There is no gradient anywhere in this system that is not a shadow.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================= 2 · SURFACES ========================== -->
+      <section class="ds-section" aria-labelledby="ds-surfaces">
+        <header>
+          <p class="cer-eyebrow">§3 · SURFACE LADDER</p>
+          <h2 id="ds-surfaces" class="cer-h2">Four values, lightest object on darkest page</h2>
+          <p class="cer-text">
+            Each step is roughly +6 per channel. Four surfaces is the whole ladder — a
+            design that appears to need a fifth needs a different depth preset instead.
+            Status hues sit at low chroma deliberately: a 1.5px band at 42% alpha against
+            <code>--s2</code> is already near the perceptual limit, and saturated hue
+            blooms on near-black panels. To make a state clearer, raise
+            <code>--lift</code>, never the saturation.
+          </p>
+        </header>
+
+        <div class="ds-grid ds-grid--4">
+          {surfaces.map((s) => (
+            <div class="ds-surface lit lit--ceramic" style={`background: ${s.hex}`}>
+              <span class="nm">{s.name} · {s.hex}</span>
+              <span class="rl">{s.role}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <!-- =========================== 3 · DEPTH =========================== -->
+      <section class="ds-section" aria-labelledby="ds-depth">
+        <header>
+          <p class="cer-eyebrow">§4 · THE DEPTH PRIMITIVE</p>
+          <h2 id="ds-depth" class="cer-h2">Three presets over one shadow structure</h2>
+          <p class="cer-text">
+            Material light is directional and always white (I4) — it describes what an
+            object is made of, never what it is doing. <code>--decay</code> and
+            <code>--bleed</code> are relative and scale with the object; the hairline is
+            absolute and does not. Below 80px the decay band has no room to resolve, so
+            switch to ceramic rather than continuing to compress it.
+          </p>
+        </header>
+
+        <div class="ds-grid ds-grid--3">
+          <div class="cer-card lit">
+            <h3>.lit</h3>
+            <p class="cer-text">The default. Four layers: black bleed, hairline, hard contact light, soft inward decay. Everything rectangular that is not an input.</p>
+            <pre class="ds-code">{`--lift: 0.19;
+--bleed: 12px;
+--decay: 15px;
+background: var(--s2);`}</pre>
+          </div>
+          <div class="cer-card lit lit--ceramic">
+            <h3>.lit--ceramic</h3>
+            <p class="cer-text">Decay zero. No interior information at all — the purest form of the thesis, the cheapest to draw, and the only preset that cannot band.</p>
+            <pre class="ds-code">{`--lift: 0.26;
+--bleed: 16px;
+/* no decay layer */`}</pre>
+          </div>
+          <div class="cer-card lit lit--sunk">
+            <h3>.lit--sunk</h3>
+            <p class="cer-text">The pair inverted. One flip supplies the entire input vocabulary: field wells, toggle tracks, progress channels, log panels, pressed buttons.</p>
+            <pre class="ds-code">{`background: var(--s1);
+inset (dark) · inside
+inset (light) · outside`}</pre>
+          </div>
+        </div>
+
+        <div class="cer-card lit ds-note">
+          <div class="ds-rule">
+            <span class="n">↕</span>
+            <p><b>Scale rule</b>decay ≈ 0.07 × min(w, h) · bleed ≈ 0.06 × min(w, h) · lift = clamp(0.19 + 0.14 × (1 − size/200), 0.19, 0.34). Small objects get a shorter, brighter band.</p>
+          </div>
+          <div class="ds-rule">
+            <span class="n">◫</span>
+            <p><b>Dither is not optional polish</b>A gradient from #000 to #14151a crosses about twenty 8-bit levels over hundreds of pixels; untreated, <code>.lit</code> shows concentric rings on OLED. This page carries one fixed <code>feTurbulence</code> overlay at 2.8%, and the WebGL ring dithers in-shader at ±0.5/255.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================== 4 · STATUS =========================== -->
+      <section class="ds-section" aria-labelledby="ds-status">
+        <header>
+          <p class="cer-eyebrow">§5 · THE STATUS PRIMITIVE</p>
+          <h2 id="ds-status" class="cer-h2">State light is omnidirectional and tinted</h2>
+          <p class="cer-text">
+            <code>inset 0 0 0 1.5px</code> — no offset, no blur. A complete, even ring is
+            something no light position could ever produce, which is precisely why hue can
+            never be misread as lighting (I5). Status is a token, not a component, so the
+            same signal works at a 6px dot and a 116px disc with no second implementation.
+            Note that <code>--lift</code> is 0.42 here against 0.19 for neutral: that is
+            matched <em>luminance</em>, not matched alpha.
+          </p>
+        </header>
+
+        <div id="ds-status-demo">
+          <div class="ds-grid ds-grid--4">
+            {statuses.map((s) => (
+              <div class="cer-card lit ds-stack">
+                <div class="ds-row" style="gap: 12px">
+                  <div class={`cer-disc lit--status is-${s.key}`} style="width: 62px; height: 62px">
+                    <div>
+                      <div class="v">{s.v}</div>
+                    </div>
+                  </div>
+                  <div>
+                    <p class="cer-ui">{s.label}</p>
+                    <p class="cer-mono" style="font-size: 11px">{s.rgb}</p>
+                  </div>
+                </div>
+                <div class="ds-row" style="gap: 9px">
+                  <span class={`cer-badge lit--status is-${s.key}`}>
+                    <i class="cer-dot"></i>{s.label}
+                  </span>
+                </div>
+                <p class="cer-mono" style="font-size: 11px">.is-{s.key} · {s.note}</p>
+              </div>
+            ))}
+            <div class="cer-card lit ds-stack">
+              <p class="cer-eyebrow">I8 · greyscale audit</p>
+              <p class="cer-text" style="font-size: 12.5px">
+                The deuteranopic separation between the amber and the red at this luminance
+                is thinner than it looks in a swatch. Every ring is therefore paired with a
+                dot, a word, or both — desaturate the row above and nothing is lost.
+              </p>
+              <button id="ds-grey" class="cer-pill lit" type="button" aria-pressed="false">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#i-filter" /></svg>
+                Desaturate
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================== 5 · LIGHT =========================== -->
+      <section class="ds-section" aria-labelledby="ds-light">
+        <header>
+          <p class="cer-eyebrow">§6 · LIGHT MODEL</p>
+          <h2 id="ds-light" class="cer-h2">Fixed rest, impulse on action, asleep between</h2>
+          <p class="cer-text">
+            One global vector, unit length, written by one rAF spring into
+            <code>--lx</code> / <code>--ly</code>. It does <em>not</em> track the pointer:
+            move your cursor across this page without clicking and nothing changes at all.
+            Press any control and the light takes an impulse toward that element, then
+            springs back to rest — motion is evidence that something happened (I7). When
+            the spring settles the loop cancels itself, so the page costs zero scripting
+            between interactions.
+          </p>
+        </header>
+
+        <div class="ds-split">
+          <div class="cer-card lit">
+            <div class="ds-row" style="gap: 22px">
+              <div class="ds-vector lit lit--sunk" aria-hidden="true">
+                <i id="ds-vec"></i>
+                <u></u>
+              </div>
+              <div class="ds-monitor ds-ring-meta">
+                <p class="cer-eyebrow">Reference monitor · live</p>
+                <p class="cer-mono">--lx <b id="ds-mon-lx">-0.220</b> · --ly <b id="ds-mon-ly">-0.975</b></p>
+                <p class="cer-mono">rest <b id="ds-mon-rest">347°</b> · stiff <b>0.14</b> · damp <b>0.76</b></p>
+                <p class="cer-mono">frames <b id="ds-mon-frames">0</b> · loop <b id="ds-mon-loop">asleep</b></p>
+                <p class="cer-text ds-note" style="font-size: 12.5px">
+                  Every shadow on the page is a <code>calc()</code> of these two numbers.
+                  No element is ever touched by JavaScript.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div class="cer-card lit">
+            <p class="cer-eyebrow">Impulse sources</p>
+            <div class="ds-row ds-note">
+              <button class="cer-pill lit" type="button">Press me</button>
+              <button class="cer-pill lit" type="button">And me</button>
+            </div>
+            <p class="cer-text ds-note" style="font-size: 12.5px">
+              <code>pointerdown</code> on a control injects velocity toward that
+              element's screen position at gain 0.055; <code>focusin</code> does the same
+              at 0.03, so keyboard navigation lights the page exactly like a click.
+              Settling takes about 400ms with one small overshoot.
+            </p>
+            <pre class="ds-code">{`const FIXED = { x: -0.22, y: 0.97 };
+const STIFF = 0.14, DAMP = 0.76;
+
+light.vx += (FIXED.x - light.x) * STIFF;
+light.vx *= DAMP;
+light.x  += light.vx;`}</pre>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ 6 · RING =========================== -->
+      <section class="ds-section" aria-labelledby="ds-ring-h">
+        <header>
+          <p class="cer-eyebrow">§7 · THE CONFORMAL RING</p>
+          <h2 id="ds-ring-h" class="cer-h2">One Möbius map, no easing function anywhere</h2>
+          <p class="cer-text">
+            The single WebGL surface on the page. Its falloff field is warped by a disc
+            automorphism, <code>w = (z − a) / (1 − āz)</code>, which maps the unit disc to
+            itself and fixes the boundary. The silhouette therefore stays a
+            mathematically exact circle while the interior level sets are pushed
+            off-centre, and a constant-width band in <code>w</code>-space becomes a
+            variable-width band on screen: calligraphic line weight, free. Taking the arc
+            angle in <code>w</code>-space rather than <code>z</code>-space makes the
+            progress head accelerate and decelerate around the ring with no hand-authored
+            easing at all. <code>a</code> is a single complex number — it is the light
+            vector.
+          </p>
+        </header>
+
+        <div class="ds-split">
+          <div class="cer-card lit">
+            <h3>Release</h3>
+            <p class="cer-text" style="margin-bottom: 16px">api-gateway · main</p>
+            <div class="ds-ring-wrap">
+              <canvas
+                id="ds-ring" class="cer-ring" width="232" height="232"
+                style="width: 116px; height: 116px" aria-hidden="true"
+              ></canvas>
+              <div class="ds-ring-meta">
+                <div class="sha">3d10bb4</div>
+                <div class="msg">Batch ingest writes, drop per-row commit</div>
+                <div style="margin-top: 11px">
+                  <span id="ds-ring-badge" class="cer-badge lit--status is-idle"><i class="cer-dot"></i>ready</span>
+                </div>
+              </div>
+            </div>
+            <div class="cer-bar lit lit--sunk is-info" style="margin-top: 18px">
+              <i id="ds-ring-bar" style="width: 0%"></i>
+            </div>
+            <div class="ds-row" style="margin-top: 16px; gap: 10px">
+              <button class="cer-pill lit" type="button" data-ring="run">Run determinate</button>
+              <button class="cer-pill lit" type="button" data-ring="indeterminate">Indeterminate</button>
+              <button class="cer-pill lit--status is-danger" type="button" data-ring="fail">Fail</button>
+              <button class="cer-pill cer-pill--ghost" type="button" data-ring="reset">Reset</button>
+            </div>
+          </div>
+
+          <div class="cer-card lit">
+            <p class="cer-eyebrow">Drive modes</p>
+            <div class="ds-rule">
+              <span class="n">01</span>
+              <p><b>Still</b><code>a = 0</code>, arc off. Terminal states stop dead and switch to a still tinted ring, so motion unambiguously means “in progress”.</p>
+            </div>
+            <div class="ds-rule">
+              <span class="n">02</span>
+              <p><b>Indeterminate</b><code>a = 0.7·(cos ωt, sin ωt)</code>. The band thickens and thins as the map compresses and expands it.</p>
+            </div>
+            <div class="ds-rule">
+              <span class="n">03</span>
+              <p><b>Determinate</b><code>a</code> follows the arc head; progress is the fraction. Watch the head slow at the top of the circle and quicken at the bottom.</p>
+            </div>
+            <p class="cer-text ds-note" style="font-size: 12.5px">
+              At most one WebGL context per page — context limits are real and mobile
+              browsers drop contexts on backgrounding. This canvas handles
+              <code>webglcontextlost</code> by remounting, caps its backing store at 2×
+              DPR, and degrades to a static CSS ring carrying the same hairline if a
+              context cannot be obtained. The loader is the only component in the system
+              permitted to animate without a user action, because ongoing work is itself
+              the event.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================= 7 · COMPONENTS ======================== -->
+      <section class="ds-section" aria-labelledby="ds-components">
+        <header>
+          <p class="cer-eyebrow">§8 · COMPONENTS</p>
+          <h2 id="ds-components" class="cer-h2">Geometry is normative</h2>
+          <p class="cer-text">
+            Every component is one of the four presets plus layout. There are no bespoke
+            shadows below this line. A button press inverts the pair rather than moving
+            the button, so a press can never cause layout shift; focus takes a tinted
+            omnidirectional ring, because white contact light at 0.16 over
+            <code>--s2</code> cannot clear WCAG 2.4.11's 3:1 and the tinted ring can.
+          </p>
+        </header>
+
+        <div class="ds-grid ds-grid--2">
+          <div class="cer-card lit">
+            <p class="cer-eyebrow">Controls</p>
+            <div class="ds-row ds-note" style="gap: 12px">
+              <button class="cer-pill lit" type="button">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#i-refresh" /></svg>Re-run
+              </button>
+              <button class="cer-pill cer-pill--ghost" type="button">
+                <svg class="icon icon--sm" aria-hidden="true"><use href="#i-download" /></svg>Export
+              </button>
+              <button class="cer-pill lit" type="button" disabled>Disabled</button>
+            </div>
+            <div class="ds-row ds-note" style="gap: 12px; margin-top: 16px">
+              <input class="cer-field lit lit--sunk" placeholder="Filter services…" aria-label="Filter services" />
+              <button
+                class="cer-toggle lit lit--sunk" type="button"
+                aria-checked="true" role="switch" aria-label="Auto-rollback"
+              ><span></span></button>
+              <button
+                class="cer-toggle lit lit--sunk" type="button"
+                aria-checked="false" role="switch" aria-label="Require approval"
+              ><span></span></button>
+            </div>
+            <p class="cer-mono ds-note" style="font-size: 11px">
+              pill 37 × r19 · field 37 × r10 · toggle 46 × 27, travel 3.5 → 22.5
+            </p>
+          </div>
+
+          <div class="cer-card lit">
+            <p class="cer-eyebrow">Knobs · thresholds</p>
+            <div class="ds-row ds-note" style="gap: 26px; margin-top: 14px">
+              <div class="ds-spec">
+                <div class="cer-knob lit--status is-warning"><i style="transform: rotate(48deg)"></i></div>
+                <p class="ds-cap">Error budget · 68%</p>
+              </div>
+              <div class="ds-spec">
+                <div class="cer-knob lit"><i style="transform: rotate(-14deg)"></i></div>
+                <p class="ds-cap">CPU target · 45%</p>
+              </div>
+              <div class="ds-spec">
+                <div class="cer-knob lit"><i style="transform: rotate(87deg)"></i></div>
+                <p class="ds-cap">Scale ceiling · 82%</p>
+              </div>
+            </div>
+            <p class="cer-mono ds-note" style="font-size: 11px">
+              78px · indicator 2 × 15px in --edge, so it reads as a cut
+            </p>
+          </div>
+
+          <div class="cer-card lit">
+            <p class="cer-eyebrow">Rows · discs · avatars</p>
+            <div class="ds-stack ds-note" style="margin-top: 12px">
+              <div class="cer-row lit is-interactive">
+                <span class="cer-dot" style="--glow: var(--hue-success)"></span>
+                <div class="name">api-gateway<small>us-east-1 · 12 tasks</small></div>
+                <div class="num">42ms</div>
+                <span class="cer-badge lit--status is-success">healthy</span>
+              </div>
+              <div class="cer-row lit is-interactive">
+                <span class="cer-dot" style="--glow: var(--hue-warning)"></span>
+                <div class="name">ingest<small>us-west-2 · 24 tasks</small></div>
+                <div class="num">840ms</div>
+                <span class="cer-badge lit--status is-warning">degraded</span>
+              </div>
+            </div>
+            <div class="ds-row" style="margin-top: 16px; gap: 18px">
+              <div class="cer-disc lit--status is-success" style="width: 78px; height: 78px">
+                <div><div class="v">99.94%</div><div class="k">UPTIME</div></div>
+              </div>
+              <div class="cer-disc lit lit--ceramic" style="width: 78px; height: 78px">
+                <div><div class="v">4.2k</div><div class="k">RPS</div></div>
+              </div>
+              <div class="cer-avatar lit lit--ceramic">ES</div>
+            </div>
+          </div>
+
+          <div class="cer-card lit">
+            <p class="cer-eyebrow">Well · machine text</p>
+            <div class="cer-log lit lit--sunk ds-note" style="margin-top: 12px">
+              {activity.map(([t, cls, msg]) => (
+                <div><time>{t}</time><span class={cls}>{msg}</span></div>
+              ))}
+            </div>
+            <p class="cer-eyebrow" style="margin-top: 18px">Nav rail · ≤720px projection</p>
+            <div class="ds-rail lit lit--sunk ds-note" style="margin-top: 10px">
+              <button class="ds-chip" aria-current="true" type="button">Overview</button>
+              <button class="ds-chip" type="button" style="--glow: var(--hue-warning)">
+                Services<span class="tick"></span>
+              </button>
+              <button class="ds-chip" type="button">Deploys</button>
+              <button class="ds-chip" type="button">Settings</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =========================== 8 · ICONS =========================== -->
+      <section class="ds-section" aria-labelledby="ds-icons">
+        <header>
+          <p class="cer-eyebrow">§8.1 · ICONS &amp; BREADCRUMBS</p>
+          <h2 id="ds-icons" class="cer-h2">An icon is an incision, not a drawing</h2>
+          <p class="cer-text">
+            The path is absolute black — the same ink as the hairline — and it carries the
+            same asymmetric pair: dark line, light edge offset opposite the light vector.
+            That is what makes it read as cut into the surface rather than printed on it.
+            <code>vector-effect: non-scaling-stroke</code> holds the weight at 1.5px from
+            14px to 40px, exactly as the hairline never scales with its element.
+          </p>
+        </header>
+
+        <div class="ds-split">
+          <div class="cer-card lit">
+            <div class="ds-row" style="gap: 26px">
+              <div class="ds-spec">
+                <div class="cer-glyph lit lit--sunk" style="width: 66px; height: 66px; border-radius: 18px">
+                  <svg class="icon icon--xl" aria-hidden="true"><use href="#i-target" /></svg>
+                </div>
+                <p class="ds-cap">incised — default</p>
+              </div>
+              <div class="ds-spec">
+                <div class="cer-glyph lit" style="width: 66px; height: 66px; border-radius: 18px">
+                  <svg class="icon icon--xl icon--raised" aria-hidden="true"><use href="#i-target" /></svg>
+                </div>
+                <p class="ds-cap">raised — sign flipped</p>
+              </div>
+              <div class="ds-spec">
+                <div class="cer-glyph lit lit--ceramic" style="width: 66px; height: 66px; border-radius: 18px">
+                  <svg class="icon icon--xl" style="--icon-lift: 0" aria-hidden="true"><use href="#i-target" /></svg>
+                </div>
+                <p class="ds-cap">flat — no pair</p>
+              </div>
+            </div>
+            <div class="ds-row" style="gap: 30px; margin-top: 22px">
+              <div class="ds-spec"><svg class="icon icon--xs" aria-hidden="true"><use href="#i-clock" /></svg><span class="ds-cap">14 · inline</span></div>
+              <div class="ds-spec"><svg class="icon icon--sm" aria-hidden="true"><use href="#i-clock" /></svg><span class="ds-cap">16 · dense</span></div>
+              <div class="ds-spec"><svg class="icon" aria-hidden="true"><use href="#i-clock" /></svg><span class="ds-cap">20 · default</span></div>
+              <div class="ds-spec"><svg class="icon icon--lg" aria-hidden="true"><use href="#i-clock" /></svg><span class="ds-cap">24 · touch</span></div>
+              <div class="ds-spec"><svg class="icon icon--xl" aria-hidden="true"><use href="#i-clock" /></svg><span class="ds-cap">40 · feature</span></div>
+            </div>
+          </div>
+
+          <div class="cer-card lit">
+            <div class="ds-rule">
+              <span class="n">01</span>
+              <p><b>24 × 24 grid, 2px safe margin</b>Live area is 20 × 20. Nothing touches the frame.</p>
+            </div>
+            <div class="ds-rule">
+              <span class="n">02</span>
+              <p><b>Stroke only, no fills</b>A filled shape is a surface, and surfaces get the depth primitive. Icons are lines.</p>
+            </div>
+            <div class="ds-rule">
+              <span class="n">03</span>
+              <p><b>Angles at 0°, 45°, 90° only</b>Arcs otherwise. Arbitrary diagonals break the family faster than any other rule.</p>
+            </div>
+            <div class="ds-rule">
+              <span class="n">04</span>
+              <p><b>Icons never take hue</b>Status is the ring. An icon may sit inside a tinted chip; it never becomes the tint.</p>
+            </div>
+            <div class="ds-rule">
+              <span class="n">05</span>
+              <p><b>Never load-bearing alone</b>Every icon in a nav or a control has a text label beside it. The set is a scanning aid, not a vocabulary.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="ds-set" style="margin-top: 14px">
+          {iconSet.map((name) => (
+            <div class="ds-cell lit">
+              <svg class="icon icon--lg" aria-hidden="true"><use href={`#i-${name}`} /></svg>
+              <span class="nm">{name}</span>
+            </div>
+          ))}
+        </div>
+
+        <div class="ds-grid ds-grid--2" style="margin-top: 14px">
+          <div class="cer-card lit">
+            <p class="cer-eyebrow">Breadcrumb · desktop projection</p>
+            <nav class="cer-crumbs ds-note" aria-label="Example breadcrumb" style="margin-top: 12px">
+              <a>Pursue</a>
+              <svg class="icon icon--xs icon--mark" aria-hidden="true"><use href="#i-chevron-right" /></svg>
+              <a>Discover</a>
+              <svg class="icon icon--xs icon--mark" aria-hidden="true"><use href="#i-chevron-right" /></svg>
+              <span aria-current="page">IT Support Services BPA</span>
+            </nav>
+            <p class="cer-text ds-note" style="font-size: 12.5px; margin-top: 12px">
+              Ancestors dim, current node bright and never a link. The separator is a
+              <code>.icon--mark</code>: a dim stroke, not a cut, because a separator is
+              not an object and does not get the light treatment.
+            </p>
+          </div>
+          <div class="cer-card lit">
+            <p class="cer-eyebrow">Breadcrumb · mobile projection</p>
+            <div class="ds-note" style="margin-top: 12px">
+              <button class="cer-crumb-back lit lit--ceramic" type="button">
+                <svg class="icon icon--xs" aria-hidden="true"><use href="#i-chevron-left" /></svg>Discover
+              </button>
+              <p class="cer-display" style="font-size: 19px; margin-top: 12px">IT Support Services BPA</p>
+            </div>
+            <p class="cer-text ds-note" style="font-size: 12.5px; margin-top: 12px">
+              The back control <em>names</em> the parent — never a bare chevron — so the
+              hierarchy stays legible with only one node visible. Item names truncate;
+              ancestors never do.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============================ 9 · TYPE =========================== -->
+      <section class="ds-section" aria-labelledby="ds-type-h">
+        <header>
+          <p class="cer-eyebrow">§9 · TYPE</p>
+          <h2 id="ds-type-h" class="cer-h2">Four roles, and a display face that blooms</h2>
+          <p class="cer-text">
+            Heavy display type blooms on near-black, so the display role gets its own,
+            dimmer ink (<code>--ink-display</code>) and a hard floor at 16px, below which
+            the face loses its shape. Supporting prose runs at 300 weight and never sits
+            on <code>--ink-3</code> — thin strokes vanish against low-contrast surfaces.
+            Every value that updates in place takes tabular figures, because proportional
+            digits jitter horizontally and that reads as flicker here.
+          </p>
+        </header>
+
+        <div class="cer-card lit ds-type">
+          <div>
+            <span class="meta">display · Rammetto One 400 · ≥16px · --ink-display · tracking −0.015em</span>
+            <p class="cer-display" style="font-size: 32px">Boundary</p>
+          </div>
+          <div>
+            <span class="meta">ui · Cabin 400/500/600 · anything you click, label or scan</span>
+            <p class="cer-ui" style="font-size: 15px">Deploy to production · Require approval · 6 services across 3 regions</p>
+          </div>
+          <div>
+            <span class="meta">text · Titillium Web 300 · ≥12px · supporting prose</span>
+            <p class="cer-text">The fill is one value edge to edge; all the signal is at the boundary.</p>
+          </div>
+          <div>
+            <span class="meta">mono · machine text only: SHAs, timestamps, log lines</span>
+            <p class="cer-mono">3d10bb4 · 14:22:07Z · p95 840ms · --lift 0.42</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= 10 · ANTI-PATTERNS ====================== -->
+      <section class="ds-section" aria-labelledby="ds-anti">
+        <header>
+          <p class="cer-eyebrow">§12 · ANTI-PATTERNS</p>
+          <h2 id="ds-anti" class="cer-h2">The failures that collapse it into a generic dark theme</h2>
+          <p class="cer-text">
+            These are what implementing from a description rather than from the rules
+            produces. Each one is individually reasonable and collectively fatal.
+          </p>
+        </header>
+
+        <div class="cer-card lit">
+          {antiPatterns.map(([dont, why]) => (
+            <div class="ds-anti">
+              <svg class="icon icon--sm x" aria-hidden="true"><use href="#i-close" /></svg>
+              <p><b>{dont}</b><span>{why}</span></p>
+            </div>
+          ))}
+        </div>
+      </section>
+    </main>
+
+    <footer class="ds-footer">
+      <p>
+        CERAMIC v1.0 · single mode · tokens:
+        <a href="/ceramic/ceramic.tokens.json">ceramic.tokens.json</a> · layer:
+        <a href="/ceramic/ceramic.css">ceramic.css</a> · sibling system:
+        <a href="/design/prismatic">PRISM</a>
+      </p>
+
+      <ul class="ds-check lit lit--sunk">
+        {acceptance.map((line) => (
+          <li>
+            <svg class="icon icon--xs" aria-hidden="true"><use href="#i-check" /></svg>
+            <span>{line}</span>
+          </li>
+        ))}
+      </ul>
+    </footer>
+
+    <script is:inline>
+      (function () {
+        'use strict';
+
+        var root = document.documentElement;
+        var reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        /* =============================================================
+           LIGHT — fixed rest, impulse on action, sleeps when settled.
+           This loop is the only thing that writes --lx / --ly, and it
+           is the only rAF on the page. It also drives the ring, so the
+           page never has two clocks.
+        ============================================================= */
+
+        var FIXED = { x: -0.22, y: 0.97 }; // y-up; --ly is written negated
+        var STIFF = 0.14;
+        var DAMP = 0.76;
+
+        var light = { x: FIXED.x, y: FIXED.y, vx: 0, vy: 0 };
+        var running = false;
+        var last = 0;
+        var frames = 0;
+
+        var el = {
+          lx: document.getElementById('ds-lx'),
+          ly: document.getElementById('ds-ly'),
+          loop: document.getElementById('ds-loop'),
+          monLx: document.getElementById('ds-mon-lx'),
+          monLy: document.getElementById('ds-mon-ly'),
+          monRest: document.getElementById('ds-mon-rest'),
+          monFrames: document.getElementById('ds-mon-frames'),
+          monLoop: document.getElementById('ds-mon-loop'),
+          vec: document.getElementById('ds-vec'),
+        };
+
+        function writeLight() {
+          var m = Math.hypot(light.x, light.y) || 1;
+          var lx = (light.x / m).toFixed(3);
+          var ly = (-light.y / m).toFixed(3);
+          root.style.setProperty('--lx', lx);
+          root.style.setProperty('--ly', ly);
+          el.lx.textContent = lx;
+          el.ly.textContent = ly;
+          el.monLx.textContent = lx;
+          el.monLy.textContent = ly;
+          /* the monitor needle points AT the light source */
+          el.vec.style.transform = 'rotate(' + (Math.atan2(light.x, light.y) * 180) / Math.PI + 'deg)';
+        }
+
+        function setLoopState(on) {
+          var word = on ? 'running' : 'asleep';
+          el.loop.textContent = word;
+          el.monLoop.textContent = word;
+        }
+
+        function wake() {
+          if (reduced || running) return;
+          running = true;
+          setLoopState(true);
+          last = performance.now();
+          requestAnimationFrame(frame);
+        }
+
+        function nudge(node, gain) {
+          if (reduced) return;
+          var r = node.getBoundingClientRect();
+          var x = ((r.left + r.width / 2) / innerWidth) * 2 - 1;
+          var y = -(((r.top + r.height / 2) / innerHeight) * 2 - 1);
+          light.vx += x * (gain || 0.055);
+          light.vy += y * (gain || 0.055);
+          wake();
+        }
+
+        document.addEventListener('pointerdown', function (e) {
+          var node = e.target.closest('button, input, a, .cer-row, .cer-knob, .cer-card, .cer-disc');
+          if (node) nudge(node);
+        });
+
+        document.addEventListener('focusin', function (e) {
+          if (e.target.matches('input, button, a')) nudge(e.target, 0.03);
+        });
+
+        /* =============================================================
+           RING — the one WebGL surface on the page.
+        ============================================================= */
+
+        var VERT =
+          'attribute vec2 p; varying vec2 vUv;' +
+          'void main() { vUv = p; gl_Position = vec4(p, 0.0, 1.0); }';
+
+        var FRAG = [
+          '#extension GL_OES_standard_derivatives : enable',
+          'precision highp float;',
+          'varying vec2 vUv;',
+          'uniform vec2 uA;',
+          'uniform vec3 uHue;',
+          'uniform float uLine;',
+          'uniform float uLift;',
+          'uniform float uDecay;',
+          'uniform float uProgress;',
+          'uniform float uArc;',
+          'vec2 cmul(vec2 a, vec2 b) { return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); }',
+          'vec2 cdiv(vec2 a, vec2 b) { float d = dot(b, b); return vec2(dot(a, b), a.y * b.x - a.x * b.y) / d; }',
+          'vec2 mobius(vec2 z, vec2 a) { return cdiv(z - a, vec2(1.0, 0.0) - cmul(vec2(a.x, -a.y), z)); }',
+          'float hash(vec2 v) { return fract(sin(dot(v, vec2(12.9898, 78.233))) * 43758.5453); }',
+          'void main() {',
+          '  vec2 z = vUv / 0.86;',
+          '  vec2 wv = mobius(z, uA);',
+          '  float d = length(wv);',
+          '  float px = max(fwidth(d), 1e-5);',
+          '  float ang = atan(wv.y, wv.x);',
+          '  float t = mod(1.5707963 - ang, 6.2831853) / 6.2831853;',
+          '  float mask = 1.0;',
+          '  if (uArc > 0.5) {',
+          '    float e = max(fwidth(t) * 1.5, 0.002);',
+          '    mask = 1.0 - smoothstep(uProgress - e, uProgress + e, t);',
+          '  }',
+          '  float line = (1.0 - smoothstep(0.0, px * uLine, abs(d - 1.0))) * mask;',
+          '  float inside = 1.0 - smoothstep(1.0 - px, 1.0 + px, d);',
+          '  float under = smoothstep(1.16, 1.0, d) * step(1.0, d);',
+          /* The lift is a RIM, brightest against the hairline and falling
+             inward — the shader form of the CSS contact light. band 0.03 is
+             the ceramic rim; a wider band is the .lit decay. Keeping it a rim
+             is what lets a colour picker read the same #1c1e26 at the centre
+             of this ring as at the centre of every CSS disc on the page. */
+          '  float band = uDecay < 0.001 ? 0.03 : uDecay;',
+          '  float lift = smoothstep(1.0 - band, 1.0, d) * step(d, 1.0);',
+          '  vec3 surface = vec3(0.063, 0.067, 0.094);',
+          '  vec3 fill = vec3(0.110, 0.118, 0.149);',
+          '  vec3 col = mix(surface, surface * 0.24, under);',
+          '  col = mix(col, fill, inside);',
+          '  col += lift * uLift * mask * uHue;',
+          '  col = mix(col, vec3(0.0), line);',
+          '  col += (hash(gl_FragCoord.xy) - 0.5) / 255.0;',
+          '  gl_FragColor = vec4(col, 1.0);',
+          '}',
+        ].join('\n');
+
+        var HUES = {
+          neutral: [1, 1, 1],
+          success: [0.478, 0.839, 0.627],
+          warning: [0.925, 0.761, 0.416],
+          danger: [0.941, 0.541, 0.502],
+          info: [0.541, 0.706, 0.941],
+        };
+
+        /* state: idle | running | indeterminate | done | failed */
+        var job = { state: 'idle', progress: 0, phase: 0 };
+        var ring = null;
+
+        function compile(gl, type, src) {
+          var s = gl.createShader(type);
+          gl.shaderSource(s, src);
+          gl.compileShader(s);
+          if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(s));
+          return s;
+        }
+
+        function mountRing() {
+          ring = null;
+          var canvas = document.getElementById('ds-ring');
+          if (!canvas) return;
+
+          var dpr = Math.min(window.devicePixelRatio || 1, 2);
+          var cssW = canvas.clientWidth || 116;
+          canvas.width = Math.round(cssW * dpr);
+          canvas.height = Math.round(cssW * dpr);
+
+          var gl = null;
+          try {
+            gl = canvas.getContext('webgl', { antialias: true, powerPreference: 'low-power' });
+          } catch (err) {
+            gl = null;
+          }
+
+          if (!gl) {
+            var div = document.createElement('div');
+            div.className = 'cer-ring-fallback';
+            div.style.width = cssW + 'px';
+            div.style.height = cssW + 'px';
+            div.style.setProperty('--glow', 'var(--hue-info)');
+            canvas.replaceWith(div);
+            return;
+          }
+
+          canvas.addEventListener('webglcontextlost', function (e) {
+            e.preventDefault();
+            mountRing();
+          });
+
+          gl.getExtension('OES_standard_derivatives');
+          var prog = gl.createProgram();
+          gl.attachShader(prog, compile(gl, gl.VERTEX_SHADER, VERT));
+          gl.attachShader(prog, compile(gl, gl.FRAGMENT_SHADER, FRAG));
+          gl.linkProgram(prog);
+          gl.useProgram(prog);
+
+          var buf = gl.createBuffer();
+          gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+          gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+          var loc = gl.getAttribLocation(prog, 'p');
+          gl.enableVertexAttribArray(loc);
+          gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+
+          var u = {};
+          ['uA', 'uHue', 'uLine', 'uLift', 'uDecay', 'uProgress', 'uArc'].forEach(function (n) {
+            u[n] = gl.getUniformLocation(prog, n);
+          });
+
+          ring = { gl: gl, canvas: canvas, prog: prog, buf: buf, loc: loc, u: u };
+          drawRing();
+        }
+
+        function drawRing() {
+          if (!ring) return;
+          var gl = ring.gl;
+          var u = ring.u;
+          gl.useProgram(ring.prog);
+          gl.bindBuffer(gl.ARRAY_BUFFER, ring.buf);
+          gl.vertexAttribPointer(ring.loc, 2, gl.FLOAT, false, 0, 0);
+          gl.viewport(0, 0, ring.canvas.width, ring.canvas.height);
+
+          if (job.state === 'running') {
+            /* determinate: a follows the arc head */
+            var a = Math.PI / 2 - job.progress * Math.PI * 2;
+            gl.uniform2f(u.uA, Math.cos(a) * 0.7, Math.sin(a) * 0.7);
+            gl.uniform1f(u.uProgress, job.progress);
+            gl.uniform1f(u.uArc, 1);
+            gl.uniform3fv(u.uHue, HUES.info);
+            /* 0.42 is the status --lift: tinted light reads dimmer than white
+               at equal alpha, so it is matched by luminance, not by number. */
+            gl.uniform1f(u.uLift, 0.42);
+            gl.uniform1f(u.uDecay, 0.14);
+            gl.uniform1f(u.uLine, 2);
+          } else if (job.state === 'indeterminate') {
+            gl.uniform2f(u.uA, Math.cos(job.phase) * 0.7, Math.sin(job.phase) * 0.7);
+            gl.uniform1f(u.uProgress, 1);
+            gl.uniform1f(u.uArc, 0);
+            gl.uniform3fv(u.uHue, HUES.info);
+            gl.uniform1f(u.uLift, 0.42);
+            gl.uniform1f(u.uDecay, 0.14);
+            gl.uniform1f(u.uLine, 2);
+          } else {
+            var hue =
+              job.state === 'failed' ? HUES.danger : job.state === 'done' ? HUES.success : HUES.neutral;
+            gl.uniform2f(u.uA, 0, 0);
+            gl.uniform1f(u.uProgress, 1);
+            gl.uniform1f(u.uArc, 0);
+            gl.uniform3fv(u.uHue, hue);
+            /* still + neutral is the ceramic rim (0.26); still + tinted is a
+               terminal status ring (0.42). Same two numbers as the CSS. */
+            gl.uniform1f(u.uLift, job.state === 'idle' ? 0.26 : 0.42);
+            gl.uniform1f(u.uDecay, 0);
+            gl.uniform1f(u.uLine, 1.6);
+          }
+
+          gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+        }
+
+        var badgeEl = document.getElementById('ds-ring-badge');
+        var barEl = document.getElementById('ds-ring-bar');
+        var barTrack = barEl ? barEl.parentElement : null;
+
+        var BADGE = {
+          idle: ['is-idle', 'ready'],
+          running: ['is-info', 'rolling out'],
+          indeterminate: ['is-info', 'working'],
+          done: ['is-success', 'live'],
+          failed: ['is-danger', 'rolled back'],
+        };
+
+        function paintJob() {
+          var meta = BADGE[job.state];
+          var pct = Math.round(job.progress * 100);
+          badgeEl.className = 'cer-badge lit--status ' + meta[0];
+          badgeEl.innerHTML =
+            '<i class="cer-dot"></i>' + meta[1] + (job.state === 'running' ? ' ' + pct + '%' : '');
+          barTrack.className =
+            'cer-bar lit lit--sunk is-' +
+            (job.state === 'done' ? 'success' : job.state === 'failed' ? 'danger' : 'info');
+          barEl.style.width =
+            (job.state === 'idle' ? 0 : job.state === 'running' ? pct : job.state === 'indeterminate' ? 0 : 100) + '%';
+        }
+
+        document.addEventListener('click', function (e) {
+          var btn = e.target.closest('[data-ring]');
+          if (!btn) return;
+          var act = btn.getAttribute('data-ring');
+          if (act === 'run') {
+            job.state = 'running';
+            job.progress = 0;
+          } else if (act === 'indeterminate') {
+            job.state = 'indeterminate';
+            job.progress = 0;
+          } else if (act === 'fail') {
+            job.state = 'failed';
+            job.progress = 1;
+          } else {
+            job.state = 'idle';
+            job.progress = 0;
+          }
+          paintJob();
+          drawRing();
+          /* reduced motion: terminal frames only, never a loop */
+          if (reduced && (job.state === 'running' || job.state === 'indeterminate')) {
+            job.state = 'done';
+            job.progress = 1;
+            paintJob();
+            drawRing();
+            return;
+          }
+          wake();
+        });
+
+        /* =============================================================
+           LOOP — one clock for the spring and the ring.
+        ============================================================= */
+
+        function frame(now) {
+          var dt = Math.min((now - last) / 1000, 0.05);
+          last = now;
+          frames++;
+
+          light.vx += (FIXED.x - light.x) * STIFF;
+          light.vy += (FIXED.y - light.y) * STIFF;
+          light.vx *= DAMP;
+          light.vy *= DAMP;
+          light.x += light.vx;
+          light.y += light.vy;
+          writeLight();
+          el.monFrames.textContent = String(frames);
+
+          var busy = job.state === 'running' || job.state === 'indeterminate';
+          if (job.state === 'running') {
+            job.progress += dt * 0.3;
+            if (job.progress >= 1) {
+              job.progress = 1;
+              job.state = 'done';
+              busy = false;
+            }
+            paintJob();
+          } else if (job.state === 'indeterminate') {
+            job.phase += dt * 2.2;
+          }
+
+          drawRing();
+
+          var settled =
+            Math.hypot(light.x - FIXED.x, light.y - FIXED.y) < 0.002 &&
+            Math.hypot(light.vx, light.vy) < 0.002;
+
+          if (settled && !busy) {
+            light.x = FIXED.x;
+            light.y = FIXED.y;
+            light.vx = light.vy = 0;
+            writeLight();
+            drawRing();
+            running = false;
+            setLoopState(false);
+            return;
+          }
+
+          requestAnimationFrame(frame);
+        }
+
+        /* =============================================================
+           SHOWCASE CONTROLS
+        ============================================================= */
+
+        /* Light azimuth: degrees clockwise from overhead. Moving the rest
+           position is an explicit action, so the spring travels to it. */
+        var azimuth = document.getElementById('ds-azimuth');
+        azimuth.addEventListener('input', function (e) {
+          var deg = parseInt(e.target.value, 10);
+          var rad = (deg * Math.PI) / 180;
+          FIXED.x = Math.sin(rad);
+          FIXED.y = Math.cos(rad);
+          el.monRest.textContent = deg + '°';
+          if (reduced) {
+            light.x = FIXED.x;
+            light.y = FIXED.y;
+            writeLight();
+          } else {
+            wake();
+          }
+        });
+
+        /* Strip the pair — leaves the hairline and the flat fill alone. */
+        var strip = document.getElementById('ds-strip');
+        strip.addEventListener('click', function () {
+          var on = document.body.classList.toggle('ds-stripped');
+          strip.setAttribute('aria-pressed', String(on));
+          strip.textContent = on ? 'Restore the pair' : 'Strip the pair';
+        });
+
+        /* Greyscale audit (I8). */
+        var grey = document.getElementById('ds-grey');
+        var greyHost = document.getElementById('ds-status-demo');
+        grey.addEventListener('click', function () {
+          var on = greyHost.classList.toggle('ds-greyscale');
+          grey.setAttribute('aria-pressed', String(on));
+        });
+
+        /* Toggles are buttons with aria-checked; they carry a label. */
+        document.querySelectorAll('.cer-toggle').forEach(function (t) {
+          t.addEventListener('click', function () {
+            t.setAttribute('aria-checked', t.getAttribute('aria-checked') === 'true' ? 'false' : 'true');
+          });
+        });
+
+        /* =============================================================
+           BOOT
+        ============================================================= */
+
+        var resizeTimer = null;
+        addEventListener('resize', function () {
+          clearTimeout(resizeTimer);
+          resizeTimer = setTimeout(mountRing, 180);
+        });
+
+        writeLight();
+        setLoopState(false);
+        paintJob();
+        mountRing();
+        if (document.fonts) document.fonts.ready.then(function () { mountRing(); });
+      })();
+    </script>
+  </body>
+</html>
