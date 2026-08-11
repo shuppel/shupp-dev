@@ -113,10 +113,13 @@ const projects = allProjects.sort((a, b) => {
   }
 
   /* Portfolio Image with Overlay */
+  /* The card images are 1200×630, so the frame takes that ratio rather than a
+     fixed height: a design-system card shows whole instead of being cropped to
+     the middle of itself. Photographs of other shapes still cover-crop. */
   .portfolio-image {
     position: relative;
     width: 100%;
-    height: 260px;
+    aspect-ratio: 1200 / 630;
     overflow: hidden;
     border-radius: 0;
     display: flex;
@@ -327,7 +330,7 @@ const projects = allProjects.sort((a, b) => {
     }
 
     .portfolio-image {
-      height: 220px;
+      aspect-ratio: 1200 / 630;
     }
 
     .overlay-title {
