@@ -74,6 +74,10 @@ html[data-skin="prism"] {
   /* elevation is a chromatic cast thrown along the light axis */
   --card-shadow: var(--elev-dense);
 
+  /* PRISM's five type roles over the site's three slots. Both heading
+     slots are Instrument Sans; the mono is handed out by role below,
+     to eyebrows and machine text, rather than to a whole slot — the
+     secondary-header slot carries card titles here as well as labels. */
   --font-main-header: var(--sans);
   --font-secondary-header: var(--sans);
   --font-body: var(--sans);
@@ -139,13 +143,45 @@ html[data-skin="prism"] :focus-visible {
   outline-offset: 3px;
 }
 
-/* the display face is constructed line work and is only legible large */
-html[data-skin="prism"] :is(.hero-title, .page-title) {
+/* ---- display: constructed line work, allowed only at size ----------------
+   Tilt Prism is drawn as outlines and falls apart below about 40px, so the
+   skin gives it to the page's one h1 and to explicit hero/page titles, and
+   floors the size so it can never render small. Day fills it; night empties
+   it to an outline, which is the same inversion PRISM applies to headlines
+   on its own pages. Everything else stays Instrument Sans 600. */
+html[data-skin="prism"] :is(h1, .hero-title, .page-title),
+html[data-skin="prism"] :is(.pk-hero h1, .portfolio-header h1, .about-header h1) {
   font-family: var(--display);
   font-weight: 400;
+  font-size: clamp(40px, 5.4vw, 58px);
+  line-height: 1.06;
   letter-spacing: 0.03em;
   color: var(--head-fill);
   -webkit-text-stroke: var(--head-stroke) var(--on-ground);
+  background: none;
+  -webkit-text-fill-color: var(--head-fill);
+}
+
+/* the aside role: one italic serif phrase, used sparingly */
+html[data-skin="prism"] :is(.pk-tagline, .lead, .lede, .portfolio-hero .lead, blockquote) {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  color: color-mix(in oklch, var(--on-ground) 78%, transparent);
+}
+
+/* eyebrows and section labels are mono, tracked out and upper */
+html[data-skin="prism"] :is(.pk-section-title, .side-nav-section-label, .pk-company-type,
+.section-label, .eyebrow) {
+  font-family: var(--mono);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* numeric and machine text */
+html[data-skin="prism"] :is(.pk-data, time, .date, .meta-date) {
+  font-family: var(--mono);
 }
 
 /* ============================================================

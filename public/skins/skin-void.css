@@ -18,9 +18,10 @@
    - Chrome components are nested under html[data-skin="void"],
      which reaches (0,2,1) and beats `html.dark .card`.
 
-   VOID is single-mode: the site's dark toggle is inert here, and
-   the appearance menu disables it rather than offering a dead
-   control.
+   VOID has two firings, and the site's existing dark toggle drives
+   them: dark is night, light is day. The token remap below is
+   written entirely in VOID's own token names, so it follows the
+   mode without a second mapping.
 
    What this skin cannot reach: a page that hard-codes a hex value
    instead of using a role token. Those keep their own colour.
@@ -273,6 +274,11 @@ html[data-skin="void"][data-skin] {
   & .skin-trigger:hover { transform: none; background: var(--s2); }
 
   & .hamburger-line { background: var(--ink-2); }
+
+  /* ---- the icon set comes with the system ---- */
+
+  & .side-nav-icon > :not(.void-swap) { display: none; }
+  & .void-swap { display: block; width: 20px; height: 20px; }
 
   & .skin-panel {
     background: var(--s2);

@@ -1,4 +1,6 @@
 ---
+import VoidSprite from '../../components/VoidSprite.astro';
+
 // VOID — design-system showcase (standalone document).
 // Self-contained: own <html>, own single-mode cascade. It does NOT use the site
 // Layout because VOID owns the whole viewport and its own material model.
@@ -26,10 +28,10 @@ const statuses: { key: string; label: string; rgb: string; note: string; v: stri
 
 // §3 — the whole ladder. There is no fifth value.
 const surfaces = [
-  { name: '--s0', hex: '#101118', role: 'page' },
-  { name: '--s1', hex: '#16181f', role: 'panel · well · nav' },
-  { name: '--s2', hex: '#1c1e26', role: 'component' },
-  { name: '--s3', hex: '#23262f', role: 'raised part' },
+  { name: '--s0', night: '#101118', day: '#e6e8ee', role: 'page' },
+  { name: '--s1', night: '#16181f', day: '#eef0f5', role: 'panel · well · nav' },
+  { name: '--s2', night: '#1c1e26', day: '#f7f8fb', role: 'component' },
+  { name: '--s3', night: '#23262f', day: '#ffffff', role: 'raised part' },
 ];
 
 const antiPatterns: [string, string][] = [
@@ -232,14 +234,14 @@ const activity: [string, string, string][] = [
 
       pre.ds-code {
         margin: 14px 0 0; padding: 15px 17px; border-radius: var(--r-sm);
-        overflow-x: auto; font: 400 11.5px/1.7 var(--font-mono); color: #b9bdc9;
+        overflow-x: auto; font: 400 11.5px/1.7 var(--font-mono); color: var(--ink-2);
         overscroll-behavior-x: contain;
       }
 
       /* ---- numbered rules / anti-pattern table ---------------------------- */
       .ds-rule, .ds-anti {
         display: flex; gap: 14px; align-items: flex-start;
-        padding: 12px 0; border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        padding: 12px 0; border-bottom: 1px solid rgb(var(--wash) / calc(var(--wash-a) + 0.02));
       }
       .ds-rule:last-child, .ds-anti:last-child { border-bottom: 0; }
       .ds-rule .n { font: 400 11px/1.6 var(--font-mono); color: var(--ink-3); width: 26px; flex: 0 0 auto; }
@@ -357,6 +359,79 @@ const activity: [string, string, string][] = [
       }
       .ds-check .icon { margin-top: 3px; }
 
+      /* ---- the size × style matrix -------------------------------------- */
+      /* one row per style, one column per size, every cell centred on its
+         row so the five sizes can be compared across a single baseline */
+      .ds-matrix {
+        display: grid;
+        grid-template-columns: 62px repeat(5, minmax(0, 1fr));
+        gap: 14px 12px;
+        align-items: center;
+        overflow-x: auto;
+        min-width: 0;
+      }
+
+      .ds-matrix-cell { display: flex; align-items: center; }
+      .ds-matrix-head { text-align: left; }
+
+      .ds-matrix-label {
+        font: 400 10.5px/1.3 var(--font-mono);
+        color: var(--ink-3);
+        letter-spacing: 0.04em;
+        white-space: nowrap;
+      }
+
+      .ds-scale-row {
+        display: grid;
+        grid-template-columns: 62px minmax(0, 1fr) auto;
+        gap: 12px;
+        align-items: baseline;
+      }
+
+      .ds-scale-sizes { text-align: right; }
+
+      .ds-tokens {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(196px, 1fr));
+        gap: 10px 18px;
+      }
+
+      .ds-token {
+        display: grid;
+        grid-template-columns: 22px minmax(0, 1fr) auto;
+        grid-template-areas: 'chip name val' 'chip role val';
+        gap: 0 10px;
+        align-items: center;
+      }
+
+      .ds-token-chip {
+        grid-area: chip;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+      }
+
+      .ds-token-name { grid-area: name; font: 400 11.5px/1.4 var(--font-mono); color: var(--ink); }
+      .ds-token-role { grid-area: role; font: 300 11px/1.3 var(--font-text); color: var(--ink-3); }
+      .ds-token-val {
+        grid-area: val;
+        font: 400 10px/1.4 var(--font-mono);
+        color: var(--ink-3);
+        text-align: right;
+      }
+
+      /* ---- day: the showcase's own chrome, retuned ---------------------- */
+      .ds-hex { font: 400 10px/1.3 var(--font-mono); opacity: 0.75; }
+
+      [data-mode='day'] .ds-chip[aria-current='true'],
+      [data-mode='day'] .ds-rail i {
+        box-shadow: 0 0 0 1.5px var(--edge), inset 0 -1.5px 0 rgb(0 0 0 / 0.1);
+      }
+
+      [data-mode='day'] .ds-bare { background: var(--s2); }
+
+      [data-mode='day'] pre.ds-code { color: var(--ink-2); }
+
       @media (max-width: 720px) {
         .ds-controls { gap: 0.4rem 0.5rem; padding: 0.4rem clamp(0.9rem, 4vw, 3rem); }
         /* the live readout is duplicated by §6's monitor, and the label is
@@ -381,122 +456,7 @@ const activity: [string, string, string][] = [
          SPRITE — 24×24 viewBox, stroke only, round terminals,
          angles at 0/45/90 with arcs otherwise.
     ========================================================== -->
-    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
-      <defs>
-        <symbol id="i-discover" viewBox="0 0 24 24">
-          <circle cx="10.5" cy="10.5" r="5.75" />
-          <path d="M14.7 14.7 L19 19" />
-        </symbol>
-        <symbol id="i-radar" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="3" />
-          <circle cx="12" cy="12" r="8.5" />
-          <path d="M12 12 L18.3 5.7" />
-        </symbol>
-        <symbol id="i-capture" viewBox="0 0 24 24">
-          <path d="M6 5.5 a2 2 0 0 1 2-2 h6 L18.5 8 v10.5 a2 2 0 0 1-2 2 H8 a2 2 0 0 1-2-2 z" />
-          <path d="M14 3.5 V8 H18.5" />
-          <path d="M9.5 13 h5.5 M9.5 16.5 h3.5" />
-        </symbol>
-        <symbol id="i-pipeline" viewBox="0 0 24 24">
-          <path d="M12 3.5 L20 7.75 L12 12 L4 7.75 Z" />
-          <path d="M4 12 L12 16.25 L20 12" />
-          <path d="M4 16.25 L12 20.5 L20 16.25" />
-        </symbol>
-        <symbol id="i-profile" viewBox="0 0 24 24">
-          <circle cx="12" cy="8.75" r="3.75" />
-          <path d="M5.25 20.5 a6.75 6.75 0 0 1 13.5 0" />
-        </symbol>
-        <symbol id="i-agency" viewBox="0 0 24 24">
-          <path d="M4.5 20.5 h15" />
-          <path d="M6 20.5 V8.5 L12 4.5 L18 8.5 V20.5" />
-          <path d="M10 20.5 v-5 h4 v5" />
-          <path d="M9 11 h1.5 M13.5 11 h1.5" />
-        </symbol>
-        <symbol id="i-calendar" viewBox="0 0 24 24">
-          <rect x="4.5" y="5.5" width="15" height="15" rx="2.5" />
-          <path d="M4.5 10.25 H19.5" />
-          <path d="M9 3.5 V7 M15 3.5 V7" />
-        </symbol>
-        <symbol id="i-clock" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="8.5" />
-          <path d="M12 6.75 V12 L15.75 14.25" />
-        </symbol>
-        <symbol id="i-bell" viewBox="0 0 24 24">
-          <path d="M7.75 10.25 a4.25 4.25 0 0 1 8.5 0 c0 4.25 1.75 5.5 2.25 6.5 H5.5 c.5-1 2.25-2.25 2.25-6.5 z" />
-          <path d="M10.25 19.5 a2 2 0 0 0 3.5 0" />
-        </symbol>
-        <symbol id="i-filter" viewBox="0 0 24 24">
-          <path d="M4.5 6.25 H19.5 L14 12.75 V19.5 L10 20.75 V12.75 Z" />
-        </symbol>
-        <symbol id="i-flag" viewBox="0 0 24 24">
-          <path d="M6.5 3.75 V20.75" />
-          <path d="M6.5 5.25 h10.5 l-2.25 3.75 2.25 3.75 h-10.5" />
-        </symbol>
-        <symbol id="i-track" viewBox="0 0 24 24">
-          <path d="M7 4.5 a1 1 0 0 1 1-1 h8 a1 1 0 0 1 1 1 V20.5 L12 16.25 L7 20.5 Z" />
-        </symbol>
-        <symbol id="i-target" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="8.5" />
-          <circle cx="12" cy="12" r="4.25" />
-          <path d="M12 11.4 v1.2" />
-        </symbol>
-        <symbol id="i-trend" viewBox="0 0 24 24">
-          <path d="M4.5 16.5 L10 11 L13.5 14.5 L19.5 8.5" />
-          <path d="M14.75 8.5 H19.5 V13.25" />
-        </symbol>
-        <symbol id="i-check" viewBox="0 0 24 24">
-          <path d="M5.75 12.5 L10 16.75 L18.25 7.5" />
-        </symbol>
-        <symbol id="i-close" viewBox="0 0 24 24">
-          <path d="M6.75 6.75 L17.25 17.25 M17.25 6.75 L6.75 17.25" />
-        </symbol>
-        <symbol id="i-plus" viewBox="0 0 24 24">
-          <path d="M12 5.75 V18.25 M5.75 12 H18.25" />
-        </symbol>
-        <symbol id="i-chevron-right" viewBox="0 0 24 24">
-          <path d="M9.5 5.75 L15.75 12 L9.5 18.25" />
-        </symbol>
-        <symbol id="i-chevron-left" viewBox="0 0 24 24">
-          <path d="M14.5 5.75 L8.25 12 L14.5 18.25" />
-        </symbol>
-        <symbol id="i-chevron-down" viewBox="0 0 24 24">
-          <path d="M5.75 9.5 L12 15.75 L18.25 9.5" />
-        </symbol>
-        <symbol id="i-external" viewBox="0 0 24 24">
-          <path d="M8 16 L16.5 7.5" />
-          <path d="M9.75 7.5 H16.5 V14.25" />
-        </symbol>
-        <symbol id="i-download" viewBox="0 0 24 24">
-          <path d="M12 4.25 V15.25" />
-          <path d="M7.5 10.75 L12 15.25 L16.5 10.75" />
-          <path d="M5 19.75 H19" />
-        </symbol>
-        <symbol id="i-refresh" viewBox="0 0 24 24">
-          <path d="M19.25 12 a7.25 7.25 0 1 1-2.5-5.5" />
-          <path d="M19.25 4 V7.5 H15.75" />
-        </symbol>
-        <symbol id="i-sliders" viewBox="0 0 24 24">
-          <path d="M4.5 8 H19.5 M4.5 16 H19.5" />
-          <circle cx="9.5" cy="8" r="2.5" />
-          <circle cx="15" cy="16" r="2.5" />
-        </symbol>
-        <symbol id="i-lock" viewBox="0 0 24 24">
-          <rect x="5.5" y="10.25" width="13" height="10.25" rx="2.5" />
-          <path d="M8.5 10.25 V7.75 a3.5 3.5 0 0 1 7 0 v2.5" />
-        </symbol>
-        <symbol id="i-warning" viewBox="0 0 24 24">
-          <path d="M12 4.5 L20.75 19.5 H3.25 Z" />
-          <path d="M12 10 V13.75 M12 16.6 v.2" />
-        </symbol>
-        <symbol id="i-info" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="8.5" />
-          <path d="M12 11 V16.25 M12 7.8 v.2" />
-        </symbol>
-        <symbol id="i-more" viewBox="0 0 24 24">
-          <path d="M6 12 v.01 M12 12 v.01 M18 12 v.01" />
-        </symbol>
-      </defs>
-    </svg>
+    <VoidSprite />
 
     <!-- ===================== STICKY CONTROL BAR ========================= -->
     <div class="ds-bar">
@@ -520,6 +480,11 @@ const activity: [string, string, string][] = [
         --lx <b id="ds-lx">-0.220</b> · --ly <b id="ds-ly">-0.975</b> · loop <b id="ds-loop">asleep</b>
       </p>
 
+      <button id="ds-mode" class="void-pill void-pill--ghost" type="button" aria-pressed="false">
+        <svg class="icon icon--sm" aria-hidden="true"><use href="#i-sun" /></svg>
+        <span id="ds-mode-label">Day</span>
+      </button>
+
       <button id="ds-strip" class="void-pill void-pill--ghost" type="button" aria-pressed="false">
         Strip the pair
       </button>
@@ -540,12 +505,12 @@ const activity: [string, string, string][] = [
           <span aria-current="page">Void</span>
         </nav>
 
-        <p class="void-eyebrow">VOID · v1.0 · CERAMIC MATERIAL</p>
+        <p class="void-eyebrow">VOID · v1.1 · CERAMIC MATERIAL</p>
         <h1 class="void-display">Void</h1>
         <span class="ds-aside">Depth lives at the edge of a thing, never inside it.</span>
         <p class="void-text ds-intro">
-          A dark, single-mode system built on one perceptual trick. Every object is
-          drawn with a 1.5px hairline of absolute black; a hard, short light gradient
+          A ceramic material model built on one perceptual trick, fired in two
+          modes. Every object is drawn with a 1.5px hairline of absolute black; a hard, short light gradient
           sits immediately inside it and a soft, long dark one immediately outside.
           The asymmetry drives lateral inhibition harder than a real edge would, so a
           face that is one flat colour edge to edge reads as glazed, lifted material.
@@ -562,28 +527,28 @@ const activity: [string, string, string][] = [
           <h2 id="ds-boundary" class="void-h2">One hairline, two unequal gradients</h2>
           <p class="void-text">
             The mechanism is the Cornsweet illusion. All three discs below are filled
-            with exactly <code>#1c1e26</code> — sample the centre of each with a colour
-            picker and you get the same value. Only the twelve pixels either side of
-            their edge differ.
+            with exactly <code>--s2</code>, whichever mode you are in — sample the
+            centre of each with a colour picker and you get the same value. Only the
+            twelve pixels either side of their edge differ.
           </p>
         </header>
 
         <div class="ds-ab">
           <div class="ds-spec">
             <div class="ds-slab ds-bare"></div>
-            <p class="ds-cap">hairline alone<br /><span class="ds-swatch-hex">#1c1e26</span></p>
+            <p class="ds-cap">hairline alone<br /><span class="ds-swatch-hex" data-token="--s2"></span></p>
           </div>
           <div class="ds-spec">
             <div class="ds-slab lit lit--sz-sm"></div>
-            <p class="ds-cap">.lit — pair + decay<br /><span class="ds-swatch-hex">#1c1e26</span></p>
+            <p class="ds-cap">.lit — pair + decay<br /><span class="ds-swatch-hex" data-token="--s2"></span></p>
           </div>
           <div class="ds-spec">
             <div class="ds-slab lit lit--ceramic"></div>
-            <p class="ds-cap">.lit--ceramic — decay 0<br /><span class="ds-swatch-hex">#1c1e26</span></p>
+            <p class="ds-cap">.lit--ceramic — decay 0<br /><span class="ds-swatch-hex" data-token="--s2"></span></p>
           </div>
           <div class="ds-spec">
             <div class="ds-slab lit lit--sunk"></div>
-            <p class="ds-cap">.lit--sunk — pair inverted<br /><span class="ds-swatch-hex">#16181f</span></p>
+            <p class="ds-cap">.lit--sunk — pair inverted<br /><span class="ds-swatch-hex" data-token="--s1"></span></p>
           </div>
         </div>
 
@@ -624,9 +589,10 @@ const activity: [string, string, string][] = [
 
         <div class="ds-grid ds-grid--4">
           {surfaces.map((s) => (
-            <div class="ds-surface lit lit--ceramic" style={`background: ${s.hex}`}>
-              <span class="nm">{s.name} · {s.hex}</span>
+            <div class="ds-surface lit lit--ceramic" style={`background: var(${s.name})`}>
+              <span class="nm">{s.name}</span>
               <span class="rl">{s.role}</span>
+              <span class="rl ds-hex">{s.night} · {s.day}</span>
             </div>
           ))}
         </div>
@@ -979,6 +945,143 @@ light.x  += light.vx;`}</pre>
         </div>
       </section>
 
+      <!-- ====================== 7.4 · THE MATRIX ========================= -->
+      <section class="ds-section" aria-labelledby="ds-matrix">
+        <header>
+          <p class="void-eyebrow">§8 · SIZES × STYLES</p>
+          <h2 id="ds-matrix" class="void-h2">The same object, all the way down</h2>
+          <p class="void-text">
+            Five button sizes, four styles, three badge sizes, two badge styles —
+            and one 1.5px hairline through every cell of it. That invariance is the
+            test: if the boundary had scaled with the box, the small end of each row
+            would read as a different family. Sizes change the box and the type;
+            they never change the edge.
+          </p>
+        </header>
+
+        <div class="void-card lit" data-reveal>
+          <p class="void-eyebrow">Button · 5 sizes / 4 styles</p>
+          <div class="ds-matrix ds-note" style="margin-top: 16px">
+            <span class="ds-matrix-label"></span>
+            {['xs · 26', 'sm · 31', 'md · 37', 'lg · 44', 'xl · 52'].map((n) => (
+              <span class="ds-matrix-label ds-matrix-head">{n}</span>
+            ))}
+
+            {[
+              { style: 'lit', label: 'default', icon: true },
+              { style: 'void-pill--ghost', label: 'ghost', icon: false },
+              { style: 'lit--status is-danger', label: 'danger', icon: false },
+              { style: 'lit', label: 'disabled', icon: false, off: true },
+            ].map((v) => (
+              <>
+                <span class="ds-matrix-label">{v.label}</span>
+                {['void-pill--xs', 'void-pill--sm', '', 'void-pill--lg', 'void-pill--xl'].map((size) => (
+                  <span class="ds-matrix-cell">
+                    <button class={`void-pill ${v.style} ${size}`} type="button" disabled={v.off}>
+                      {v.icon && (
+                        <svg class="icon icon--sm" aria-hidden="true"><use href="#i-refresh" /></svg>
+                      )}
+                      Run
+                    </button>
+                  </span>
+                ))}
+              </>
+            ))}
+          </div>
+        </div>
+
+        <div class="ds-grid ds-grid--2" style="margin-top: 14px">
+          <div class="void-card lit" data-reveal>
+            <p class="void-eyebrow">Badge &amp; chip · 3 sizes / 2 styles</p>
+            <div class="ds-stack ds-note" style="margin-top: 16px; gap: 14px">
+              {[
+                { s: 'void-badge--sm', n: 'sm · 21' },
+                { s: '', n: 'md · 25' },
+                { s: 'void-badge--lg', n: 'lg · 30' },
+              ].map((size) => (
+                <div class="ds-row" style="gap: 10px">
+                  {statuses.map((st) => (
+                    <span class={`void-badge lit--status is-${st.key} ${size.s}`}>
+                      <i class="void-dot"></i>{st.label}
+                    </span>
+                  ))}
+                  <span class="ds-matrix-label">{size.n}</span>
+                </div>
+              ))}
+              <div class="ds-row" style="gap: 10px">
+                {statuses.slice(0, 4).map((st) => (
+                  <span class={`void-badge lit--status is-${st.key}`}>{st.label}</span>
+                ))}
+                <span class="ds-matrix-label">ring only</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="void-card lit" data-reveal>
+            <p class="void-eyebrow">Type scale</p>
+            <div class="ds-stack ds-note" style="margin-top: 14px; gap: 12px">
+              {[
+                ['display', '34 / 26 / 20 / 16', 'Boundary', 'void-display'],
+                ['ui', '15 / 13.5 / 12 / 11', 'Deploy to production', 'void-ui'],
+                ['text', '15 / 13.5 / 12.5', 'The fill is one value edge to edge.', 'void-text'],
+                ['mono', '12.5 / 11', '3d10bb4 · 14:22:07Z', 'void-mono'],
+              ].map(([role, sizes, sample, cls]) => (
+                <div class="ds-scale-row">
+                  <span class="ds-matrix-label">{role}</span>
+                  <span class={cls} style={role === 'display' ? 'font-size: 20px' : ''}>{sample}</span>
+                  <span class="ds-matrix-label ds-scale-sizes">{sizes}</span>
+                </div>
+              ))}
+            </div>
+            <p class="void-text ds-note" style="font-size: 12.5px; margin-top: 14px">
+              Four roles and no weight above 600. The display face floors at 16px and
+              the text face at 12px — below those the first loses its shape and the
+              second loses its strokes.
+            </p>
+          </div>
+        </div>
+
+        <div class="void-card lit ds-note" style="margin-top: 14px" data-reveal>
+          <p class="void-eyebrow">Every token in the system</p>
+          <div class="ds-tokens ds-note" style="margin-top: 14px">
+            {[
+              ['--s0', 'page'], ['--s1', 'well'], ['--s2', 'component'], ['--s3', 'raised'],
+            ].map(([tok, role]) => (
+              <div class="ds-token">
+                <span class="ds-token-chip lit lit--ceramic" style={`background: var(${tok})`}></span>
+                <span class="ds-token-name">{tok}</span>
+                <span class="ds-token-role">{role}</span>
+                <span class="ds-token-val" data-token={tok}></span>
+              </div>
+            ))}
+            {[
+              ['--ink', 'primary'], ['--ink-2', 'secondary'], ['--ink-3', 'tertiary'],
+              ['--ink-display', 'display'],
+            ].map(([tok, role]) => (
+              <div class="ds-token">
+                <span class="ds-token-chip lit lit--ceramic" style={`background: var(${tok})`}></span>
+                <span class="ds-token-name">{tok}</span>
+                <span class="ds-token-role">{role}</span>
+                <span class="ds-token-val" data-token={tok}></span>
+              </div>
+            ))}
+            {statuses.map((st) => (
+              <div class="ds-token">
+                <span class={`ds-token-chip lit--status is-${st.key}`}></span>
+                <span class="ds-token-name">--hue-{st.key === 'idle' ? 'neutral' : st.key}</span>
+                <span class="ds-token-role">{st.label}</span>
+                <span class="ds-token-val" data-token={`--hue-${st.key === 'idle' ? 'neutral' : st.key}`}></span>
+              </div>
+            ))}
+          </div>
+          <p class="void-text ds-note" style="font-size: 12.5px; margin-top: 14px">
+            Sixteen values, and the four surfaces are the whole ladder. The readouts
+            are live: fire the page into the other mode and every one of them
+            changes, because a mode in this system is a token set and nothing else.
+          </p>
+        </div>
+      </section>
+
       <!-- ====================== 7.5 · MOVEMENT =========================== -->
       <section class="ds-section" aria-labelledby="ds-move">
         <header>
@@ -1326,7 +1429,7 @@ light.x  += light.vx;`}</pre>
 
     <footer class="ds-footer">
       <p>
-        VOID v1.0 · single mode · tokens:
+        VOID v1.1 · night + day · tokens:
         <a href="/void/void.tokens.json">void.tokens.json</a> · layer:
         <a href="/void/void.css">void.css</a> · sibling system:
         <a href="/design/prismatic">PRISM</a>
@@ -1409,6 +1512,8 @@ light.x  += light.vx;`}</pre>
           'uniform float uDecay;',
           'uniform float uProgress;',
           'uniform float uArc;',
+          'uniform vec3 uSurface;',
+          'uniform vec3 uFill;',
           'vec2 cmul(vec2 a, vec2 b) { return vec2(a.x * b.x - a.y * b.y, a.x * b.y + a.y * b.x); }',
           'vec2 cdiv(vec2 a, vec2 b) { float d = dot(b, b); return vec2(dot(a, b), a.y * b.x - a.x * b.y) / d; }',
           'vec2 mobius(vec2 z, vec2 a) { return cdiv(z - a, vec2(1.0, 0.0) - cmul(vec2(a.x, -a.y), z)); }',
@@ -1435,8 +1540,8 @@ light.x  += light.vx;`}</pre>
              of this ring as at the centre of every CSS disc on the page. */
           '  float band = uDecay < 0.001 ? 0.03 : uDecay;',
           '  float lift = smoothstep(1.0 - band, 1.0, d) * step(d, 1.0);',
-          '  vec3 surface = vec3(0.063, 0.067, 0.094);',
-          '  vec3 fill = vec3(0.110, 0.118, 0.149);',
+          '  vec3 surface = uSurface;',
+          '  vec3 fill = uFill;',
           '  vec3 col = mix(surface, surface * 0.24, under);',
           '  col = mix(col, fill, inside);',
           '  col += lift * uLift * mask * uHue;',
@@ -1446,13 +1551,13 @@ light.x  += light.vx;`}</pre>
           '}',
         ].join('\n');
 
-        var HUES = {
-          neutral: [1, 1, 1],
-          success: [0.478, 0.839, 0.627],
-          warning: [0.925, 0.761, 0.416],
-          danger: [0.941, 0.541, 0.502],
-          info: [0.541, 0.706, 0.941],
-        };
+        function hue(name) {
+          var v = getComputedStyle(document.documentElement).getPropertyValue('--hue-' + name).trim();
+          var p = v.split(/\s+/).map(Number);
+          return p.length === 3 && p.every(function (n) { return !isNaN(n); })
+            ? [p[0] / 255, p[1] / 255, p[2] / 255]
+            : [1, 1, 1];
+        }
 
         /* state: idle | running | indeterminate | done | failed */
         var job = { state: 'idle', progress: 0, phase: 0 };
@@ -1513,12 +1618,22 @@ light.x  += light.vx;`}</pre>
           gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
 
           var u = {};
-          ['uA', 'uHue', 'uLine', 'uLift', 'uDecay', 'uProgress', 'uArc'].forEach(function (n) {
+          ['uA', 'uHue', 'uLine', 'uLift', 'uDecay', 'uProgress', 'uArc', 'uSurface', 'uFill'].forEach(function (n) {
             u[n] = gl.getUniformLocation(prog, n);
           });
 
           ring = { gl: gl, canvas: canvas, prog: prog, buf: buf, loc: loc, u: u };
           drawRing();
+        }
+
+        /* the ring is the one surface the tokens cannot reach through CSS,
+           so it reads them at draw time and stays correct in either mode */
+        function tokenRgb(name) {
+          var v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+          var m = /^#([0-9a-f]{6})$/i.exec(v);
+          if (!m) return [0.063, 0.067, 0.094];
+          var n = parseInt(m[1], 16);
+          return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255];
         }
 
         function drawRing() {
@@ -1529,6 +1644,8 @@ light.x  += light.vx;`}</pre>
           gl.bindBuffer(gl.ARRAY_BUFFER, ring.buf);
           gl.vertexAttribPointer(ring.loc, 2, gl.FLOAT, false, 0, 0);
           gl.viewport(0, 0, ring.canvas.width, ring.canvas.height);
+          gl.uniform3fv(u.uSurface, tokenRgb('--s0'));
+          gl.uniform3fv(u.uFill, tokenRgb('--s2'));
 
           if (job.state === 'running') {
             /* determinate: a follows the arc head */
@@ -1536,7 +1653,7 @@ light.x  += light.vx;`}</pre>
             gl.uniform2f(u.uA, Math.cos(a) * 0.7, Math.sin(a) * 0.7);
             gl.uniform1f(u.uProgress, job.progress);
             gl.uniform1f(u.uArc, 1);
-            gl.uniform3fv(u.uHue, HUES.info);
+            gl.uniform3fv(u.uHue, hue('info'));
             /* 0.42 is the status --lift: tinted light reads dimmer than white
                at equal alpha, so it is matched by luminance, not by number. */
             gl.uniform1f(u.uLift, 0.42);
@@ -1546,17 +1663,18 @@ light.x  += light.vx;`}</pre>
             gl.uniform2f(u.uA, Math.cos(job.phase) * 0.7, Math.sin(job.phase) * 0.7);
             gl.uniform1f(u.uProgress, 1);
             gl.uniform1f(u.uArc, 0);
-            gl.uniform3fv(u.uHue, HUES.info);
+            gl.uniform3fv(u.uHue, hue('info'));
             gl.uniform1f(u.uLift, 0.42);
             gl.uniform1f(u.uDecay, 0.14);
             gl.uniform1f(u.uLine, 2);
           } else {
-            var hue =
-              job.state === 'failed' ? HUES.danger : job.state === 'done' ? HUES.success : HUES.neutral;
+            var tint = hue(
+              job.state === 'failed' ? 'danger' : job.state === 'done' ? 'success' : 'neutral',
+            );
             gl.uniform2f(u.uA, 0, 0);
             gl.uniform1f(u.uProgress, 1);
             gl.uniform1f(u.uArc, 0);
-            gl.uniform3fv(u.uHue, hue);
+            gl.uniform3fv(u.uHue, tint);
             /* still + neutral is the ceramic rim (0.26); still + tinted is a
                terminal status ring (0.42). Same two numbers as the CSS. */
             gl.uniform1f(u.uLift, job.state === 'idle' ? 0.26 : 0.42);
@@ -1660,6 +1778,30 @@ light.x  += light.vx;`}</pre>
           Void.rest(deg);
         });
 
+        /* Night / day. The whole system is two token sets over one structure,
+           so firing it light is an attribute, not a second stylesheet. */
+        /* any [data-token] prints the live value of that custom property, so
+           the page documents whichever mode it is currently in */
+        function paintTokens() {
+          var cs = getComputedStyle(document.documentElement);
+          document.querySelectorAll('[data-token]').forEach(function (n) {
+            n.textContent = cs.getPropertyValue(n.dataset.token).trim();
+          });
+        }
+
+        var modeBtn = document.getElementById('ds-mode');
+        var modeLabel = document.getElementById('ds-mode-label');
+        var modeIcon = modeBtn.querySelector('use');
+        modeBtn.addEventListener('click', function () {
+          var day = document.documentElement.getAttribute('data-mode') !== 'day';
+          document.documentElement.setAttribute('data-mode', day ? 'day' : 'night');
+          modeBtn.setAttribute('aria-pressed', String(day));
+          modeLabel.textContent = day ? 'Night' : 'Day';
+          modeIcon.setAttribute('href', day ? '#i-moon' : '#i-sun');
+          paintTokens();
+          drawRing();
+        });
+
         /* Strip the pair — leaves the hairline and the flat fill alone. */
         var strip = document.getElementById('ds-strip');
         strip.addEventListener('click', function () {
@@ -1694,6 +1836,7 @@ light.x  += light.vx;`}</pre>
         });
 
         setLoopState(false);
+        paintTokens();
         paintJob();
         mountRing();
         if (document.fonts) document.fonts.ready.then(function () { mountRing(); });

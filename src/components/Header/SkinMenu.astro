@@ -5,7 +5,7 @@
 const skins = [
   { id: 'site', label: 'shupp.dev', note: 'the site’s own dress' },
   { id: 'prism', label: 'Prismatic', note: 'light-first, day / redshift' },
-  { id: 'void', label: 'Void', note: 'dark ceramic, single mode' },
+  { id: 'void', label: 'Void', note: 'ceramic, night / day' },
 ];
 ---
 
@@ -175,7 +175,7 @@ const skins = [
     const NOTE: Record<string, string> = {
       site: '',
       prism: 'Dark mode becomes PRISM’s redshift.',
-      void: 'VOID is single-mode, so dark mode is off here.',
+      void: 'Dark mode fires VOID night; light fires it day.',
     };
 
     const current = (): string => localStorage.getItem('skin') || 'site';
@@ -187,14 +187,13 @@ const skins = [
       });
       if (foot) foot.textContent = NOTE[skin] || '';
 
-      /* VOID has no second mode; say so rather than offering a dead control */
+      /* every skin has two modes, so the one toggle always means something */
       if (themeToggle) {
-        const off = skin === 'void';
-        themeToggle.disabled = off;
-        themeToggle.setAttribute('aria-disabled', String(off));
-        themeToggle.style.opacity = off ? '0.4' : '';
-        themeToggle.style.cursor = off ? 'not-allowed' : '';
-        themeToggle.title = off ? 'VOID is single-mode' : 'Toggle dark mode';
+        themeToggle.disabled = false;
+        themeToggle.removeAttribute('aria-disabled');
+        themeToggle.style.opacity = '';
+        themeToggle.style.cursor = '';
+        themeToggle.title = 'Toggle dark mode';
       }
     }
 

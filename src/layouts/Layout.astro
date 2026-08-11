@@ -1,6 +1,7 @@
 ---
 import { ClientRouter } from 'astro:transitions';
 import SideNav from '../components/Header/SideNav.astro';
+import VoidSprite from '../components/VoidSprite.astro';
 import Footer from '../components/Footer/Footer.astro';
 import JsonLd from '../components/SEO/JsonLd.astro';
 
@@ -69,9 +70,10 @@ const imageURL = new URL(image, Astro.site);
           if (!SKINS[skin]) skin = 'site';
           html.setAttribute('data-skin', skin);
 
-          /* PRISM has two modes of its own; the site's dark toggle drives them.
-             VOID is single-mode and ignores it. */
-          if (skin === 'prism') {
+          /* Both systems have two modes of their own, and the site's existing
+             dark toggle drives whichever is active — one control, not three.
+             PRISM calls its dark mode redshift; VOID calls its light one day. */
+          if (skin === 'prism' || skin === 'void') {
             html.setAttribute('data-mode', html.classList.contains('dark') ? 'night' : 'day');
           } else {
             html.removeAttribute('data-mode');
@@ -111,7 +113,8 @@ const imageURL = new URL(image, Astro.site);
 
         /* the dark toggle and the skin have to stay in agreement */
         window.addEventListener('themechange', () => {
-          if (html.getAttribute('data-skin') === 'prism') {
+          const skin = html.getAttribute('data-skin');
+          if (skin === 'prism' || skin === 'void') {
             html.setAttribute('data-mode', html.classList.contains('dark') ? 'night' : 'day');
           }
         });
@@ -169,6 +172,8 @@ const imageURL = new URL(image, Astro.site);
   </head>
   <body class="has-side-nav">
     <a href="#main-content" class="skip-to-content">Skip to main content</a>
+    <!-- the VOID icon set, referenced by the nav while that skin is active -->
+    <VoidSprite />
     <SideNav />
     <main id="main-content">
       <slot />
