@@ -1,0 +1,367 @@
+/* ============================================================
+   shupp.dev — VOID skin
+
+   Loaded only while html[data-skin="void"]. It does two things:
+
+   1. Remaps the site's role vocabulary (--surface, --text-color,
+      --card-shadow …) onto VOID's tokens, so every page already
+      written against those roles is skinned for free.
+   2. Restyles the shared chrome the site paints directly — the side
+      nav, the footer, cards, buttons, inputs.
+
+   Specificity discipline, because this sheet has to co-exist with
+   the site's own `html.dark` rules:
+
+   - Generic element defaults are wrapped in :where(), giving them
+     zero specificity. They beat the imported reset and the user
+     agent, and lose to anything the site authored on purpose.
+   - Chrome components are nested under html[data-skin="void"],
+     which reaches (0,2,1) and beats `html.dark .card`.
+
+   VOID is single-mode. The site's dark toggle has nothing to say
+   here, so the skin hides it rather than leaving a dead control or
+   explaining itself.
+
+   What this skin cannot reach: a page that hard-codes a hex value
+   instead of using a role token. Those keep their own colour.
+   ============================================================ */
+
+@import url("/void/void.css");
+
+/* ============================================================
+   1 · role tokens
+   ============================================================ */
+
+html[data-skin="void"] {
+  /* ---- surfaces: the four-value ladder, no fifth. --background-alt
+     is this codebase's de-facto "card" role, so it takes s2. ---- */
+  --background-color: var(--s0);
+  --background-alt: var(--s2);
+  --surface: var(--s2);
+  --surface-elevated: var(--s2);
+  --surface-muted: var(--s1);
+  --card-bg: var(--s2);
+
+  /* ---- ink ---- */
+  --text-color: var(--ink);
+  --text-strong: var(--ink);
+  --text-light: var(--ink-2);
+  --text-muted: var(--ink-3);
+
+  /* ---- accents. VOID has no brand colour: every saturated pixel is
+     supposed to belong to a status ring or a dot. So the decorative
+     accents collapse to ink, and only --primary-color — which the site
+     uses for links — spends the info hue, because a link is an
+     affordance rather than decoration. ---- */
+  /* --color-dark is this codebase's "darkest ink", not a surface: it is
+     what the hero gradient and several labels are drawn in, so it takes
+     the ink rather than a background value. */
+  --color-dark: var(--ink);
+  --color-secondary: var(--ink-2);
+  --color-tertiary: var(--ink-2);
+  --color-accent: var(--ink-display);
+  --color-light: var(--ink-display);
+  --primary-color: rgb(var(--hue-info));
+  --primary-dark: rgb(var(--hue-info) / 0.8);
+
+  /* ---- boundaries ---- */
+  --border-color: var(--edge);
+  --border-subtle: rgb(var(--wash) / calc(var(--wash-a) + 0.025));
+  --hover-tint: rgb(var(--wash) / var(--wash-a));
+  --focus-ring: 0 0 0 1.5px var(--edge), 0 0 0 3px rgb(var(--hue-info) / 0.75);
+
+  /* ---- the whole point: anything already asking for --card-shadow
+     gets the depth primitive, hairline and all. --card-lift mirrors
+     .lit's own --lift, which the presets set on themselves and a
+     variable cannot read. ---- */
+  --card-lift: 0.19;
+  --card-lift-hi: 0.26;
+  --card-shadow:
+    0 0 0 1.5px var(--edge),
+    calc(var(--lx) * -7px) calc(var(--ly) * -7px) 12px rgba(0, 0, 0, 0.7),
+    inset calc(var(--lx) * 1.5px) calc(var(--ly) * 1.5px) 0 rgb(255 255 255 / var(--card-lift)),
+    inset calc(var(--lx) * 9px) calc(var(--ly) * 9px) 15px -11px rgb(255 255 255 / var(--card-lift));
+
+  /* ---- type roles ---- */
+  --font-main-header: var(--font-display);
+  --font-secondary-header: var(--font-ui);
+  --font-body: var(--font-ui);
+}
+
+/* ============================================================
+   2 · element defaults — zero specificity on purpose
+   ============================================================ */
+
+:where(html[data-skin="void"]) {
+  & :where(body) {
+    background: var(--s0);
+    color: var(--ink);
+    font-family: var(--font-ui);
+  }
+
+  /* Rammetto floors at 16px and blooms on near-black, so display type
+     takes the dimmer ink and closes up its tracking. */
+  & :where(h1, h2, h3) {
+    font-family: var(--font-display);
+    font-weight: 400;
+    color: var(--ink-display);
+    letter-spacing: -0.015em;
+  }
+
+  & :where(h4, h5, h6) {
+    font-family: var(--font-ui);
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  & :where(p, li, dd, blockquote, figcaption) {
+    font-family: var(--font-text);
+    font-weight: 300;
+    color: var(--ink-2);
+  }
+
+  & :where(strong, b) { font-weight: 600; color: var(--ink); }
+  & :where(code, pre, kbd, samp) { font-family: var(--font-mono); }
+  & :where(a) { color: rgb(var(--hue-info)); }
+  & :where(a:hover) { color: rgb(var(--hue-info) / 0.85); }
+  & :where(hr) { border: 0; height: 1.5px; background: var(--edge); }
+
+  & :where(img, video) {
+    border-radius: var(--r-sm);
+    box-shadow: 0 0 0 1.5px var(--edge);
+  }
+}
+
+html[data-skin="void"] ::selection { background: rgb(var(--hue-info) / 0.3); }
+
+html[data-skin="void"] :focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* one dither pass for the whole site, same as the showcase */
+html[data-skin="void"] body::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ============================================================
+   3 · shared chrome — same selector list the site's own dark mode
+   curates, so the two stay in step
+   ============================================================ */
+
+/* The chrome block repeats the attribute deliberately. Astro scopes a
+   component's styles with a [data-astro-cid-…] attribute, so a rule like
+   `html.dark .side-nav` inside a component reaches (0,3,1); a skin rule has
+   to match that to win the tie on order. */
+html[data-skin="void"][data-skin] {
+  & .card,
+  & .skill-card,
+  & .project-card,
+  & .post-card,
+  & .sidebar-widget,
+  & .profile-sidebar,
+  & .portfolio-item,
+  & .cta-card,
+  & .contact,
+  & .credential-badge {
+    background: var(--s2);
+    color: var(--ink);
+    border: 0;
+    border-radius: var(--r-md);
+    box-shadow: var(--card-shadow);
+  }
+
+  /* an object does not move on hover — only its light changes */
+  & .card:hover,
+  & .project-card:hover,
+  & .post-card:hover,
+  & .portfolio-item:hover,
+  & .cta-card:hover {
+    transform: none;
+    box-shadow:
+      0 0 0 1.5px var(--edge),
+      calc(var(--lx) * -7px) calc(var(--ly) * -7px) 12px rgba(0, 0, 0, 0.7),
+      inset calc(var(--lx) * 1.5px) calc(var(--ly) * 1.5px) 0 rgb(255 255 255 / var(--card-lift-hi)),
+      inset calc(var(--lx) * 9px) calc(var(--ly) * 9px) 15px -11px rgb(255 255 255 / var(--card-lift-hi));
+  }
+
+  /* ---- buttons: the press inverts the pair, nothing translates ---- */
+
+  & .btn,
+  & .btn-primary,
+  & .btn-secondary,
+  & .btn-small {
+    border: 0 !important;
+    border-radius: 19px;
+    background: var(--s2);
+    color: var(--ink) !important;
+    font-family: var(--font-ui);
+    font-weight: 600;
+    box-shadow: var(--card-shadow);
+    transition: box-shadow 170ms var(--e-settle), background 170ms var(--e-settle);
+  }
+
+  & .btn-primary {
+    box-shadow:
+      0 0 0 1.5px var(--edge),
+      calc(var(--lx) * -9px) calc(var(--ly) * -9px) 16px rgba(0, 0, 0, 0.85),
+      inset 0 0 0 1.5px rgb(var(--hue-info) / 0.42);
+  }
+
+  & .btn:hover,
+  & .btn-primary:hover,
+  & .btn-secondary:hover,
+  & .btn-small:hover {
+    transform: none;
+    background: var(--s2);
+  }
+
+  & .btn:active,
+  & .btn-primary:active,
+  & .btn-secondary:active,
+  & .btn-small:active {
+    transform: none;
+    background: var(--s1);
+    transition-duration: 0s;
+    box-shadow:
+      0 0 0 1.5px var(--edge),
+      inset calc(var(--lx) * 6px) calc(var(--ly) * 6px) 11px -2px rgba(0, 0, 0, 1),
+      inset calc(var(--lx) * 2px) calc(var(--ly) * 2px) 0 rgba(0, 0, 0, 0.9),
+      inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 0 rgba(255, 255, 255, 0.14);
+  }
+
+  /* ---- side nav ---- */
+
+  & .side-nav {
+    background: var(--s1);
+    border-right: 1.5px solid var(--edge);
+  }
+
+  & .side-nav-link {
+    color: var(--ink-2);
+    font-family: var(--font-ui);
+    border-radius: var(--r-sm);
+  }
+
+  & .side-nav-link:hover {
+    color: var(--ink);
+    background: var(--hover-tint);
+  }
+
+  & .side-nav-link.active,
+  & .side-nav-link[aria-current="page"] {
+    color: var(--ink);
+    background: var(--s2);
+    box-shadow: 0 0 0 1.5px var(--edge), inset 0 1.5px 0 rgba(255, 255, 255, 0.14);
+  }
+
+  & .side-nav-section-title,
+  & .side-nav-footnote {
+    font-family: var(--font-ui);
+    color: var(--ink-3);
+  }
+
+  & .side-theme-toggle,
+  & .side-nav-mobile-toggle,
+  & .skin-trigger {
+    background: var(--s2);
+    color: var(--ink-2);
+    border: 0;
+    box-shadow: 0 0 0 1.5px var(--edge), inset 0 1.5px 0 rgb(255 255 255 / var(--card-lift-hi));
+  }
+
+  & .side-theme-toggle:hover,
+  & .skin-trigger:hover { transform: none; background: var(--s2); }
+
+  & .hamburger-line { background: var(--ink-2); }
+
+  /* single-mode: no toggle */
+  & .side-theme-toggle { display: none; }
+
+  /* ---- the icon set comes with the system ---- */
+
+  /* the Phosphor wrapper carries an inline display, which no selector can
+     outrank — this is what !important is actually for */
+  & .side-nav-icon > :not(.void-swap) { display: none !important; }
+  & .void-swap { display: block; width: 20px; height: 20px; }
+
+  & .skin-panel {
+    background: var(--s2);
+    border: 0;
+    border-radius: var(--r-md);
+    box-shadow: var(--card-shadow);
+  }
+
+  /* ---- footer ---- */
+
+  & .footer {
+    background: var(--s1);
+    color: var(--ink-2);
+    border-top: 1.5px solid var(--edge);
+  }
+
+  & .footer-logo a,
+  & .footer-section h3 { color: var(--ink); font-family: var(--font-ui); }
+  & .footer-section a { color: var(--ink-2); }
+  & .footer-section a:hover { color: var(--ink); }
+  & .footer-bottom { color: var(--ink-3); border-top: 1px solid var(--border-subtle); }
+
+  /* ---- inputs ---- */
+
+  & input,
+  & textarea,
+  & select {
+    background: var(--s1);
+    color: var(--ink);
+    border: 0;
+    border-radius: 10px;
+    font-family: var(--font-ui);
+    box-shadow:
+      0 0 0 1.5px var(--edge),
+      inset calc(var(--lx) * 3px) calc(var(--ly) * 3px) 10px -4px rgba(0, 0, 0, 0.9),
+      inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 0 rgba(255, 255, 255, 0.09);
+  }
+
+  & input:focus-visible,
+  & textarea:focus-visible,
+  & select:focus-visible {
+    box-shadow:
+      0 0 0 1.5px var(--edge),
+      inset 0 2px 8px -3px rgba(0, 0, 0, 0.9),
+      inset 0 0 0 1.5px rgb(var(--hue-info) / 0.75);
+  }
+
+  /* ---- tags the site paints itself ---- */
+
+  & .tag,
+  & .tech-tag,
+  & .category-tag,
+  & .skill-tag,
+  & .badge {
+    background: var(--s2);
+    color: var(--ink-2);
+    border: 0;
+    border-radius: 13px;
+    font-family: var(--font-ui);
+    box-shadow: 0 0 0 1.5px var(--edge), inset 0 1.5px 0 rgb(255 255 255 / var(--card-lift));
+  }
+
+  /* ---- photographs carry a colour budget this system does not have ---- */
+
+  & .portfolio-image img,
+  & .portfolio-preview-img {
+    filter: saturate(0.75) brightness(0.9);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-skin="void"] :is(.btn, .btn-primary, .btn-secondary, .btn-small) {
+    transition: none;
+  }
+}

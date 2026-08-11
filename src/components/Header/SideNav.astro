@@ -1,5 +1,6 @@
 ---
 import Icon from '../Icon/Icon.astro';
+import SkinMenu from './SkinMenu.astro';
 import { siteConfig } from '../../config/site.ts';
 
 const socials = [
@@ -32,6 +33,7 @@ const socials = [
           <a href="/" class="side-nav-link">
             <span class="side-nav-icon">
               <Icon name="House" size={20} weight="duotone" liquid={true} />
+              <svg class="icon void-swap" aria-hidden="true"><use href="#i-home" /></svg>
             </span>
             <span class="side-nav-text">Home</span>
           </a>
@@ -40,6 +42,7 @@ const socials = [
           <a href="/about" class="side-nav-link">
             <span class="side-nav-icon">
               <Icon name="User" size={20} weight="duotone" liquid={true} />
+              <svg class="icon void-swap" aria-hidden="true"><use href="#i-profile" /></svg>
             </span>
             <span class="side-nav-text">About</span>
           </a>
@@ -48,6 +51,7 @@ const socials = [
           <a href="/portfolio" class="side-nav-link">
             <span class="side-nav-icon">
               <Icon name="Briefcase" size={20} weight="duotone" liquid={true} />
+              <svg class="icon void-swap" aria-hidden="true"><use href="#i-briefcase" /></svg>
             </span>
             <span class="side-nav-text">Portfolio</span>
           </a>
@@ -56,6 +60,7 @@ const socials = [
           <a href="/galaxy" class="side-nav-link">
             <span class="side-nav-icon">
               <Icon name="Planet" size={20} weight="duotone" liquid={true} />
+              <svg class="icon void-swap" aria-hidden="true"><use href="#i-orbit" /></svg>
             </span>
             <span class="side-nav-text">Galaxy</span>
           </a>
@@ -64,6 +69,7 @@ const socials = [
           <a href="/press" class="side-nav-link">
             <span class="side-nav-icon">
               <Icon name="Newspaper" size={20} weight="duotone" liquid={true} />
+              <svg class="icon void-swap" aria-hidden="true"><use href="#i-press" /></svg>
             </span>
             <span class="side-nav-text">Press</span>
           </a>
@@ -93,6 +99,7 @@ const socials = [
 
     <div class="side-nav-footer">
       <span class="side-nav-footnote">© {new Date().getFullYear()}</span>
+      <SkinMenu />
       <button id="side-nav-theme-toggle" class="side-theme-toggle" aria-label="Toggle dark mode">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" class="theme-icon-svg">
           <circle class="sun-icon" cx="12" cy="12" r="5" stroke="currentColor" stroke-width="2"/>
@@ -169,6 +176,12 @@ const socials = [
 </script>
 
 <style>
+  /* Every nav item carries both marks: the site's Phosphor icon and the VOID
+     incision. The skin decides which one is drawn, so the swap costs no JS and
+     cannot flash. Brand logos in the socials list are left alone — a logo is
+     not part of an icon set. */
+  .void-swap { display: none; }
+
   .side-nav {
     position: fixed;
     top: 0;

@@ -1,0 +1,1050 @@
+/* ============================================================
+   VOID v1.1 — design system CSS layer
+   Drop-in. Nothing to initialise: the system has one mode, because
+   absolute black against near-black is the whole mechanism.
+
+   Thesis: depth is carried entirely by the BOUNDARY of an object,
+   never by its fill. A single hairline of absolute black defines
+   every silhouette; a hard, short light gradient sits immediately
+   inside it and a soft, long dark one immediately outside. The
+   asymmetry drives lateral inhibition harder than a real edge
+   would (Cornsweet), so the interior reads lifted while remaining
+   one flat colour value.
+
+   Public API — spec-normative names, do not rename:
+     .lit  .lit--ceramic  .lit--sunk  .lit--status  .is-*
+     .icon .icon--raised  .icon--mark
+   Everything else is prefixed void-* so this layer can be dropped
+   into a page that already has its own .card / .row / .badge.
+
+   Runtime contract: --lx / --ly (the light vector) are written by
+   ONE rAF spring, at rest by default, asleep when settled. Without
+   a driver the initial values reproduce the resting look exactly.
+   Behaviour (menus, folds, rails, reveals) ships in void.js, which
+   is optional — every component below is legible without it.
+   ============================================================ */
+
+@import url("https://fonts.googleapis.com/css2?family=Rammetto+One&family=Cabin:wght@400;500;600&family=Titillium+Web:wght@200;300;400&display=swap");
+
+/* The light vector is typed so a driver's writes are cheap and can
+   never land invalid. It is NOT transitioned — the spring is the
+   interpolator, and a second one would fight it. */
+@property --lx { syntax: "<number>"; inherits: true; initial-value: -0.22; }
+@property --ly { syntax: "<number>"; inherits: true; initial-value: -0.97; }
+
+/* --lift-scale dims the contact light of a whole subtree without
+   touching any preset's own --lift. Typed, so it interpolates: this
+   is what lets an entrance animate the LIGHT rather than the
+   position of the thing. 1 = fully lit, 0 = hairline only. */
+@property --lift-scale { syntax: "<number>"; inherits: true; initial-value: 1; }
+
+:root {
+  /* --- ink: absolute, never varies (I1) --- */
+  --edge: #000;
+
+  /* --- surface ladder: four values, ~+6 per channel, no fifth (I2) --- */
+  --s0: #101118; /* page   */
+  --s1: #16181f; /* panel, well, nav */
+  --s2: #1c1e26; /* component */
+  --s3: #23262f; /* raised part within a component (toggle thumb) */
+
+  /* --- text --- */
+  --ink: #e7e8ee;
+  --ink-2: #9ca0ad;
+  --ink-3: #6f7381;
+  /* heavy display type blooms on near-black — it gets its own, dimmer ink */
+  --ink-display: #d6d9e2;
+
+  /* --- light vector: written by the spring, never authored by hand --- */
+  --lx: -0.22;
+  --ly: -0.97;
+
+  /* --- status hues: space-separated channels for rgb( / alpha) syntax.
+         Low chroma is deliberate — saturated hue blooms on OLED. To make
+         a status clearer raise --lift, never the saturation. --- */
+  --hue-neutral: 255 255 255;
+  --hue-success: 122 214 160;
+  --hue-warning: 236 194 106;
+  --hue-danger: 240 138 128;
+  --hue-info: 138 180 240;
+
+  /* --- the one raised fill inside a channel, and the ink a hover or a
+     divider is washed in --- */
+  --fill-raised: #2b3040;
+  --wash: 255 255 255;
+  --wash-a: 0.035;
+
+  /* --- radii --- */
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 20px;
+
+  /* --- type roles ---
+     display  Rammetto One 400 — headlines and headline numerals only.
+              Never below 16px. Always --ink-display.
+     ui       Cabin 400/500/600 — anything you click, label, or scan.
+     text     Titillium Web 300 — supporting prose and captions. Never
+              below 12px, never on --ink-3 (300-weight strokes vanish
+              against low-contrast surfaces).
+     mono     machine text only: SHAs, timestamps, log lines. */
+  --font-display: "Rammetto One", ui-sans-serif, system-ui, sans-serif;
+  --font-ui: "Cabin", ui-sans-serif, system-ui, sans-serif;
+  --font-text: "Titillium Web", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+
+  /* --- motion: evidence that something happened, never ambience (I7) --- */
+  --t-thumb: 200ms;
+  --t-fill: 260ms;
+  --t-open: 220ms;   /* material growing out of nothing */
+  --t-reveal: 520ms; /* the light finding an object, once */
+  --e-settle: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* ================= BASE ================= */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--s0);
+  color: var(--ink);
+  font: 400 14px/1.55 var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ============================================================
+   1 · DEPTH — material light. Directional, always white.
+   Three presets over one shadow structure. box-shadow only:
+   a component has exactly one background value (I6).
+   ============================================================ */
+
+.lit {
+  --lift: 0.19;
+  --bleed: 12px;
+  --decay: 15px;
+  background: var(--s2);
+  /* Read the pair outward-in: black bleed, hairline, hard contact
+     light, soft inward decay. Painted hairline-first so the boundary
+     stays absolute — a blurred bleed must never wash over it. */
+  box-shadow:
+    0 0 0 1.5px var(--edge),
+    calc(var(--lx) * -7px) calc(var(--ly) * -7px) var(--bleed) rgba(0, 0, 0, 0.7),
+    inset calc(var(--lx) * 1.5px) calc(var(--ly) * 1.5px) 0
+      rgba(255, 255, 255, calc(var(--lift) * var(--lift-scale))),
+    inset calc(var(--lx) * 9px) calc(var(--ly) * 9px) var(--decay) -11px
+      rgba(255, 255, 255, calc(var(--lift) * var(--lift-scale)));
+}
+
+/* decay 0 — zero interior information, all signal at the boundary.
+   Reads as glazed ceramic. Cheapest to render, and the only preset
+   that cannot band. Mandatory below 80px and for identity objects. */
+.lit--ceramic {
+  --lift: 0.26;
+  --bleed: 16px;
+  box-shadow:
+    0 0 0 1.5px var(--edge),
+    calc(var(--lx) * -9px) calc(var(--ly) * -9px) var(--bleed) rgba(0, 0, 0, 0.85),
+    inset calc(var(--lx) * 1.5px) calc(var(--ly) * 1.5px) 0
+      rgba(255, 255, 255, calc(var(--lift) * var(--lift-scale)));
+}
+
+/* the pair inverted — the object sits below the surface. This single
+   flip supplies the whole input vocabulary: wells, tracks, channels. */
+.lit--sunk {
+  background: var(--s1);
+  box-shadow:
+    0 0 0 1.5px var(--edge),
+    inset calc(var(--lx) * 3px) calc(var(--ly) * 3px) 10px -4px rgba(0, 0, 0, 0.9),
+    inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 0 rgba(255, 255, 255, 0.09);
+}
+
+/* Scale rule: --decay and --bleed are RELATIVE and scale with the
+   object; the hairline is ABSOLUTE and never does.
+   decay ≈ 0.07 · min(w,h) · bleed ≈ 0.06 · min(w,h) */
+.lit--sz-sm { --decay: 8px; --bleed: 7px; --lift: 0.30; }   /* ~110px */
+.lit--sz-md { --decay: 15px; --bleed: 12px; --lift: 0.19; } /* ~200px */
+.lit--sz-lg { --decay: 24px; --bleed: 20px; --lift: 0.19; } /* ~340px */
+
+/* ============================================================
+   2 · STATE — omnidirectional, hue inside the hairline.
+   An even, complete ring cannot be produced by any light position,
+   so hue can never be misread as lighting (I5).
+   ============================================================ */
+
+.lit--status {
+  --glow: var(--hue-neutral);
+  /* 0.42 against 0.19 is MATCHED LUMINANCE, not matched alpha —
+     tinted light reads dimmer than white at equal opacity. */
+  --lift: 0.42;
+  --bleed: 16px;
+  background: var(--s2);
+  box-shadow:
+    0 0 0 1.5px var(--edge),
+    calc(var(--lx) * -9px) calc(var(--ly) * -9px) var(--bleed) rgba(0, 0, 0, 0.85),
+    /* no offset, no blur — a complete, even ring. That evenness is
+       what makes it unreadable as lighting. */
+    inset 0 0 0 1.5px rgb(var(--glow) / calc(var(--lift) * var(--lift-scale)));
+}
+
+/* is-* sets --glow and nothing else. Never the hairline, the black
+   bleed, or the background. */
+.is-success { --glow: var(--hue-success); }
+.is-warning { --glow: var(--hue-warning); }
+.is-danger  { --glow: var(--hue-danger); }
+.is-info    { --glow: var(--hue-info); }
+.is-idle    { --glow: var(--hue-neutral); --lift: 0.1; }
+
+/* ============================================================
+   3 · DITHER — not optional polish.
+   #000 → #14151a crosses ~20 8-bit levels over hundreds of pixels;
+   untreated, .lit rings visibly on OLED. One fixed overlay covers
+   every CSS gradient on the page. (WebGL surfaces dither in-shader.)
+   ============================================================ */
+
+.void-dither {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  pointer-events: none;
+  opacity: 0.028;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ============================================================
+   4 · TYPE
+   ============================================================ */
+
+.void-display {
+  font-family: var(--font-display);
+  font-weight: 400;
+  color: var(--ink-display);
+  letter-spacing: -0.015em;
+  line-height: 1.15;
+  font-size: clamp(21px, 3.4vw, 34px);
+  margin: 0;
+}
+
+.void-h2 {
+  font-family: var(--font-display);
+  font-weight: 400;
+  font-size: 22px;
+  line-height: 1.15;
+  color: var(--ink-display);
+  letter-spacing: -0.015em;
+  margin: 0;
+}
+
+.void-text {
+  font: 300 14px/1.6 var(--font-text);
+  color: var(--ink-2);
+  margin: 0;
+}
+
+.void-ui {
+  font: 500 13.5px/1.35 var(--font-ui);
+  margin: 0;
+}
+
+.void-mono {
+  font: 400 12.5px/1.7 var(--font-mono);
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  margin: 0;
+}
+
+.void-eyebrow {
+  font: 600 10.5px/1 var(--font-ui);
+  color: var(--ink-3);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+/* Every value that updates in place takes tabular figures —
+   proportional digits jitter, which reads as flicker here. */
+.void-num { font-variant-numeric: tabular-nums; }
+
+/* ============================================================
+   5 · ICON PRIMITIVE — an incision, not a drawing.
+   The path is absolute black, the same ink as the hairline, and it
+   carries the same asymmetric pair: dark line, light edge offset
+   opposite the light vector. The stroke never scales.
+   ============================================================ */
+
+.icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex: 0 0 auto;
+  fill: none;
+  stroke: var(--edge);
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(
+    calc(var(--lx) * -1px) calc(var(--ly) * -1px) 0
+    rgba(255, 255, 255, var(--icon-lift, 0.24))
+  );
+}
+
+.icon * { vector-effect: non-scaling-stroke; }
+
+.icon--xs { width: 14px; height: 14px; }
+.icon--sm { width: 16px; height: 16px; }
+.icon--lg { width: 24px; height: 24px; }
+.icon--xl { width: 40px; height: 40px; }
+
+/* raised instead of incised — flip which side gets the light */
+.icon--raised {
+  filter: drop-shadow(
+    calc(var(--lx) * 1px) calc(var(--ly) * 1px) 0
+    rgba(255, 255, 255, var(--icon-lift, 0.24))
+  );
+}
+
+/* separators and other non-object marks are dim strokes, not cuts */
+.icon--mark {
+  stroke: var(--ink-3);
+  filter: none;
+}
+
+/* An incision needs a surface to be cut into. A ghost control has no
+   fill, so its icon has nothing to be cut into and falls back to a
+   mark — matching the ink of the label beside it. Without this, a
+   short-stroked glyph on a transparent control is a black mark on a
+   near-black ground and effectively disappears. */
+.void-pill--ghost .icon,
+.void-menu__item .icon {
+  stroke: var(--ink-2);
+  filter: none;
+}
+
+/* an icon inside a lit tile */
+.void-glyph {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+}
+
+.void-glyph--round { border-radius: 50%; }
+
+/* ============================================================
+   6 · COMPONENTS
+   Geometry is normative. Every component is one depth preset
+   plus layout — there are no bespoke shadows below this line.
+   ============================================================ */
+
+/* --- card / tile: the rectangular sibling of the disc --- */
+.void-card {
+  border-radius: var(--r-md);
+  padding: 20px;
+}
+
+.void-card > h3 {
+  margin: 0 0 3px;
+  font: 600 13.5px/1.3 var(--font-ui);
+}
+
+/* --- disc: the primary object. One value plus a caption. --- */
+.void-disc {
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  text-align: center;
+}
+
+.void-disc .v {
+  font-family: var(--font-display);
+  font-size: 17px;
+  line-height: 1.15;
+  color: var(--ink-display);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.void-disc .k {
+  font: 500 10px/1 var(--font-ui);
+  color: var(--ink-3);
+  letter-spacing: 0.14em;
+  margin-top: 5px;
+}
+
+/* --- metric tile --- */
+.void-metric .k {
+  margin: 0 0 12px;
+  font: 500 11.5px/1 var(--font-ui);
+  color: var(--ink-3);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.void-metric .v {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 24px;
+  line-height: 1.1;
+  color: var(--ink-display);
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.void-metric .d {
+  margin: 9px 0 0;
+  font: 300 12.5px/1.4 var(--font-text);
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- button: press inverts the pair. No translate, no scale, so a
+       press can never cause layout shift. --- */
+.void-pill {
+  height: 37px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 19px;
+  color: var(--ink);
+  font: 600 13px/1 var(--font-ui);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+
+/* five sizes over one shape. Only the box changes: the hairline is
+   1.5px in every one of them, which is the whole point. */
+.void-pill--xs { height: 26px; padding: 0 12px; border-radius: 13px; font-size: 11.5px; }
+.void-pill--sm { height: 31px; padding: 0 15px; border-radius: 16px; font-size: 12.5px; }
+.void-pill--lg { height: 44px; padding: 0 22px; border-radius: 22px; font-size: 14px; }
+.void-pill--xl { height: 52px; padding: 0 26px; border-radius: 26px; font-size: 15px; }
+
+.void-pill--ghost {
+  background: transparent;
+  box-shadow: 0 0 0 1.5px var(--edge), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+  color: var(--ink-2);
+}
+
+.void-pill:disabled {
+  color: var(--ink-3);
+  cursor: default;
+  opacity: 0.5;
+}
+
+/* the press material lives in §7 — a pill is not a special case */
+.void-pill {
+  transition: box-shadow 170ms var(--e-settle), background 170ms var(--e-settle);
+}
+
+.void-pill:focus-visible,
+.void-toggle:focus-visible,
+.void-row:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 1.5px var(--edge),
+    inset 0 0 0 1.5px rgb(var(--hue-info) / 0.75);
+}
+
+/* --- field: focus and error are tinted omnidirectional rings.
+       White contact light at 0.16 over --s2 cannot clear WCAG
+       2.4.11's 3:1; the tinted ring can. --- */
+.void-field {
+  height: 37px;
+  border-radius: 10px;
+  border: 0;
+  padding: 0 13px;
+  color: var(--ink);
+  font: 400 13.5px/1 var(--font-ui);
+  outline: none;
+  width: 100%;
+  max-width: 260px;
+}
+
+.void-field::placeholder {
+  font-family: var(--font-text);
+  font-weight: 300;
+  color: var(--ink-3);
+}
+
+.void-field:focus-visible {
+  box-shadow:
+    0 0 0 1.5px var(--edge),
+    inset 0 2px 8px -3px rgba(0, 0, 0, 0.9),
+    inset 0 0 0 1.5px rgb(var(--hue-info) / 0.75);
+}
+
+/* --- toggle: track sunk, thumb raised, on-state ring on the thumb --- */
+.void-toggle {
+  width: 46px;
+  height: 27px;
+  border-radius: 14px;
+  position: relative;
+  cursor: pointer;
+  border: 0;
+  padding: 0;
+  flex: 0 0 auto;
+}
+
+.void-toggle span {
+  position: absolute;
+  top: 3.5px;
+  left: 3.5px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--s3);
+  box-shadow:
+    0 0 0 1.5px var(--edge),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+  transition: left var(--t-thumb) var(--e-settle);
+}
+
+.void-toggle[aria-checked="true"] span {
+  left: 22.5px;
+  box-shadow:
+    0 0 0 1.5px var(--edge),
+    inset 0 0 0 1.5px rgb(var(--hue-success) / 0.5);
+}
+
+/* --- knob: the indicator is --edge, the same ink as the hairline,
+       so it reads as a cut rather than a printed mark. --- */
+.void-knob {
+  width: 78px;
+  height: 78px;
+  border-radius: 50%;
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.void-knob i {
+  position: absolute;
+  left: 50%;
+  top: 10px;
+  width: 2px;
+  height: 15px;
+  margin-left: -1px;
+  border-radius: 1px;
+  background: var(--edge);
+  transform-origin: 50% 29px;
+}
+
+/* --- badge + dot: hue is never the sole carrier of meaning (I8) --- */
+/* three sizes; the dot and the hairline hold their size in all of them */
+.void-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 25px;
+  padding: 0 11px;
+  border-radius: 13px;
+  font: 500 11.5px/1 var(--font-ui);
+  color: var(--ink-2);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.void-badge--sm { height: 21px; padding: 0 9px; border-radius: 11px; font-size: 10.5px; gap: 6px; }
+.void-badge--lg { height: 30px; padding: 0 14px; border-radius: 15px; font-size: 12.5px; gap: 8px; }
+
+.void-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgb(var(--glow, var(--hue-neutral)) / 0.85);
+  box-shadow: 0 0 0 1.5px var(--edge);
+  flex: 0 0 auto;
+}
+
+/* --- progress: track sunk, fill raised with its own hairline --- */
+.void-bar {
+  height: 10px;
+  border-radius: 5px;
+  position: relative;
+  width: 100%;
+}
+
+.void-bar i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 5px;
+  background: var(--fill-raised);
+  box-shadow:
+    0 0 0 1.5px var(--edge),
+    inset 0 0 0 1.5px rgb(var(--glow, var(--hue-info)) / 0.5);
+  transition: width var(--t-fill) linear;
+}
+
+/* --- avatar: ceramic always; presence uses .lit--status --- */
+.void-avatar {
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font: 600 11px/1 var(--font-ui);
+  color: var(--ink-2);
+  letter-spacing: 0.03em;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+}
+
+/* --- row --- */
+.void-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-radius: var(--r-sm);
+  padding: 13px 15px;
+}
+
+.void-row .name {
+  font: 500 13.5px/1.25 var(--font-ui);
+  min-width: 0;
+  flex: 1;
+}
+
+.void-row .name small {
+  display: block;
+  font: 300 12px/1.4 var(--font-text);
+  color: var(--ink-2);
+  margin-top: 2px;
+}
+
+.void-row .num {
+  font: 400 12.5px/1 var(--font-mono);
+  color: var(--ink-2);
+  font-variant-numeric: tabular-nums;
+  min-width: 62px;
+  text-align: right;
+}
+
+/* --- log / well --- */
+.void-log {
+  display: grid;
+  gap: 2px;
+  font: 400 12px/1.9 var(--font-mono);
+  max-height: 212px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: var(--r-sm);
+  padding: 13px 15px;
+}
+
+.void-log div { display: flex; gap: 12px; color: var(--ink-2); }
+.void-log time { color: var(--ink-3); flex: 0 0 auto; }
+.void-log .ok { color: rgb(var(--hue-success) / 0.9); }
+.void-log .warn { color: rgb(var(--hue-warning) / 0.9); }
+.void-log .err { color: rgb(var(--hue-danger) / 0.9); }
+
+/* --- breadcrumbs: one trail per screen, always above the title --- */
+.void-crumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.void-crumbs a,
+.void-crumbs span {
+  font: 500 12px/1 var(--font-ui);
+  letter-spacing: 0.02em;
+  color: var(--ink-3);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.void-crumbs a { cursor: pointer; }
+.void-crumbs [aria-current="page"] { color: var(--ink); cursor: default; }
+
+/* mobile projection: the back control NAMES the parent, never a bare chevron */
+.void-crumb-back {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 34px;
+  padding: 0 13px 0 9px;
+  border: 0;
+  border-radius: 17px;
+  cursor: pointer;
+  font: 500 12.5px/1 var(--font-ui);
+  color: var(--ink-2);
+}
+
+/* --- WebGL ring fallback: degrade to a static ring, never a blank box --- */
+.void-ring-fallback {
+  border-radius: 50%;
+  background: var(--s2);
+  box-shadow:
+    0 0 0 1.5px var(--edge),
+    0 6px 16px rgba(0, 0, 0, 0.85),
+    inset 0 0 0 1.5px rgb(var(--glow, var(--hue-neutral)) / 0.4);
+}
+
+canvas.void-ring {
+  display: block;
+  border-radius: 50%;
+  flex: 0 0 auto;
+}
+
+/* ============================================================
+   7 · PRESS — the surface takes the press, the object never moves
+
+   A press flips which side of the hairline receives light: the
+   object stops catching light and starts catching shadow, which is
+   the same operation as .lit--sunk, driven harder. Nothing
+   translates and nothing scales, so a press can never cause layout
+   shift — and because the incision inside a pressed surface is now
+   below the surrounding material, its icon flips sign with it.
+
+   Down is instant (0s); the release settles. That asymmetry is what
+   makes it feel like a physical detent rather than a fade.
+   ============================================================ */
+
+.void-pressable {
+  transition: box-shadow 170ms var(--e-settle), background 170ms var(--e-settle);
+}
+
+.is-pressed,
+.void-pressable:not(:disabled):active,
+.void-pill:not(:disabled):active,
+.void-chip:not(:disabled):active,
+.void-crumb-back:active,
+.void-row.is-interactive:active {
+  background: var(--s1);
+  transition-duration: 0s;
+  box-shadow:
+    0 0 0 1.5px var(--edge),
+    /* the black bleed is gone: a pressed object is no longer above
+       the surface, so it casts nothing */
+    inset calc(var(--lx) * 6px) calc(var(--ly) * 6px) 11px -2px rgba(0, 0, 0, 1),
+    inset calc(var(--lx) * 2px) calc(var(--ly) * 2px) 0 rgba(0, 0, 0, 0.9),
+    inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 0 rgba(255, 255, 255, 0.14);
+}
+
+/* the incision inverts with the surface it is cut into */
+.is-pressed .icon,
+.void-pressable:not(:disabled):active .icon,
+.void-pill:not(:disabled):active .icon,
+.void-chip:not(:disabled):active .icon {
+  filter: drop-shadow(
+    calc(var(--lx) * 1px) calc(var(--ly) * 1px) 0
+    rgba(255, 255, 255, var(--icon-lift, 0.24))
+  );
+}
+
+/* a raised part inside a pressed control sinks with it */
+.void-toggle:active span {
+  box-shadow:
+    0 0 0 1.5px var(--edge),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.16);
+}
+
+/* ============================================================
+   8 · DISCLOSURE — menus and folds
+
+   Revealed material is not faded in and not scaled up: the panel is
+   an object that grows out of nothing, so its hairline and its black
+   bleed are drawn correctly at every intermediate height. The
+   element that carries the depth preset is the element being sized,
+   which is the whole trick — animate a wrapper instead and the
+   shadow detaches from the shape.
+
+   Content that has been revealed sits BELOW the surface that
+   revealed it: a fold's panel is a well, not a raised card.
+   ============================================================ */
+
+.void-menu {
+  position: relative;
+  display: inline-block;
+}
+
+.void-menu__panel {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 8px);
+  left: 0;
+  min-width: 100%;
+  border-radius: var(--r-md);
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  visibility: hidden;
+  transition:
+    grid-template-rows var(--t-open) var(--e-settle),
+    box-shadow var(--t-open) var(--e-settle),
+    opacity 110ms linear,
+    visibility 0s linear var(--t-open);
+}
+
+.void-menu__panel--right { left: auto; right: 0; }
+
+.void-menu[data-open] .void-menu__panel {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  visibility: visible;
+  transition:
+    grid-template-rows var(--t-open) var(--e-settle),
+    box-shadow var(--t-open) var(--e-settle),
+    opacity 90ms linear,
+    visibility 0s;
+}
+
+.void-menu__inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.void-menu__list {
+  display: grid;
+  gap: 2px;
+  padding: 6px;
+}
+
+.void-menu__item {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  min-height: 36px;
+  padding: 0 11px;
+  border: 0;
+  border-radius: var(--r-sm);
+  background: transparent;
+  color: var(--ink-2);
+  font: 500 13px/1.3 var(--font-ui);
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.void-menu__item[aria-checked="true"] { color: var(--ink); }
+
+/* the check is present but unlit until it means something */
+.void-menu__item .icon { opacity: 0; }
+.void-menu__item[aria-checked="true"] .icon { opacity: 1; }
+
+.void-menu__item:focus-visible,
+.void-fold__head:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 1.5px var(--edge),
+    inset 0 0 0 1.5px rgb(var(--hue-info) / 0.75);
+}
+
+/* the caret is the one mark allowed to rotate: it is a state
+   indicator, and its rotation is the state */
+.void-caret { transition: transform var(--t-open) var(--e-settle); }
+.void-menu[data-open] .void-caret,
+.void-fold[data-open] .void-caret { transform: rotate(180deg); }
+
+/* ---- fold (disclosure) ---- */
+
+.void-fold + .void-fold { margin-top: 8px; }
+
+.void-fold__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 46px;
+  padding: 0 15px;
+  border: 0;
+  border-radius: var(--r-sm);
+  color: var(--ink);
+  font: 500 13.5px/1.35 var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+}
+
+.void-fold__head .void-fold__title { flex: 1; min-width: 0; }
+
+.void-fold__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--t-open) var(--e-settle);
+}
+
+.void-fold[data-open] .void-fold__panel { grid-template-rows: 1fr; }
+
+.void-fold__clip {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.void-fold__body {
+  margin: 8px 0 2px;
+  border-radius: var(--r-sm);
+  padding: 14px 15px;
+  font: 300 13.5px/1.55 var(--font-text);
+  color: var(--ink-2);
+}
+
+/* ============================================================
+   9 · SCROLL
+
+   I7 stands: nothing on this page decorates a scroll. Two things
+   are allowed, and both are readouts rather than animations —
+   a rail that reports position, and a group header that reports it
+   has pinned. The third, .void-reveal, fires once per object and
+   animates the LIGHT, not the geometry: the object is already in
+   place, and the light arrives to find it.
+   ============================================================ */
+
+.void-rail {
+  position: relative;
+  height: 4px;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.void-rail i {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: calc(var(--p, 0) * 100%);
+  border-radius: 2px;
+  background: var(--fill-raised);
+  box-shadow:
+    0 0 0 1.5px var(--edge),
+    inset 0 0 0 1.5px rgb(var(--glow, var(--hue-info)) / 0.5);
+}
+
+/* a scroll region with pinned group headers */
+.void-scroller {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border-radius: var(--r-sm);
+}
+
+.void-group {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  padding: 9px 15px;
+  background: var(--s1);
+  font: 600 10px/1.4 var(--font-ui);
+  color: var(--ink-3);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  /* unpinned it is part of the well; pinned it becomes an object,
+     and gains the boundary that says so */
+  box-shadow: 0 0 0 0 var(--edge);
+  transition: box-shadow 160ms var(--e-settle), color 160ms var(--e-settle);
+}
+
+.void-group[data-pinned] {
+  color: var(--ink-2);
+  box-shadow:
+    0 1.5px 0 0 var(--edge),
+    0 8px 14px -10px rgba(0, 0, 0, 0.9);
+}
+
+/* one-shot entrance: --lift-scale 0 → 1 is the light finding the
+   object. Nothing translates, so nothing reflows, and the layout is
+   identical at every frame. */
+[data-void] .void-reveal {
+  --lift-scale: 0;
+  opacity: 0;
+}
+
+[data-void] .void-reveal.is-revealed {
+  --lift-scale: 1;
+  opacity: 1;
+  transition:
+    --lift-scale var(--t-reveal) var(--e-settle),
+    opacity 240ms linear;
+}
+
+/* five sizes over one shape. Only the box changes: the hairline is
+   1.5px in every one of them, which is the whole point. */
+.void-pill--xs { height: 26px; padding: 0 12px; border-radius: 13px; font-size: 11.5px; }
+.void-pill--sm { height: 31px; padding: 0 15px; border-radius: 16px; font-size: 12.5px; }
+.void-pill--lg { height: 44px; padding: 0 22px; border-radius: 22px; font-size: 14px; }
+.void-pill--xl { height: 52px; padding: 0 26px; border-radius: 26px; font-size: 15px; }
+
+/* ============================================================
+   10 · POINTERS
+   Nothing animates on pointer movement, hover, or scroll (I7).
+   Hover may only change material, and only where a pointer exists.
+   ============================================================ */
+
+@media (hover: hover) {
+  .void-row.is-interactive:hover { --lift: 0.24; }
+  .void-crumbs a:hover { color: var(--ink-2); }
+  .void-menu__item:hover { color: var(--ink); background: rgb(var(--wash) / var(--wash-a)); }
+  .void-fold__head:hover { --lift: 0.24; }
+}
+
+@media (hover: none) {
+  .void-row.is-interactive:hover { --lift: 0.19; }
+  .void-menu__item:hover { color: var(--ink-2); background: transparent; }
+}
+
+/* ============================================================
+   8 · RESPONSIVE
+   ≤720px: touch targets to 44px, shorter/brighter bands.
+   The hairline stays 1.5px at every width.
+   ============================================================ */
+
+@media (max-width: 720px) {
+  .lit { --decay: 10px; --bleed: 9px; }
+
+  .void-pill { height: 44px; border-radius: 22px; }
+
+  .void-toggle { width: 52px; height: 31px; }
+  .void-toggle span { width: 24px; height: 24px; }
+  .void-toggle[aria-checked="true"] span { left: 24.5px; }
+
+  .void-field { height: 44px; }
+}
+
+/* Minimum touch target is 44px on coarse pointers. Objects whose geometry is
+   normative — the toggle at 46×27, the crumb-back at 34 — keep their drawn
+   size and gain an invisible hit area instead, so the material is unchanged. */
+@media (pointer: coarse) {
+  .void-toggle::after,
+  .void-crumb-back::after,
+  .void-crumbs a::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 44px;
+    transform: translateY(-50%);
+  }
+
+  .void-crumbs a { position: relative; }
+
+  /* a menu item cannot take an invisible hit area — it would overlap the
+     item above it — so on touch it simply gets taller */
+  .void-menu__item { min-height: 44px; }
+}
+
+/* ============================================================
+   9 · REDUCED MOTION
+   Suppress the impulse, pin the light, never start the loop. The
+   ceramic preset is fully correct with no motion at all, so this
+   is the same design rather than a degraded one.
+   ============================================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .void-toggle span,
+  .void-bar i,
+  .void-pill,
+  .void-pressable,
+  .void-caret,
+  .void-group,
+  .void-menu__panel,
+  .void-fold__panel {
+    transition: none;
+  }
+
+  /* the reveal is the light arriving; with motion suppressed it has
+     already arrived. Nothing is hidden from anyone. */
+  [data-void] .void-reveal {
+    --lift-scale: 1;
+    opacity: 1;
+  }
+}

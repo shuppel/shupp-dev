@@ -1,6 +1,7 @@
 ---
 import { ClientRouter } from 'astro:transitions';
 import SideNav from '../components/Header/SideNav.astro';
+import VoidSprite from '../components/VoidSprite.astro';
 import Footer from '../components/Footer/Footer.astro';
 import JsonLd from '../components/SEO/JsonLd.astro';
 
@@ -54,6 +55,69 @@ const imageURL = new URL(image, Astro.site);
         }
       });
     </script>
+
+    <!-- Skins: the site can be rendered in its own dress, in PRISM, or in VOID.
+         A skin is a stylesheet that remaps the site's role tokens onto a design
+         system's, so it is loaded only when it is active — the default skin
+         costs nothing. This runs before first paint, and the <link> it appends
+         blocks paint the same way a static one would, so there is no flash. -->
+    <script is:inline>
+      (function () {
+        const SKINS = { prism: '/skins/skin-prism.css', void: '/skins/skin-void.css' };
+        const html = document.documentElement;
+
+        function applySkin(skin) {
+          if (!SKINS[skin]) skin = 'site';
+          html.setAttribute('data-skin', skin);
+
+          /* PRISM has two modes of its own and the site's dark toggle drives
+             them. VOID has one, by design. */
+          if (skin === 'prism') {
+            html.setAttribute('data-mode', html.classList.contains('dark') ? 'night' : 'day');
+          } else {
+            html.removeAttribute('data-mode');
+          }
+
+          document.querySelectorAll('link[data-skin-sheet]').forEach((l) => {
+            if (l.dataset.skinSheet !== skin) l.remove();
+          });
+
+          if (SKINS[skin] && !document.querySelector('link[data-skin-sheet="' + skin + '"]')) {
+            const link = document.createElement('link');
+            link.rel = 'stylesheet';
+            link.href = SKINS[skin];
+            link.dataset.skinSheet = skin;
+            document.head.appendChild(link);
+          }
+        }
+
+        /* This script runs at the top of <head>, so the site's own bundled
+           stylesheets are parsed AFTER the skin link is appended and would win
+           every specificity tie. Keep the skin last in the head while the
+           document is parsing; the move is free (same href, already cached)
+           and happens before first paint. */
+        const keepLast = new MutationObserver(() => {
+          const link = document.querySelector('link[data-skin-sheet]');
+          if (link && link !== document.head.lastElementChild) document.head.appendChild(link);
+        });
+        keepLast.observe(document.head, { childList: true });
+        document.addEventListener('DOMContentLoaded', () => keepLast.disconnect());
+
+        window.__applySkin = applySkin;
+        applySkin(localStorage.getItem('skin') || 'site');
+
+        document.addEventListener('astro:after-swap', () => {
+          applySkin(localStorage.getItem('skin') || 'site');
+        });
+
+        /* the dark toggle and the skin have to stay in agreement */
+        window.addEventListener('themechange', () => {
+          if (html.getAttribute('data-skin') === 'prism') {
+            html.setAttribute('data-mode', html.classList.contains('dark') ? 'night' : 'day');
+          }
+        });
+      })();
+    </script>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -106,6 +170,8 @@ const imageURL = new URL(image, Astro.site);
   </head>
   <body class="has-side-nav">
     <a href="#main-content" class="skip-to-content">Skip to main content</a>
+    <!-- the VOID icon set, referenced by the nav while that skin is active -->
+    <VoidSprite />
     <SideNav />
     <main id="main-content">
       <slot />

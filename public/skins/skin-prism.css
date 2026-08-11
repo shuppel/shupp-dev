@@ -1,0 +1,377 @@
+/* ============================================================
+   shupp.dev — PRISM skin
+
+   Loaded only while html[data-skin="prism"]. Same contract as the
+   VOID skin: remap the site's role vocabulary onto the design
+   system's, then restyle the shared chrome. Same specificity
+   discipline too — :where() for generic element defaults, a
+   html[data-skin="prism"] nest for chrome that has to beat the
+   site's own `html.dark` rules.
+
+   PRISM has two modes of its own, and the site's existing dark
+   toggle drives them: light is day, dark is redshift. One control,
+   not two. Night keeps the site's surfaces dark rather than
+   reproducing PRISM's figure/ground inversion — see the note on the
+   night block for why.
+
+   What this skin cannot reach: a page that hard-codes a hex value
+   instead of using a role token. Those keep their own colour.
+   ============================================================ */
+
+@import url("/prism/prism.css");
+
+/* PRISM ships a hard reset for its own standalone pages, which would
+   strip the margins this site inherits from the user agent. Give them
+   back at ZERO specificity: later than the imported `* { margin: 0 }`
+   so it wins that, weaker than anything the site authored so it never
+   overrides a real layout decision. */
+:where(html[data-skin="prism"]) :where(h1, h2, h3, h4, h5, h6, p, ul, ol, dl, dd,
+blockquote, figure, figcaption, pre, table, fieldset, hr) {
+  margin: revert;
+  padding: revert;
+}
+
+:where(html[data-skin="prism"]) :where(ul, ol) { padding-inline-start: revert; }
+
+/* ============================================================
+   1 · role tokens
+
+   --ink is PRISM's own name and is already correct per mode, so it is
+   deliberately absent here: remapping it would be circular. --surface
+   is restated below, where it has to win a collision.
+   ============================================================ */
+
+html[data-skin="prism"] {
+  --background-color: var(--field);
+  --background-alt: var(--surface);
+  --surface-elevated: var(--surface);
+  --surface-muted: var(--field);
+  --card-bg: var(--surface);
+
+  /* --on-ground is the ink that is correct against whatever the field
+     currently is, in either mode; --ink is specifically the paper's ink.
+     The site has one text role, so it follows the ground. */
+  --text-color: var(--on-ground);
+  --text-strong: var(--on-ground);
+  --text-light: color-mix(in oklch, var(--on-ground) 78%, transparent);
+  --text-muted: color-mix(in oklch, var(--on-ground) 60%, transparent);
+
+  /* every one of these derives from the anchor hue, so rotating --h
+     rotates the entire site */
+  --color-dark: var(--dense);
+  --color-secondary: var(--ink-soft);
+  --color-tertiary: var(--anchor);
+  --color-accent: var(--near);
+  --color-light: var(--far);
+  --primary-color: var(--anchor);
+  --primary-dark: var(--dense);
+
+  --border-color: var(--hairline);
+  --border-subtle: var(--hairline);
+  --hover-tint: oklch(0.74 0.125 var(--h) / 0.08);
+  --focus-ring: 0 0 0 3px oklch(0.74 0.125 var(--h) / 0.5);
+
+  /* elevation is a chromatic cast thrown along the light axis */
+  --card-shadow: var(--elev-dense);
+
+  /* PRISM's five type roles over the site's three slots. Both heading
+     slots are Instrument Sans; the mono is handed out by role below,
+     to eyebrows and machine text, rather than to a whole slot — the
+     secondary-header slot carries card titles here as well as labels. */
+  --font-main-header: var(--sans);
+  --font-secondary-header: var(--sans);
+  --font-body: var(--sans);
+}
+
+/* --surface is the one name both systems use. PRISM sets it per mode at
+   [data-mode="…"], which is (0,1,0) and therefore loses to the site's own
+   html.dark (0,1,1). Restate PRISM's two values here, where the skin
+   out-specifies both — this is the only place the skin repeats a value
+   from prism.css, and it exists solely to win that collision. */
+html[data-skin="prism"][data-mode="day"] {
+  --surface: oklch(0.985 0.005 var(--h));
+}
+
+/* PRISM's own night swaps figure and ground: the field goes dark and every
+   surface becomes light paper. That is right for a page authored for it, and
+   wrong for this one — the site colours its text for a dark ground, so paper
+   cards would swallow half of it. The skin therefore keeps surfaces dark at
+   night and lifts them one step off the field. Everything still derives from
+   --hr, casts are still halos: it is PRISM's night applied to this site's
+   structure rather than a reproduction of PRISM's own pages. */
+html[data-skin="prism"][data-mode="night"] {
+  --surface: oklch(0.285 0.05 var(--hr));
+  --background-alt: oklch(0.285 0.05 var(--hr));
+  --card-bg: oklch(0.285 0.05 var(--hr));
+  --surface-elevated: oklch(0.325 0.05 var(--hr));
+  --surface-muted: oklch(0.26 0.05 var(--hr));
+  --hover-tint: oklch(0.72 0.115 var(--hr) / 0.14);
+  --focus-ring: 0 0 0 3px oklch(0.72 0.115 var(--hr) / 0.5);
+}
+
+/* ============================================================
+   2 · element defaults — zero specificity on purpose
+   ============================================================ */
+
+:where(html[data-skin="prism"]) {
+  & :where(body) {
+    background: var(--field);
+    color: var(--on-ground);
+    font-family: var(--sans);
+    line-height: 1.6;
+  }
+
+  & :where(h1, h2, h3, h4, h5, h6) {
+    font-family: var(--sans);
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--on-ground);
+  }
+
+  & :where(p, li, dd, blockquote, figcaption) { color: var(--on-ground); }
+  & :where(code, pre, kbd, samp) { font-family: var(--mono); }
+  & :where(a) { color: var(--anchor); }
+  & :where(a:hover) { color: var(--dense); }
+  & :where(hr) { border: 0; height: 1px; background: var(--hairline); }
+  & :where(img, video) { border-radius: var(--r-md); }
+}
+
+html[data-skin="prism"] ::selection { background: oklch(0.74 0.125 var(--h) / 0.25); }
+
+html[data-skin="prism"] :focus-visible {
+  outline: 2px solid var(--anchor);
+  outline-offset: 3px;
+}
+
+/* ---- display: constructed line work, allowed only at size ----------------
+   Tilt Prism is drawn as outlines and falls apart below about 40px, so the
+   skin gives it to the page's one h1 and to explicit hero/page titles, and
+   floors the size so it can never render small. Day fills it; night empties
+   it to an outline, which is the same inversion PRISM applies to headlines
+   on its own pages. Everything else stays Instrument Sans 600. */
+html[data-skin="prism"] :is(h1, .hero-title, .page-title),
+html[data-skin="prism"] :is(.pk-hero h1, .portfolio-header h1, .about-header h1) {
+  font-family: var(--display);
+  font-weight: 400;
+  font-size: clamp(40px, 5.4vw, 58px);
+  line-height: 1.06;
+  letter-spacing: 0.03em;
+  color: var(--head-fill);
+  -webkit-text-stroke: var(--head-stroke) var(--on-ground);
+  background: none;
+  -webkit-text-fill-color: var(--head-fill);
+}
+
+/* the aside role: one italic serif phrase, used sparingly */
+html[data-skin="prism"] :is(.pk-tagline, .lead, .lede, .portfolio-hero .lead, blockquote) {
+  font-family: var(--serif);
+  font-style: italic;
+  font-weight: 400;
+  color: color-mix(in oklch, var(--on-ground) 78%, transparent);
+}
+
+/* eyebrows and section labels are mono, tracked out and upper */
+html[data-skin="prism"] :is(.pk-section-title, .side-nav-section-label, .pk-company-type,
+.section-label, .eyebrow) {
+  font-family: var(--mono);
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+/* numeric and machine text */
+html[data-skin="prism"] :is(.pk-data, time, .date, .meta-date) {
+  font-family: var(--mono);
+}
+
+/* ============================================================
+   3 · shared chrome
+   ============================================================ */
+
+/* The chrome block repeats the attribute deliberately. Astro scopes a
+   component's styles with a [data-astro-cid-…] attribute, so a rule like
+   `html.dark .side-nav` inside a component reaches (0,3,1); a skin rule has
+   to match that to win the tie on order. */
+html[data-skin="prism"][data-skin] {
+  & .card,
+  & .skill-card,
+  & .project-card,
+  & .post-card,
+  & .sidebar-widget,
+  & .profile-sidebar,
+  & .portfolio-item,
+  & .cta-card,
+  & .contact,
+  & .credential-badge {
+    background: var(--surface);
+    color: var(--text-color);
+    border: none;
+    border-radius: var(--r-lg);
+    box-shadow: var(--elev);
+    transition:
+      box-shadow var(--t-flash) var(--t-lag) var(--e-light),
+      transform var(--t-arrive) var(--e-light),
+      background var(--t-sunset) var(--e-refract);
+  }
+
+  /* day lifts toward the light; night glows brighter, because at
+     night there is nothing to lift toward */
+  & .card:hover,
+  & .project-card:hover,
+  & .post-card:hover,
+  & .portfolio-item:hover,
+  & .cta-card:hover {
+    box-shadow: var(--elev-hi);
+    transform: translate(-2px, -3px);
+  }
+
+  &[data-mode="night"] .card:hover,
+  &[data-mode="night"] .project-card:hover,
+  &[data-mode="night"] .post-card:hover,
+  &[data-mode="night"] .portfolio-item:hover,
+  &[data-mode="night"] .cta-card:hover {
+    transform: none;
+  }
+
+  /* ---- buttons ---- */
+
+  & .btn,
+  & .btn-secondary,
+  & .btn-small {
+    border: none !important;
+    border-radius: var(--r-sm);
+    background: var(--chip-bg);
+    color: var(--chip-ink) !important;
+    font-family: var(--sans);
+    font-weight: 600;
+    box-shadow: var(--elev);
+  }
+
+  & .btn-primary {
+    border: none !important;
+    border-radius: var(--r-sm);
+    color: #fff !important;
+    background: linear-gradient(calc(var(--la) * 1deg + 15deg), var(--anchor), oklch(0.58 0.12 var(--h)));
+    box-shadow: var(--elev);
+  }
+
+  & .btn:hover,
+  & .btn-secondary:hover,
+  & .btn-small:hover,
+  & .btn-primary:hover {
+    box-shadow: var(--elev-hi);
+    transform: translate(-2px, -3px);
+  }
+
+  &[data-mode="night"] .btn:hover,
+  &[data-mode="night"] .btn-secondary:hover,
+  &[data-mode="night"] .btn-small:hover,
+  &[data-mode="night"] .btn-primary:hover { transform: none; }
+
+  & .btn:active,
+  & .btn-secondary:active,
+  & .btn-small:active,
+  & .btn-primary:active {
+    transform: translate(1px, 2px);
+    box-shadow: var(--elev-dense);
+    transition-duration: var(--t-press);
+  }
+
+  /* ---- side nav ---- */
+
+  & .side-nav {
+    background: var(--surface);
+    border-right: 1px solid var(--hairline);
+  }
+
+  & .side-nav-link {
+    color: var(--text-light);
+    font-family: var(--sans);
+    border-radius: var(--r-sm);
+  }
+
+  & .side-nav-link:hover { color: var(--text-strong); background: var(--hover-tint); }
+
+  & .side-nav-link.active,
+  & .side-nav-link[aria-current="page"] {
+    color: var(--text-strong);
+    background: var(--hover-tint);
+    box-shadow: inset 2px 0 0 0 var(--anchor);
+  }
+
+  & .side-nav-section-title,
+  & .side-nav-footnote { font-family: var(--mono); color: var(--text-muted); }
+
+  & .side-theme-toggle,
+  & .side-nav-mobile-toggle,
+  & .skin-trigger {
+    background: var(--surface);
+    color: var(--text-light);
+    border: 1px solid var(--hairline);
+    box-shadow: var(--elev-dense);
+  }
+
+  & .hamburger-line { background: var(--text-strong); }
+
+  & .skin-panel {
+    background: var(--surface);
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-md);
+    box-shadow: var(--elev);
+  }
+
+  & .skin-option { color: var(--text-color); }
+
+  /* ---- footer ---- */
+
+  & .footer {
+    background: var(--surface);
+    color: var(--text-light);
+    border-top: 1px solid var(--hairline);
+  }
+
+  & .footer-logo a,
+  & .footer-section h3 { color: var(--text-strong); }
+  & .footer-section a { color: var(--text-light); }
+  & .footer-section a:hover { color: var(--anchor); }
+  & .footer-bottom { color: var(--text-muted); border-top: 1px solid var(--hairline); }
+
+  /* ---- inputs ---- */
+
+  & input,
+  & textarea,
+  & select {
+    background: var(--surface);
+    color: var(--text-color);
+    border: 1px solid var(--hairline);
+    border-radius: var(--r-sm);
+    font-family: var(--sans);
+  }
+
+  /* ---- tags ---- */
+
+  & .tag,
+  & .tech-tag,
+  & .category-tag,
+  & .skill-tag,
+  & .badge {
+    background: var(--hover-tint);
+    color: var(--text-color);
+    border: 1px solid var(--hairline);
+    border-radius: 99px;
+    font-family: var(--sans);
+    font-weight: 500;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html[data-skin="prism"] :is(.card, .project-card, .post-card, .portfolio-item,
+  .cta-card, .btn, .btn-primary, .btn-secondary, .btn-small) {
+    transition: none;
+  }
+
+  html[data-skin="prism"] :is(.card:hover, .project-card:hover, .post-card:hover,
+  .portfolio-item:hover, .cta-card:hover, .btn:hover, .btn-primary:hover) {
+    transform: none;
+  }
+}

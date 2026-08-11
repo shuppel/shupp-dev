@@ -380,8 +380,10 @@ import Icon from '../components/Icon/Icon.astro';
     background-clip: text;
   }
 
+  /* tokenised so the heading follows whichever skin is active
+     rather than staying on the site's own brand cream */
   html.dark .pk-hero h1 {
-    background: linear-gradient(45deg, #f3f4f6, #e9eb9e);
+    background: linear-gradient(45deg, var(--text-strong), var(--color-accent));
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -525,7 +527,7 @@ import Icon from '../components/Icon/Icon.astro';
   }
 
   .pk-company-nodetus .pk-company-logo {
-    background: linear-gradient(135deg, #49475B, #799496);
+    background: linear-gradient(135deg, var(--color-secondary), var(--color-tertiary));
   }
 
   .pk-company-podcast .pk-company-logo {
@@ -832,7 +834,7 @@ import Icon from '../components/Icon/Icon.astro';
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--surface-muted), #eef0e8);
+    background: linear-gradient(135deg, var(--surface-muted), var(--surface));
   }
 
   html.dark .pk-asset-preview {

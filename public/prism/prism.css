@@ -204,6 +204,29 @@ body {
 .prism-btn--primary { color: #fff; background: linear-gradient(calc(var(--la) * 1deg + 15deg), var(--anchor), oklch(0.58 0.12 var(--h))); }
 .prism-btn--dense { color: var(--on-dense); background: var(--dense); box-shadow: var(--elev-dense); }
 
+/* five sizes over one shape. Padding and type scale; the dichroic edge
+   stays 1.5px and the radius steps with the box, so a small button is
+   the same object seen smaller rather than a different one. */
+.prism-btn--xs { padding: 6px 12px;  font-size: 12px;   border-radius: 7px; }
+.prism-btn--sm { padding: 9px 17px;  font-size: 13.5px; border-radius: 8px; }
+.prism-btn--lg { padding: 15px 30px; font-size: 16px;   border-radius: 12px; }
+.prism-btn--xl { padding: 18px 36px; font-size: 17.5px; border-radius: 14px; }
+
+/* three badge sizes */
+.prism-badge--sm { font-size: 11px;   padding: 5px 11px; }
+.prism-badge--lg { font-size: 14px;   padding: 9px 18px; }
+
+/* the chip: a badge that carries the dichroic edge instead of a fill */
+.prism-chip {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: 12.5px; font-weight: 500; padding: 6px 13px; border-radius: 99px;
+  background: var(--chip-bg); color: var(--chip-ink);
+  transition: background var(--t-sunset) var(--e-refract), color var(--t-sunset) var(--e-refract);
+}
+.prism-chip--sm { font-size: 11px; padding: 4px 10px; }
+.prism-chip--lg { font-size: 14px; padding: 8px 16px; }
+.prism-chip .prism-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--anchor); }
+
 /* surface card (floating) */
 .prism-card {
   background: var(--surface); color: var(--ink);
