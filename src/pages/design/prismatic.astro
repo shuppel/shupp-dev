@@ -301,6 +301,34 @@ const paintSeed: string[] = [
       }
 
       .ds-row-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+
+      /* ---- sizes × styles sheet ---- */
+      .ds-matrix {
+        display: grid;
+        grid-template-columns: 76px repeat(5, minmax(0, 1fr));
+        gap: 0.9rem 0.75rem;
+        align-items: center;
+        overflow-x: auto;
+      }
+      .ds-mx-cell { display: flex; align-items: center; }
+      .ds-mx-label {
+        font-family: var(--mono); font-size: 11.5px; opacity: 0.6; white-space: nowrap;
+      }
+      .ds-mx-head { text-align: left; }
+
+      .ds-tokens {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 0.7rem 1rem;
+      }
+      .ds-token {
+        display: grid; grid-template-columns: 20px minmax(0, 1fr);
+        grid-template-areas: 'chip name' 'chip role'; gap: 0 0.6rem; align-items: center;
+      }
+      .ds-token-chip {
+        grid-area: chip; width: 20px; height: 20px; border-radius: 50%;
+        box-shadow: var(--elev-dense);
+      }
+      .ds-token-name { grid-area: name; font-family: var(--mono); font-size: 11.5px; }
+      .ds-token-role { grid-area: role; font-size: 10.5px; opacity: 0.6; }
       .ds-stack { display: flex; flex-direction: column; gap: 0.6rem; }
 
       .ds-replay {
@@ -611,6 +639,95 @@ const paintSeed: string[] = [
               <span class="prism-swatch" style="background: var(--counter);"></span>
             </div>
             <p class="ds-caption">Same bands, recomputed from <code class="prism-data">--hr</code> at night.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========================== MATRIX ============================== -->
+      <section class="ds-section" aria-labelledby="ds-matrix">
+        <header>
+          <span class="ds-law">SIZES × STYLES</span>
+          <h2 id="ds-matrix">The set, laid out</h2>
+          <p>
+            Five button sizes over four styles, three chip sizes over two, and the
+            role tokens with their live values. Every one of them is derived from the
+            anchor hue, so the whole sheet rotates when you drag the slider — and
+            every one of them inverts on its own terms at night, because redshift
+            mints no new colour.
+          </p>
+        </header>
+
+        <div class="prism-card" style="box-shadow: var(--elev-dense)">
+          <p class="prism-eyebrow">Button · 5 sizes / 4 styles</p>
+          <div class="ds-matrix" style="margin-top: 1rem">
+            <span class="ds-mx-label"></span>
+            {['xs', 'sm', 'md', 'lg', 'xl'].map((n) => (
+              <span class="ds-mx-label ds-mx-head">{n}</span>
+            ))}
+            {[
+              ['primary', 'prism-btn--primary prism-edge'],
+              ['secondary', ''],
+              ['dense', 'prism-btn--dense'],
+              ['danger', 'prism-btn--dense prism-btn--danger'],
+            ].map(([label, style]) => (
+              <>
+                <span class="ds-mx-label">{label}</span>
+                {['prism-btn--xs', 'prism-btn--sm', '', 'prism-btn--lg', 'prism-btn--xl'].map((size) => (
+                  <span class="ds-mx-cell">
+                    <button class={`prism-btn ${style} ${size}`} type="button">Deploy</button>
+                  </span>
+                ))}
+              </>
+            ))}
+          </div>
+        </div>
+
+        <div class="ds-grid ds-grid--2" style="margin-top: 1rem; align-items: start">
+          <div class="prism-card" style="box-shadow: var(--elev-dense)">
+            <p class="prism-eyebrow">Badge &amp; chip · 3 sizes / 2 styles</p>
+            <div class="ds-stack" style="margin-top: 1rem; gap: 0.9rem">
+              {['prism-badge--sm', '', 'prism-badge--lg'].map((size, i) => (
+                <div class="ds-row-actions">
+                  <span class={`prism-badge prism-badge--ok ${size}`}>✓ Approved</span>
+                  <span class={`prism-badge prism-badge--no ${size}`}>✕ Rejected</span>
+                  <span class={`prism-badge prism-badge--warn ${size}`}>! Pending</span>
+                  <span class="ds-mx-label">{['sm', 'md', 'lg'][i]}</span>
+                </div>
+              ))}
+              {['prism-chip--sm', '', 'prism-chip--lg'].map((size, i) => (
+                <div class="ds-row-actions">
+                  <span class={`prism-chip prism-edge ${size}`}><i class="prism-dot"></i>anchor</span>
+                  <span class={`prism-chip prism-edge ${size}`}>OKLCH</span>
+                  <span class={`prism-chip prism-edge ${size}`}>q = 40ms</span>
+                  <span class="ds-mx-label">chip · {['sm', 'md', 'lg'][i]}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div class="prism-card" style="box-shadow: var(--elev-dense)">
+            <p class="prism-eyebrow">Role tokens · live</p>
+            <div class="ds-tokens" style="margin-top: 1rem">
+              {[
+                ['--anchor', 'brand +0°'], ['--near', 'brand −35°'],
+                ['--far', 'brand +75°'], ['--counter', 'brand −140°'],
+                ['--field', 'ground'], ['--surface', 'paper'],
+                ['--ink', 'text'], ['--dense', 'immovable'],
+                ['--success', 'fixed 152°'], ['--danger', 'fixed 27°'],
+                ['--warning', 'fixed 75°'], ['--hairline', 'boundary'],
+              ].map(([tok, role]) => (
+                <div class="ds-token">
+                  <span class="ds-token-chip" style={`background: var(${tok})`}></span>
+                  <span class="ds-token-name">{tok}</span>
+                  <span class="ds-token-role">{role}</span>
+                </div>
+              ))}
+            </div>
+            <p class="ds-caption" style="margin-top: 1rem">
+              Four brand bands at fixed angular offsets, three semantics pinned to
+              their wavelengths, and one hairline. Everything else on this page is
+              built from those.
+            </p>
           </div>
         </div>
       </section>
