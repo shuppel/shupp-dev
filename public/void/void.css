@@ -1,8 +1,7 @@
 /* ============================================================
    VOID v1.1 — design system CSS layer
-   Drop-in. Nothing to initialise. Night is the default; add
-   data-mode="day" on <html> for the light firing of the same
-   ceramic.
+   Drop-in. Nothing to initialise: the system has one mode, because
+   absolute black against near-black is the whole mechanism.
 
    Thesis: depth is carried entirely by the BOUNDARY of an object,
    never by its fill. A single hairline of absolute black defines
@@ -15,7 +14,6 @@
    Public API — spec-normative names, do not rename:
      .lit  .lit--ceramic  .lit--sunk  .lit--status  .is-*
      .icon .icon--raised  .icon--mark
-     [data-mode="day"]
    Everything else is prefixed void-* so this layer can be dropped
    into a page that already has its own .card / .row / .badge.
 
@@ -70,15 +68,10 @@
   --hue-danger: 240 138 128;
   --hue-info: 138 180 240;
 
-  /* --- the pair's two inks. The structure never changes between modes:
-     white light inside the hairline, black bleed outside it. Only how
-     hard each one has to work does, so the alphas are tokens. --- */
-  --bleed-a: 0.7;    /* outer black, default preset */
-  --bleed-a-hi: 0.85;/* outer black, ceramic and status */
-  --sink-a: 0.9;     /* inner black of a well or a press */
-  --rim-a: 0.09;     /* the light lip on the far side of a well */
-  --fill-raised: #2b3040; /* the one raised fill inside a channel */
-  --wash: 255 255 255;    /* the ink a hover or a divider is washed in */
+  /* --- the one raised fill inside a channel, and the ink a hover or a
+     divider is washed in --- */
+  --fill-raised: #2b3040;
+  --wash: 255 255 255;
   --wash-a: 0.035;
 
   /* --- radii --- */
@@ -106,68 +99,6 @@
   --t-reveal: 520ms; /* the light finding an object, once */
   --e-settle: cubic-bezier(0.22, 1, 0.36, 1);
 }
-
-/* ============================================================
-   DAY — the same ceramic, fired light
-
-   Night is the default because absolute black against a near-black
-   ground is where the illusion is strongest. It is not the only
-   arrangement it survives: invert the ladder and the structure holds
-   exactly, because the structure was never about darkness. The
-   hairline is still #000 (I1), the light is still white and still
-   inside it, the bleed is still black and still outside it. Only the
-   labour changes — on a light ground the outer shadow does most of
-   the work and the contact light has to be pushed near-white to stay
-   visible, so the alphas retune and nothing else does.
-
-   Status hues are a genuinely different set: the night hues are held
-   at low chroma to stop them blooming on OLED, and those same values
-   are invisible as a 1.5px band on near-white. Day takes darker, more
-   saturated hues at the same perceived weight.
-
-   Set data-mode="day" on <html> (or any ancestor).
-   ============================================================ */
-
-[data-mode="day"] {
-  --s0: #e6e8ee; /* page   */
-  --s1: #eef0f5; /* panel, well, nav */
-  --s2: #f7f8fb; /* component */
-  --s3: #ffffff; /* raised part within a component */
-
-  --ink: #14161d;
-  --ink-2: #4d5260;
-  --ink-3: #767c8a;
-  /* heavy display type is heavy in both directions — on paper it takes
-     a lifted black rather than a true one */
-  --ink-display: #23262f;
-
-  --hue-neutral: 0 0 0;
-  --hue-success: 26 118 72;
-  --hue-warning: 148 100 12;
-  --hue-danger: 176 52 42;
-  --hue-info: 30 88 176;
-
-  /* the outer shadow carries the object here, so it softens; the
-     contact light has almost no room above the surface, so it goes
-     nearly opaque to stay a visible line */
-  --bleed-a: 0.14;
-  --bleed-a-hi: 0.17;
-  --sink-a: 0.16;
-  --rim-a: 0.85;
-  --fill-raised: #ccd1dc;
-  --wash: 0 0 0;
-  --wash-a: 0.05;
-}
-
-/* the presets' own --lift is a white alpha, and white on near-white
-   needs far more of it to read as a line */
-[data-mode="day"] .lit { --lift: 0.85; }
-[data-mode="day"] .lit--ceramic { --lift: 1; }
-[data-mode="day"] .lit--status { --lift: 0.8; }
-[data-mode="day"] .is-idle { --lift: 0.22; }
-
-/* an incision into paper is read by its shadow, not its highlight */
-[data-mode="day"] .icon { --icon-lift: 0.85; }
 
 /* ================= BASE ================= */
 
@@ -197,7 +128,7 @@ body {
      stays absolute — a blurred bleed must never wash over it. */
   box-shadow:
     0 0 0 1.5px var(--edge),
-    calc(var(--lx) * -7px) calc(var(--ly) * -7px) var(--bleed) rgb(0 0 0 / var(--bleed-a)),
+    calc(var(--lx) * -7px) calc(var(--ly) * -7px) var(--bleed) rgba(0, 0, 0, 0.7),
     inset calc(var(--lx) * 1.5px) calc(var(--ly) * 1.5px) 0
       rgba(255, 255, 255, calc(var(--lift) * var(--lift-scale))),
     inset calc(var(--lx) * 9px) calc(var(--ly) * 9px) var(--decay) -11px
@@ -212,7 +143,7 @@ body {
   --bleed: 16px;
   box-shadow:
     0 0 0 1.5px var(--edge),
-    calc(var(--lx) * -9px) calc(var(--ly) * -9px) var(--bleed) rgb(0 0 0 / var(--bleed-a-hi)),
+    calc(var(--lx) * -9px) calc(var(--ly) * -9px) var(--bleed) rgba(0, 0, 0, 0.85),
     inset calc(var(--lx) * 1.5px) calc(var(--ly) * 1.5px) 0
       rgba(255, 255, 255, calc(var(--lift) * var(--lift-scale)));
 }
@@ -223,8 +154,8 @@ body {
   background: var(--s1);
   box-shadow:
     0 0 0 1.5px var(--edge),
-    inset calc(var(--lx) * 3px) calc(var(--ly) * 3px) 10px -4px rgb(0 0 0 / var(--sink-a)),
-    inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 0 rgb(255 255 255 / var(--rim-a));
+    inset calc(var(--lx) * 3px) calc(var(--ly) * 3px) 10px -4px rgba(0, 0, 0, 0.9),
+    inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 0 rgba(255, 255, 255, 0.09);
 }
 
 /* Scale rule: --decay and --bleed are RELATIVE and scale with the
@@ -249,7 +180,7 @@ body {
   background: var(--s2);
   box-shadow:
     0 0 0 1.5px var(--edge),
-    calc(var(--lx) * -9px) calc(var(--ly) * -9px) var(--bleed) rgb(0 0 0 / var(--bleed-a-hi)),
+    calc(var(--lx) * -9px) calc(var(--ly) * -9px) var(--bleed) rgba(0, 0, 0, 0.85),
     /* no offset, no blur — a complete, even ring. That evenness is
        what makes it unreadable as lighting. */
     inset 0 0 0 1.5px rgb(var(--glow) / calc(var(--lift) * var(--lift-scale)));
@@ -787,9 +718,9 @@ canvas.void-ring {
     0 0 0 1.5px var(--edge),
     /* the black bleed is gone: a pressed object is no longer above
        the surface, so it casts nothing */
-    inset calc(var(--lx) * 6px) calc(var(--ly) * 6px) 11px -2px rgb(0 0 0 / calc(var(--sink-a) + 0.1)),
-    inset calc(var(--lx) * 2px) calc(var(--ly) * 2px) 0 rgb(0 0 0 / var(--sink-a)),
-    inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 0 rgb(255 255 255 / calc(var(--rim-a) + 0.05));
+    inset calc(var(--lx) * 6px) calc(var(--ly) * 6px) 11px -2px rgba(0, 0, 0, 1),
+    inset calc(var(--lx) * 2px) calc(var(--ly) * 2px) 0 rgba(0, 0, 0, 0.9),
+    inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 0 rgba(255, 255, 255, 0.14);
 }
 
 /* the incision inverts with the surface it is cut into */
@@ -1025,30 +956,12 @@ canvas.void-ring {
     opacity 240ms linear;
 }
 
-/* ---- day: the few places a white lip has nothing to sit against ---- */
-
-[data-mode="day"] .void-toggle span {
-  box-shadow: 0 0 0 1.5px var(--edge), inset 0 -1.5px 0 rgb(0 0 0 / 0.12);
-}
-
-[data-mode="day"] .void-toggle:active span {
-  box-shadow: 0 0 0 1.5px var(--edge), inset 0 1.5px 0 rgb(0 0 0 / 0.16);
-}
-
-[data-mode="day"] /* five sizes over one shape. Only the box changes: the hairline is
+/* five sizes over one shape. Only the box changes: the hairline is
    1.5px in every one of them, which is the whole point. */
 .void-pill--xs { height: 26px; padding: 0 12px; border-radius: 13px; font-size: 11.5px; }
 .void-pill--sm { height: 31px; padding: 0 15px; border-radius: 16px; font-size: 12.5px; }
 .void-pill--lg { height: 44px; padding: 0 22px; border-radius: 22px; font-size: 14px; }
 .void-pill--xl { height: 52px; padding: 0 26px; border-radius: 26px; font-size: 15px; }
-
-.void-pill--ghost {
-  box-shadow: 0 0 0 1.5px var(--edge), inset 0 1.5px 0 rgb(0 0 0 / 0.06);
-}
-
-[data-mode="day"] .void-group[data-pinned] {
-  box-shadow: 0 1.5px 0 0 var(--edge), 0 8px 14px -10px rgb(0 0 0 / 0.25);
-}
 
 /* ============================================================
    10 · POINTERS

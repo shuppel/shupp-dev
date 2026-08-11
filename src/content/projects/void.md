@@ -1,6 +1,6 @@
 ---
 title: "Void"
-description: "A ceramic material model where depth is carried entirely by the boundary of an object — one absolute-black hairline with an asymmetric gradient pair, and not a single gradient in any fill. Fired in two modes."
+description: "A dark, single-mode design system where depth is carried entirely by the boundary of an object — one absolute-black hairline with an asymmetric gradient pair, and not a single gradient in any fill."
 projectDate: 2026-08-10
 completed: true
 technologies: ["Design Systems", "CSS", "Design Tokens", "WebGL", "Perceptual Design", "Astro", "Accessibility"]
@@ -11,8 +11,9 @@ customUrl: "/design/void"
 
 ## VOID
 
-VOID is a ceramic material model built on one perceptual trick, where **depth is
-carried entirely by the boundary of an object, never by its fill.** Every object
+VOID is a dark-mode ceramic: a single-mode design system built on one perceptual
+trick, where **depth is carried entirely by the boundary of an object, never by
+its fill.** Every object
 is drawn with a 1.5px hairline of absolute black; a hard, short light gradient sits
 immediately inside that hairline and a soft, long dark one immediately outside. The
 asymmetry drives lateral inhibition harder than a real edge would — the Cornsweet
@@ -54,14 +55,6 @@ Explore the live showcase at [`/design/void`](/design/void): strip the
 gradient pair away and watch the page fall flat, drag the light's resting azimuth,
 desaturate the status row to check that nothing depends on hue, hold a button,
 open a menu, and run the conformal ring through its three drive modes.
-
-The structure was never about darkness, so it is fired in two modes. Night is the
-default — absolute black against near-black is where the illusion is strongest —
-but invert the ladder and everything holds: the hairline is still #000, the light
-is still white and inside it, the bleed is still black and outside it. Only how
-hard each side has to work changes, so a mode here is a token set and nothing
-else, right down to the WebGL ring, which reads its two grounds from the tokens
-at draw time.
 
 It is the deliberate inverse of [PRISM](/design/prismatic), the light-mode-first
 prism-glass system next door. PRISM spends a colour budget; VOID has none —

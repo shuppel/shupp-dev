@@ -3,9 +3,9 @@
 // The skin itself is applied pre-paint by the inline boot script in Layout;
 // this is only the control that writes the preference and re-applies it.
 const skins = [
-  { id: 'site', label: 'shupp.dev', note: 'the site’s own dress' },
-  { id: 'prism', label: 'Prismatic', note: 'light-first, day / redshift' },
-  { id: 'void', label: 'Void', note: 'ceramic, night / day' },
+  { id: 'site', label: 'shupp.dev' },
+  { id: 'prism', label: 'Prismatic' },
+  { id: 'void', label: 'Void' },
 ];
 ---
 
@@ -41,13 +41,9 @@ const skins = [
             <path d="M5.75 12.5 L10 16.75 L18.25 7.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </span>
-        <span class="skin-label">
-          <b>{s.label}</b>
-          <small>{s.note}</small>
-        </span>
+        <span class="skin-label">{s.label}</span>
       </button>
     ))}
-    <p class="skin-panel-foot" data-skin-foot></p>
   </div>
 </div>
 
@@ -85,7 +81,7 @@ const skins = [
     left: 50%;
     transform: translateX(-50%);
     z-index: 60;
-    width: 206px;
+    width: 176px;
     padding: 0.4rem;
     border-radius: 12px;
     background: var(--surface);
@@ -95,8 +91,7 @@ const skins = [
 
   .skin-panel[hidden] { display: none; }
 
-  .skin-panel-title,
-  .skin-panel-foot {
+  .skin-panel-title {
     margin: 0.35rem 0.6rem 0.5rem;
     font-family: var(--font-secondary-header);
     font-size: 0.62rem;
@@ -105,19 +100,9 @@ const skins = [
     color: var(--text-muted);
   }
 
-  .skin-panel-foot {
-    margin: 0.5rem 0.6rem 0.3rem;
-    letter-spacing: 0.02em;
-    text-transform: none;
-    font-size: 0.68rem;
-    line-height: 1.4;
-  }
-
-  .skin-panel-foot:empty { display: none; }
-
   .skin-option {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     gap: 0.5rem;
     width: 100%;
     padding: 0.5rem 0.6rem;
@@ -140,7 +125,6 @@ const skins = [
   .skin-check {
     width: 14px;
     height: 14px;
-    margin-top: 2px;
     flex-shrink: 0;
     color: var(--primary-color);
     opacity: 0;
@@ -148,12 +132,7 @@ const skins = [
 
   .skin-option[aria-checked='true'] .skin-check { opacity: 1; }
 
-  .skin-label { display: flex; flex-direction: column; min-width: 0; }
-  .skin-label b { font-size: 0.82rem; font-weight: 600; }
-  .skin-label small { font-size: 0.68rem; color: var(--text-muted); }
-
-  .skin-label b { white-space: nowrap; }
-  .skin-label small { line-height: 1.3; }
+  .skin-label { font-size: 0.84rem; font-weight: 600; white-space: nowrap; }
 
   /* the trigger always sits in the nav footer, so the panel always opens
      upward — including in the mobile drawer, where downward would land
@@ -167,16 +146,9 @@ const skins = [
 
     const trigger = menu.querySelector('[data-skin-trigger]') as HTMLButtonElement | null;
     const panel = menu.querySelector('.skin-panel') as HTMLElement | null;
-    const foot = menu.querySelector('[data-skin-foot]') as HTMLElement | null;
     const options = Array.from(menu.querySelectorAll('[data-skin-option]')) as HTMLButtonElement[];
     const themeToggle = document.getElementById('side-nav-theme-toggle') as HTMLButtonElement | null;
     if (!trigger || !panel) return;
-
-    const NOTE: Record<string, string> = {
-      site: '',
-      prism: 'Dark mode becomes PRISM’s redshift.',
-      void: 'Dark mode fires VOID night; light fires it day.',
-    };
 
     const current = (): string => localStorage.getItem('skin') || 'site';
 
@@ -185,16 +157,9 @@ const skins = [
       options.forEach((o) => {
         o.setAttribute('aria-checked', String(o.dataset.skinOption === skin));
       });
-      if (foot) foot.textContent = NOTE[skin] || '';
-
-      /* every skin has two modes, so the one toggle always means something */
-      if (themeToggle) {
-        themeToggle.disabled = false;
-        themeToggle.removeAttribute('aria-disabled');
-        themeToggle.style.opacity = '';
-        themeToggle.style.cursor = '';
-        themeToggle.title = 'Toggle dark mode';
-      }
+      /* VOID is single-mode, so the dark toggle has nothing to say there.
+         The skin hides it rather than explaining itself. */
+      if (themeToggle) themeToggle.disabled = skin === 'void';
     }
 
     function close(focusTrigger: boolean): void {

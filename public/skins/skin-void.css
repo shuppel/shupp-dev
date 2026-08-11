@@ -18,10 +18,9 @@
    - Chrome components are nested under html[data-skin="void"],
      which reaches (0,2,1) and beats `html.dark .card`.
 
-   VOID has two firings, and the site's existing dark toggle drives
-   them: dark is night, light is day. The token remap below is
-   written entirely in VOID's own token names, so it follows the
-   mode without a second mapping.
+   VOID is single-mode. The site's dark toggle has nothing to say
+   here, so the skin hides it rather than leaving a dead control or
+   explaining itself.
 
    What this skin cannot reach: a page that hard-codes a hex value
    instead of using a role token. Those keep their own colour.
@@ -55,8 +54,8 @@ html[data-skin="void"] {
      uses for links — spends the info hue, because a link is an
      affordance rather than decoration. ---- */
   /* --color-dark is this codebase's "darkest ink", not a surface: it is
-     what the light-mode hero gradient and several labels are drawn in,
-     so it has to follow the ink and invert with the mode. */
+     what the hero gradient and several labels are drawn in, so it takes
+     the ink rather than a background value. */
   --color-dark: var(--ink);
   --color-secondary: var(--ink-2);
   --color-tertiary: var(--ink-2);
@@ -65,8 +64,7 @@ html[data-skin="void"] {
   --primary-color: rgb(var(--hue-info));
   --primary-dark: rgb(var(--hue-info) / 0.8);
 
-  /* ---- boundaries. --wash is the mode's own tint ink, so these two
-     flip from white-on-dark to black-on-light for free. ---- */
+  /* ---- boundaries ---- */
   --border-color: var(--edge);
   --border-subtle: rgb(var(--wash) / calc(var(--wash-a) + 0.025));
   --hover-tint: rgb(var(--wash) / var(--wash-a));
@@ -80,7 +78,7 @@ html[data-skin="void"] {
   --card-lift-hi: 0.26;
   --card-shadow:
     0 0 0 1.5px var(--edge),
-    calc(var(--lx) * -7px) calc(var(--ly) * -7px) 12px rgb(0 0 0 / var(--bleed-a)),
+    calc(var(--lx) * -7px) calc(var(--ly) * -7px) 12px rgba(0, 0, 0, 0.7),
     inset calc(var(--lx) * 1.5px) calc(var(--ly) * 1.5px) 0 rgb(255 255 255 / var(--card-lift)),
     inset calc(var(--lx) * 9px) calc(var(--ly) * 9px) 15px -11px rgb(255 255 255 / var(--card-lift));
 
@@ -88,11 +86,6 @@ html[data-skin="void"] {
   --font-main-header: var(--font-display);
   --font-secondary-header: var(--font-ui);
   --font-body: var(--font-ui);
-}
-
-html[data-skin="void"][data-mode="day"] {
-  --card-lift: 0.85;
-  --card-lift-hi: 1;
 }
 
 /* ============================================================
@@ -193,7 +186,7 @@ html[data-skin="void"][data-skin] {
     transform: none;
     box-shadow:
       0 0 0 1.5px var(--edge),
-      calc(var(--lx) * -7px) calc(var(--ly) * -7px) 12px rgb(0 0 0 / var(--bleed-a)),
+      calc(var(--lx) * -7px) calc(var(--ly) * -7px) 12px rgba(0, 0, 0, 0.7),
       inset calc(var(--lx) * 1.5px) calc(var(--ly) * 1.5px) 0 rgb(255 255 255 / var(--card-lift-hi)),
       inset calc(var(--lx) * 9px) calc(var(--ly) * 9px) 15px -11px rgb(255 255 255 / var(--card-lift-hi));
   }
@@ -217,7 +210,7 @@ html[data-skin="void"][data-skin] {
   & .btn-primary {
     box-shadow:
       0 0 0 1.5px var(--edge),
-      calc(var(--lx) * -9px) calc(var(--ly) * -9px) 16px rgb(0 0 0 / var(--bleed-a-hi)),
+      calc(var(--lx) * -9px) calc(var(--ly) * -9px) 16px rgba(0, 0, 0, 0.85),
       inset 0 0 0 1.5px rgb(var(--hue-info) / 0.42);
   }
 
@@ -238,9 +231,9 @@ html[data-skin="void"][data-skin] {
     transition-duration: 0s;
     box-shadow:
       0 0 0 1.5px var(--edge),
-      inset calc(var(--lx) * 6px) calc(var(--ly) * 6px) 11px -2px rgb(0 0 0 / calc(var(--sink-a) + 0.1)),
-      inset calc(var(--lx) * 2px) calc(var(--ly) * 2px) 0 rgb(0 0 0 / var(--sink-a)),
-      inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 0 rgb(255 255 255 / calc(var(--rim-a) + 0.05));
+      inset calc(var(--lx) * 6px) calc(var(--ly) * 6px) 11px -2px rgba(0, 0, 0, 1),
+      inset calc(var(--lx) * 2px) calc(var(--ly) * 2px) 0 rgba(0, 0, 0, 0.9),
+      inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 0 rgba(255, 255, 255, 0.14);
   }
 
   /* ---- side nav ---- */
@@ -265,7 +258,7 @@ html[data-skin="void"][data-skin] {
   & .side-nav-link[aria-current="page"] {
     color: var(--ink);
     background: var(--s2);
-    box-shadow: 0 0 0 1.5px var(--edge), inset 0 1.5px 0 rgb(255 255 255 / calc(var(--rim-a) + 0.05));
+    box-shadow: 0 0 0 1.5px var(--edge), inset 0 1.5px 0 rgba(255, 255, 255, 0.14);
   }
 
   & .side-nav-section-title,
@@ -287,6 +280,9 @@ html[data-skin="void"][data-skin] {
   & .skin-trigger:hover { transform: none; background: var(--s2); }
 
   & .hamburger-line { background: var(--ink-2); }
+
+  /* single-mode: no toggle */
+  & .side-theme-toggle { display: none; }
 
   /* ---- the icon set comes with the system ---- */
 
@@ -328,8 +324,8 @@ html[data-skin="void"][data-skin] {
     font-family: var(--font-ui);
     box-shadow:
       0 0 0 1.5px var(--edge),
-      inset calc(var(--lx) * 3px) calc(var(--ly) * 3px) 10px -4px rgb(0 0 0 / var(--sink-a)),
-      inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 0 rgb(255 255 255 / var(--rim-a));
+      inset calc(var(--lx) * 3px) calc(var(--ly) * 3px) 10px -4px rgba(0, 0, 0, 0.9),
+      inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 0 rgba(255, 255, 255, 0.09);
   }
 
   & input:focus-visible,
@@ -337,7 +333,7 @@ html[data-skin="void"][data-skin] {
   & select:focus-visible {
     box-shadow:
       0 0 0 1.5px var(--edge),
-      inset 0 2px 8px -3px rgb(0 0 0 / var(--sink-a)),
+      inset 0 2px 8px -3px rgba(0, 0, 0, 0.9),
       inset 0 0 0 1.5px rgb(var(--hue-info) / 0.75);
   }
 

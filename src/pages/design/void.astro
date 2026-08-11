@@ -2,12 +2,12 @@
 import VoidSprite from '../../components/VoidSprite.astro';
 
 // VOID — design-system showcase (standalone document).
-// Self-contained: own <html>, own two-mode cascade. It does NOT use the site
+// Self-contained: own <html>, own single-mode cascade. It does NOT use the site
 // Layout because VOID owns the whole viewport and its own material model.
 // Authoritative tokens: /void/void.tokens.json. Drop-in layer: /void/void.css.
 const title = 'VOID — Boundary-Depth Design System';
 const description =
-  'VOID: a ceramic material model where depth is carried entirely by the boundary of an object — one absolute-black hairline with an asymmetric gradient pair, fired in night and day. Built by Erikk Shupp.';
+  'VOID: a dark, single-mode design system where depth is carried entirely by the boundary of an object — one absolute-black hairline with an asymmetric gradient pair. Built by Erikk Shupp.';
 
 // The set. Stroke-only, 24×24, drawn once into a sprite below.
 const iconSet = [
@@ -420,17 +420,7 @@ const activity: [string, string, string][] = [
         text-align: right;
       }
 
-      /* ---- day: the showcase's own chrome, retuned ---------------------- */
       .ds-hex { font: 400 10px/1.3 var(--font-mono); opacity: 0.75; }
-
-      [data-mode='day'] .ds-chip[aria-current='true'],
-      [data-mode='day'] .ds-rail i {
-        box-shadow: 0 0 0 1.5px var(--edge), inset 0 -1.5px 0 rgb(0 0 0 / 0.1);
-      }
-
-      [data-mode='day'] .ds-bare { background: var(--s2); }
-
-      [data-mode='day'] pre.ds-code { color: var(--ink-2); }
 
       @media (max-width: 720px) {
         .ds-controls { gap: 0.4rem 0.5rem; padding: 0.4rem clamp(0.9rem, 4vw, 3rem); }
@@ -480,11 +470,6 @@ const activity: [string, string, string][] = [
         --lx <b id="ds-lx">-0.220</b> · --ly <b id="ds-ly">-0.975</b> · loop <b id="ds-loop">asleep</b>
       </p>
 
-      <button id="ds-mode" class="void-pill void-pill--ghost" type="button" aria-pressed="false">
-        <svg class="icon icon--sm" aria-hidden="true"><use href="#i-sun" /></svg>
-        <span id="ds-mode-label">Day</span>
-      </button>
-
       <button id="ds-strip" class="void-pill void-pill--ghost" type="button" aria-pressed="false">
         Strip the pair
       </button>
@@ -509,8 +494,7 @@ const activity: [string, string, string][] = [
         <h1 class="void-display">Void</h1>
         <span class="ds-aside">Depth lives at the edge of a thing, never inside it.</span>
         <p class="void-text ds-intro">
-          A ceramic material model built on one perceptual trick, fired in two
-          modes. Every object is drawn with a 1.5px hairline of absolute black; a hard, short light gradient
+          A dark, single-mode system built on one perceptual trick. Every object is drawn with a 1.5px hairline of absolute black; a hard, short light gradient
           sits immediately inside it and a soft, long dark one immediately outside.
           The asymmetry drives lateral inhibition harder than a real edge would, so a
           face that is one flat colour edge to edge reads as glazed, lifted material.
@@ -527,9 +511,9 @@ const activity: [string, string, string][] = [
           <h2 id="ds-boundary" class="void-h2">One hairline, two unequal gradients</h2>
           <p class="void-text">
             The mechanism is the Cornsweet illusion. All three discs below are filled
-            with exactly <code>--s2</code>, whichever mode you are in — sample the
-            centre of each with a colour picker and you get the same value. Only the
-            twelve pixels either side of their edge differ.
+            with exactly <code>--s2</code> — sample the centre of each with a colour
+            picker and you get the same value. Only the twelve pixels either side of
+            their edge differ.
           </p>
         </header>
 
@@ -592,7 +576,7 @@ const activity: [string, string, string][] = [
             <div class="ds-surface lit lit--ceramic" style={`background: var(${s.name})`}>
               <span class="nm">{s.name}</span>
               <span class="rl">{s.role}</span>
-              <span class="rl ds-hex">{s.night} · {s.day}</span>
+              <span class="rl ds-hex" data-token={s.name}></span>
             </div>
           ))}
         </div>
@@ -1429,7 +1413,7 @@ light.x  += light.vx;`}</pre>
 
     <footer class="ds-footer">
       <p>
-        VOID v1.1 · night + day · tokens:
+        VOID v1.1 · single mode · tokens:
         <a href="/void/void.tokens.json">void.tokens.json</a> · layer:
         <a href="/void/void.css">void.css</a> · sibling system:
         <a href="/design/prismatic">PRISM</a>
@@ -1778,29 +1762,14 @@ light.x  += light.vx;`}</pre>
           Void.rest(deg);
         });
 
-        /* Night / day. The whole system is two token sets over one structure,
-           so firing it light is an attribute, not a second stylesheet. */
-        /* any [data-token] prints the live value of that custom property, so
-           the page documents whichever mode it is currently in */
+        /* Any [data-token] prints the live value of that custom property, so
+           the sheet documents the running stylesheet rather than a copy of it. */
         function paintTokens() {
           var cs = getComputedStyle(document.documentElement);
           document.querySelectorAll('[data-token]').forEach(function (n) {
             n.textContent = cs.getPropertyValue(n.dataset.token).trim();
           });
         }
-
-        var modeBtn = document.getElementById('ds-mode');
-        var modeLabel = document.getElementById('ds-mode-label');
-        var modeIcon = modeBtn.querySelector('use');
-        modeBtn.addEventListener('click', function () {
-          var day = document.documentElement.getAttribute('data-mode') !== 'day';
-          document.documentElement.setAttribute('data-mode', day ? 'day' : 'night');
-          modeBtn.setAttribute('aria-pressed', String(day));
-          modeLabel.textContent = day ? 'Night' : 'Day';
-          modeIcon.setAttribute('href', day ? '#i-moon' : '#i-sun');
-          paintTokens();
-          drawRing();
-        });
 
         /* Strip the pair — leaves the hairline and the flat fill alone. */
         var strip = document.getElementById('ds-strip');

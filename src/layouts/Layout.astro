@@ -70,10 +70,9 @@ const imageURL = new URL(image, Astro.site);
           if (!SKINS[skin]) skin = 'site';
           html.setAttribute('data-skin', skin);
 
-          /* Both systems have two modes of their own, and the site's existing
-             dark toggle drives whichever is active — one control, not three.
-             PRISM calls its dark mode redshift; VOID calls its light one day. */
-          if (skin === 'prism' || skin === 'void') {
+          /* PRISM has two modes of its own and the site's dark toggle drives
+             them. VOID has one, by design. */
+          if (skin === 'prism') {
             html.setAttribute('data-mode', html.classList.contains('dark') ? 'night' : 'day');
           } else {
             html.removeAttribute('data-mode');
@@ -113,8 +112,7 @@ const imageURL = new URL(image, Astro.site);
 
         /* the dark toggle and the skin have to stay in agreement */
         window.addEventListener('themechange', () => {
-          const skin = html.getAttribute('data-skin');
-          if (skin === 'prism' || skin === 'void') {
+          if (html.getAttribute('data-skin') === 'prism') {
             html.setAttribute('data-mode', html.classList.contains('dark') ? 'night' : 'day');
           }
         });
