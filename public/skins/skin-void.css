@@ -54,7 +54,10 @@ html[data-skin="void"] {
      accents collapse to ink, and only --primary-color — which the site
      uses for links — spends the info hue, because a link is an
      affordance rather than decoration. ---- */
-  --color-dark: var(--s0);
+  /* --color-dark is this codebase's "darkest ink", not a surface: it is
+     what the light-mode hero gradient and several labels are drawn in,
+     so it has to follow the ink and invert with the mode. */
+  --color-dark: var(--ink);
   --color-secondary: var(--ink-2);
   --color-tertiary: var(--ink-2);
   --color-accent: var(--ink-display);
@@ -62,24 +65,34 @@ html[data-skin="void"] {
   --primary-color: rgb(var(--hue-info));
   --primary-dark: rgb(var(--hue-info) / 0.8);
 
-  /* ---- boundaries ---- */
+  /* ---- boundaries. --wash is the mode's own tint ink, so these two
+     flip from white-on-dark to black-on-light for free. ---- */
   --border-color: var(--edge);
-  --border-subtle: rgba(255, 255, 255, 0.06);
-  --hover-tint: rgba(255, 255, 255, 0.035);
+  --border-subtle: rgb(var(--wash) / calc(var(--wash-a) + 0.025));
+  --hover-tint: rgb(var(--wash) / var(--wash-a));
   --focus-ring: 0 0 0 1.5px var(--edge), 0 0 0 3px rgb(var(--hue-info) / 0.75);
 
   /* ---- the whole point: anything already asking for --card-shadow
-     gets the depth primitive, hairline and all ---- */
+     gets the depth primitive, hairline and all. --card-lift mirrors
+     .lit's own --lift, which the presets set on themselves and a
+     variable cannot read. ---- */
+  --card-lift: 0.19;
+  --card-lift-hi: 0.26;
   --card-shadow:
     0 0 0 1.5px var(--edge),
-    calc(var(--lx) * -7px) calc(var(--ly) * -7px) 12px rgba(0, 0, 0, 0.7),
-    inset calc(var(--lx) * 1.5px) calc(var(--ly) * 1.5px) 0 rgba(255, 255, 255, 0.19),
-    inset calc(var(--lx) * 9px) calc(var(--ly) * 9px) 15px -11px rgba(255, 255, 255, 0.19);
+    calc(var(--lx) * -7px) calc(var(--ly) * -7px) 12px rgb(0 0 0 / var(--bleed-a)),
+    inset calc(var(--lx) * 1.5px) calc(var(--ly) * 1.5px) 0 rgb(255 255 255 / var(--card-lift)),
+    inset calc(var(--lx) * 9px) calc(var(--ly) * 9px) 15px -11px rgb(255 255 255 / var(--card-lift));
 
   /* ---- type roles ---- */
   --font-main-header: var(--font-display);
   --font-secondary-header: var(--font-ui);
   --font-body: var(--font-ui);
+}
+
+html[data-skin="void"][data-mode="day"] {
+  --card-lift: 0.85;
+  --card-lift-hi: 1;
 }
 
 /* ============================================================
@@ -180,9 +193,9 @@ html[data-skin="void"][data-skin] {
     transform: none;
     box-shadow:
       0 0 0 1.5px var(--edge),
-      calc(var(--lx) * -7px) calc(var(--ly) * -7px) 12px rgba(0, 0, 0, 0.7),
-      inset calc(var(--lx) * 1.5px) calc(var(--ly) * 1.5px) 0 rgba(255, 255, 255, 0.26),
-      inset calc(var(--lx) * 9px) calc(var(--ly) * 9px) 15px -11px rgba(255, 255, 255, 0.26);
+      calc(var(--lx) * -7px) calc(var(--ly) * -7px) 12px rgb(0 0 0 / var(--bleed-a)),
+      inset calc(var(--lx) * 1.5px) calc(var(--ly) * 1.5px) 0 rgb(255 255 255 / var(--card-lift-hi)),
+      inset calc(var(--lx) * 9px) calc(var(--ly) * 9px) 15px -11px rgb(255 255 255 / var(--card-lift-hi));
   }
 
   /* ---- buttons: the press inverts the pair, nothing translates ---- */
@@ -204,7 +217,7 @@ html[data-skin="void"][data-skin] {
   & .btn-primary {
     box-shadow:
       0 0 0 1.5px var(--edge),
-      calc(var(--lx) * -9px) calc(var(--ly) * -9px) 16px rgba(0, 0, 0, 0.85),
+      calc(var(--lx) * -9px) calc(var(--ly) * -9px) 16px rgb(0 0 0 / var(--bleed-a-hi)),
       inset 0 0 0 1.5px rgb(var(--hue-info) / 0.42);
   }
 
@@ -225,9 +238,9 @@ html[data-skin="void"][data-skin] {
     transition-duration: 0s;
     box-shadow:
       0 0 0 1.5px var(--edge),
-      inset calc(var(--lx) * 6px) calc(var(--ly) * 6px) 11px -2px rgba(0, 0, 0, 1),
-      inset calc(var(--lx) * 2px) calc(var(--ly) * 2px) 0 rgba(0, 0, 0, 0.9),
-      inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 0 rgba(255, 255, 255, 0.14);
+      inset calc(var(--lx) * 6px) calc(var(--ly) * 6px) 11px -2px rgb(0 0 0 / calc(var(--sink-a) + 0.1)),
+      inset calc(var(--lx) * 2px) calc(var(--ly) * 2px) 0 rgb(0 0 0 / var(--sink-a)),
+      inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 0 rgb(255 255 255 / calc(var(--rim-a) + 0.05));
   }
 
   /* ---- side nav ---- */
@@ -252,7 +265,7 @@ html[data-skin="void"][data-skin] {
   & .side-nav-link[aria-current="page"] {
     color: var(--ink);
     background: var(--s2);
-    box-shadow: 0 0 0 1.5px var(--edge), inset 0 1.5px 0 rgba(255, 255, 255, 0.14);
+    box-shadow: 0 0 0 1.5px var(--edge), inset 0 1.5px 0 rgb(255 255 255 / calc(var(--rim-a) + 0.05));
   }
 
   & .side-nav-section-title,
@@ -267,7 +280,7 @@ html[data-skin="void"][data-skin] {
     background: var(--s2);
     color: var(--ink-2);
     border: 0;
-    box-shadow: 0 0 0 1.5px var(--edge), inset 0 1.5px 0 rgba(255, 255, 255, 0.26);
+    box-shadow: 0 0 0 1.5px var(--edge), inset 0 1.5px 0 rgb(255 255 255 / var(--card-lift-hi));
   }
 
   & .side-theme-toggle:hover,
@@ -277,7 +290,9 @@ html[data-skin="void"][data-skin] {
 
   /* ---- the icon set comes with the system ---- */
 
-  & .side-nav-icon > :not(.void-swap) { display: none; }
+  /* the Phosphor wrapper carries an inline display, which no selector can
+     outrank — this is what !important is actually for */
+  & .side-nav-icon > :not(.void-swap) { display: none !important; }
   & .void-swap { display: block; width: 20px; height: 20px; }
 
   & .skin-panel {
@@ -299,7 +314,7 @@ html[data-skin="void"][data-skin] {
   & .footer-section h3 { color: var(--ink); font-family: var(--font-ui); }
   & .footer-section a { color: var(--ink-2); }
   & .footer-section a:hover { color: var(--ink); }
-  & .footer-bottom { color: var(--ink-3); border-top: 1px solid rgba(255, 255, 255, 0.06); }
+  & .footer-bottom { color: var(--ink-3); border-top: 1px solid var(--border-subtle); }
 
   /* ---- inputs ---- */
 
@@ -313,8 +328,8 @@ html[data-skin="void"][data-skin] {
     font-family: var(--font-ui);
     box-shadow:
       0 0 0 1.5px var(--edge),
-      inset calc(var(--lx) * 3px) calc(var(--ly) * 3px) 10px -4px rgba(0, 0, 0, 0.9),
-      inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 0 rgba(255, 255, 255, 0.09);
+      inset calc(var(--lx) * 3px) calc(var(--ly) * 3px) 10px -4px rgb(0 0 0 / var(--sink-a)),
+      inset calc(var(--lx) * -1.5px) calc(var(--ly) * -1.5px) 0 rgb(255 255 255 / var(--rim-a));
   }
 
   & input:focus-visible,
@@ -322,7 +337,7 @@ html[data-skin="void"][data-skin] {
   & select:focus-visible {
     box-shadow:
       0 0 0 1.5px var(--edge),
-      inset 0 2px 8px -3px rgba(0, 0, 0, 0.9),
+      inset 0 2px 8px -3px rgb(0 0 0 / var(--sink-a)),
       inset 0 0 0 1.5px rgb(var(--hue-info) / 0.75);
   }
 
@@ -338,7 +353,7 @@ html[data-skin="void"][data-skin] {
     border: 0;
     border-radius: 13px;
     font-family: var(--font-ui);
-    box-shadow: 0 0 0 1.5px var(--edge), inset 0 1.5px 0 rgba(255, 255, 255, 0.19);
+    box-shadow: 0 0 0 1.5px var(--edge), inset 0 1.5px 0 rgb(255 255 255 / var(--card-lift));
   }
 
   /* ---- photographs carry a colour budget this system does not have ---- */

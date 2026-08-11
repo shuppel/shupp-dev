@@ -1,12 +1,13 @@
 {
   "$schema": "https://design-tokens.org/schema.json",
-  "$description": "VOID design system tokens. Dark-only, single-mode. Depth is carried entirely by the boundary of an object, never by its fill: one 1.5px absolute-black hairline per silhouette, with an asymmetric gradient pair straddling it (hard/short inside, soft/long outside). The perceptual mechanism is the Cornsweet illusion — two objects with the same flat fill read as different materials depending only on what happens in the 12px either side of their edge.",
+  "$description": "VOID design system tokens. Two modes over one structure: night by default, day via data-mode=\"day\". Depth is carried entirely by the boundary of an object, never by its fill: one 1.5px absolute-black hairline per silhouette, with an asymmetric gradient pair straddling it (hard/short inside, soft/long outside). The perceptual mechanism is the Cornsweet illusion — two objects with the same flat fill read as different materials depending only on what happens in the 12px either side of their edge.",
   "meta": {
     "name": "VOID",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "colorSpace": "srgb",
     "modes": [
-      "single"
+      "night",
+      "day"
     ],
     "domain": "Monitoring, infrastructure, finance, instrumentation. A poor fit for content, commerce and marketing surfaces, which need image treatments and a color budget this system deliberately does not have."
   },
@@ -30,60 +31,68 @@
     }
   },
   "surface": {
-    "$description": "Four values, lightest object on darkest page. Each step is roughly +6 per channel. Do not add intermediate steps; four surfaces is the whole ladder. If a design appears to need a fifth, it needs a different depth preset instead.",
+    "$description": "Four values, lightest object on darkest page. Each step is roughly +6 per channel. Do not add intermediate steps; four surfaces is the whole ladder. If a design appears to need a fifth, it needs a different depth preset instead. The day firing inverts the ladder and keeps every relationship: the page is still the darkest value and the component still the lightest.",
     "s0": {
       "$type": "color",
-      "$value": "#101118",
       "prop": "--s0",
-      "role": "page"
+      "role": "page",
+      "day": "#e6e8ee",
+      "night": "#101118"
     },
     "s1": {
       "$type": "color",
-      "$value": "#16181f",
       "prop": "--s1",
-      "role": "panel, well, nav"
+      "role": "panel, well, nav",
+      "day": "#eef0f5",
+      "night": "#16181f"
     },
     "s2": {
       "$type": "color",
-      "$value": "#1c1e26",
       "prop": "--s2",
-      "role": "component"
+      "role": "component",
+      "day": "#f7f8fb",
+      "night": "#1c1e26"
     },
     "s3": {
       "$type": "color",
-      "$value": "#23262f",
       "prop": "--s3",
-      "role": "raised part within a component (toggle thumb)"
+      "role": "raised part within a component (toggle thumb)",
+      "day": "#ffffff",
+      "night": "#23262f"
     }
   },
   "text": {
     "ink": {
       "$type": "color",
-      "$value": "#e7e8ee",
       "prop": "--ink",
       "role": "primary",
-      "contrastOnS2": "~13:1"
+      "contrastOnS2": "~13:1",
+      "day": "#14161d",
+      "night": "#e7e8ee"
     },
     "ink2": {
       "$type": "color",
-      "$value": "#9ca0ad",
       "prop": "--ink-2",
-      "role": "secondary"
+      "role": "secondary",
+      "day": "#4d5260",
+      "night": "#9ca0ad"
     },
     "ink3": {
       "$type": "color",
-      "$value": "#6f7381",
       "prop": "--ink-3",
       "role": "tertiary",
       "contrastOnS2": "~3.6:1",
-      "$description": "Acceptable for captions and labels, NOT for body copy."
+      "$description": "Acceptable for captions and labels, NOT for body copy.",
+      "day": "#767c8a",
+      "night": "#6f7381"
     },
     "inkDisplay": {
       "$type": "color",
-      "$value": "#d6d9e2",
       "prop": "--ink-display",
       "role": "display",
-      "$description": "Heavy display type blooms on near-black, so it gets its own, dimmer ink."
+      "$description": "Heavy display type blooms on near-black, so it gets its own, dimmer ink.",
+      "day": "#23262f",
+      "night": "#d6d9e2"
     }
   },
   "light": {
@@ -167,32 +176,37 @@
     "hue": {
       "neutral": {
         "$type": "color",
-        "$value": "255 255 255",
-        "prop": "--hue-neutral"
+        "prop": "--hue-neutral",
+        "day": "0 0 0",
+        "night": "255 255 255"
       },
       "success": {
         "$type": "color",
-        "$value": "122 214 160",
         "prop": "--hue-success",
-        "label": "healthy"
+        "label": "healthy",
+        "day": "26 118 72",
+        "night": "122 214 160"
       },
       "warning": {
         "$type": "color",
-        "$value": "236 194 106",
         "prop": "--hue-warning",
-        "label": "degraded"
+        "label": "degraded",
+        "day": "148 100 12",
+        "night": "236 194 106"
       },
       "danger": {
         "$type": "color",
-        "$value": "240 138 128",
         "prop": "--hue-danger",
-        "label": "failed"
+        "label": "failed",
+        "day": "176 52 42",
+        "night": "240 138 128"
       },
       "info": {
         "$type": "color",
-        "$value": "138 180 240",
         "prop": "--hue-info",
-        "label": "running"
+        "label": "running",
+        "day": "30 88 176",
+        "night": "138 180 240"
       }
     },
     "idle": {
@@ -273,7 +287,8 @@
       "sm": 16,
       "default": 20,
       "lg": 24,
-      "xl": 40
+      "xl": 40,
+      "count": 32
     },
     "rules": [
       "Icons never take hue. Status is the ring. An icon may sit inside a tinted chip; it never becomes the tint.",
@@ -295,7 +310,8 @@
     "button": {
       "base": ".lit",
       "geometry": "37px tall, 19px radius, 0 18px padding",
-      "press": "inverts the pair — no translate, no scale, so a press can never cause layout shift"
+      "press": "inverts the pair — no translate, no scale, so a press can never cause layout shift",
+      "sizes": "xs 26 / sm 31 / md 37 / lg 44 / xl 52. Only the box and the type scale; the hairline is 1.5px in every one."
     },
     "field": {
       "base": ".lit--sunk",
@@ -315,7 +331,8 @@
     "badge": {
       "base": ".lit--status",
       "geometry": "25px tall, 13px radius",
-      "notes": "Always paired with a 7px dot and a word."
+      "notes": "Always paired with a 7px dot and a word.",
+      "sizes": "sm 21 / md 25 / lg 30."
     },
     "progress": {
       "base": "track .lit--sunk, fill raised",
@@ -549,5 +566,29 @@
     "A menu or fold that is opening has a correct 1.5px hairline around its real shape at every intermediate frame.",
     "At 375px width, all interactive targets are ≥ 44px and the nav scrolls horizontally with the active chip centred.",
     "Under prefers-reduced-motion, nothing moves and the design still reads correctly."
-  ]
+  ],
+  "mode": {
+    "$description": "A mode in this system is a token set and nothing else. The structure never changes: the hairline is #000 in both, the light is white and inside it in both, the bleed is black and outside it in both. What changes is the ladder's direction and how hard each side of the pair has to work.",
+    "night": {
+      "surfaces": "#101118 → #23262f",
+      "note": "the default, and where the illusion is strongest — absolute black against near-black"
+    },
+    "day": {
+      "surfaces": "#e6e8ee → #ffffff",
+      "selector": "[data-mode=\"day\"]",
+      "note": "the outer shadow carries the object and the contact light goes near-opaque to stay a visible line"
+    },
+    "alphas": {
+      "$description": "the two inks' workloads, retuned per mode",
+      "props": [
+        "--bleed-a",
+        "--bleed-a-hi",
+        "--sink-a",
+        "--rim-a",
+        "--wash",
+        "--wash-a"
+      ]
+    },
+    "hues": "a genuinely different set per mode: night hues are held at low chroma to stop them blooming on OLED, and those same values are invisible as a 1.5px band on near-white."
+  }
 }
