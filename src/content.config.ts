@@ -255,6 +255,25 @@ const pressCollection = defineCollection({
   }),
 });
 
+// Define a schema for social posts (X, Bluesky, TikTok, ...)
+// Populated by scripts/sync-social-rss.ts from per-platform RSS feeds,
+// but entries can also be hand-authored / hand-edited like any other collection.
+const socialCollection = defineCollection({
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/social' }),
+  schema: z.object({
+    platform: z.enum(['x', 'bluesky', 'tiktok', 'instagram', 'youtube']),
+    author: z.string(),                          // Handle, e.g. "@KimJungUzi" or "@thoughtfulappco"
+    text: z.string(),                            // Post text / caption (plain text)
+    pubDate: z.date(),
+    url: z.string().url(),                       // Permalink to the post
+    image: z.string().optional(),                // Thumbnail / media preview
+    outlet: z.string().optional(),               // Friendly source label, e.g. "Thoughtful App Co."
+    tags: z.array(z.string()).optional(),
+    featured: z.boolean().default(false),
+    visible: z.boolean().default(true),
+  }),
+});
+
 // ARCHIVED: Tools collection - moved to _archive
 // const toolsCollection = defineCollection({
 //   loader: glob({ pattern: '**/[^_]*.md', base: './src/content/tools' }),
@@ -324,4 +343,5 @@ export const collections = {
   // 'tools': toolsCollection, // ARCHIVED
   'galaxy': galaxyCollection,
   'press': pressCollection,
+  'social': socialCollection,
 };

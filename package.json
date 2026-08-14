@@ -4,13 +4,14 @@
   "version": "0.0.5",
   "scripts": {
     "dev": "astro dev",
-    "build": "npm run sync:podcast && astro build",
+    "build": "npm run sync:podcast && npm run sync:social && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "lint": "eslint . --ext .ts,.tsx,.astro",
     "lint:fix": "eslint . --ext .ts,.tsx,.astro --fix",
     "typecheck": "astro check && tsc --noEmit",
-    "sync:podcast": "node --import tsx scripts/sync-spotify-rss.ts"
+    "sync:podcast": "node --import tsx scripts/sync-spotify-rss.ts",
+    "sync:social": "node --import tsx scripts/sync-social-rss.ts"
   },
   "dependencies": {
     "@astrojs/react": "^5.0.5",
