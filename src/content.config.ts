@@ -217,6 +217,61 @@ const thoughtfulAppsCollection = defineCollection({
   }),
 });
 
+// Define a schema for LearnOSS courses (open-source learning compilations)
+// Routing: /learnoss/{entry id} — file name follows csc{###}-{school} (e.g. csc111-stanford.md)
+const learnossCollection = defineCollection({
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/learnoss' }),
+  schema: z.object({
+    courseCode: z.string(),                  // "CS 111"
+    school: z.string(),                      // "Stanford"
+    schoolFull: z.string(),                  // "Stanford University"
+    title: z.string(),                       // "Operating Systems Principles"
+    description: z.string(),
+    term: z.string().optional(),             // Term the source notes were taken ("Spring 2021")
+    discipline: z.string(),                  // "Computer Science"
+    status: z.enum(['live', 'in-progress', 'planned']).default('live'),
+    heroIcon: z.string().default('Cpu'),     // Phosphor icon name for the course card
+    // Attribution for the primary open notes source — always displayed
+    source: z.object({
+      author: z.string(),
+      authorUrl: z.string().url().optional(),
+      repoUrl: z.string().url(),
+      siteUrl: z.string().url().optional(),  // Preferred rendered-notes site, if any
+      license: z.string().optional(),        // e.g. "All rights reserved — linked, not copied"
+    }),
+    // Book references, free-first (LearnOSS is about free learning)
+    books: z.array(z.object({
+      title: z.string(),
+      authors: z.string(),
+      url: z.string().url().optional(),
+      free: z.boolean().default(false),
+      note: z.string().optional(),
+    })).default([]),
+    // Linked data: the wider web of open resources around the course
+    links: z.array(z.object({
+      title: z.string(),
+      url: z.string().url(),
+      type: z.enum(['course', 'notes', 'video', 'paper', 'reference', 'tool']).default('reference'),
+      note: z.string().optional(),
+    })).default([]),
+    // Study units compiled from the source lectures
+    units: z.array(z.object({
+      title: z.string(),
+      icon: z.string().optional(),           // Phosphor icon name
+      summary: z.string(),
+      diagram: z.string().optional(),        // Registered diagram name rendered after the unit
+      lectures: z.array(z.object({
+        title: z.string(),
+        date: z.string().optional(),
+        sourceUrl: z.string().url().optional(), // Deep link to the original note
+        keyIdeas: z.array(z.string()).default([]),
+      })),
+    })).default([]),
+    lastUpdated: z.date(),
+    visible: z.boolean().default(true),
+  }),
+});
+
 // Define a schema for press / appearances / external publications
 const pressCollection = defineCollection({
   loader: glob({ pattern: '**/[^_]*.md', base: './src/content/press' }),
@@ -324,4 +379,5 @@ export const collections = {
   // 'tools': toolsCollection, // ARCHIVED
   'galaxy': galaxyCollection,
   'press': pressCollection,
+  'learnoss': learnossCollection,
 };

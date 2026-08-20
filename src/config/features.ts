@@ -4,6 +4,14 @@ export const features = {
   // When false, mockup sections are completely hidden
   // Can be overridden by ENABLE_TLDRAW environment variable
   enableTLDraw: import.meta.env.ENABLE_TLDRAW === 'true' || false,
+
+  /**
+   * LearnOSS — open-source learning compilations at /learnoss.
+   * When false: course pages aren't generated, /learnoss redirects home,
+   * and the nav item is hidden. Override with ENABLE_LEARNOSS=false.
+   * @since 2026-07-30 — flag is temporary; remove once the feature is settled
+   */
+  enableLearnOSS: import.meta.env.ENABLE_LEARNOSS !== 'false',
   
   // Enable fullscreen mode for calculators on larger viewports
   // When false, fullscreen button is hidden on mobile/tablet

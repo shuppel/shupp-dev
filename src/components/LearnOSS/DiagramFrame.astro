@@ -1,0 +1,56 @@
+---
+export interface Props {
+  title: string;
+  caption?: string;
+}
+
+const { title, caption } = Astro.props;
+---
+
+<figure class="learnoss-diagram">
+  <figcaption class="diagram-title">{title}</figcaption>
+  <div class="diagram-canvas">
+    <slot />
+  </div>
+  {caption !== undefined && <p class="diagram-caption">{caption}</p>}
+</figure>
+
+<style>
+  .learnoss-diagram {
+    margin: 2rem 0 0;
+    padding: 1.5rem;
+    background: var(--surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+  }
+
+  .diagram-title {
+    font-family: var(--font-secondary-header);
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    margin-bottom: 1rem;
+  }
+
+  .diagram-canvas {
+    overflow-x: auto;
+  }
+
+  .diagram-canvas :global(svg) {
+    display: block;
+    width: 100%;
+    height: auto;
+    min-width: 540px;
+    font-family: var(--font-body);
+  }
+
+  .diagram-caption {
+    margin: 1rem 0 0;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+</style>
