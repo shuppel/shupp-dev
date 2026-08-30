@@ -13,16 +13,16 @@
     "sync:podcast": "node --import tsx scripts/sync-spotify-rss.ts"
   },
   "dependencies": {
-    "@astrojs/react": "^5.0.5",
-    "@astrojs/rss": "^4.0.18",
-    "@astrojs/sitemap": "^3.7.2",
+    "@astrojs/react": "^6.0.2",
+    "@astrojs/rss": "^4.0.19",
+    "@astrojs/sitemap": "^3.7.3",
     "@hookform/resolvers": "^5.2.1",
     "@lyket/react": "^2.1.0",
     "@nanostores/react": "^1.0.0",
     "@phosphor-icons/react": "^2.1.10",
     "@types/three": "^0.180.0",
     "aceternity": "^1.0.1",
-    "astro": "^6.3.5",
+    "astro": "^7.1.6",
     "chart.js": "^4.5.0",
     "decimal.js": "^10.6.0",
     "nanostores": "^1.0.1",
@@ -36,7 +36,7 @@
     "zod": "^3.25.76"
   },
   "devDependencies": {
-    "@astrojs/check": "^0.9.9",
+    "@astrojs/check": "^0.9.10",
     "@eslint/js": "^9.33.0",
     "@types/eslint": "^9.6.1",
     "@types/react": "^19.1.12",
