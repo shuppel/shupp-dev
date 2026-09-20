@@ -1,6 +1,6 @@
 ---
 title: "SaaS Game UI"
-description: "A design language for useful software, borrowed from simple 2D games. Tactile controls, playable workflows, and three visual treatments."
+description: "A black and white design language for SaaS. Inter typography, direct interactions, native controls, and a playable workflow canvas."
 projectDate: 2026-09-20
 completed: false
 technologies:
@@ -19,19 +19,21 @@ customUrl: "/design/saas-game-ui"
 
 ## SaaS Game UI
 
-A reusable visual and interaction language for SaaS products, drawing on the
-clarity, tactility, and feedback of simple 2D games.
+A monochrome visual and interaction language for SaaS, built around the directness
+of simple 2D games. Select an object, give it an action, and see what changed.
 
-The study explores three materials—**Toybox**, **Cartridge**, and **Tactics**—over
-the same components and behavior. Flat fills, explicit edges, shallow depth,
-selection boundaries, and short functional movements make work feel tangible.
+The [interactive study](/design/saas-game-ui) uses **Inter throughout**, black and
+white surfaces, thin boundaries, and explicit object states. Hierarchy comes from
+type size, weight, spacing, and inversion. A single control inverts the canvas.
 
-The [interactive study](/design/saas-game-ui) includes a component sheet, seven
-object states, day and night modes, and an automation canvas with a deterministic
-sample run. Place tools with a click or drag, inspect each action, and try an
-interruption and recovery. The demo uses predefined content and makes no
-inference calls or external changes.
+The study includes eight native component examples, seven object states,
+typography specimens, and a working automation canvas. Place tools with a click,
+keyboard, or drag; inspect their roles; and try a bounded sample run with
+interruption and recovery. All sample content is predefined and local.
 
-The foundational primitives are available as a
-[stylesheet](/saas-game-ui/saas-game-ui.css). Native buttons, forms, tables,
-progress, and dialogs retain their familiar semantics.
+[Fontjoy](https://fontjoy.com/) informed the contrast between display and reading
+roles. The final typography uses one family, Inter, with distinct roles rather
+than multiple typefaces. The font is self-hosted under the SIL Open Font License.
+
+The [stylesheet](/saas-game-ui/saas-game-ui.css) contains the reusable primitives.
+This study has an independent visual direction.

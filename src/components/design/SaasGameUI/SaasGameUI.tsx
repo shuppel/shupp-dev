@@ -1,23 +1,20 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   ArrowDown,
-  ArrowLeft,
   ArrowRight,
   Check,
   DotsThree,
   FileText,
   GearSix,
-  Moon,
+  CircleHalf,
   Play,
   Plus,
   SquaresFour,
-  Sun,
   Trash,
   Warning,
   X,
 } from "@phosphor-icons/react";
 
-type Treatment = "toybox" | "cartridge" | "tactics";
 type Step = "discover" | "compose" | "review";
 type RunState = "idle" | "working" | "complete" | "error";
 
@@ -56,26 +53,7 @@ const steps: Record<
   },
 };
 const order: Step[] = ["discover", "compose", "review"];
-const treatments: { id: Treatment; title: string; detail: string }[] = [
-  {
-    id: "toybox",
-    title: "Toybox",
-    detail: "Warm surfaces. Soft corners. Objects with a little weight.",
-  },
-  {
-    id: "cartridge",
-    title: "Cartridge",
-    detail: "Square edges. A compact palette. Deliberate, stepped movement.",
-  },
-  {
-    id: "tactics",
-    title: "Tactics",
-    detail: "Precise outlines. Quiet depth. Clear selection and commands.",
-  },
-];
-
 export default function SaasGameUI(): React.JSX.Element {
-  const [treatment, setTreatment] = useState<Treatment>("toybox");
   const [night, setNight] = useState(false);
   const [slots, setSlots] = useState<(Step | null)[]>([
     "discover",
@@ -98,13 +76,7 @@ export default function SaasGameUI(): React.JSX.Element {
   const running = runState === "working";
   const selectedStep = slots[selected];
   const current = selectedStep !== null ? steps[selectedStep] : null;
-  const activeTreatment =
-    treatments.find((item) => item.id === treatment) ?? treatments[0];
   const displayName = name.trim() || "Untitled routine";
-
-  useEffect(() => {
-    setNight(window.matchMedia("(prefers-color-scheme: dark)").matches);
-  }, []);
 
   // A bounded, deterministic sample sequence. No inference or network requests.
   useEffect(() => {
@@ -182,117 +154,73 @@ export default function SaasGameUI(): React.JSX.Element {
   }
 
   return (
-    <div
-      className="sg sg-study"
-      data-treatment={treatment}
-      data-mode={night ? "night" : "day"}
-    >
+    <div className="sg sg-study" data-mode={night ? "night" : "day"}>
       <a className="sg-skip" href="#main">
         Skip to design study
       </a>
       <header className="sg-header">
         <a href="/" className="sg-wordmark">
-          shupp<span>.dev</span>
+          shupp.dev<span> / Design</span>
         </a>
-        <a href="/portfolio" className="sg-back">
-          <ArrowLeft aria-hidden="true" size={15} /> Design studies
-        </a>
-        <span className="sg-edition">EXPLORATION / 01</span>
+        <nav aria-label="Study sections">
+          <a href="#playground">Playground</a>
+          <a href="#components">Components</a>
+          <a href="#principles">Principles</a>
+        </nav>
         <button
-          className="sg-icon-button"
+          className="sg-invert"
           onClick={() => setNight(!night)}
-          aria-label={night ? "Use day colors" : "Use night colors"}
+          aria-pressed={night}
+          aria-label={night ? "Use white canvas" : "Use black canvas"}
         >
-          {night ? (
-            <Sun aria-hidden="true" size={20} />
-          ) : (
-            <Moon aria-hidden="true" size={20} />
-          )}
+          <CircleHalf size={18} aria-hidden="true" />
+          <span>Invert</span>
         </button>
       </header>
-
       <main id="main" className="sg-main">
         <section className="sg-hero" aria-labelledby="study-title">
-          <div className="sg-hero-copy">
+          <div className="sg-hero-heading">
             <div className="sg-eyebrow">
-              <span className="sg-dot" /> SAAS GAME UI / A DESIGN LANGUAGE
+              SAAS GAME UI <span>DESIGN EXPLORATION / 02</span>
             </div>
             <h1 id="study-title">
-              Serious tools.
+              Software.
               <br />
-              <span>A playful surface.</span>
+              With a sense
+              <br />
+              of <span>play.</span>
             </h1>
-            <p className="sg-lead">
-              Borrow the clarity, tactility, and small satisfactions of 2D
-              games. Give everyday software something you can pick up, place,
-              and put to work.
+          </div>
+          <div className="sg-hero-aside">
+            <div className="sg-hero-symbol" aria-hidden="true">
+              <span />
+              <span />
+              <span />
+              <span />
+            </div>
+            <h2>
+              Simple moves.
+              <br />
+              Useful outcomes.
+            </h2>
+            <p>
+              A visual language for SaaS, built around the directness of 2D
+              games. Select an object. Give it an action. See what changed.
             </p>
-            <div className="sg-hero-actions">
-              <a className="sg-button sg-button--primary" href="#playground">
-                Enter the playground <ArrowDown aria-hidden="true" size={18} />
-              </a>
-              <a className="sg-text-link" href="#components">
-                Explore the components{" "}
-                <ArrowRight aria-hidden="true" size={17} />
-              </a>
-            </div>
-          </div>
-          <div
-            className="sg-cover"
-            aria-label="An action tile selected from a tray, illustrating the design language"
-          >
-            <div className="sg-cover-grid" />
-            <span className="sg-cover-label sg-eyebrow">
-              OBJECTS YOU CAN WORK WITH
-            </span>
-            <div className="sg-cover-tray">
-              <span />
-              <span />
-              <span />
-            </div>
-            <div className="sg-cover-tile">
-              <div className="sg-cover-icon">
-                <SquaresFour weight="duotone" size={48} aria-hidden="true" />
-              </div>
-              <span className="sg-eyebrow">ACTION / 01</span>
-              <strong>
-                Make it
-                <br />
-                happen.
-              </strong>
-              <div>
-                <span className="sg-status">Ready</span>
-                <ArrowRight size={22} aria-hidden="true" />
-              </div>
-            </div>
-            <span className="sg-cover-note">Select. Place. Inspect.</span>
-            <span className="sg-cover-cross" aria-hidden="true">
-              +
+            <a className="sg-button sg-button--primary" href="#playground">
+              Try the playground <ArrowDown aria-hidden="true" size={17} />
+            </a>
+            <span className="sg-hero-note">
+              Black + white. Inter throughout. Native controls.
             </span>
           </div>
         </section>
-
-        <section className="sg-treatment-bar" aria-label="Visual treatment">
-          <div>
-            <span className="sg-eyebrow">CHOOSE YOUR MATERIAL</span>
-            <p>{activeTreatment.detail}</p>
-          </div>
-          <div className="sg-segmented">
-            {treatments.map((item) => (
-              <button
-                key={item.id}
-                aria-pressed={item.id === treatment}
-                onClick={() => setTreatment(item.id)}
-              >
-                <span
-                  className={`sg-treatment-dot sg-treatment-dot--${item.id}`}
-                />
-                {item.title}
-              </button>
-            ))}
-          </div>
-        </section>
-
+        <div className="sg-intro-rule">
+          <span>01 — SELECT</span>
+          <span>02 — PLACE</span>
+          <span>03 — ACT</span>
+          <span>04 — OBSERVE</span>
+        </div>
         <section
           id="playground"
           className="sg-section"
@@ -300,8 +228,8 @@ export default function SaasGameUI(): React.JSX.Element {
         >
           <div className="sg-section-heading">
             <div>
-              <span className="sg-eyebrow">01 / THE PLAYING FIELD</span>
-              <h2 id="playground-title">A workflow you can handle.</h2>
+              <span className="sg-eyebrow">01 / INTERACTION</span>
+              <h2 id="playground-title">Arrange. Run. Understand.</h2>
             </div>
             <p>
               Tools live in a tray. Work lives on the board.
@@ -312,7 +240,7 @@ export default function SaasGameUI(): React.JSX.Element {
           <div className="sg-workspace sg-panel">
             <div className="sg-workspace-bar">
               <div className="sg-workspace-name">
-                <SquaresFour size={20} weight="duotone" aria-hidden="true" />
+                <SquaresFour size={20} weight="regular" aria-hidden="true" />
                 <strong>{displayName}</strong>
                 <span className="sg-muted">/ Automation</span>
               </div>
@@ -338,7 +266,7 @@ export default function SaasGameUI(): React.JSX.Element {
                       }
                       onClick={() => placeStep(step)}
                     >
-                      <Icon size={22} weight="duotone" aria-hidden="true" />
+                      <Icon size={22} weight="regular" aria-hidden="true" />
                       <span>
                         {item.title}
                         <small>
@@ -420,7 +348,7 @@ export default function SaasGameUI(): React.JSX.Element {
                             <span className="sg-tile-number">0{index + 1}</span>
                             <Icon
                               size={30}
-                              weight="duotone"
+                              weight="regular"
                               aria-hidden="true"
                             />
                             <strong>{item?.title ?? "Place a tool"}</strong>
@@ -530,13 +458,13 @@ export default function SaasGameUI(): React.JSX.Element {
         >
           <div className="sg-section-heading">
             <div>
-              <span className="sg-eyebrow">02 / THE COMPONENT KIT</span>
-              <h2 id="components-title">Small parts. A consistent feel.</h2>
+              <span className="sg-eyebrow">02 / COMPONENTS</span>
+              <h2 id="components-title">The everyday, redrawn.</h2>
             </div>
             <p>
               One grammar across the everyday interface.
               <br />
-              Try the controls. Change the material above.
+              Each control responds to a real interaction.
             </p>
           </div>
           <div className="sg-specimens">
@@ -578,7 +506,7 @@ export default function SaasGameUI(): React.JSX.Element {
                 </label>
               </div>
               <p>
-                Recessed surfaces invite input. This name also updates the
+                A clear boundary invites input. This name also updates the
                 board.
               </p>
             </article>
@@ -624,7 +552,7 @@ export default function SaasGameUI(): React.JSX.Element {
                   aria-pressed={tileSelected}
                   onClick={() => setTileSelected(!tileSelected)}
                 >
-                  <FileText aria-hidden="true" size={24} weight="duotone" />
+                  <FileText aria-hidden="true" size={24} weight="regular" />
                   <span>
                     Research notes
                     <small>
@@ -691,7 +619,12 @@ export default function SaasGameUI(): React.JSX.Element {
                   <span>Review checklist</span>
                   <span>{checkpoint} / 3</span>
                 </div>
-                <progress className="sg-progress" aria-label="Review checklist" max={3} value={checkpoint}>
+                <progress
+                  className="sg-progress"
+                  aria-label="Review checklist"
+                  max={3}
+                  value={checkpoint}
+                >
                   {checkpoint} of 3
                 </progress>
                 <button
@@ -730,13 +663,13 @@ export default function SaasGameUI(): React.JSX.Element {
         <section className="sg-section" aria-labelledby="states-title">
           <div className="sg-section-heading">
             <div>
-              <span className="sg-eyebrow">03 / A VOCABULARY OF STATES</span>
-              <h2 id="states-title">You can see what happens next.</h2>
+              <span className="sg-eyebrow">03 / STATE</span>
+              <h2 id="states-title">Meaning without color.</h2>
             </div>
             <p>
               One object across seven states.
               <br />
-              Color always travels with a label or shape.
+              Shape, line, and language carry the signal.
             </p>
           </div>
           <div className="sg-states">
@@ -754,7 +687,7 @@ export default function SaasGameUI(): React.JSX.Element {
                   className="sg-state-object"
                   data-example={state.toLowerCase()}
                 >
-                  <FileText weight="duotone" size={27} aria-hidden="true" />
+                  <FileText weight="regular" size={27} aria-hidden="true" />
                   {state === "Complete" ? (
                     <Check aria-hidden="true" size={14} />
                   ) : state === "Error" ? (
@@ -783,19 +716,20 @@ export default function SaasGameUI(): React.JSX.Element {
         </section>
 
         <section
+          id="principles"
           className="sg-section sg-principles"
           aria-labelledby="principles-title"
         >
           <div>
-            <span className="sg-eyebrow">04 / THE RULES OF PLAY</span>
+            <span className="sg-eyebrow">04 / PRINCIPLES</span>
             <h2 id="principles-title">
-              Make the work
+              Less decoration.
               <br />
-              feel tangible.
+              More response.
             </h2>
             <p>
-              Use space to create calm. Use detail to reward attention. Let the
-              useful action be the satisfying action.
+              The game is in the interaction. Clear objects, direct actions, and
+              visible consequences give the interface its character.
             </p>
           </div>
           <div className="sg-rule-list">
@@ -833,17 +767,78 @@ export default function SaasGameUI(): React.JSX.Element {
         </section>
 
         <section
+          id="typography"
+          className="sg-section sg-typography"
+          aria-labelledby="type-title"
+        >
+          <div className="sg-section-heading">
+            <div>
+              <span className="sg-eyebrow">05 / TYPOGRAPHY</span>
+              <h2 id="type-title">One family. Clear roles.</h2>
+            </div>
+            <p>
+              Fontjoy guided the contrast between display and reading roles. The
+              final system uses Inter throughout.
+            </p>
+          </div>
+          <div className="sg-type-grid">
+            <article className="sg-type-display">
+              <span className="sg-eyebrow">INTER / DISPLAY</span>
+              <div className="sg-type-sample" aria-hidden="true">
+                Aa
+              </div>
+              <h3>
+                Give the idea
+                <br />a little presence.
+              </h3>
+              <p>
+                Large scale, tighter spacing, and medium weight give titles
+                their presence. One family, a clear display role.
+              </p>
+            </article>
+            <article className="sg-type-body">
+              <span className="sg-eyebrow">INTER / INTERFACE</span>
+              <div className="sg-type-sample" aria-hidden="true">
+                Aa
+              </div>
+              <h3>Keep the work easy to read.</h3>
+              <p>
+                Regular weight, comfortable line spacing, and tabular numbers
+                keep controls, descriptions, and data easy to read. Weights
+                400–600.
+              </p>
+              <div className="sg-type-data">
+                <span>Queued</span>
+                <span>03 / 12</span>
+                <span>00:48</span>
+              </div>
+            </article>
+          </div>
+          <div className="sg-type-credit">
+            <span>
+              Typography direction informed by Fontjoy. Final typeface: Inter.
+            </span>
+            <a
+              href="https://fontjoy.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              Explore Fontjoy <ArrowRight size={15} aria-hidden="true" />
+            </a>
+          </div>
+        </section>
+        <section
           id="build"
           className="sg-section sg-build"
           aria-labelledby="build-title"
         >
           <div>
-            <span className="sg-eyebrow">05 / THE STARTING MATERIAL</span>
-            <h2 id="build-title">Simple enough to build.</h2>
+            <span className="sg-eyebrow">06 / BUILD</span>
+            <h2 id="build-title">A small vocabulary.</h2>
             <p>
-              Flat color. Two-dimensional geometry. Native controls. The same
-              components work across all three treatments, with CSS variables
-              defining their material.
+              Flat surfaces, native controls, and a few CSS variables. Selection
+              inverts the object. Focus adds an outline. Movement confirms an
+              action.
             </p>
             <a
               className="sg-button"
@@ -854,30 +849,32 @@ export default function SaasGameUI(): React.JSX.Element {
             </a>
           </div>
           <div className="sg-code-panel">
-            <div className="sg-eyebrow">A SMALL SURFACE API</div>
+            <div className="sg-eyebrow">THE SURFACE CONTRACT</div>
             <pre>
-              <code>{`<section class="sg"\n  data-treatment="${treatment}"\n  data-mode="${night ? "night" : "day"}">\n  <button class="sg-button\n    sg-button--primary">\n    Save draft\n  </button>\n</section>`}</code>
+              <code>{`<section class="sg"
+  data-mode="${night ? "night" : "day"}">
+  <button class="sg-button
+    sg-button--primary">
+    Save draft
+  </button>
+</section>`}</code>
             </pre>
             <div className="sg-token-row">
-              <span>8px spacing base</span>
-              <span>3 depth levels</span>
-              <span>120–240ms feedback</span>
+              <span>1px boundaries</span>
+              <span>1 typeface</span>
+              <span>120ms feedback</span>
             </div>
           </div>
         </section>
       </main>
       <footer className="sg-footer">
-        <a className="sg-wordmark" href="/">
-          shupp<span>.dev</span>
+        <a href="/" className="sg-wordmark">
+          shupp.dev
         </a>
-        <span>SaaS Game UI · A design study by Erikk Shupp</span>
-        <nav aria-label="Other design studies">
-          <a href="/design/prismatic">PRISM</a>
-          <a href="/design/void">VOID</a>
-          <a href="/portfolio">
-            All work <ArrowRight size={14} aria-hidden="true" />
-          </a>
-        </nav>
+        <span>SaaS Game UI / An exploration by Erikk Shupp</span>
+        <a href="/portfolio">
+          All design studies <ArrowRight size={15} aria-hidden="true" />
+        </a>
       </footer>
 
       <dialog
