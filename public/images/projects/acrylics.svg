@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1000" height="750" viewBox="0 0 1000 750" role="img" aria-labelledby="title desc">
+  <title id="title">Acrylics — color and geometry</title><desc id="desc">Pink, cyan, and yellow shapes overlap on warm paper, behind tall black Acrylics lettering.</desc>
+  <rect width="1000" height="750" fill="#fff9ed"/>
+  <g style="isolation:isolate">
+    <circle cx="335" cy="280" r="245" fill="#f66a9a" opacity=".72" style="mix-blend-mode:multiply"/>
+    <rect x="405" y="140" width="440" height="440" rx="85" transform="rotate(18 625 360)" fill="#32bbdd" opacity=".72" style="mix-blend-mode:multiply"/>
+    <path d="M480 205 755 655 205 655Z" fill="#f9d834" opacity=".78" style="mix-blend-mode:multiply"/>
+  </g>
+  <text x="53" y="70" fill="#252321" font-family="monospace" font-size="17" letter-spacing="3">SHUPP.DEV / DESIGN STUDY 03</text>
+  <text x="49" y="623" fill="#252321" font-family="Impact,Arial Narrow,sans-serif" font-size="154" font-weight="900" letter-spacing="-6" textLength="865" lengthAdjust="spacingAndGlyphs">ACRYLICS</text>
+  <path d="M55 656H945" stroke="#252321" stroke-width="2"/>
+  <text x="55" y="699" fill="#252321" font-family="monospace" font-size="18">MORE COLOR. MORE MATH. MORE PLAY.</text>
+</svg>

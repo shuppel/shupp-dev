@@ -1,0 +1,94 @@
+---
+// Like VOID and PRISM, this study owns its document and material model.
+// No Layout import, shared theme changes, persistent preferences, or API calls.
+const title = 'Acrylics — Color, Geometry & Play';
+const description = 'A playful design system built from layered color, billboard type, and mathematical shapes. Mix, move, morph, and inspect the overlap.';
+---
+<!doctype html>
+<html lang="en" class="acrylics">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#FFF9ED" />
+    <meta name="color-scheme" content="light" />
+    <title>{title}</title>
+    <link rel="canonical" href="https://shupp.dev/design/acrylics" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://shupp.dev/design/acrylics" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="/acrylics/acrylics.css" />
+  </head>
+  <body>
+    <a class="ac-skip" href="#mixing-floor">Skip to the mixing lab</a>
+    <header class="ac-masthead">
+      <a class="ac-brand" href="/">shupp.dev <span>/ design studies</span></a>
+      <nav aria-label="Design studies"><a href="/design/void">VOID</a><a href="/design/prismatic">PRISM</a><a href="/portfolio">All work ↗</a></nav>
+    </header>
+    <main>
+      <section class="ac-hero" aria-labelledby="ac-title">
+        <div class="ac-overprint" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="ac-hero-meta"><p class="ac-eyebrow">A material study by Erikk Shupp</p><span>NO. 03 / FRESH PAINT</span></div>
+        <h1 id="ac-title">ACRYLICS<span aria-hidden="true">✳</span></h1>
+        <div class="ac-hero-bottom"><p>NEW COLORS HAPPEN<br>IN THE OVERLAP.</p><div><span class="ac-equation">1 + 1 = something else.</span><p>Layer the color. Bend the shape.<br>Keep a little of what came before.</p></div><a class="ac-gel" href="#mixing-floor">Make a little mess <span aria-hidden="true">↘</span></a></div>
+      </section>
+
+      <section class="ac-lab" id="mixing-floor" aria-labelledby="lab-title">
+        <header class="ac-section-head"><div><p class="ac-eyebrow">01 / THE MIXING FLOOR</p><h2 id="lab-title">A playground with receipts.</h2></div><label class="ac-preset">Start somewhere<select id="preset" data-control disabled><option value="overprint">Overprint</option><option value="orbit">Orbit</option><option value="bloom">Flower market</option></select></label></header>
+        <div class="ac-workbench">
+          <div class="ac-artboard-column">
+            <div class="ac-window-bar"><span>untitled-003.acrylics</span><span class="ac-window-dots" aria-hidden="true">○ ○ ●</span></div>
+            <div class="ac-board-tools"><div class="ac-segment" role="group" aria-label="Canvas tool"><button type="button" data-tool="move" data-control disabled aria-pressed="true">Move shapes</button><button type="button" data-tool="probe" data-control disabled aria-pressed="false">Pick color</button></div><button id="reset" type="button" class="ac-text-button" data-control disabled>Reset scene ↺</button></div>
+            <div class="ac-board" id="board-wrap">
+              <img id="board-fallback" src="/images/projects/acrylics.svg" alt="Pink, cyan, and yellow geometric shapes overlap into new colors on a warm ground." width="1000" height="750" />
+              <canvas id="paint-board" width="1000" height="750" tabindex="0" aria-label="Color mixing canvas. In Move shapes mode, drag a shape or use arrow keys to move the selected layer. In Pick color mode, click or use arrows to move the sample point. Equivalent position sliders are available below." aria-describedby="canvas-help" hidden></canvas>
+            </div>
+            <div class="ac-board-caption"><span id="canvas-help">Drag a shape. Pick a color. Follow the crosshair.</span><span id="board-position">POINT 500, 375</span></div>
+            <p id="lab-error" class="ac-notice" hidden>The interactive canvas could not start. The static study and design rules are still available below.</p>
+            <noscript><p class="ac-notice">Enable JavaScript to mix colors and move shapes. The artwork and design notes work without it.</p></noscript>
+            <div class="ac-sample-bar"><span id="sample-swatch" aria-hidden="true"></span><div><p class="ac-eyebrow" id="sample-layers">At the crosshair</p><strong id="sample-hex">#FFF9ED</strong></div><div class="ac-sample-numbers"><span id="sample-rgb">RGB 255 · 249 · 237</span><span id="sample-count">Ground</span></div></div>
+          </div>
+
+          <fieldset class="ac-inspector" id="inspector" disabled>
+            <legend class="ac-eyebrow">THE PAINTBOX</legend>
+            <label class="ac-label" for="blend-mode">How the colors meet</label>
+            <select id="blend-mode"><option value="multiply">Multiply / glaze</option><option value="normal">Normal / paint over</option><option value="screen">Screen / light</option></select>
+            <p class="ac-mini-equation" id="blend-equation">f(B,S) = B × S</p>
+            <div class="ac-inspector-heading"><span class="ac-label">Choose a layer</span><span class="ac-small" id="layer-order">A → B → C</span></div>
+            <div class="ac-layer-tabs" role="group" aria-label="Selected layer"><button type="button" data-layer="A" aria-pressed="true"><i></i>A</button><button type="button" data-layer="B" aria-pressed="false"><i></i>B</button><button type="button" data-layer="C" aria-pressed="false"><i></i>C</button></div>
+            <div class="ac-color-row"><label for="layer-color">Layer color</label><input type="color" id="layer-color" value="#f66a9a" /><output id="layer-hex" for="layer-color">#F66A9A</output></div>
+            <div class="ac-control"><div><label for="opacity">Opacity</label><output id="opacity-value" for="opacity">72%</output></div><input id="opacity" type="range" min="0" max="100" value="72" step="1" /></div>
+            <label class="ac-label" for="shape">Shape language</label>
+            <select id="shape"><option value="circle">Circle / ellipse</option><option value="superellipse">Soft square / superellipse</option><option value="polygon">Polygon</option><option value="rosette">Rosette</option></select>
+            <div class="ac-control" id="shape-parameter-wrap" hidden><div><label id="shape-parameter-label" for="shape-parameter">Exponent n</label><output id="shape-parameter-value" for="shape-parameter">4</output></div><input id="shape-parameter" type="range" min="2" max="10" step=".25" value="4" /></div>
+            <div class="ac-two-controls"><div class="ac-control"><div><label for="size">Size</label><output id="size-value" for="size">245</output></div><input id="size" type="range" min="65" max="340" value="245" step="1" /></div><div class="ac-control"><div><label for="rotation">Turn</label><output id="rotation-value" for="rotation">0°</output></div><input id="rotation" type="range" min="-180" max="180" value="0" step="1" /></div></div>
+            <button type="button" class="ac-secondary" id="bring-forward">Bring A to front ↑</button>
+            <details class="ac-position-controls"><summary>Position & proportions</summary><div class="ac-control"><div><label for="position-x">X position</label><output id="position-x-value" for="position-x">360</output></div><input id="position-x" type="range" min="0" max="1000" value="360" /></div><div class="ac-control"><div><label for="position-y">Y position</label><output id="position-y-value" for="position-y">320</output></div><input id="position-y" type="range" min="0" max="750" value="320" /></div><div class="ac-control"><div><label for="aspect">Width / height</label><output id="aspect-value" for="aspect">1.00</output></div><input id="aspect" type="range" min=".4" max="1.6" step=".05" value="1" /></div><div class="ac-color-row"><label for="ground-color">Ground</label><input type="color" id="ground-color" value="#fff9ed" /></div></details>
+            <details class="ac-position-controls"><summary>Move the color sampler</summary><div class="ac-control"><div><label for="probe-x">Sample X</label><output id="probe-x-value" for="probe-x">500</output></div><input id="probe-x" type="range" min="0" max="999" value="500" /></div><div class="ac-control"><div><label for="probe-y">Sample Y</label><output id="probe-y-value" for="probe-y">375</output></div><input id="probe-y" type="range" min="0" max="749" value="375" /></div></details>
+          </fieldset>
+        </div>
+        <p class="ac-status" id="lab-status" role="status">The paint stays in this browser session.</p>
+
+        <div class="ac-palette-head"><div><p class="ac-eyebrow">THE PALETTE YOU MADE</p><h3>Three coats. Eight possibilities.</h3></div><button id="copy-palette" class="ac-secondary" type="button" data-control disabled>Copy color tokens ↗</button></div>
+        <div class="ac-palette" id="palette" aria-label="Colors from every possible subset of layers"></div>
+        <p class="ac-fineprint">These are all possible layer combinations; your arrangement determines which ones appear on the canvas.</p>
+        <details id="token-fallback" class="ac-token-fallback" hidden><summary>Your color tokens</summary><label for="token-output">Select and copy the CSS below.</label><textarea id="token-output" readonly rows="10"></textarea></details>
+
+        <details class="ac-math" id="math-details" open>
+          <summary><span>Show me the math.</span><span class="ac-eyebrow">COLOR × GEOMETRY</span></summary>
+          <div class="ac-math-body"><div class="ac-color-math"><h3>At the crosshair</h3><p class="ac-formula">C = (1 − α)B + α f(B, S)</p><p class="ac-math-key">B: color underneath · S: new color · α: coat opacity.<br>RGB channels are normalized to 0–1 before blending.</p><ol id="mix-steps"><li>Choose a point to inspect its layers.</li></ol><p id="rounding-note" class="ac-fineprint">The hex readout samples the rendered canvas before guides. Edges include antialiasing; channel rounding can differ slightly from the ideal equation.</p></div><div class="ac-shape-math"><h3 id="geometry-title">Circle / ellipse</h3><p class="ac-formula" id="geometry-formula">(x/a)² + (y/b)² = 1</p><p id="geometry-values">a = 245 · b = 245</p><p class="ac-math-key" id="geometry-description">Stretch one axis to turn a circle into an ellipse.</p><div class="ac-transform"><span>Rotate, then place</span><code id="transform-equation">x′ = x cos θ − y sin θ + tx<br>y′ = x sin θ + y cos θ + ty</code><output id="transform-values">θ = 0° · t = (360, 320)</output></div></div></div>
+          <p class="ac-math-foot">Digital color arithmetic, inspired by paint. This does not predict real pigment mixtures. <a href="https://www.w3.org/TR/compositing-1/#blending" target="_blank" rel="noopener noreferrer">Compositing reference ↗</a></p>
+        </details>
+      </section>
+
+      <section class="ac-language" aria-labelledby="language-title"><header class="ac-section-head"><div><p class="ac-eyebrow">02 / A LANGUAGE, NOT JUST AN EFFECT</p><h2 id="language-title">Let the geometry do some talking.</h2></div></header><div class="ac-principles"><article><div class="ac-figure ac-figure-type" aria-hidden="true">Aa<span>×</span></div><p class="ac-eyebrow">TYPE / STREET PRESENCE</p><h3>Headlines stand tall.</h3><p>Condensed display type, short statements, generous margins. Body copy gets an opaque ground and room to breathe.</p></article><article><div class="ac-figure ac-figure-shapes" aria-hidden="true"><i></i><i></i><i></i></div><p class="ac-eyebrow">COLOR / VISIBLE HISTORY</p><h3>The overlap is a color.</h3><p>Use a few source colors and let their intersections expand the palette. Every coat has a reason and an adjustable weight.</p></article><article><div class="ac-figure ac-figure-ui"><button class="ac-gel" id="specimen-button" type="button" aria-pressed="false" data-control disabled>Keep this color +</button><span id="specimen-status" role="status">A tactile little interaction.</span></div><p class="ac-eyebrow">INTERACTION / EARLY WEB JOY</p><h3>Make it feel pressable.</h3><p>Glazed buttons, window tabs, crisp borders. Shape and color respond to deliberate actions, then settle.</p></article></div></section>
+    </main>
+    <footer class="ac-footer"><a href="/portfolio">← Back to the work</a><span>ACRYLICS / STUDY 0.3</span><span>Erikk Shupp · 2026</span></footer>
+    <script is:inline type="module" src="/acrylics/lab.mjs"></script>
+  </body>
+</html>
