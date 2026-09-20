@@ -1,0 +1,35 @@
+---
+import SaasGameUI from '../../components/design/SaasGameUI/SaasGameUI';
+import { isFeatureEnabled } from '../../config/features';
+
+// Like PRISM and VOID, this study owns its document and theme vocabulary.
+if (!isFeatureEnabled('enableSaasGameUI')) return Astro.redirect('/portfolio');
+
+const title = 'SaaS Game UI — A playable design language | shupp.dev';
+const description = 'A design language for useful software, borrowed from simple 2D games. Explore tactile components, three visual treatments, and a playable automation canvas.';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="light dark" />
+    <title>{title}</title>
+    <link rel="canonical" href="https://shupp.dev/design/saas-game-ui" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="/saas-game-ui/saas-game-ui.css" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content="https://shupp.dev/design/saas-game-ui" />
+    <meta property="og:image" content="https://shupp.dev/images/projects/saas-game-ui.png" />
+    <meta property="og:image:alt" content="SaaS Game UI: Serious tools, a playful surface. Discover, Compose, and Review action tiles." />
+    <meta name="twitter:card" content="summary_large_image" />
+  </head>
+  <body class="sg-document">
+    <SaasGameUI client:load />
+    <noscript><p class="sg-noscript">JavaScript is off. The component sheet and design principles remain readable; enable JavaScript to try the interactive examples.</p></noscript>
+  </body>
+</html>

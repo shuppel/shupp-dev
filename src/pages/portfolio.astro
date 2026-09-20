@@ -2,9 +2,12 @@
  import { getCollection } from 'astro:content';
  import Layout from '../layouts/Layout.astro';
  import Icon from '../components/Icon/Icon.astro';
+ import { isFeatureEnabled } from '../config/features';
 
 // Get all projects from the collection
-const allProjects = await getCollection('projects');
+const allProjects = await getCollection('projects', ({ id }) =>
+  id !== 'saas-game-ui' || isFeatureEnabled('enableSaasGameUI')
+);
 
 // Sort projects by date (newest first)
 const projects = allProjects.sort((a, b) => {

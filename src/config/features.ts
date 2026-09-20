@@ -1,5 +1,12 @@
 // Feature flags configuration
 export const features = {
+  /**
+   * Publishes the SaaS Game UI design study and its portfolio card.
+   * Set ENABLE_SAAS_GAME_UI=false at build time to withdraw the study.
+   * @deprecated Review for removal after 2026-10-20 once the study is stable.
+   */
+  enableSaasGameUI: import.meta.env.ENABLE_SAAS_GAME_UI !== 'false',
+
   // Enable/disable TLDraw mockup embeds
   // When false, mockup sections are completely hidden
   // Can be overridden by ENABLE_TLDRAW environment variable
