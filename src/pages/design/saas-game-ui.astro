@@ -2,11 +2,11 @@
 import SaasGameUI from '../../components/design/SaasGameUI/SaasGameUI';
 import { isFeatureEnabled } from '../../config/features';
 
-// Standalone study with its own monochrome surface and local Inter font.
+// Standalone JRPG design comparison with local Inter typography.
 if (!isFeatureEnabled('enableSaasGameUI')) return Astro.redirect('/portfolio');
 
-const title = 'SaaS Game UI — A playable design language | shupp.dev';
-const description = 'A monochrome design language for SaaS, guided by simple 2D game interactions. Inter typography, native controls, and a playable automation canvas.';
+const title = 'SaaS Game UI — Four RPG-inspired directions | shupp.dev';
+const description = 'Four approaches to a SaaS design system inspired by 90s Japanese RPGs. Compare command menus, workflow maps, agent parties, and guided reviews.';
 ---
 
 <!doctype html>
@@ -15,7 +15,7 @@ const description = 'A monochrome design language for SaaS, guided by simple 2D 
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="light" />
     <title>{title}</title>
     <link rel="canonical" href="https://shupp.dev/design/saas-game-ui" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -26,11 +26,11 @@ const description = 'A monochrome design language for SaaS, guided by simple 2D 
     <meta property="og:description" content={description} />
     <meta property="og:url" content="https://shupp.dev/design/saas-game-ui" />
     <meta property="og:image" content="https://shupp.dev/images/projects/saas-game-ui.png" />
-    <meta property="og:image:alt" content="SaaS Game UI: Software with a sense of play. A black and white interface study using Inter." />
+    <meta property="og:image:alt" content="Four RPG-inspired SaaS interfaces: Command Desk, Workflow Map, Party Console, and Dialogue Review." />
     <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body class="sg-document">
     <SaasGameUI client:load />
-    <noscript><p class="sg-noscript">JavaScript is off. The component sheet and design principles remain readable; enable JavaScript to try the interactive examples.</p></noscript>
+    <noscript><p class="sg-noscript">JavaScript is off. The first design direction remains readable; enable JavaScript to compare all four and try the sample task.</p></noscript>
   </body>
 </html>

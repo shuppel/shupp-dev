@@ -1,68 +1,67 @@
-# SaaS Game UI — monochrome edition
+# SaaS Game UI — four directions for review
 
-Route: `/design/saas-game-ui`. A standalone Astro document with a React island
-for local demonstrations. The current design replaces the previous colored
-presets with one independent black and white visual language.
+**Intent:** a reusable SaaS design system inspired by 90s Japanese RPGs. Make work
+visible: who owns it, which actions are available, and what happened. This page
+presents four candidates for approval before expanding the component system.
 
-## Visual direction
+Route: `/design/saas-game-ui`.
 
-- **Typography:** Inter throughout. Larger, medium-weight display type contrasts
-  with regular interface and reading text. Fontjoy's shared-theme/contrast
-  principle informed the role hierarchy: <https://fontjoy.com/>. This is an
-  authored selection, not a claim that Fontjoy generated a pairing.
-- **Color:** black, white, and neutral grays only. Invert swaps foreground and
-  background without changing the workflow. The initial canvas is always white.
-- **Form:** flat surfaces, 1px rules, 3px control corners, native inputs, and
-  restrained press/selection feedback. Object inversion denotes selection;
-  outlines, patterns, icons, and language distinguish states.
-- **Scope:** this study does not import the VOID, PRISM, Acrylics, or Yūgen design
-  styles. A future named style should be an explicit design choice.
+## The four approaches
 
-## Surface contract
+| Direction       | Focus                                 | Best use                   | Main trade-off                          |
+| --------------- | ------------------------------------- | -------------------------- | --------------------------------------- |
+| Command Desk    | Fast, contextual actions              | Repeated daily work        | Needs another view for larger workflows |
+| Workflow Map    | Visible sequence and dependencies     | Multi-step automation      | Large maps need grouping                |
+| Party Console   | Roles, ownership, and handoffs        | Agents working with people | Extra structure for solo tasks          |
+| Dialogue Review | One decision with supporting evidence | Approvals and guided work  | Slower for expert batch tasks           |
 
-Load `/saas-game-ui/saas-game-ui.css`, then wrap native controls in:
+The layouts differ in their interaction model, not just their palette. All four
+use the same sample: collect six customer notes, prepare a three-point brief,
+then mark it reviewed. The options can be combined later after a direction is
+chosen. No candidate is approved by selecting its preview tab.
 
-```html
-<section class="sg" data-mode="day">
-  <button class="sg-button sg-button--primary">Save draft</button>
-</section>
-```
+## Presentation
 
-Modes: `day` (white canvas), `night` (black canvas). There are no treatment presets.
-Reusable primitives include `.sg-button`, `.sg-input`, `.sg-panel`, `.sg-status`,
-`.sg-inventory-tile`, `.sg-progress`, `.sg-dialog`, `.sg-menu`, and `.sg-table`.
-The locally hosted Inter Latin variable font and its OFL license live in
-`public/saas-game-ui/fonts/`. Copy those files with the CSS when reusing it.
-No JavaScript dependencies were added for typography.
+The page has a short introduction, four direction selectors, and one active
+interactive example. A benefit and trade-off sit below the example. Supporting
+pattern mappings and implementation notes are collapsed by default.
 
-## Interaction model
+Visual language: original pixel-shaped vector characters and scenes, framed
+windows, clear selection cursors, and four restrained palettes. Inter is the
+only typeface, self-hosted with its OFL license. Readability, native controls,
+responsive layouts, focus visibility, and real task states remain shared rules.
+No named site design style is imported.
 
-- The board accepts three unique steps: Discover → Compose → Review.
-- Click a tool or an empty slot to place a step. Native dragging can swap steps.
-  Removing and adding a tool provides an equivalent keyboard path.
-- Execution uses bounded local timers and predefined sample outcomes. There is
-  no inference, connector action, external request, or persistent storage.
-- An optional interruption fails Compose. Retry clears the sample interruption
-  and starts a fresh sample run. Stop cancels the pending timer.
-- Completion means a draft is queued for review, not approved or published.
-- Inversion preserves the workflow and component state.
-- Native dialog focus management and Escape are preserved. Reduced motion
-  removes transitions. Status changes have visible text and live regions.
+## Sample behavior
 
-## Release switch
+- A single shared sample state carries across the four views.
+- Collect → draft → human review; later steps explain their prerequisites.
+- Source notes and the brief can be inspected in native dialogs. Recommendations
+  cite the relevant note numbers.
+- Local timers play a predefined sample, with immediate working feedback.
+  Pause cancels pending work while retaining completed milestones; Reset clears
+  the sample. There are no model calls, external actions, or stored approvals.
+- Selecting a direction updates `?direction=command|map|party|dialogue` for direct
+  links. Arrow keys, Home, and End move through the tabs. Browser history restores
+  the selected direction. Dialogs support Escape and native focus return.
+- The progress count is completed sample steps out of three; there are no
+  fictional scores, levels, or currency.
 
-`ENABLE_SAAS_GAME_UI` defaults to enabled. Set it to `false` **at build time** to
-redirect the design route to `/portfolio` and hide its card. The descriptive
-`/portfolio/saas-game-ui` content entry remains available. Review the temporary
-flag after 2026-10-20.
+## Implementation and release
 
-## Review checklist
+Standalone Astro document, one React island, plain CSS, and inline SVG. No added
+package dependencies or game engine. Inter assets remain under
+`public/saas-game-ui/fonts/`.
 
-1. Inspect both canvas polarities at desktop, tablet, and mobile widths.
-2. Add Review and run the sample; verify the human-review handoff.
-3. Include an interruption, run, and retry; stop a run while it is working.
-4. Remove a step, attempt an incomplete run, restore it, and run again.
-5. Swap tiles by dragging, then restore the required order.
-6. Edit the routine name, save, select the inventory tile, change the data row,
-   use the context menu, advance progress, and open/close the dialog.
-7. Check keyboard focus, reduced motion, local Inter loading, and neutral colors.
+`ENABLE_SAAS_GAME_UI` defaults to enabled. Setting it to `false` at build time
+redirects the design route to `/portfolio` and hides its portfolio card. The
+content entry remains available. Review the temporary flag after 2026-10-20.
+
+## Acceptance checks
+
+1. Each of the four directions has a distinct layout and stated purpose.
+2. Complete the three-step sample in each view and inspect its evidence/result.
+3. Verify prerequisites, pause, reset, view switching, and final reviewed state.
+4. Check tab keyboard navigation, deep links, browser history, dialog Escape,
+   focus return, reduced motion, and phone/desktop layouts.
+5. Approve a direction before expanding this into a larger component library.
