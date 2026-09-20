@@ -1,6 +1,6 @@
 ---
 title: "SaaS Game UI"
-description: "Four approaches to SaaS interfaces inspired by 90s Japanese RPGs: commands, workflow maps, agent parties, and guided reviews."
+description: "Operate a SaaS interface through a character: approach objects, discover contextual actions, and change the app."
 projectDate: 2026-09-20
 completed: false
 technologies:
@@ -19,17 +19,13 @@ customUrl: "/design/saas-game-ui"
 
 ## SaaS Game UI
 
-A design system exploration that brings the character of 90s Japanese RPGs to
-modern SaaS. Make it clear who is doing the work, which actions are available,
-and what changed.
+[Enter the interactive workroom](/design/saas-game-ui). Move your character to an
+object, discover its available action, and use it to change the application.
 
-[Compare four interactive directions](/design/saas-game-ui):
+The archive collects source notes. The writing desk prepares a brief. The review
+stand holds the final decision. Cursors, object states, and inventory change as
+the sample progresses. Direct pointer input operates the same objects.
 
-- **Command Desk:** focused, repeatable actions.
-- **Workflow Map:** visible sequence and progress.
-- **Party Console:** agent roles and human handoffs.
-- **Dialogue Review:** guided decisions with evidence.
-
-Each uses the same local sample task, readable Inter typography, native controls,
-and original pixel-shaped vector art. The page keeps one example in view and
-places supporting details behind an expandable section.
+Use **Set up objects** to change an object's action, position, and interaction
+distance, or add another object to the room. The sample uses predefined local
+data and smooth illustrated 2D artwork, with Inter for readable interface text.

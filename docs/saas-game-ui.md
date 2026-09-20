@@ -1,67 +1,80 @@
-# SaaS Game UI — four directions for review
+# SaaS Game UI — character and object interaction
 
-**Intent:** a reusable SaaS design system inspired by 90s Japanese RPGs. Make work
-visible: who owns it, which actions are available, and what happened. This page
-presents four candidates for approval before expanding the component system.
+**Intent:** make a character a way to operate a SaaS interface. A person moves
+through a workspace, approaches an object, discovers its available action, and
+uses it to change application state. Objects carry the meaning of the work.
 
-Route: `/design/saas-game-ui`.
+Route: `/design/saas-game-ui`. This replaces the four candidate layouts with one
+working interaction prototype. Smooth illustrated 2D is a provisional art
+direction; it does not imply that the user has approved a final JRPG aesthetic.
+Inter remains the chosen typeface. No named design style is imported.
 
-## The four approaches
+## Interaction contract
 
-| Direction       | Focus                                 | Best use                   | Main trade-off                          |
-| --------------- | ------------------------------------- | -------------------------- | --------------------------------------- |
-| Command Desk    | Fast, contextual actions              | Repeated daily work        | Needs another view for larger workflows |
-| Workflow Map    | Visible sequence and dependencies     | Multi-step automation      | Large maps need grouping                |
-| Party Console   | Roles, ownership, and handoffs        | Agents working with people | Extra structure for solo tasks          |
-| Dialogue Review | One decision with supporting evidence | Approvals and guided work  | Slower for expert batch tasks           |
+1. Click/tap the floor to walk there, or focus the room and use WASD/arrow keys.
+2. Select an object to approach its interaction point. Selecting a distant
+   object moves the person; the action remains gated by proximity.
+3. Within reach, press E or select the object to reveal its contextual action.
+4. Explicitly execute the action. Its result changes the object state and the
+   inventory; movement alone never executes work.
 
-The layouts differ in their interaction model, not just their palette. All four
-use the same sample: collect six customer notes, prepare a three-point brief,
-then mark it reviewed. The options can be combined later after a direction is
-chosen. No candidate is approved by selecting its preview tab.
+The pointer changes between walking, approaching, interacting, locked, and
+working states. A visible hint also names the possible interaction. Pointer
+mode removes the walking requirement and uses the same object/action handlers.
+All tasks have native button paths for keyboard and touch access.
 
-## Presentation
+The workroom is an open, bounded interaction area. This prototype does not add
+an obstacle pathfinder, game engine, backend, or multiplayer system.
 
-The page has a short introduction, four direction selectors, and one active
-interactive example. A benefit and trade-off sit below the example. Supporting
-pattern mappings and implementation notes are collapsed by default.
+## Objects and setup
 
-Visual language: original pixel-shaped vector characters and scenes, framed
-windows, clear selection cursors, and four restrained palettes. Inter is the
-only typeface, self-hosted with its OFL license. Readability, native controls,
-responsive layouts, focus visibility, and real task states remain shared rules.
-No named site design style is imported.
+Each `WorldItem` has an ID, label, action key, position, and interaction radius.
+The local action registry determines its prerequisite, verb, description, and
+result. Art is separated in `WorldArtwork.tsx`; changing the illustration does
+not change the input or action contract.
 
-## Sample behavior
+`Set up objects` edits labels, action bindings, positions, and reach distances,
+or creates an additional object (up to six in this sample). It prevents
+placements within 15 normalized units of another object and preserves at least
+one binding for each required task step. Restore returns the original objects.
+Task reset preserves the configured layout. Scene edits last for the page visit.
 
-- A single shared sample state carries across the four views.
-- Collect → draft → human review; later steps explain their prerequisites.
-- Source notes and the brief can be inspected in native dialogs. Recommendations
-  cite the relevant note numbers.
-- Local timers play a predefined sample, with immediate working feedback.
-  Pause cancels pending work while retaining completed milestones; Reset clears
-  the sample. There are no model calls, external actions, or stored approvals.
-- Selecting a direction updates `?direction=command|map|party|dialogue` for direct
-  links. Arrow keys, Home, and End move through the tabs. Browser history restores
-  the selected direction. Dialogs support Escape and native focus return.
-- The progress count is completed sample steps out of three; there are no
-  fictional scores, levels, or currency.
+Positions and reach are normalized scene coordinates. Click-to-approach uses a
+bounded point in front of the object. The world is responsive; artwork and
+native controls remain distinct from those coordinates.
+
+## Sample task
+
+- **Source archive:** collect six predefined customer notes into inventory.
+- **Writing desk:** use those notes to prepare a predefined three-point brief.
+- **Review stand:** inspect the brief and its sources, then mark the sample as
+  reviewed. No content is sent or published.
+
+The sample uses local timers and predefined results. Pause cancels pending work;
+reset clears the task. Collected notes appear in the character's hand, completed
+objects change appearance, and inventory documents become available. Source and
+brief dialogs cite the note numbers and support native Escape/focus return.
+
+Reduced motion removes walking animation and places the character immediately
+at click destinations. Keyboard movement remains user-controlled. Key release,
+focus loss, mode changes, and reset stop the appropriate movement state.
 
 ## Implementation and release
 
-Standalone Astro document, one React island, plain CSS, and inline SVG. No added
-package dependencies or game engine. Inter assets remain under
+Standalone Astro document, a React island, native HTML controls, CSS cursors, and
+smooth inline SVG. No added packages. The Inter font and OFL license remain under
 `public/saas-game-ui/fonts/`.
 
 `ENABLE_SAAS_GAME_UI` defaults to enabled. Setting it to `false` at build time
 redirects the design route to `/portfolio` and hides its portfolio card. The
 content entry remains available. Review the temporary flag after 2026-10-20.
 
-## Acceptance checks
+## Definition of done for this iteration
 
-1. Each of the four directions has a distinct layout and stated purpose.
-2. Complete the three-step sample in each view and inspect its evidence/result.
-3. Verify prerequisites, pause, reset, view switching, and final reviewed state.
-4. Check tab keyboard navigation, deep links, browser history, dialog Escape,
-   focus return, reduced motion, and phone/desktop layouts.
-5. Approve a direction before expanding this into a larger component library.
+- The character moves independently of task progress.
+- Distance and object state change the available action and cursor.
+- Character and direct pointer input reach the same actual sample handlers.
+- A user can configure and use an additional object.
+- The primary room has one contextual action panel; setup and technical detail
+  stay behind deliberate controls.
+- Artwork has smooth contours; there is no crisp-edge/pixelated rendering.

@@ -2,905 +2,904 @@ import React, { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ArrowRight,
+  ArrowCounterClockwise,
   Check,
   FileText,
-  ArrowCounterClockwise,
+  GearSix,
+  Hand,
+  LockSimple,
+  PersonSimpleWalk,
+  Plus,
   X,
 } from "@phosphor-icons/react";
+import {
+  Person,
+  WorkObject,
+  Workroom,
+  type ObjectAction,
+} from "./WorldArtwork";
 
-type Direction = "command" | "map" | "party" | "dialogue";
-type Phase = 0 | 1 | 2 | 3;
-type DocumentKind = "notes" | "brief";
-
-const directions: {
-  id: Direction;
-  name: string;
-  focus: string;
-  pitch: string;
-  benefit: string;
-  tradeoff: string;
-  patterns: string[];
-}[] = [
+interface Point {
+  x: number;
+  y: number;
+}
+type WorldItem = Point & {
+  id: string;
+  label: string;
+  action: ObjectAction;
+  radius: number;
+};
+interface Destination {
+  point: Point;
+  objectId?: string;
+  label?: string;
+}
+type InputMode = "character" | "pointer";
+const actions: Record<
+  ObjectAction,
+  { step: number; verb: string; title: string; detail: string; result: string }
+> = {
+  collect: {
+    step: 0,
+    verb: "Collect",
+    title: "Collect 6 notes",
+    detail:
+      "Collect the customer notes from this archive. They become the source material for your brief.",
+    result:
+      "Six source notes are in your inventory. Take them to the writing desk.",
+  },
+  draft: {
+    step: 1,
+    verb: "Write",
+    title: "Prepare brief",
+    detail:
+      "Use the collected notes to prepare a short brief. You’ll review it before marking it complete.",
+    result: "Your brief is ready. Bring it to the review stand.",
+  },
+  review: {
+    step: 2,
+    verb: "Review",
+    title: "Mark sample reviewed",
+    detail:
+      "Check the recommendations against their source notes, then mark this sample as reviewed.",
+    result:
+      "Sample reviewed. Your notes and brief remain available in the inventory.",
+  },
+};
+const initialObjects: WorldItem[] = [
   {
-    id: "command",
-    name: "Command Desk",
-    focus: "Act with focus",
-    pitch:
-      "A familiar RPG command window puts the next useful action within reach.",
-    benefit: "Fast, repeatable work. Best for tools people use every day.",
-    tradeoff: "Larger workflows need a separate overview.",
-    patterns: [
-      "Command menu → available actions",
-      "Inventory → source files",
-      "Message window → action result",
-    ],
+    id: "archive",
+    label: "Source archive",
+    action: "collect",
+    x: 23,
+    y: 61,
+    radius: 10,
   },
   {
-    id: "map",
-    name: "Workflow Map",
-    focus: "See the sequence",
-    pitch:
-      "A small overworld makes the path from input to finished work visible.",
-    benefit:
-      "Understand order and dependencies. Best for multi-step automations.",
-    tradeoff: "Large workflows need grouping to keep the map readable.",
-    patterns: [
-      "Locations → workflow steps",
-      "Path → dependencies",
-      "Current marker → active work",
-    ],
+    id: "desk",
+    label: "Writing desk",
+    action: "draft",
+    x: 51,
+    y: 56,
+    radius: 10,
   },
   {
-    id: "party",
-    name: "Party Console",
-    focus: "Know who owns it",
-    pitch: "A party roster shows each agent’s role, assignment, and handoff.",
-    benefit: "Coordinate agents and people. Best for work shared across roles.",
-    tradeoff: "A roster adds little when one person does everything.",
-    patterns: [
-      "Party → agents and people",
-      "Role panel → current assignment",
-      "Handoff → next responsible role",
-    ],
-  },
-  {
-    id: "dialogue",
-    name: "Dialogue Review",
-    focus: "Make a clear decision",
-    pitch:
-      "A dialogue window presents one decision with the evidence needed to make it.",
-    benefit: "Confident approvals. Best for guided work and human review.",
-    tradeoff: "Sequential prompts are slower for expert batch work.",
-    patterns: [
-      "Speaker → responsible role",
-      "Dialogue → context and evidence",
-      "Response → explicit decision",
-    ],
+    id: "stand",
+    label: "Review stand",
+    action: "review",
+    x: 79,
+    y: 63,
+    radius: 10,
   },
 ];
+const startPosition: Point = { x: 50, y: 84 };
 const notes = [
   "Two customers missed changes to their task status.",
   "Three customers asked for a single daily summary.",
   "The support team manually combines updates every Friday.",
-  "Reviewers want to see which notes support each recommendation.",
+  "Reviewers want to see the source of each recommendation.",
   "The team wants to approve summaries before they are shared.",
   "A draft-only pilot is planned for next week.",
 ];
 const brief = [
-  "Combine task updates into a daily summary to make status changes easier to follow.",
+  "Combine task updates into a daily summary so changes are easier to follow.",
   "Keep source notes alongside recommendations so reviewers can check the evidence.",
   "Pilot a draft-only summary next week, with a person reviewing every draft.",
 ];
-const steps = [
-  {
-    title: "Collect notes",
-    short: "Collect",
-    role: "Scout",
-    type: "Research agent",
-    detail: "Gather the six customer notes supplied with this sample.",
-    result: "6 source notes collected.",
-    pending: "Collecting the sample notes…",
-  },
-  {
-    title: "Prepare brief",
-    short: "Draft",
-    role: "Scribe",
-    type: "Writing agent",
-    detail:
-      "Turn the collected notes into a short brief with three recommendations.",
-    result: "1 brief prepared. Ready for your review.",
-    pending: "Preparing the sample brief…",
-  },
-  {
-    title: "Review brief",
-    short: "Review",
-    role: "You",
-    type: "Human reviewer",
-    detail: "Read the brief and mark this sample as reviewed.",
-    result: "Sample reviewed. The brief stays here.",
-    pending: "Recording your sample decision…",
-  },
-];
-
-// Original vector sprites: decorative, sharp at integer scales, no image requests.
-function Actor({
-  role = 0,
-  className = "",
-}: {
-  role?: number;
-  className?: string;
-}): React.JSX.Element {
-  const coat = ["#6aa78f", "#cfad72", "#91a0c8"][role];
-  return (
-    <svg
-      viewBox="0 0 24 32"
-      className={`rpg-actor ${className}`}
-      aria-hidden="true"
-      shapeRendering="crispEdges"
-    >
-      <path d="M5 29h14v2H5z" fill="#17263c" opacity=".2" />
-      <path d="M7 23h4v7H6v-3h1zm6 0h4v4h1v3h-5z" fill="#273246" />
-      <path d="M6 14h12v3h3v8h-5v-3H8v3H3v-8h3z" fill={coat} />
-      <path d="M8 14h8v10H8z" fill={coat} />
-      <path
-        d="M3 23h4v3H3zm14 0h4v3h-4zM7 6h11v8H7zm3 8h5v3h-5z"
-        fill="#e8c79d"
-      />
-      <path
-        d="M6 3h12v3h2v6h-3V7H8v4H5V6h1z"
-        fill={role === 1 ? "#7b503c" : "#343647"}
-      />
-      <path d="M9 9h2v2H9zm6 0h2v2h-2z" fill="#293144" />
-      <path d="M11 13h3v1h-3z" fill="#a96853" />
-      {role === 0 && (
-        <>
-          <path d="M7 1h10v2h3v3H4V3h3z" fill="#4d806f" />
-          <path d="M7 5h13v2H7z" fill="#91bba2" />
-          <path d="M6 16h2v8H6zm2 3h4v7H8z" fill="#997951" />
-        </>
-      )}
-      {role === 1 && (
-        <>
-          <path d="M4 4h4v12H4zM16 3h3v13h-3z" fill="#7b503c" />
-          <path d="M14 18h7v9h-7z" fill="#f4e8c6" />
-          <path d="M14 18h2v9h-2z" fill="#667999" />
-        </>
-      )}
-      {role === 2 && (
-        <>
-          <path d="M7 5h11v2H7z" fill="#566889" />
-          <path d="M10 17h4v3h-4z" fill="#e8e5d5" />
-          <path d="M10 20h4v4h-4z" fill="#637494" />
-        </>
-      )}
-    </svg>
-  );
+const movementKeys = new Set([
+  "arrowup",
+  "arrowdown",
+  "arrowleft",
+  "arrowright",
+  "w",
+  "a",
+  "s",
+  "d",
+]);
+function clamp(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
 }
-
-function Landscape({
-  compact = false,
-}: {
-  compact?: boolean;
-}): React.JSX.Element {
-  return (
-    <svg
-      viewBox="0 0 600 300"
-      className={`rpg-landscape ${compact ? "is-compact" : ""}`}
-      aria-hidden="true"
-      shapeRendering="crispEdges"
-      preserveAspectRatio="xMidYMid slice"
-    >
-      <rect width="600" height="300" fill="#bfcdb1" />
-      <path
-        d="M0 0h600v54H480v20H360V48H220v35H100V57H0zM0 250h150v-20h105v35h125v-25h220v60H0z"
-        fill="#a8bd9c"
-      />
-      <path
-        d="M435 0h58v55h-20v65h30v75h-21v68h18v37h-64v-65h20v-48h-28v-73h20V62h-13z"
-        fill="#82aaa7"
-      />
-      <path
-        d="M452 0h8v76h-14v39h8M465 143h8v37h-12v51M454 275h26v6h-26"
-        fill="none"
-        stroke="#bfd5c4"
-        strokeWidth="4"
-      />
-      <path
-        d="M48 179h146v-43h150v44h198"
-        stroke="#a6a382"
-        strokeWidth="35"
-        fill="none"
-      />
-      <path
-        d="M48 172h146v-43h150v44h198"
-        stroke="#dfd6b3"
-        strokeWidth="29"
-        fill="none"
-      />
-      <path d="M421 154h83v39h-83z" fill="#937c5b" />
-      <path
-        d="M423 159h79m-79 9h79m-79 9h79m-79 9h79"
-        stroke="#cfb68a"
-        strokeWidth="4"
-      />
-      {[
-        [34, 33],
-        [78, 20],
-        [123, 39],
-        [272, 34],
-        [310, 24],
-        [532, 40],
-        [568, 64],
-        [29, 218],
-        [77, 246],
-        [242, 248],
-        [366, 238],
-        [542, 238],
-      ].map(([x, y], i) => (
-        <g key={i} transform={`translate(${x} ${y})`}>
-          <path d="M12 30h7v14h-7z" fill="#8b7a58" />
-          <path d="M8 0h14v8h7v9h5v14H-4V17H1V8h7z" fill="#648c72" />
-          <path d="M8 0h14v8h7v9H1V8h7z" fill="#7a9e7c" />
-          <path d="M1 25h28v5H1z" fill="#517b65" />
-        </g>
-      ))}
-      {[
-        [135, 221],
-        [205, 50],
-        [358, 100],
-        [510, 102],
-        [328, 256],
-        [21, 114],
-      ].map(([x, y], i) => (
-        <path key={i} d={`M${x} ${y}h3v6h-3zm7 3h3v6h-3z`} fill="#7e9b77" />
-      ))}
-      <path d="M220 178h8v5h-8zm-65-62h8v5h-8zm202 24h8v5h-8z" fill="#b1af8e" />
-    </svg>
-  );
+function approach(item: WorldItem): Point {
+  return { x: item.x, y: clamp(item.y + 8, 56, 92) };
 }
-
-function StepState({
-  index,
-  phase,
-  busy,
-}: {
-  index: number;
-  phase: Phase;
-  busy: boolean;
-}): React.JSX.Element {
-  return (
-    <span className="rpg-step-state">
-      {index < phase ? (
-        <>
-          <Check size={13} aria-hidden="true" /> Done
-        </>
-      ) : index === phase ? (
-        busy ? (
-          "Working"
-        ) : (
-          "Ready"
-        )
-      ) : (
-        "Waiting"
-      )}
-    </span>
-  );
+function distance(a: Point, b: Point): number {
+  return Math.hypot(a.x - b.x, a.y - b.y);
+}
+function emptyObject(): WorldItem {
+  return {
+    id: "new",
+    label: "Notes cabinet",
+    action: "collect",
+    x: 18,
+    y: 80,
+    radius: 10,
+  };
 }
 
 export default function SaasGameUI(): React.JSX.Element {
-  const [direction, setDirection] = useState<Direction>("command");
-  const [phase, setPhase] = useState<Phase>(0);
-  const [selected, setSelected] = useState(0);
-  const [busy, setBusy] = useState(false);
+  const [objects, setObjects] = useState<WorldItem[]>(initialObjects);
+  const [mode, setMode] = useState<InputMode>("character");
+  const [position, setPosition] = useState<Point>(startPosition);
+  const positionRef = useRef<Point>(startPosition);
+  const [destination, setDestination] = useState<Destination | null>(null);
+  const [keyboardMoving, setKeyboardMoving] = useState(false);
+  const keys = useRef(new Set<string>());
+  const [walking, setWalking] = useState(false);
+  const [facing, setFacing] = useState(1);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [phase, setPhase] = useState(0);
+  const [running, setRunning] = useState<WorldItem | null>(null);
   const [notice, setNotice] = useState(
-    "Start by collecting the six sample notes.",
+    "Click the archive to walk over and discover its action.",
   );
-  const [documentKind, setDocumentKind] = useState<DocumentKind>("notes");
-  const dialog = useRef<HTMLDialogElement>(null);
-  const tabs = useRef<(HTMLButtonElement | null)[]>([]);
-  const current =
-    directions.find((item) => item.id === direction) ?? directions[0];
+  const [reducedMotion, setReducedMotion] = useState(false);
+  const [documentKind, setDocumentKind] = useState<"notes" | "brief">("notes");
+  const [editing, setEditing] = useState<WorldItem>(initialObjects[0]);
+  const [setupError, setSetupError] = useState("");
+  const nextId = useRef(1);
+  const stage = useRef<HTMLDivElement>(null);
+  const documentDialog = useRef<HTMLDialogElement>(null);
+  const setupDialog = useRef<HTMLDialogElement>(null);
+  const selected = objects.find((item) => item.id === selectedId) ?? null;
+  const nearest = objects.reduce<WorldItem | null>(
+    (best, item) =>
+      distance(position, approach(item)) <= item.radius &&
+      (best === null ||
+        distance(position, approach(item)) < distance(position, approach(best)))
+        ? item
+        : best,
+    null,
+  );
+  const hovered = objects.find((item) => item.id === hoveredId) ?? null;
+  const reachable =
+    selected !== null &&
+    (mode === "pointer" ||
+      distance(position, approach(selected)) <= selected.radius);
+  const selectedAction = selected === null ? null : actions[selected.action];
+  const complete = selectedAction !== null && phase > selectedAction.step;
+  const locked = selectedAction !== null && phase < selectedAction.step;
+  const cursorState =
+    running !== null
+      ? "working"
+      : hovered === null
+        ? mode === "character"
+          ? "walk"
+          : "select"
+        : phase < actions[hovered.action].step
+          ? "locked"
+          : mode === "character" &&
+              distance(position, approach(hovered)) > hovered.radius
+            ? "approach"
+            : "interact";
+  const cursorHint =
+    cursorState === "working"
+      ? "Working"
+      : hovered !== null
+        ? cursorState === "locked"
+          ? `Requires ${actions[hovered.action].step === 1 ? "source notes" : "a draft brief"}`
+          : cursorState === "approach"
+            ? `Walk to ${hovered.label.toLowerCase()}`
+            : phase > actions[hovered.action].step
+              ? "Inspect result"
+              : actions[hovered.action].verb
+        : mode === "character"
+          ? "Click the floor to move"
+          : "Select an object";
 
   useEffect(() => {
-    function readDirection(): void {
-      const value = new URLSearchParams(window.location.search).get(
-        "direction",
-      );
-      setDirection(
-        directions.some((item) => item.id === value)
-          ? (value as Direction)
-          : "command",
-      );
+    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
+    setReducedMotion(media.matches);
+    function update(event: MediaQueryListEvent): void {
+      setReducedMotion(event.matches);
     }
-    readDirection();
-    window.addEventListener("popstate", readDirection);
-    return () => window.removeEventListener("popstate", readDirection);
+    media.addEventListener("change", update);
+    return () => media.removeEventListener("change", update);
   }, []);
 
   useEffect(() => {
-    if (!busy || phase === 3) return;
-    // Deliberately paced local sample; this is not a backend progress estimate.
-    const timer = window.setTimeout(() => {
-      const next = (phase + 1) as Phase;
-      setNotice(steps[phase].result);
-      setPhase(next);
-      setSelected(Math.min(next, 2));
-      setBusy(false);
-    }, 650);
-    return () => window.clearTimeout(timer);
-  }, [busy, phase]);
+    if (mode !== "character" || (destination === null && !keyboardMoving))
+      return;
+    let frame = 0;
+    let previous = 0;
+    function finish(point: Point): void {
+      positionRef.current = point;
+      setPosition(point);
+      setWalking(false);
+      setDestination(null);
+      if (destination?.objectId !== undefined) {
+        setSelectedId(destination.objectId);
+        setNotice(
+          `You’re beside ${destination.label?.toLowerCase() ?? "the object"}. Choose its action below.`,
+        );
+      }
+    }
+    if (reducedMotion && destination !== null && !keyboardMoving) {
+      finish(destination.point);
+      return;
+    }
+    function tick(time: number): void {
+      const dt =
+        previous === 0 ? 0.016 : Math.min((time - previous) / 1000, 0.04);
+      previous = time;
+      const bounds = stage.current?.getBoundingClientRect();
+      if (bounds === undefined) return;
+      const here = positionRef.current;
+      const dxKey =
+        Number(keys.current.has("arrowright") || keys.current.has("d")) -
+        Number(keys.current.has("arrowleft") || keys.current.has("a"));
+      const dyKey =
+        Number(keys.current.has("arrowdown") || keys.current.has("s")) -
+        Number(keys.current.has("arrowup") || keys.current.has("w"));
+      let dx = dxKey;
+      let dy = dyKey;
+      const manual = dx !== 0 || dy !== 0;
+      if (!manual && destination !== null) {
+        dx = ((destination.point.x - here.x) * bounds.width) / 100;
+        dy = ((destination.point.y - here.y) * bounds.height) / 100;
+      }
+      const length = Math.hypot(dx, dy);
+      const stride = 215 * dt;
+      if (!manual && destination !== null && length <= stride) {
+        finish(destination.point);
+        return;
+      }
+      if (length === 0) {
+        setWalking(false);
+        return;
+      }
+      const next = {
+        x: clamp(
+          here.x + (((dx / length) * stride) / bounds.width) * 100,
+          6,
+          94,
+        ),
+        y: clamp(
+          here.y + (((dy / length) * stride) / bounds.height) * 100,
+          56,
+          92,
+        ),
+      };
+      positionRef.current = next;
+      setPosition(next);
+      setWalking(true);
+      if (Math.abs(dx) > 0.1) setFacing(dx >= 0 ? 1 : -1);
+      frame = window.requestAnimationFrame(tick);
+    }
+    frame = window.requestAnimationFrame(tick);
+    return () => {
+      window.cancelAnimationFrame(frame);
+    };
+  }, [destination, keyboardMoving, mode, reducedMotion]);
 
-  function chooseDirection(value: Direction): void {
-    setDirection(value);
-    const url = new URL(window.location.href);
-    url.searchParams.set("direction", value);
-    window.history.pushState({}, "", url);
+  useEffect(() => {
+    if (running === null) return;
+    // A bounded local sample, not a model call or a backend progress estimate.
+    const timer = window.setTimeout(() => {
+      setPhase(actions[running.action].step + 1);
+      setNotice(actions[running.action].result);
+      setRunning(null);
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [running]);
+
+  useEffect(() => {
+    function releaseKeys(): void {
+      keys.current.clear();
+      setKeyboardMoving(false);
+      setWalking(false);
+    }
+    window.addEventListener("blur", releaseKeys);
+    return () => window.removeEventListener("blur", releaseKeys);
+  }, []);
+
+  function stopMoving(): void {
+    keys.current.clear();
+    setKeyboardMoving(false);
+    setDestination(null);
+    setWalking(false);
   }
-  function handleTabKey(
-    event: React.KeyboardEvent<HTMLButtonElement>,
-    index: number,
-  ): void {
-    let next = index;
-    if (event.key === "ArrowRight") next = (index + 1) % directions.length;
-    else if (event.key === "ArrowLeft")
-      next = (index + directions.length - 1) % directions.length;
-    else if (event.key === "Home") next = 0;
-    else if (event.key === "End") next = directions.length - 1;
-    else return;
-    event.preventDefault();
-    chooseDirection(directions[next].id);
-    tabs.current[next]?.focus();
-  }
-  function advance(): void {
-    if (busy || phase === 3) return;
-    setSelected(phase);
-    setBusy(true);
-    setNotice(steps[phase].pending);
-  }
-  function reset(): void {
-    setBusy(false);
-    setPhase(0);
-    setSelected(0);
-    setNotice("Sample reset. Collect the notes to begin again.");
-  }
-  function stop(): void {
-    setBusy(false);
-    setNotice("Paused. Completed work is kept; continue when you’re ready.");
-  }
-  function openDocument(kind: DocumentKind): void {
+  function openDocument(kind: "notes" | "brief"): void {
+    stopMoving();
     setDocumentKind(kind);
-    dialog.current?.showModal();
+    documentDialog.current?.showModal();
   }
-  function action(index: number = phase): React.JSX.Element {
-    if (phase === 3)
-      return (
-        <button className="rpg-action" onClick={() => openDocument("brief")}>
-          <FileText size={17} aria-hidden="true" /> Read reviewed brief
-        </button>
+  function chooseObject(item: WorldItem): void {
+    if (
+      mode === "pointer" ||
+      distance(positionRef.current, approach(item)) <= item.radius
+    ) {
+      stopMoving();
+      setSelectedId(item.id);
+      setNotice(
+        `${item.label}: ${phase < actions[item.action].step ? "finish the earlier step to unlock this action." : "choose an action below."}`,
       );
-    if (busy)
-      return (
-        <button className="rpg-action rpg-action--secondary" onClick={stop}>
-          Pause sample
-        </button>
-      );
-    const available = index === phase;
-    return (
-      <button className="rpg-action" onClick={advance} disabled={!available}>
-        <span aria-hidden="true">▸</span>
-        {available
-          ? phase === 2
-            ? "Mark sample reviewed"
-            : steps[phase].title
-          : index < phase
-            ? "Step complete"
-            : `Complete ${steps[phase].short.toLowerCase()} first`}
-      </button>
+    } else {
+      keys.current.clear();
+      setKeyboardMoving(false);
+      setSelectedId(item.id);
+      setDestination({
+        point: approach(item),
+        objectId: item.id,
+        label: item.label,
+      });
+      setNotice(`Walking to ${item.label.toLowerCase()}…`);
+    }
+  }
+  function walkTo(event: React.MouseEvent<HTMLDivElement>): void {
+    if (
+      (event.target as HTMLElement).closest("button") !== null ||
+      mode !== "character" ||
+      event.button !== 0
+    )
+      return;
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const point = {
+      x: clamp(((event.clientX - bounds.left) / bounds.width) * 100, 6, 94),
+      y: clamp(((event.clientY - bounds.top) / bounds.height) * 100, 56, 92),
+    };
+    keys.current.clear();
+    setKeyboardMoving(false);
+    setSelectedId(null);
+    setDestination({ point });
+    stage.current?.focus({ preventScroll: true });
+  }
+  function onStageKeyDown(event: React.KeyboardEvent<HTMLDivElement>): void {
+    const key = event.key.toLowerCase();
+    if (key === "escape") {
+      stopMoving();
+      setSelectedId(null);
+      return;
+    }
+    if (mode !== "character") return;
+    if (movementKeys.has(key)) {
+      event.preventDefault();
+      keys.current.add(key);
+      setDestination(null);
+      setKeyboardMoving(true);
+    }
+    if (
+      key === "e" ||
+      (key === "enter" && event.target === event.currentTarget)
+    ) {
+      event.preventDefault();
+      if (nearest !== null) {
+        stopMoving();
+        setSelectedId(nearest.id);
+        setNotice(`${nearest.label}: choose its action below.`);
+      } else setNotice("Move closer to an object to interact with it.");
+    }
+  }
+  function onStageKeyUp(event: React.KeyboardEvent<HTMLDivElement>): void {
+    keys.current.delete(event.key.toLowerCase());
+    if (keys.current.size === 0) {
+      setKeyboardMoving(false);
+      setWalking(false);
+    }
+  }
+  function performAction(): void {
+    if (selected === null || running !== null || !reachable) return;
+    const definition = actions[selected.action];
+    if (phase < definition.step) return;
+    if (phase > definition.step) {
+      openDocument(selected.action === "collect" ? "notes" : "brief");
+      return;
+    }
+    stopMoving();
+    setRunning(selected);
+    setNotice(`${definition.title} — working with the local sample…`);
+  }
+  function resetSample(): void {
+    stopMoving();
+    setRunning(null);
+    setPhase(0);
+    setSelectedId(null);
+    positionRef.current = startPosition;
+    setPosition(startPosition);
+    setNotice("Sample reset. Your object layout is kept.");
+  }
+  function changeMode(value: InputMode): void {
+    stopMoving();
+    setMode(value);
+    setNotice(
+      value === "character"
+        ? "Click the floor to move. Approach an object to use it."
+        : "Select an object to use its action directly.",
     );
   }
-  function sourceLink(): React.JSX.Element {
-    return (
-      <button className="rpg-text-button" onClick={() => openDocument("notes")}>
-        <FileText size={15} aria-hidden="true" /> View 6 source notes
-      </button>
-    );
+  function openSetup(): void {
+    stopMoving();
+    setEditing(selected ?? objects[0]);
+    setSetupError("");
+    setupDialog.current?.showModal();
   }
-  function resultContent(): React.JSX.Element {
-    return (
-      <div className="rpg-result-content">
-        <span className="rpg-kicker">
-          {phase >= 2 ? "OUTPUT / WEEKLY BRIEF" : "INPUT / CUSTOMER RESEARCH"}
-        </span>
-        <h3>
-          {phase >= 2
-            ? "Three useful next steps."
-            : "Good work starts with context."}
-        </h3>
-        {phase >= 2 ? (
-          <ol className="rpg-brief-list">
-            {brief.map((line, index) => (
-              <li key={line}>
-                <span>0{index + 1}</span>
-                {line}
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <>
-            <p>
-              Six customer notes. One short brief. A person reviews the result.
-            </p>
-            <div className="rpg-note-stack" aria-hidden="true">
-              <div />
-              <div />
-              <div>
-                <FileText size={32} weight="light" />
-                <span>Customer notes</span>
-                <small>6 items</small>
-              </div>
-            </div>
-          </>
-        )}
-        {sourceLink()}
-      </div>
+  function saveObject(event: React.FormEvent<HTMLFormElement>): void {
+    event.preventDefault();
+    if (editing.label.trim().length === 0) {
+      setSetupError("Give the object a name.");
+      return;
+    }
+    if (![editing.x, editing.y, editing.radius].every(Number.isFinite)) {
+      setSetupError("Use valid numbers for position and reach.");
+      return;
+    }
+    if (
+      objects.some(
+        (item) => item.id !== editing.id && distance(item, editing) < 15,
+      )
+    ) {
+      setSetupError(
+        "This is too close to another object. Move it a little farther away.",
+      );
+      return;
+    }
+    const saved = {
+      ...editing,
+      id: editing.id === "new" ? `custom-${nextId.current++}` : editing.id,
+      label: editing.label.trim(),
+    };
+    const nextObjects =
+      editing.id === "new"
+        ? [...objects, saved]
+        : objects.map((item) => (item.id === editing.id ? saved : item));
+    if (
+      !(Object.keys(actions) as ObjectAction[]).every((action) =>
+        nextObjects.some((item) => item.action === action),
+      )
+    ) {
+      setSetupError(
+        "Keep an object for each step. Add a replacement before changing this action.",
+      );
+      return;
+    }
+    setObjects(nextObjects);
+    setSelectedId(saved.id);
+    setHoveredId(null);
+    setupDialog.current?.close();
+    setNotice(
+      `${saved.label} is set up. Its ${actions[saved.action].verb.toLowerCase()} action is ready to try.`,
     );
   }
 
   return (
-    <div className="rpg-study">
-      <a className="rpg-skip" href="#main">
-        Skip to design options
+    <div className="world-study">
+      <a className="world-skip" href="#workroom">
+        Skip to workroom
       </a>
-      <header className="rpg-site-header">
-        <a className="rpg-wordmark" href="/">
-          shupp.dev<span> / design studies</span>
+      <header className="world-site-header">
+        <a href="/" className="world-wordmark">
+          shupp.dev <span>/ design studies</span>
         </a>
         <a href="/portfolio">
           <ArrowLeft size={14} aria-hidden="true" /> All studies
         </a>
       </header>
-      <main id="main" className="rpg-main">
-        <div className="rpg-intro">
+      <main className="world-main">
+        <div className="world-intro">
           <div>
-            <span className="rpg-kicker">
-              SAAS GAME UI · DESIGN EXPLORATION
+            <span className="world-eyebrow">
+              SAAS GAME UI / OBJECT INTERACTION
             </span>
             <h1>
-              The spirit of an RPG.
+              Your character.
               <br />
-              <span>The clarity of a work tool.</span>
+              <span>Your way into the work.</span>
             </h1>
           </div>
           <p>
-            A design system inspired by 90s Japanese RPGs.
-            <br className="rpg-desktop-break" /> Four directions. One real-world
-            task.
+            Walk to an object. Discover its action.
             <br />
-            <strong>Choose an approach to try it.</strong>
+            Use it to change something in the app.
+            <small>Illustrated 2D study · Inter typography</small>
           </p>
         </div>
-        <div
-          className="rpg-options"
-          role="tablist"
-          aria-label="Design approaches"
-        >
-          {directions.map((item, index) => (
-            <button
-              key={item.id}
-              id={`tab-${item.id}`}
-              role="tab"
-              aria-selected={direction === item.id}
-              aria-controls="direction-preview"
-              tabIndex={direction === item.id ? 0 : -1}
-              ref={(el) => {
-                tabs.current[index] = el;
-              }}
-              onKeyDown={(event) => handleTabKey(event, index)}
-              onClick={() => chooseDirection(item.id)}
-              data-direction={item.id}
-            >
-              <span className="rpg-option-number">0{index + 1}</span>
-              <span
-                className={`rpg-mini rpg-mini--${item.id}`}
-                aria-hidden="true"
-              >
-                <i />
-                <i />
-                <i />
-              </span>
-              <strong>{item.name}</strong>
-              <span>{item.focus}</span>
-              <Check
-                className="rpg-option-check"
-                size={16}
-                aria-hidden="true"
-              />
-            </button>
-          ))}
-        </div>
-        <section
-          id="direction-preview"
-          className="rpg-preview"
-          role="tabpanel"
-          aria-labelledby={`tab-${direction}`}
-          tabIndex={0}
-        >
-          <div className="rpg-direction-intro">
+        <section className="world-shell" aria-label="Interactive workroom demo">
+          <div className="world-toolbar">
             <div>
-              <span className="rpg-kicker">THE APPROACH</span>
-              <h2>{current.name}</h2>
+              <span className="world-mark" aria-hidden="true">
+                ◇
+              </span>
+              <strong>The workroom</strong>
+              <span className="world-demo">Local sample</span>
             </div>
-            <p>{current.pitch}</p>
-          </div>
-          <div
-            className={`rpg-game rpg-game--${direction}`}
-            data-direction={direction}
-          >
-            <div className="rpg-game-bar">
-              <div>
-                <span className="rpg-diamond" aria-hidden="true" />
-                <strong>Weekly brief</strong>
-                <span className="rpg-sample-label">Sample data</span>
-              </div>
-              <button onClick={reset} className="rpg-reset">
-                <ArrowCounterClockwise size={14} aria-hidden="true" /> Reset
-                sample
+            <div
+              className="world-mode"
+              role="group"
+              aria-label="Interaction mode"
+            >
+              <button
+                aria-pressed={mode === "character"}
+                onClick={() => changeMode("character")}
+              >
+                <PersonSimpleWalk size={16} aria-hidden="true" /> Character
+              </button>
+              <button
+                aria-pressed={mode === "pointer"}
+                onClick={() => changeMode("pointer")}
+              >
+                <Hand size={16} aria-hidden="true" /> Pointer
               </button>
             </div>
-            {direction === "command" && (
-              <div className="rpg-command-layout">
-                <div className="rpg-command-scene">
-                  <Landscape compact />
-                  <div className="rpg-scene-actors">
-                    <Actor role={0} />
-                    <Actor role={1} />
-                    <Actor role={2} />
-                  </div>
-                  <div className="rpg-location">
-                    <span aria-hidden="true">◆</span> Research camp
-                  </div>
-                </div>
-                <div className="rpg-window rpg-command-inventory">
-                  {resultContent()}
-                </div>
-                <aside className="rpg-window rpg-commands">
-                  <span className="rpg-kicker">COMMAND</span>
-                  <div className="rpg-command-list">
-                    {steps.map((step, index) => (
-                      <button
-                        key={step.short}
-                        aria-pressed={selected === index}
-                        onClick={() => setSelected(index)}
-                      >
-                        <span className="rpg-cursor" aria-hidden="true">
-                          ▸
-                        </span>
-                        <span>{step.title}</span>
-                        <StepState index={index} phase={phase} busy={busy} />
-                      </button>
-                    ))}
-                  </div>
-                  <div className="rpg-command-description">
-                    <p>{steps[selected].detail}</p>
-                    {selected === 2 && phase >= 2 && (
-                      <button
-                        className="rpg-text-button"
-                        onClick={() => openDocument("brief")}
-                      >
-                        Read the brief <ArrowRight size={14} />
-                      </button>
-                    )}
-                    {action(selected)}
-                  </div>
-                </aside>
-              </div>
-            )}
-            {direction === "map" && (
-              <div className="rpg-map-layout">
-                <div className="rpg-map-surface">
-                  <Landscape />
-                  <span className="rpg-map-label">RESEARCH ROUTE</span>
-                  <div className="rpg-map-nodes">
-                    {steps.map((step, index) => (
-                      <button
-                        className={`rpg-map-node rpg-map-node--${index}`}
-                        key={step.short}
-                        aria-pressed={selected === index}
-                        onClick={() => setSelected(index)}
-                      >
-                        <span className="rpg-map-building" aria-hidden="true">
-                          <span>
-                            {index === 0 ? "▤" : index === 1 ? "✎" : "✓"}
-                          </span>
-                        </span>
-                        <strong>
-                          0{index + 1} · {step.short}
-                        </strong>
-                        <StepState index={index} phase={phase} busy={busy} />
-                        {index === Math.min(phase, 2) && (
-                          <Actor role={index} className="rpg-map-traveler" />
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                  <span className="rpg-map-legend">
-                    <span aria-hidden="true">◆</span> Select a location to
-                    inspect its task.
+          </div>
+          <div
+            id="workroom"
+            ref={stage}
+            className="world-stage"
+            tabIndex={0}
+            role="group"
+            aria-label="Workroom. Click to walk, or use arrow keys and E to interact."
+            aria-describedby="world-instructions"
+            data-mode={mode}
+            data-cursor={cursorState}
+            onClick={walkTo}
+            onKeyDown={onStageKeyDown}
+            onKeyUp={onStageKeyUp}
+            onBlur={() => {
+              keys.current.clear();
+              setKeyboardMoving(false);
+              setWalking(false);
+            }}
+          >
+            <Workroom />
+            <div className="world-location" aria-hidden="true">
+              <span>THE RESEARCH ATELIER</span>
+              <small>Notes → brief → review</small>
+            </div>
+            {objects.map((item) => {
+              const definition = actions[item.action];
+              const itemComplete = phase > definition.step;
+              const itemLocked = phase < definition.step;
+              const inReach =
+                mode === "pointer" ||
+                distance(position, approach(item)) <= item.radius;
+              return (
+                <button
+                  key={item.id}
+                  className="world-object"
+                  style={{
+                    left: `${item.x}%`,
+                    top: `${item.y}%`,
+                    zIndex: Math.round(item.y),
+                  }}
+                  onClick={() => chooseObject(item)}
+                  onPointerEnter={() => setHoveredId(item.id)}
+                  onPointerLeave={() => setHoveredId(null)}
+                  onFocus={() => setHoveredId(item.id)}
+                  onBlur={() => setHoveredId(null)}
+                  aria-label={item.label}
+                  aria-pressed={selectedId === item.id}
+                  data-state={
+                    itemComplete
+                      ? "complete"
+                      : itemLocked
+                        ? "locked"
+                        : running?.id === item.id
+                          ? "working"
+                          : "ready"
+                  }
+                  data-reachable={inReach}
+                  data-cursor={
+                    running !== null
+                      ? "working"
+                      : itemLocked
+                        ? "locked"
+                        : inReach
+                          ? "interact"
+                          : "approach"
+                  }
+                >
+                  <span className="world-object-hint">
+                    {itemComplete
+                      ? "Inspect"
+                      : itemLocked
+                        ? "Locked"
+                        : inReach
+                          ? definition.verb
+                          : "Approach"}
                   </span>
-                </div>
-                <aside className="rpg-window rpg-map-inspector">
-                  <span className="rpg-kicker">LOCATION 0{selected + 1}</span>
-                  <Actor role={selected} />
-                  <h3>{steps[selected].title}</h3>
-                  <p>{steps[selected].detail}</p>
-                  <span className="rpg-owner">
-                    Assigned to {steps[selected].role}
-                  </span>
-                  {selected === 2 && phase >= 2 && (
-                    <button
-                      className="rpg-text-button"
-                      onClick={() => openDocument("brief")}
-                    >
-                      Read the brief <ArrowRight size={14} />
-                    </button>
-                  )}
-                  {action(selected)}
-                  {sourceLink()}
-                </aside>
-              </div>
-            )}
-            {direction === "party" && (
-              <div className="rpg-party-layout">
-                <aside className="rpg-window rpg-roster">
-                  <span className="rpg-kicker">YOUR PARTY</span>
-                  {steps.map((step, index) => (
-                    <button
-                      key={step.role}
-                      className="rpg-party-member"
-                      aria-pressed={selected === index}
-                      onClick={() => setSelected(index)}
-                    >
-                      <Actor role={index} />
-                      <span>
-                        <strong>{step.role}</strong>
-                        <small>{step.type}</small>
-                        <StepState index={index} phase={phase} busy={busy} />
-                      </span>
-                      <span className="rpg-cursor" aria-hidden="true">
-                        ◂
-                      </span>
-                    </button>
-                  ))}
-                </aside>
-                <div className="rpg-window rpg-assignment">
-                  <div className="rpg-assignment-heading">
-                    <div>
-                      <span className="rpg-kicker">
-                        {steps[selected].role.toUpperCase()} / ASSIGNMENT
-                      </span>
-                      <h3>{steps[selected].title}</h3>
-                    </div>
-                    <Actor role={selected} />
-                  </div>
-                  <p>{steps[selected].detail}</p>
-                  <div className="rpg-handoff">
-                    <span>
-                      Receives
-                      <strong>
-                        {selected === 0
-                          ? "6 customer notes"
-                          : selected === 1
-                            ? "Collected source notes"
-                            : "1 draft brief"}
-                      </strong>
-                    </span>
-                    <ArrowRight size={20} aria-hidden="true" />
-                    <span>
-                      Hands off
-                      <strong>
-                        {selected === 0
-                          ? "Sources to Scribe"
-                          : selected === 1
-                            ? "Draft to you"
-                            : "Reviewed brief"}
-                      </strong>
-                    </span>
-                  </div>
-                  <div className="rpg-assignment-bottom">
-                    {action(selected)}
-                    {selected === 2 && phase >= 2 ? (
-                      <button
-                        className="rpg-text-button"
-                        onClick={() => openDocument("brief")}
-                      >
-                        Read the brief <ArrowRight size={14} />
-                      </button>
+                  <WorkObject action={item.action} complete={itemComplete} />
+                  <span className="world-object-label">
+                    {itemComplete ? (
+                      <Check size={12} aria-hidden="true" />
+                    ) : itemLocked ? (
+                      <LockSimple size={12} aria-hidden="true" />
                     ) : (
-                      sourceLink()
+                      <span className="world-ready-dot" aria-hidden="true" />
                     )}
-                  </div>
-                </div>
-                <div className="rpg-party-summary">
-                  <span className="rpg-kicker">TEAM PROGRESS</span>
-                  <progress
-                    max={3}
-                    value={phase}
-                    aria-label="Completed workflow steps"
-                  />
-                  <span>{phase} of 3 steps complete</span>
-                </div>
-              </div>
-            )}
-            {direction === "dialogue" && (
-              <div className="rpg-dialogue-layout">
-                <div className="rpg-dialogue-scene">
-                  <div className="rpg-dialogue-location">
-                    <span className="rpg-kicker">THE REVIEW ROOM</span>
-                    <span>One decision at a time.</span>
-                  </div>
-                  <div className="rpg-room-art" aria-hidden="true">
-                    <div className="rpg-room-window">
-                      <span />
-                    </div>
-                    <div className="rpg-room-plant" />
-                    <div className="rpg-room-desk" />
-                    <Actor role={Math.min(phase, 2)} />
-                  </div>
-                  <span className="rpg-speaker-tag">
-                    {steps[Math.min(phase, 2)].role}
-                    <small>{steps[Math.min(phase, 2)].type}</small>
+                    {item.label}
                   </span>
-                </div>
-                <div className="rpg-window rpg-dialogue-window">
-                  <span className="rpg-kicker">
-                    {phase === 3 ? "REVIEW COMPLETE" : `STEP ${phase + 1} OF 3`}
-                  </span>
-                  <h3>
-                    {
-                      [
-                        "Shall we gather the source notes?",
-                        "The notes are ready. Prepare a brief?",
-                        "Here’s the brief. Does it reflect the notes?",
-                        "Reviewed. Ready for your next step.",
-                      ][phase]
-                    }
-                  </h3>
-                  {phase < 2 ? (
-                    <p>
-                      {phase === 0
-                        ? "I’ll collect the six supplied notes so we have a shared starting point."
-                        : "I’ll turn these notes into three recommendations. You’ll review the result."}
-                    </p>
-                  ) : (
-                    <ul className="rpg-dialogue-brief">
-                      {brief.map((line) => (
-                        <li key={line}>{line}</li>
-                      ))}
-                    </ul>
-                  )}
-                  <div className="rpg-dialogue-actions">
-                    {action()}
-                    {sourceLink()}
-                  </div>
-                </div>
-              </div>
-            )}
-            <div className="rpg-message">
-              <span className="rpg-message-mark" aria-hidden="true">
-                {phase === 3 ? <Check size={17} /> : "▸"}
-              </span>
-              <p role="status" aria-live="polite">
-                {notice}
-              </p>
+                </button>
+              );
+            })}
+            {destination !== null && mode === "character" && (
               <span
-                className="rpg-progress-count"
-                aria-label={`${phase} of 3 steps complete`}
+                className="world-destination"
+                style={{
+                  left: `${destination.point.x}%`,
+                  top: `${destination.point.y}%`,
+                }}
+                aria-hidden="true"
+              />
+            )}
+            {mode === "character" && (
+              <div
+                className="world-person"
+                style={{
+                  left: `${position.x}%`,
+                  top: `${position.y}%`,
+                  zIndex: Math.round(position.y),
+                }}
+                data-x={position.x.toFixed(2)}
+                data-y={position.y.toFixed(2)}
+                data-walking={walking}
+                aria-label="Your character"
               >
-                {phase} / 3
+                <span className="world-person-shadow" />
+                <Person
+                  walking={walking}
+                  carrying={phase >= 1}
+                  facing={facing}
+                />
+                <span className="world-you">You</span>
+              </div>
+            )}
+            <div className="world-cursor-hint" aria-hidden="true">
+              {cursorState === "locked" ? (
+                <LockSimple size={14} />
+              ) : mode === "character" ? (
+                <PersonSimpleWalk size={15} />
+              ) : (
+                <Hand size={15} />
+              )}
+              <span>{cursorHint}</span>
+            </div>
+            {mode === "character" &&
+              nearest !== null &&
+              destination === null &&
+              !walking && (
+                <button
+                  className="world-nearby"
+                  onClick={() => {
+                    setSelectedId(nearest.id);
+                    setNotice(`${nearest.label}: choose its action below.`);
+                  }}
+                >
+                  <kbd>E</kbd> Interact with {nearest.label.toLowerCase()}
+                </button>
+              )}
+          </div>
+          <div className="world-context" data-has-object={selected !== null}>
+            <div className="world-context-copy">
+              <span className="world-eyebrow">
+                {selected === null
+                  ? "YOUR NEXT MOVE"
+                  : selected.label.toUpperCase()}
               </span>
+              <h2>
+                {selected === null
+                  ? mode === "character"
+                    ? "Start at the source archive."
+                    : "Choose an object in the room."
+                  : !reachable
+                    ? `Walk to ${selected.label.toLowerCase()}.`
+                    : locked
+                      ? `First, ${selectedAction?.step === 1 ? "collect the notes" : "prepare a brief"}.`
+                      : complete
+                        ? "Your result is ready to inspect."
+                        : selectedAction?.title}
+              </h2>
+              <p>
+                {selected === null
+                  ? "The archive holds your notes. The desk prepares a brief. The stand is where you review it."
+                  : !reachable
+                    ? "The action becomes available when your character is within reach."
+                    : locked
+                      ? "You can inspect this object now. Its action unlocks when the earlier step is complete."
+                      : selectedAction?.detail}
+              </p>
+            </div>
+            <div className="world-context-actions">
+              {selected === null ? (
+                <button
+                  className="world-primary"
+                  onClick={() =>
+                    chooseObject(
+                      objects.find((item) => item.action === "collect") ??
+                        objects[0],
+                    )
+                  }
+                >
+                  {mode === "character" ? "Walk to archive" : "Select archive"}
+                  <ArrowRight size={16} />
+                </button>
+              ) : !reachable ? (
+                <button
+                  className="world-primary"
+                  onClick={() => chooseObject(selected)}
+                  disabled={destination !== null}
+                >
+                  {" "}
+                  {destination !== null ? "Walking…" : "Walk closer"}
+                  <PersonSimpleWalk size={17} />
+                </button>
+              ) : running !== null ? (
+                <button
+                  className="world-primary world-secondary"
+                  onClick={() => {
+                    setRunning(null);
+                    setNotice("Action paused. Your completed work is kept.");
+                  }}
+                >
+                  Pause action
+                </button>
+              ) : (
+                <button
+                  className="world-primary"
+                  disabled={locked}
+                  onClick={performAction}
+                >
+                  {complete
+                    ? selected.action === "collect"
+                      ? "Inspect source notes"
+                      : "Read brief"
+                    : selectedAction?.title}
+                  {locked ? <LockSimple size={16} /> : <ArrowRight size={16} />}
+                </button>
+              )}
+              {selected?.action === "review" && phase === 2 && (
+                <button
+                  className="world-text-button"
+                  onClick={() => openDocument("brief")}
+                >
+                  Read the draft first <FileText size={14} />
+                </button>
+              )}
             </div>
           </div>
-          <div className="rpg-approach-notes">
-            <div>
-              <span className="rpg-kicker">WHAT IT ACCOMPLISHES</span>
-              <p>{current.benefit}</p>
-            </div>
-            <div>
-              <span className="rpg-kicker">THE TRADE-OFF</span>
-              <p>{current.tradeoff}</p>
-            </div>
+          <div className="world-status">
+            <p role="status" aria-live="polite">
+              {notice}
+            </p>
+            <span>{phase} / 3 steps</span>
           </div>
         </section>
-        <details className="rpg-details">
+        <div className="world-below">
+          <p id="world-instructions">
+            {mode === "character" ? (
+              <>
+                <kbd>Click</kbd> to walk · <kbd>WASD</kbd> or arrows to move ·{" "}
+                <kbd>E</kbd> to interact
+              </>
+            ) : (
+              "Select an object to use its action. The pointer changes with the target."
+            )}
+          </p>
+          <button className="world-text-button" onClick={resetSample}>
+            <ArrowCounterClockwise size={14} /> Reset task
+          </button>
+        </div>
+        <div className="world-inventory">
+          <span className="world-eyebrow">YOUR INVENTORY</span>
+          <button disabled={phase < 1} onClick={() => openDocument("notes")}>
+            <FileText size={17} />
+            <span>
+              Source notes
+              <small>{phase >= 1 ? "6 collected" : "Waiting to collect"}</small>
+            </span>
+          </button>
+          <button disabled={phase < 2} onClick={() => openDocument("brief")}>
+            <FileText size={17} />
+            <span>
+              Weekly brief
+              <small>
+                {phase === 3
+                  ? "Reviewed"
+                  : phase >= 2
+                    ? "Ready to review"
+                    : "Waiting to prepare"}
+              </small>
+            </span>
+          </button>
+          <button
+            className="world-setup-link"
+            onClick={openSetup}
+            disabled={running !== null}
+          >
+            <GearSix size={17} /> Set up objects
+          </button>
+        </div>
+        <details className="world-details">
           <summary>
-            How this becomes a design system <PlusMark />
+            The design system behind the room <span>+</span>
           </summary>
-          <div className="rpg-details-content">
-            <div>
-              <h3>Patterns with a purpose.</h3>
-              <ul>
-                {current.patterns.map((pattern) => (
-                  <li key={pattern}>{pattern}</li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h3>Modern rules, shared by all four.</h3>
-              <p>
-                Readable Inter typography. Native keyboard controls. Clear
-                status labels. One primary action. Progress tied to completed
-                work.
-              </p>
-              <p className="rpg-technical-note">
-                This local sample uses predefined notes and results. Changing
-                the view keeps progress. Reset starts again.{" "}
-                <a href="/saas-game-ui/saas-game-ui.css">View the CSS</a>.
-              </p>
-            </div>
+          <div>
+            <p>
+              <strong>Object → action → result.</strong> Each object has a
+              label, an app action, a position, and an interaction distance.
+              Approach it with a character or select it with a pointer. Both
+              routes use the same action and state.
+            </p>
+            <p>
+              Use “Set up objects” to move or rename objects, change their
+              action, and add a new one. This sample uses predefined data; the
+              same interaction contract can call your app’s handlers.
+            </p>
           </div>
         </details>
-        <footer className="rpg-footer">
-          <span>
-            Four directions for review. One will become the full system.
-          </span>
+        <footer className="world-footer">
+          <span>One space. Useful objects. Visible consequences.</span>
           <span>shupp.dev / SaaS Game UI</span>
         </footer>
       </main>
       <dialog
-        ref={dialog}
-        className="rpg-document-dialog"
-        aria-labelledby="document-title"
+        ref={documentDialog}
+        className="world-dialog"
+        aria-labelledby="world-document-title"
       >
-        <div className="rpg-document-header">
-          <span className="rpg-kicker">SAMPLE DOCUMENT</span>
+        <div className="world-dialog-top">
+          <span className="world-eyebrow">SAMPLE DOCUMENT</span>
           <form method="dialog">
-            <button aria-label="Close document">
+            <button aria-label="Close document" className="world-close">
               <X size={20} />
             </button>
           </form>
         </div>
-        <h2 id="document-title">
+        <h2 id="world-document-title">
           {documentKind === "notes" ? "Customer notes" : "Weekly brief"}
         </h2>
-        {documentKind === "notes" ? (
-          <ol className="rpg-source-list">
-            {notes.map((line, index) => (
-              <li key={line}>
-                <span>NOTE 0{index + 1}</span>
-                {line}
-              </li>
-            ))}
-          </ol>
-        ) : (
-          <>
-            <p className="rpg-document-status">
-              {phase === 3
-                ? "Reviewed in this sample"
-                : "Draft · awaiting your review"}
-            </p>
-            <ol className="rpg-source-list">
-              {brief.map((line, index) => (
-                <li key={line}>
-                  <span>RECOMMENDATION 0{index + 1}</span>
-                  {line}
-                  <small>
-                    Source notes{" "}
-                    {index === 0 ? "01, 02, 03" : index === 1 ? "04" : "05, 06"}
-                  </small>
-                </li>
-              ))}
-            </ol>
-          </>
+        {documentKind === "brief" && (
+          <p className="world-document-state">
+            {phase === 3
+              ? "Reviewed in this sample"
+              : "Draft · awaiting your review"}
+          </p>
         )}
-        <div className="rpg-document-actions">
+        <ol className="world-document-list">
+          {(documentKind === "notes" ? notes : brief).map((line, index) => (
+            <li key={line}>
+              <span>
+                {documentKind === "notes" ? "NOTE" : "RECOMMENDATION"} 0
+                {index + 1}
+              </span>
+              {line}
+              {documentKind === "brief" && (
+                <small>
+                  Source notes{" "}
+                  {index === 0 ? "01, 02, 03" : index === 1 ? "04" : "05, 06"}
+                </small>
+              )}
+            </li>
+          ))}
+        </ol>
+        <div className="world-dialog-actions">
           <form method="dialog">
-            <button className="rpg-action">
-              Back to the sample <ArrowRight size={16} />
+            <button className="world-primary">
+              Back to the room <ArrowRight size={16} />
             </button>
           </form>
           {phase >= 2 && (
             <button
-              className="rpg-text-button"
+              className="world-text-button"
               onClick={() =>
                 setDocumentKind(documentKind === "notes" ? "brief" : "notes")
               }
@@ -910,9 +909,158 @@ export default function SaasGameUI(): React.JSX.Element {
           )}
         </div>
       </dialog>
+      <dialog
+        ref={setupDialog}
+        className="world-dialog world-setup-dialog"
+        aria-labelledby="world-setup-title"
+      >
+        <div className="world-dialog-top">
+          <span className="world-eyebrow">SCENE SETUP</span>
+          <form method="dialog">
+            <button aria-label="Close setup" className="world-close">
+              <X size={20} />
+            </button>
+          </form>
+        </div>
+        <h2 id="world-setup-title">Give an object a job.</h2>
+        <p>Choose an app action and where someone can use it.</p>
+        <form onSubmit={saveObject} className="world-setup-form">
+          <label>
+            Object
+            <select
+              aria-label="Object"
+              value={editing.id}
+              onChange={(event) => {
+                setEditing(
+                  event.target.value === "new"
+                    ? emptyObject()
+                    : {
+                        ...(objects.find(
+                          (item) => item.id === event.target.value,
+                        ) ?? objects[0]),
+                      },
+                );
+                setSetupError("");
+              }}
+            >
+              {objects.map((item) => (
+                <option key={item.id} value={item.id}>
+                  {item.label}
+                </option>
+              ))}
+              {objects.length < 6 && (
+                <option value="new">+ Add an object</option>
+              )}
+            </select>
+          </label>
+          <label>
+            Name
+            <input
+              value={editing.label}
+              onChange={(event) =>
+                setEditing({ ...editing, label: event.target.value })
+              }
+              maxLength={30}
+              required
+            />
+          </label>
+          <label>
+            App action
+            <select
+              aria-label="App action"
+              value={editing.action}
+              onChange={(event) =>
+                setEditing({
+                  ...editing,
+                  action: event.target.value as ObjectAction,
+                })
+              }
+            >
+              <option value="collect">Collect source notes</option>
+              <option value="draft">Prepare a brief</option>
+              <option value="review">Review the brief</option>
+            </select>
+          </label>
+          <div className="world-setup-grid">
+            <label>
+              Position X (%)
+              <input
+                type="number"
+                min={8}
+                max={92}
+                step={1}
+                value={editing.x}
+                onChange={(event) =>
+                  setEditing({ ...editing, x: event.target.valueAsNumber })
+                }
+                required
+              />
+            </label>
+            <label>
+              Position Y (%)
+              <input
+                type="number"
+                min={46}
+                max={82}
+                step={1}
+                value={editing.y}
+                onChange={(event) =>
+                  setEditing({ ...editing, y: event.target.valueAsNumber })
+                }
+                required
+              />
+            </label>
+          </div>
+          <label>
+            Interaction distance <span>{editing.radius}% of the scene</span>
+            <input
+              type="range"
+              aria-label="Interaction distance"
+              min={6}
+              max={18}
+              step={1}
+              value={editing.radius}
+              onChange={(event) =>
+                setEditing({ ...editing, radius: Number(event.target.value) })
+              }
+            />
+          </label>
+          {setupError !== "" && (
+            <p className="world-setup-error" role="alert">
+              {setupError}
+            </p>
+          )}
+          <div className="world-dialog-actions">
+            <button type="submit" className="world-primary">
+              {editing.id === "new" ? (
+                <>
+                  <Plus size={16} /> Add object
+                </>
+              ) : (
+                <>
+                  Save object <Check size={16} />
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              className="world-text-button"
+              onClick={() => {
+                setObjects(initialObjects);
+                setEditing(initialObjects[0]);
+                setSetupError("");
+                setSelectedId(null);
+                setNotice("The original object layout is restored.");
+              }}
+            >
+              Restore original objects
+            </button>
+          </div>
+        </form>
+        <small className="world-setup-note">
+          Scene edits last for this visit. Reset task keeps your layout.
+        </small>
+      </dialog>
     </div>
   );
-}
-function PlusMark(): React.JSX.Element {
-  return <span aria-hidden="true">+</span>;
 }
