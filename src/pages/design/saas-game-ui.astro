@@ -2,11 +2,11 @@
 import SaasGameUI from '../../components/design/SaasGameUI/SaasGameUI';
 import { isFeatureEnabled } from '../../config/features';
 
-// Standalone character-and-object interaction study with local Inter typography.
+// Standalone AI harness interaction study with local Inter typography.
 if (!isFeatureEnabled('enableSaasGameUI')) return Astro.redirect('/portfolio');
 
-const title = 'SaaS Game UI — Your character, your work | shupp.dev';
-const description = 'A character-driven SaaS interface: walk to objects, discover contextual actions, and change the app. A smooth illustrated 2D study with configurable objects.';
+const title = 'SaaS Game UI — An AI harness you can inhabit | shupp.dev';
+const description = 'An AI harness where tasks, context, agents, patches, and checks are interactive game objects. A character-driven interface with a working local coding sample.';
 ---
 
 <!doctype html>
@@ -26,11 +26,11 @@ const description = 'A character-driven SaaS interface: walk to objects, discove
     <meta property="og:description" content={description} />
     <meta property="og:url" content="https://shupp.dev/design/saas-game-ui" />
     <meta property="og:image" content="https://shupp.dev/images/projects/saas-game-ui.png" />
-    <meta property="og:image:alt" content="An illustrated workroom where a character interacts with an archive, a writing desk, and a review stand." />
+    <meta property="og:image:alt" content="An AI harness dashboard with an illustrated operator and interactive task, context, agent, patch, and verification panels." />
     <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body class="sg-document">
     <SaasGameUI client:load />
-    <noscript><p class="sg-noscript">JavaScript is off. Enable it to move your character, interact with objects, and configure the sample room.</p></noscript>
+    <noscript><p class="sg-noscript">JavaScript is off. Enable it to operate the AI harness, configure the sample agent, inspect its patch, and execute local checks.</p></noscript>
   </body>
 </html>

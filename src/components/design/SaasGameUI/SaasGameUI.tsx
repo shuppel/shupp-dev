@@ -4,1062 +4,1001 @@ import {
   ArrowRight,
   ArrowCounterClockwise,
   Check,
-  FileText,
-  GearSix,
+  CheckCircle,
+  Code,
+  Diamond,
+  FileCode,
+  Flag,
   Hand,
-  LockSimple,
+  Pause,
+  Play,
   PersonSimpleWalk,
-  Plus,
+  Sparkle,
   X,
+  XCircle,
 } from "@phosphor-icons/react";
+import { Person } from "./WorldArtwork";
 import {
-  Person,
-  WorkObject,
-  Workroom,
-  type ObjectAction,
-} from "./WorldArtwork";
+  checkCases,
+  patchCode,
+  runChecks,
+  runSteps,
+  sourceCode,
+  surfaces,
+  type CheckResult,
+  type Surface,
+} from "./harness";
 
+type Phase = "idle" | "running" | "paused" | "review" | "applied" | "done";
 interface Point {
   x: number;
   y: number;
 }
-type WorldItem = Point & {
-  id: string;
-  label: string;
-  action: ObjectAction;
-  radius: number;
-};
-interface Destination {
-  point: Point;
-  objectId?: string;
-  label?: string;
-}
-type InputMode = "character" | "pointer";
-const actions: Record<
-  ObjectAction,
-  { step: number; verb: string; title: string; detail: string; result: string }
-> = {
-  collect: {
-    step: 0,
-    verb: "Collect",
-    title: "Collect 6 notes",
-    detail:
-      "Collect the customer notes from this archive. They become the source material for your brief.",
-    result:
-      "Six source notes are in your inventory. Take them to the writing desk.",
-  },
-  draft: {
-    step: 1,
-    verb: "Write",
-    title: "Prepare brief",
-    detail:
-      "Use the collected notes to prepare a short brief. You’ll review it before marking it complete.",
-    result: "Your brief is ready. Bring it to the review stand.",
-  },
-  review: {
-    step: 2,
-    verb: "Review",
-    title: "Mark sample reviewed",
-    detail:
-      "Check the recommendations against their source notes, then mark this sample as reviewed.",
-    result:
-      "Sample reviewed. Your notes and brief remain available in the inventory.",
-  },
-};
-const initialObjects: WorldItem[] = [
-  {
-    id: "archive",
-    label: "Source archive",
-    action: "collect",
-    x: 23,
-    y: 61,
-    radius: 10,
-  },
-  {
-    id: "desk",
-    label: "Writing desk",
-    action: "draft",
-    x: 51,
-    y: 56,
-    radius: 10,
-  },
-  {
-    id: "stand",
-    label: "Review stand",
-    action: "review",
-    x: 79,
-    y: 63,
-    radius: 10,
-  },
-];
-const startPosition: Point = { x: 50, y: 84 };
-const notes = [
-  "Two customers missed changes to their task status.",
-  "Three customers asked for a single daily summary.",
-  "The support team manually combines updates every Friday.",
-  "Reviewers want to see the source of each recommendation.",
-  "The team wants to approve summaries before they are shared.",
-  "A draft-only pilot is planned for next week.",
-];
-const brief = [
-  "Combine task updates into a daily summary so changes are easier to follow.",
-  "Keep source notes alongside recommendations so reviewers can check the evidence.",
-  "Pilot a draft-only summary next week, with a person reviewing every draft.",
-];
-const movementKeys = new Set([
-  "arrowup",
-  "arrowdown",
-  "arrowleft",
-  "arrowright",
-  "w",
-  "a",
-  "s",
-  "d",
-]);
-function clamp(value: number, min: number, max: number): number {
-  return Math.max(min, Math.min(max, value));
-}
-function approach(item: WorldItem): Point {
-  return { x: item.x, y: clamp(item.y + 8, 56, 92) };
-}
-function distance(a: Point, b: Point): number {
-  return Math.hypot(a.x - b.x, a.y - b.y);
-}
-function emptyObject(): WorldItem {
-  return {
-    id: "new",
-    label: "Notes cabinet",
-    action: "collect",
-    x: 18,
-    y: 80,
-    radius: 10,
-  };
+interface DocumentView {
+  title: string;
+  code: string;
 }
 
 export default function SaasGameUI(): React.JSX.Element {
-  const [objects, setObjects] = useState<WorldItem[]>(initialObjects);
-  const [mode, setMode] = useState<InputMode>("character");
-  const [position, setPosition] = useState<Point>(startPosition);
-  const positionRef = useRef<Point>(startPosition);
-  const [destination, setDestination] = useState<Destination | null>(null);
-  const [keyboardMoving, setKeyboardMoving] = useState(false);
-  const keys = useRef(new Set<string>());
+  const [mode, setMode] = useState<"character" | "pointer">("character");
+  const [active, setActive] = useState<Surface>("task");
+  const [position, setPosition] = useState<Point | null>(null);
   const [walking, setWalking] = useState(false);
   const [facing, setFacing] = useState(1);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [hoveredId, setHoveredId] = useState<string | null>(null);
-  const [phase, setPhase] = useState(0);
-  const [running, setRunning] = useState<WorldItem | null>(null);
+  const [assigned, setAssigned] = useState(false);
+  const [sourceEquipped, setSourceEquipped] = useState(true);
+  const [testsEquipped, setTestsEquipped] = useState(false);
+  const [canRead, setCanRead] = useState(true);
+  const [canPropose, setCanPropose] = useState(true);
+  const [phase, setPhase] = useState<Phase>("idle");
+  const [step, setStep] = useState(0);
+  const [inspected, setInspected] = useState(false);
+  const [results, setResults] = useState<CheckResult[] | null>(null);
+  const [checkedVersion, setCheckedVersion] = useState<
+    "baseline" | "patch" | null
+  >(null);
+  const [dragging, setDragging] = useState(false);
+  const [dropTarget, setDropTarget] = useState(false);
   const [notice, setNotice] = useState(
-    "Click the archive to walk over and discover its action.",
+    "Start by assigning the task to your implementer.",
   );
+  const [hint, setHint] = useState("");
+  const [documentView, setDocumentView] = useState<DocumentView | null>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
-  const [documentKind, setDocumentKind] = useState<"notes" | "brief">("notes");
-  const [editing, setEditing] = useState<WorldItem>(initialObjects[0]);
-  const [setupError, setSetupError] = useState("");
-  const nextId = useRef(1);
-  const stage = useRef<HTMLDivElement>(null);
-  const documentDialog = useRef<HTMLDialogElement>(null);
-  const setupDialog = useRef<HTMLDialogElement>(null);
-  const selected = objects.find((item) => item.id === selectedId) ?? null;
-  const nearest = objects.reduce<WorldItem | null>(
-    (best, item) =>
-      distance(position, approach(item)) <= item.radius &&
-      (best === null ||
-        distance(position, approach(item)) < distance(position, approach(best)))
-        ? item
-        : best,
-    null,
-  );
-  const hovered = objects.find((item) => item.id === hoveredId) ?? null;
-  const reachable =
-    selected !== null &&
-    (mode === "pointer" ||
-      distance(position, approach(selected)) <= selected.radius);
-  const selectedAction = selected === null ? null : actions[selected.action];
-  const complete = selectedAction !== null && phase > selectedAction.step;
-  const locked = selectedAction !== null && phase < selectedAction.step;
-  const cursorState =
-    running !== null
-      ? "working"
-      : hovered === null
-        ? mode === "character"
-          ? "walk"
-          : "select"
-        : phase < actions[hovered.action].step
-          ? "locked"
-          : mode === "character" &&
-              distance(position, approach(hovered)) > hovered.radius
-            ? "approach"
-            : "interact";
-  const cursorHint =
-    cursorState === "working"
-      ? "Working"
-      : hovered !== null
-        ? cursorState === "locked"
-          ? `Requires ${actions[hovered.action].step === 1 ? "source notes" : "a draft brief"}`
-          : cursorState === "approach"
-            ? `Walk to ${hovered.label.toLowerCase()}`
-            : phase > actions[hovered.action].step
-              ? "Inspect result"
-              : actions[hovered.action].verb
-        : mode === "character"
-          ? "Click the floor to move"
-          : "Select an object";
+  const workspace = useRef<HTMLDivElement>(null);
+  const dialog = useRef<HTMLDialogElement>(null);
+  const cards = useRef<Partial<Record<Surface, HTMLElement | null>>>({});
+  const moveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const documentOpener = useRef<HTMLElement | null>(null);
+  const patched = phase === "applied" || phase === "done";
+  const hasPatch = phase === "review" || patched;
+  const configLocked = phase !== "idle";
+  const equipped = Number(sourceEquipped) + Number(testsEquipped);
+  const ready = assigned && equipped === 2 && canRead && canPropose;
+  const passed = results?.filter((test) => test.passed).length ?? 0;
+  const verified =
+    patched && checkedVersion === "patch" && passed === checkCases.length;
+  const blocker = !assigned
+    ? "Assign the task first."
+    : equipped < 2
+      ? "Equip both context files."
+      : !canRead || !canPropose
+        ? "Enable Read files and Propose patch."
+        : "Ready when you are.";
 
   useEffect(() => {
-    const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    setReducedMotion(media.matches);
-    function update(event: MediaQueryListEvent): void {
-      setReducedMotion(event.matches);
-    }
-    media.addEventListener("change", update);
-    return () => media.removeEventListener("change", update);
+    const query = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const update = (): void => setReducedMotion(query.matches);
+    update();
+    query.addEventListener("change", update);
+    return () => query.removeEventListener("change", update);
   }, []);
 
   useEffect(() => {
-    if (mode !== "character" || (destination === null && !keyboardMoving))
-      return;
-    let frame = 0;
-    let previous = 0;
-    function finish(point: Point): void {
-      positionRef.current = point;
-      setPosition(point);
-      setWalking(false);
-      setDestination(null);
-      if (destination?.objectId !== undefined) {
-        setSelectedId(destination.objectId);
+    const board = workspace.current;
+    if (!board) return;
+    const update = (): void => {
+      const dock = cards.current[active]?.querySelector(".h-dock");
+      if (!dock) return;
+      const b = board.getBoundingClientRect();
+      const d = dock.getBoundingClientRect();
+      setPosition({ x: d.left - b.left, y: d.top - b.top });
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(board);
+    for (const card of Object.values(cards.current))
+      if (card) observer.observe(card);
+    window.addEventListener("resize", update);
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", update);
+    };
+  }, [active, mode]);
+
+  useEffect(() => {
+    if (phase !== "running") return;
+    const timer = window.setTimeout(() => {
+      if (step < runSteps.length) {
+        setStep(step + 1);
+      } else {
+        setPhase("review");
         setNotice(
-          `You’re beside ${destination.label?.toLowerCase() ?? "the object"}. Choose its action below.`,
+          "The implementer proposed a patch. Inspect the diff before applying it.",
         );
       }
-    }
-    if (reducedMotion && destination !== null && !keyboardMoving) {
-      finish(destination.point);
-      return;
-    }
-    function tick(time: number): void {
-      const dt =
-        previous === 0 ? 0.016 : Math.min((time - previous) / 1000, 0.04);
-      previous = time;
-      const bounds = stage.current?.getBoundingClientRect();
-      if (bounds === undefined) return;
-      const here = positionRef.current;
-      const dxKey =
-        Number(keys.current.has("arrowright") || keys.current.has("d")) -
-        Number(keys.current.has("arrowleft") || keys.current.has("a"));
-      const dyKey =
-        Number(keys.current.has("arrowdown") || keys.current.has("s")) -
-        Number(keys.current.has("arrowup") || keys.current.has("w"));
-      let dx = dxKey;
-      let dy = dyKey;
-      const manual = dx !== 0 || dy !== 0;
-      if (!manual && destination !== null) {
-        dx = ((destination.point.x - here.x) * bounds.width) / 100;
-        dy = ((destination.point.y - here.y) * bounds.height) / 100;
-      }
-      const length = Math.hypot(dx, dy);
-      const stride = 215 * dt;
-      if (!manual && destination !== null && length <= stride) {
-        finish(destination.point);
-        return;
-      }
-      if (length === 0) {
-        setWalking(false);
-        return;
-      }
-      const next = {
-        x: clamp(
-          here.x + (((dx / length) * stride) / bounds.width) * 100,
-          6,
-          94,
-        ),
-        y: clamp(
-          here.y + (((dy / length) * stride) / bounds.height) * 100,
-          56,
-          92,
-        ),
-      };
-      positionRef.current = next;
-      setPosition(next);
-      setWalking(true);
-      if (Math.abs(dx) > 0.1) setFacing(dx >= 0 ? 1 : -1);
-      frame = window.requestAnimationFrame(tick);
-    }
-    frame = window.requestAnimationFrame(tick);
-    return () => {
-      window.cancelAnimationFrame(frame);
-    };
-  }, [destination, keyboardMoving, mode, reducedMotion]);
-
-  useEffect(() => {
-    if (running === null) return;
-    // A bounded local sample, not a model call or a backend progress estimate.
-    const timer = window.setTimeout(() => {
-      setPhase(actions[running.action].step + 1);
-      setNotice(actions[running.action].result);
-      setRunning(null);
-    }, 700);
+    }, 950);
     return () => window.clearTimeout(timer);
-  }, [running]);
+  }, [phase, step]);
 
+  useEffect(
+    () => () => {
+      if (moveTimer.current !== null) clearTimeout(moveTimer.current);
+    },
+    [],
+  );
   useEffect(() => {
-    function releaseKeys(): void {
-      keys.current.clear();
-      setKeyboardMoving(false);
-      setWalking(false);
-    }
-    window.addEventListener("blur", releaseKeys);
-    return () => window.removeEventListener("blur", releaseKeys);
-  }, []);
+    if (documentView !== null && dialog.current && !dialog.current.open)
+      dialog.current.showModal();
+  }, [documentView]);
 
-  function stopMoving(): void {
-    keys.current.clear();
-    setKeyboardMoving(false);
-    setDestination(null);
-    setWalking(false);
+  function moveTo(id: Surface): void {
+    const before = cards.current[active]?.getBoundingClientRect();
+    const after = cards.current[id]?.getBoundingClientRect();
+    if (before && after) setFacing(after.left < before.left ? -1 : 1);
+    setActive(id);
+    if (moveTimer.current !== null) clearTimeout(moveTimer.current);
+    setWalking(!reducedMotion && id !== active);
+    moveTimer.current = setTimeout(() => setWalking(false), 420);
   }
-  function openDocument(kind: "notes" | "brief"): void {
-    stopMoving();
-    setDocumentKind(kind);
-    documentDialog.current?.showModal();
+  function interact(id: Surface, action: () => void): void {
+    moveTo(id);
+    action();
   }
-  function chooseObject(item: WorldItem): void {
-    if (
-      mode === "pointer" ||
-      distance(positionRef.current, approach(item)) <= item.radius
-    ) {
-      stopMoving();
-      setSelectedId(item.id);
-      setNotice(
-        `${item.label}: ${phase < actions[item.action].step ? "finish the earlier step to unlock this action." : "choose an action below."}`,
-      );
-    } else {
-      keys.current.clear();
-      setKeyboardMoving(false);
-      setSelectedId(item.id);
-      setDestination({
-        point: approach(item),
-        objectId: item.id,
-        label: item.label,
-      });
-      setNotice(`Walking to ${item.label.toLowerCase()}…`);
-    }
-  }
-  function walkTo(event: React.MouseEvent<HTMLDivElement>): void {
-    if (
-      (event.target as HTMLElement).closest("button") !== null ||
-      mode !== "character" ||
-      event.button !== 0
-    )
-      return;
-    const bounds = event.currentTarget.getBoundingClientRect();
-    const point = {
-      x: clamp(((event.clientX - bounds.left) / bounds.width) * 100, 6, 94),
-      y: clamp(((event.clientY - bounds.top) / bounds.height) * 100, 56, 92),
-    };
-    keys.current.clear();
-    setKeyboardMoving(false);
-    setSelectedId(null);
-    setDestination({ point });
-    stage.current?.focus({ preventScroll: true });
-  }
-  function onStageKeyDown(event: React.KeyboardEvent<HTMLDivElement>): void {
-    const key = event.key.toLowerCase();
-    if (key === "escape") {
-      stopMoving();
-      setSelectedId(null);
-      return;
-    }
-    if (mode !== "character") return;
-    if (movementKeys.has(key)) {
-      event.preventDefault();
-      keys.current.add(key);
-      setDestination(null);
-      setKeyboardMoving(true);
-    }
-    if (
-      key === "e" ||
-      (key === "enter" && event.target === event.currentTarget)
-    ) {
-      event.preventDefault();
-      if (nearest !== null) {
-        stopMoving();
-        setSelectedId(nearest.id);
-        setNotice(`${nearest.label}: choose its action below.`);
-      } else setNotice("Move closer to an object to interact with it.");
-    }
-  }
-  function onStageKeyUp(event: React.KeyboardEvent<HTMLDivElement>): void {
-    keys.current.delete(event.key.toLowerCase());
-    if (keys.current.size === 0) {
-      setKeyboardMoving(false);
-      setWalking(false);
-    }
-  }
-  function performAction(): void {
-    if (selected === null || running !== null || !reachable) return;
-    const definition = actions[selected.action];
-    if (phase < definition.step) return;
-    if (phase > definition.step) {
-      openDocument(selected.action === "collect" ? "notes" : "brief");
-      return;
-    }
-    stopMoving();
-    setRunning(selected);
-    setNotice(`${definition.title} — working with the local sample…`);
-  }
-  function resetSample(): void {
-    stopMoving();
-    setRunning(null);
-    setPhase(0);
-    setSelectedId(null);
-    positionRef.current = startPosition;
-    setPosition(startPosition);
-    setNotice("Sample reset. Your object layout is kept.");
-  }
-  function changeMode(value: InputMode): void {
-    stopMoving();
-    setMode(value);
+  function assign(): void {
+    setAssigned(true);
+    setDragging(false);
+    setDropTarget(false);
     setNotice(
-      value === "character"
-        ? "Click the floor to move. Approach an object to use it."
-        : "Select an object to use its action directly.",
+      equipped === 2
+        ? "Task assigned. Your agent has both context files."
+        : "Task assigned. Equip both files to complete the agent’s context.",
     );
   }
-  function openSetup(): void {
-    stopMoving();
-    setEditing(selected ?? objects[0]);
-    setSetupError("");
-    setupDialog.current?.showModal();
+  function startRun(): void {
+    if (!ready || phase !== "idle") return;
+    setStep(0);
+    setInspected(false);
+    setPhase("running");
+    setNotice("The sample agent is reading its equipped files.");
   }
-  function saveObject(event: React.FormEvent<HTMLFormElement>): void {
-    event.preventDefault();
-    if (editing.label.trim().length === 0) {
-      setSetupError("Give the object a name.");
-      return;
-    }
-    if (![editing.x, editing.y, editing.radius].every(Number.isFinite)) {
-      setSetupError("Use valid numbers for position and reach.");
-      return;
-    }
-    if (
-      objects.some(
-        (item) => item.id !== editing.id && distance(item, editing) < 15,
-      )
-    ) {
-      setSetupError(
-        "This is too close to another object. Move it a little farther away.",
-      );
-      return;
-    }
-    const saved = {
-      ...editing,
-      id: editing.id === "new" ? `custom-${nextId.current++}` : editing.id,
-      label: editing.label.trim(),
-    };
-    const nextObjects =
-      editing.id === "new"
-        ? [...objects, saved]
-        : objects.map((item) => (item.id === editing.id ? saved : item));
-    if (
-      !(Object.keys(actions) as ObjectAction[]).every((action) =>
-        nextObjects.some((item) => item.action === action),
-      )
-    ) {
-      setSetupError(
-        "Keep an object for each step. Add a replacement before changing this action.",
-      );
-      return;
-    }
-    setObjects(nextObjects);
-    setSelectedId(saved.id);
-    setHoveredId(null);
-    setupDialog.current?.close();
+  function inspect(): void {
+    if (!hasPatch) return;
+    setInspected(true);
+    setNotice("Diff opened. Applying it changes only the local sample.");
+  }
+  function apply(): void {
+    if (phase !== "review" || !inspected) return;
+    setPhase("applied");
+    setResults(null);
+    setCheckedVersion(null);
+    setNotice("Patch applied to the local sample. Run checks to verify it.");
+  }
+  function verify(): void {
+    setResults(runChecks(patched));
+    setCheckedVersion(patched ? "patch" : "baseline");
     setNotice(
-      `${saved.label} is set up. Its ${actions[saved.action].verb.toLowerCase()} action is ready to try.`,
+      patched
+        ? "All four checks passed against the patched function."
+        : "Baseline: one check passed, three failed. The task has a reproducible failure.",
+    );
+  }
+  function reset(): void {
+    setPhase("idle");
+    setStep(0);
+    setAssigned(false);
+    setSourceEquipped(true);
+    setTestsEquipped(false);
+    setCanRead(true);
+    setCanPropose(true);
+    setInspected(false);
+    setResults(null);
+    setCheckedVersion(null);
+    setDragging(false);
+    setDropTarget(false);
+    setHint("");
+    moveTo("task");
+    setNotice("Sample reset. Assign the task to begin again.");
+  }
+  function openDocument(title: string, code: string): void {
+    documentOpener.current =
+      document.activeElement instanceof HTMLElement
+        ? document.activeElement
+        : null;
+    setDocumentView({ title, code });
+  }
+  function onBoardKey(event: React.KeyboardEvent<HTMLDivElement>): void {
+    if (event.target !== event.currentTarget || mode !== "character") return;
+    const key = event.key.toLowerCase();
+    const direction = ["arrowright", "arrowdown", "d", "s"].includes(key)
+      ? 1
+      : ["arrowleft", "arrowup", "a", "w"].includes(key)
+        ? -1
+        : 0;
+    if (direction !== 0) {
+      event.preventDefault();
+      const index = surfaces.findIndex((item) => item.id === active);
+      moveTo(
+        surfaces[(index + direction + surfaces.length) % surfaces.length].id,
+      );
+    } else if (key === "e" || key === "enter") {
+      event.preventDefault();
+      cards.current[active]
+        ?.querySelector<HTMLElement>(
+          "[data-primary]:not(:disabled), input:not(:disabled)",
+        )
+        ?.focus();
+    }
+  }
+  function heading(
+    id: Surface,
+    number: string,
+    label: string,
+    status: string,
+  ): React.JSX.Element {
+    return (
+      <div className="h-card-heading">
+        <button
+          className="h-card-title"
+          onClick={() => moveTo(id)}
+          aria-label={`Approach ${label}`}
+          aria-pressed={active === id && mode === "character"}
+        >
+          <span className="h-number">{number}</span>
+          <span>
+            <span className="h-eyebrow">{label}</span>
+            <small>{status}</small>
+          </span>
+        </button>
+        <span className="h-dock" aria-hidden="true">
+          <Diamond size={16} weight="thin" />
+        </span>
+      </div>
+    );
+  }
+  function command(
+    id: Surface,
+    label: string,
+    action: () => void,
+    options: { disabled?: boolean; quiet?: boolean; cursor?: string } = {},
+  ): React.JSX.Element {
+    return (
+      <button
+        className={`h-button ${options.quiet === true ? "h-button--quiet" : ""}`}
+        data-primary
+        data-command={options.cursor ?? "use"}
+        disabled={options.disabled ?? false}
+        onClick={() => interact(id, action)}
+        onMouseEnter={() =>
+          setHint(
+            `${surfaces.find((item) => item.id === id)?.title ?? id} · ${label}`,
+          )
+        }
+        onMouseLeave={() => setHint("")}
+        onFocus={() =>
+          setHint(
+            `${surfaces.find((item) => item.id === id)?.title ?? id} · ${label}`,
+          )
+        }
+        onBlur={() => setHint("")}
+      >
+        <span>{label}</span>
+        <ArrowRight size={16} aria-hidden="true" />
+      </button>
     );
   }
 
   return (
-    <div className="world-study">
-      <a className="world-skip" href="#workroom">
-        Skip to workroom
-      </a>
-      <header className="world-site-header">
-        <a href="/" className="world-wordmark">
-          shupp.dev <span>/ design studies</span>
-        </a>
+    <div className="h-study">
+      <header className="h-site-header">
         <a href="/portfolio">
-          <ArrowLeft size={14} aria-hidden="true" /> All studies
+          <ArrowLeft size={15} /> shupp.dev
         </a>
+        <span>
+          Design studies <span className="h-slash">/</span> SaaS Game UI
+        </span>
+        <span className="h-edition">No. 03</span>
       </header>
-      <main className="world-main">
-        <div className="world-intro">
+      <main>
+        <section className="h-intro">
           <div>
-            <span className="world-eyebrow">
-              SAAS GAME UI / OBJECT INTERACTION
-            </span>
-            <h1>
-              Your character.
-              <br />
-              <span>Your way into the work.</span>
-            </h1>
+            <p className="h-eyebrow">An interface you can inhabit</p>
+            <h1>Put your agent to work.</h1>
           </div>
           <p>
-            Walk to an object. Discover its action.
-            <br />
-            Use it to change something in the app.
-            <small>Illustrated 2D study · Inter typography</small>
+            Your task, context, agent, and output are the game objects.
+            <br className="h-desktop-break" /> Every interaction does something
+            in the app.
           </p>
-        </div>
-        <section className="world-shell" aria-label="Interactive workroom demo">
-          <div className="world-toolbar">
-            <div>
-              <span className="world-mark" aria-hidden="true">
-                ◇
+        </section>
+        <section className="h-harness" aria-label="Interactive AI harness">
+          <div className="h-appbar">
+            <div className="h-brand">
+              <span className="h-crest">
+                <Diamond weight="duotone" size={25} />
               </span>
-              <strong>The workroom</strong>
-              <span className="world-demo">Local sample</span>
+              <div>
+                <strong>FIELDWORK</strong>
+                <span>AI harness</span>
+              </div>
             </div>
-            <div
-              className="world-mode"
-              role="group"
-              aria-label="Interaction mode"
-            >
+            <span className="h-sandbox">
+              <span /> Local sandbox
+            </span>
+          </div>
+          <div className="h-toolbar">
+            <div>
+              <span className="h-run-id">RUN / 001</span>
+              <span className="h-run-name">Search guard</span>
+            </div>
+            <div className="h-controls">
+              <div className="h-mode" aria-label="Interaction mode">
+                <button
+                  aria-pressed={mode === "character"}
+                  onClick={() => {
+                    setMode("character");
+                    setWalking(false);
+                  }}
+                >
+                  <PersonSimpleWalk size={16} />
+                  Character
+                </button>
+                <button
+                  aria-pressed={mode === "pointer"}
+                  onClick={() => {
+                    setMode("pointer");
+                    setWalking(false);
+                  }}
+                >
+                  <Hand size={16} />
+                  Pointer
+                </button>
+              </div>
               <button
-                aria-pressed={mode === "character"}
-                onClick={() => changeMode("character")}
+                className="h-icon-button"
+                onClick={reset}
+                aria-label="Reset sample"
+                title="Reset sample"
               >
-                <PersonSimpleWalk size={16} aria-hidden="true" /> Character
-              </button>
-              <button
-                aria-pressed={mode === "pointer"}
-                onClick={() => changeMode("pointer")}
-              >
-                <Hand size={16} aria-hidden="true" /> Pointer
+                <ArrowCounterClockwise size={18} />
               </button>
             </div>
           </div>
           <div
-            id="workroom"
-            ref={stage}
-            className="world-stage"
-            tabIndex={0}
-            role="group"
-            aria-label="Workroom. Click to walk, or use arrow keys and E to interact."
-            aria-describedby="world-instructions"
+            className="h-workspace"
+            ref={workspace}
+            tabIndex={mode === "character" ? 0 : -1}
+            onKeyDown={onBoardKey}
+            aria-label="Harness workspace. Arrow keys or WASD move between components. E focuses the current component’s action."
             data-mode={mode}
-            data-cursor={cursorState}
-            onClick={walkTo}
-            onKeyDown={onStageKeyDown}
-            onKeyUp={onStageKeyUp}
-            onBlur={() => {
-              keys.current.clear();
-              setKeyboardMoving(false);
-              setWalking(false);
-            }}
           >
-            <Workroom />
-            <div className="world-location" aria-hidden="true">
-              <span>THE RESEARCH ATELIER</span>
-              <small>Notes → brief → review</small>
-            </div>
-            {objects.map((item) => {
-              const definition = actions[item.action];
-              const itemComplete = phase > definition.step;
-              const itemLocked = phase < definition.step;
-              const inReach =
-                mode === "pointer" ||
-                distance(position, approach(item)) <= item.radius;
-              return (
-                <button
-                  key={item.id}
-                  className="world-object"
-                  style={{
-                    left: `${item.x}%`,
-                    top: `${item.y}%`,
-                    zIndex: Math.round(item.y),
-                  }}
-                  onClick={() => chooseObject(item)}
-                  onPointerEnter={() => setHoveredId(item.id)}
-                  onPointerLeave={() => setHoveredId(null)}
-                  onFocus={() => setHoveredId(item.id)}
-                  onBlur={() => setHoveredId(null)}
-                  aria-label={item.label}
-                  aria-pressed={selectedId === item.id}
-                  data-state={
-                    itemComplete
-                      ? "complete"
-                      : itemLocked
-                        ? "locked"
-                        : running?.id === item.id
-                          ? "working"
-                          : "ready"
-                  }
-                  data-reachable={inReach}
-                  data-cursor={
-                    running !== null
-                      ? "working"
-                      : itemLocked
-                        ? "locked"
-                        : inReach
-                          ? "interact"
-                          : "approach"
-                  }
-                >
-                  <span className="world-object-hint">
-                    {itemComplete
-                      ? "Inspect"
-                      : itemLocked
-                        ? "Locked"
-                        : inReach
-                          ? definition.verb
-                          : "Approach"}
-                  </span>
-                  <WorkObject action={item.action} complete={itemComplete} />
-                  <span className="world-object-label">
-                    {itemComplete ? (
-                      <Check size={12} aria-hidden="true" />
-                    ) : itemLocked ? (
-                      <LockSimple size={12} aria-hidden="true" />
-                    ) : (
-                      <span className="world-ready-dot" aria-hidden="true" />
-                    )}
-                    {item.label}
-                  </span>
-                </button>
-              );
-            })}
-            {destination !== null && mode === "character" && (
-              <span
-                className="world-destination"
-                style={{
-                  left: `${destination.point.x}%`,
-                  top: `${destination.point.y}%`,
-                }}
-                aria-hidden="true"
-              />
-            )}
-            {mode === "character" && (
+            <section
+              className="h-card h-task"
+              ref={(el) => {
+                cards.current.task = el;
+              }}
+              data-active={active === "task" && mode === "character"}
+            >
+              {heading(
+                "task",
+                "01",
+                "Task",
+                phase === "done"
+                  ? "Completed"
+                  : assigned
+                    ? "Assigned to implementer"
+                    : "Ready to assign",
+              )}
               <div
-                className="world-person"
-                style={{
-                  left: `${position.x}%`,
-                  top: `${position.y}%`,
-                  zIndex: Math.round(position.y),
+                className="h-task-content"
+                draggable={!assigned}
+                onDragStart={(event) => {
+                  event.dataTransfer.setData(
+                    "text/plain",
+                    "fieldwork:search-guard",
+                  );
+                  event.dataTransfer.effectAllowed = "move";
+                  setDragging(true);
                 }}
-                data-x={position.x.toFixed(2)}
-                data-y={position.y.toFixed(2)}
-                data-walking={walking}
-                aria-label="Your character"
+                onDragEnd={() => {
+                  setDragging(false);
+                  setDropTarget(false);
+                }}
               >
-                <span className="world-person-shadow" />
-                <Person
-                  walking={walking}
-                  carrying={phase >= 1}
-                  facing={facing}
-                />
-                <span className="world-you">You</span>
+                <span className="h-label">
+                  <Flag size={12} /> FIX · SEARCH-012
+                </span>
+                <h2>Stop empty searches.</h2>
+                <p>
+                  Reject blank input. Trim spaces.
+                  <br />
+                  Keep valid queries working.
+                </p>
+                <div className="h-task-meta">
+                  <span>src/search.ts</span>
+                  <span>4 checks</span>
+                </div>
               </div>
-            )}
-            <div className="world-cursor-hint" aria-hidden="true">
-              {cursorState === "locked" ? (
-                <LockSimple size={14} />
-              ) : mode === "character" ? (
-                <PersonSimpleWalk size={15} />
-              ) : (
-                <Hand size={15} />
+              {command(
+                "task",
+                phase === "done"
+                  ? "Task completed"
+                  : assigned
+                    ? "Assigned to implementer"
+                    : "Assign to implementer",
+                assign,
+                { disabled: assigned, cursor: "assign" },
               )}
-              <span>{cursorHint}</span>
-            </div>
-            {mode === "character" &&
-              nearest !== null &&
-              destination === null &&
-              !walking && (
-                <button
-                  className="world-nearby"
-                  onClick={() => {
-                    setSelectedId(nearest.id);
-                    setNotice(`${nearest.label}: choose its action below.`);
-                  }}
-                >
-                  <kbd>E</kbd> Interact with {nearest.label.toLowerCase()}
-                </button>
+              {!assigned && (
+                <p className="h-micro">Or drag this task onto the agent.</p>
               )}
-          </div>
-          <div className="world-context" data-has-object={selected !== null}>
-            <div className="world-context-copy">
-              <span className="world-eyebrow">
-                {selected === null
-                  ? "YOUR NEXT MOVE"
-                  : selected.label.toUpperCase()}
-              </span>
-              <h2>
-                {selected === null
-                  ? mode === "character"
-                    ? "Start at the source archive."
-                    : "Choose an object in the room."
-                  : !reachable
-                    ? `Walk to ${selected.label.toLowerCase()}.`
-                    : locked
-                      ? `First, ${selectedAction?.step === 1 ? "collect the notes" : "prepare a brief"}.`
-                      : complete
-                        ? "Your result is ready to inspect."
-                        : selectedAction?.title}
-              </h2>
-              <p>
-                {selected === null
-                  ? "The archive holds your notes. The desk prepares a brief. The stand is where you review it."
-                  : !reachable
-                    ? "The action becomes available when your character is within reach."
-                    : locked
-                      ? "You can inspect this object now. Its action unlocks when the earlier step is complete."
-                      : selectedAction?.detail}
+            </section>
+
+            <section
+              className="h-card h-context"
+              ref={(el) => {
+                cards.current.context = el;
+              }}
+              data-active={active === "context" && mode === "character"}
+            >
+              {heading(
+                "context",
+                "02",
+                "Context",
+                `${equipped} / 2 files equipped`,
+              )}
+              <p className="h-card-description">
+                Give the agent what it needs.
               </p>
-            </div>
-            <div className="world-context-actions">
-              {selected === null ? (
+              <div className="h-file">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={sourceEquipped}
+                    disabled={configLocked}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      interact("context", () => {
+                        setSourceEquipped(checked);
+                        setNotice(
+                          checked
+                            ? "Source file equipped."
+                            : "Source file removed from the agent’s context.",
+                        );
+                      });
+                    }}
+                  />
+                  <FileCode size={19} />
+                  <span>
+                    src/search.ts<small>Current implementation</small>
+                  </span>
+                </label>
                 <button
-                  className="world-primary"
+                  className="h-file-open"
+                  aria-label="Inspect source file"
+                  title="Inspect source file"
                   onClick={() =>
-                    chooseObject(
-                      objects.find((item) => item.action === "collect") ??
-                        objects[0],
+                    interact("context", () =>
+                      openDocument(
+                        "src/search.ts",
+                        patched ? patchCode : sourceCode,
+                      ),
                     )
                   }
                 >
-                  {mode === "character" ? "Walk to archive" : "Select archive"}
-                  <ArrowRight size={16} />
+                  <Code size={17} />
                 </button>
-              ) : !reachable ? (
+              </div>
+              <div className="h-file">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={testsEquipped}
+                    disabled={configLocked}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      interact("context", () => {
+                        setTestsEquipped(checked);
+                        setNotice(
+                          checked
+                            ? "Test file equipped. Your agent is ready once the task is assigned."
+                            : "Test file removed from the agent’s context.",
+                        );
+                      });
+                    }}
+                  />
+                  <FileCode size={19} />
+                  <span>
+                    search.test.ts<small>Acceptance criteria</small>
+                  </span>
+                </label>
                 <button
-                  className="world-primary"
-                  onClick={() => chooseObject(selected)}
-                  disabled={destination !== null}
+                  className="h-file-open"
+                  aria-label="Inspect test file"
+                  title="Inspect test file"
+                  onClick={() =>
+                    interact("context", () =>
+                      openDocument(
+                        "search.test.ts",
+                        checkCases
+                          .map(
+                            (test) =>
+                              `expect(prepareSearch(${JSON.stringify(test.input)})).toBe(${JSON.stringify(test.expected)});`,
+                          )
+                          .join("\n"),
+                      ),
+                    )
+                  }
                 >
-                  {" "}
-                  {destination !== null ? "Walking…" : "Walk closer"}
-                  <PersonSimpleWalk size={17} />
+                  <Code size={17} />
                 </button>
-              ) : running !== null ? (
+              </div>
+              <p className="h-micro">
+                {configLocked
+                  ? "Context is fixed for this run."
+                  : "Checked files are equipped for this run."}
+              </p>
+            </section>
+
+            <section
+              className="h-card h-agent"
+              ref={(el) => {
+                cards.current.agent = el;
+              }}
+              data-active={active === "agent" && mode === "character"}
+              data-dragging={dragging}
+              data-drop={dropTarget}
+              onDragOver={(e) => {
+                if (dragging && !assigned) {
+                  e.preventDefault();
+                  e.dataTransfer.dropEffect = "move";
+                  setDropTarget(true);
+                }
+              }}
+              onDragLeave={(e) => {
+                if (!e.currentTarget.contains(e.relatedTarget as Node | null))
+                  setDropTarget(false);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDropTarget(false);
+                if (
+                  e.dataTransfer.getData("text/plain") ===
+                    "fieldwork:search-guard" &&
+                  !assigned
+                )
+                  interact("agent", assign);
+              }}
+            >
+              {heading(
+                "agent",
+                "03",
+                "Agent",
+                phase === "running"
+                  ? "Working"
+                  : phase === "paused"
+                    ? "Paused"
+                    : phase === "done"
+                      ? "Task complete"
+                      : hasPatch
+                        ? "Run finished"
+                        : ready
+                          ? "Ready"
+                          : "Setting up",
+              )}
+              <div className="h-agent-profile">
+                <div className="h-agent-emblem">
+                  <Sparkle size={35} weight="thin" />
+                  <span>I</span>
+                </div>
+                <div>
+                  <h2>Implementer</h2>
+                  <p>One task. One focused patch.</p>
+                  <span className="h-simulation">Simulated agent</span>
+                </div>
+              </div>
+              <div className="h-assignment" data-filled={assigned}>
+                <Flag size={15} />
+                <span>
+                  {assigned
+                    ? "SEARCH-012 · Stop empty searches"
+                    : dragging
+                      ? "Drop the task here"
+                      : "No task assigned"}
+                </span>
+                {assigned && <Check size={15} />}
+              </div>
+              <details className="h-tools">
+                <summary>
+                  Tool access{" "}
+                  <span>{Number(canRead) + Number(canPropose)} enabled</span>
+                </summary>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={canRead}
+                    disabled={configLocked}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      interact("agent", () => setCanRead(checked));
+                    }}
+                  />
+                  Read files
+                </label>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={canPropose}
+                    disabled={configLocked}
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      interact("agent", () => setCanPropose(checked));
+                    }}
+                  />
+                  Propose patch
+                </label>
+                <p className="h-micro">Applying a patch stays with you.</p>
+              </details>
+              <div className="h-activity" aria-label="Agent activity">
+                {phase === "idle" ? (
+                  <div className="h-idle">
+                    <Diamond size={22} weight="thin" />
+                    <p>
+                      {ready ? "Everything is equipped." : "Prepare the run."}
+                    </p>
+                    <span>{blocker}</span>
+                  </div>
+                ) : (
+                  <ol>
+                    {runSteps.map((item, index) => (
+                      <li
+                        key={item.title}
+                        data-state={
+                          step > index
+                            ? "complete"
+                            : step === index && phase === "running"
+                              ? "current"
+                              : "pending"
+                        }
+                      >
+                        <span className="h-step-mark">
+                          {step > index ? <Check size={13} /> : index + 1}
+                        </span>
+                        <div>
+                          <strong>{item.title}</strong>
+                          {step > index && <p>{item.detail}</p>}
+                        </div>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </div>
+              {phase === "running" ? (
                 <button
-                  className="world-primary world-secondary"
-                  onClick={() => {
-                    setRunning(null);
-                    setNotice("Action paused. Your completed work is kept.");
-                  }}
+                  className="h-button h-button--quiet"
+                  data-primary
+                  onClick={() =>
+                    interact("agent", () => {
+                      setPhase("paused");
+                      setNotice(
+                        "Run paused. Resume to continue from this step.",
+                      );
+                    })
+                  }
                 >
-                  Pause action
+                  <span>Pause run</span>
+                  <Pause size={17} />
+                </button>
+              ) : phase === "paused" ? (
+                <button
+                  className="h-button"
+                  data-primary
+                  onClick={() =>
+                    interact("agent", () => {
+                      setPhase("running");
+                      setNotice("Run resumed.");
+                    })
+                  }
+                >
+                  <span>Resume run</span>
+                  <Play size={17} />
                 </button>
               ) : (
-                <button
-                  className="world-primary"
-                  disabled={locked}
-                  onClick={performAction}
-                >
-                  {complete
-                    ? selected.action === "collect"
-                      ? "Inspect source notes"
-                      : "Read brief"
-                    : selectedAction?.title}
-                  {locked ? <LockSimple size={16} /> : <ArrowRight size={16} />}
-                </button>
+                command(
+                  "agent",
+                  hasPatch ? "Patch proposed" : "Run agent",
+                  startRun,
+                  { disabled: !ready || phase !== "idle", cursor: "run" },
+                )
               )}
-              {selected?.action === "review" && phase === 2 && (
-                <button
-                  className="world-text-button"
-                  onClick={() => openDocument("brief")}
-                >
-                  Read the draft first <FileText size={14} />
-                </button>
+            </section>
+
+            <section
+              className="h-card h-patch"
+              ref={(el) => {
+                cards.current.patch = el;
+              }}
+              data-active={active === "patch" && mode === "character"}
+            >
+              {heading(
+                "patch",
+                "04",
+                "Patch",
+                patched
+                  ? "Applied locally"
+                  : hasPatch
+                    ? "Your review needed"
+                    : "Waiting for the agent",
               )}
-            </div>
+              {hasPatch ? (
+                <>
+                  <div className="h-output-title">
+                    <FileCode size={18} />
+                    <span>src/search.ts</span>
+                    <span className="h-diff-count">
+                      +2 <i>−1</i>
+                    </span>
+                  </div>
+                  {inspected ? (
+                    <div className="h-diff" aria-label="Proposed code diff">
+                      <div> function prepareSearch(query)</div>
+                      <div className="h-deleted">− return query;</div>
+                      <div className="h-added">
+                        + const value = query.trim();
+                      </div>
+                      <div className="h-added">
+                        + return value.length ? value : null;
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="h-card-description">
+                      Trim the query and guard against blank input. One function
+                      changed.
+                    </p>
+                  )}
+                  {inspected && (
+                    <button
+                      className="h-text-button"
+                      onClick={() =>
+                        interact("patch", () =>
+                          openDocument("Proposed src/search.ts", patchCode),
+                        )
+                      }
+                    >
+                      View complete function <ArrowRight size={13} />
+                    </button>
+                  )}
+                  {patched ? (
+                    <div className="h-applied">
+                      <CheckCircle size={17} />
+                      Applied to this sample
+                    </div>
+                  ) : (
+                    <>
+                      <div className="h-patch-actions">
+                        {inspected
+                          ? command("patch", "Approve & apply", apply, {
+                              cursor: "apply",
+                            })
+                          : command("patch", "Inspect diff", inspect, {
+                              cursor: "inspect",
+                            })}
+                        <button
+                          className="h-icon-button"
+                          aria-label="Reject patch"
+                          title="Reject patch"
+                          onClick={() =>
+                            interact("patch", () => {
+                              setPhase("idle");
+                              setStep(0);
+                              setInspected(false);
+                              setNotice(
+                                "Patch rejected. Adjust the agent’s context or run it again.",
+                              );
+                            })
+                          }
+                        >
+                          <X size={18} />
+                        </button>
+                      </div>
+                      <p className="h-micro">Changes the local sample only.</p>
+                    </>
+                  )}
+                </>
+              ) : (
+                <div className="h-empty">
+                  <Code size={24} weight="thin" />
+                  <p>The proposed change appears here.</p>
+                  <span>You review it before it is applied.</span>
+                </div>
+              )}
+            </section>
+
+            <section
+              className="h-card h-checks"
+              ref={(el) => {
+                cards.current.checks = el;
+              }}
+              data-active={active === "checks" && mode === "character"}
+            >
+              {heading(
+                "checks",
+                "05",
+                "Checks",
+                results === null
+                  ? "Not run yet"
+                  : `${passed} / 4 passed · ${checkedVersion === "patch" ? "patch" : "baseline"}`,
+              )}
+              {results === null ? (
+                <div className="h-check-intro">
+                  <div className="h-check-rings">
+                    <Check size={21} />
+                  </div>
+                  <p>
+                    Four checks.
+                    <br />
+                    <span>One clear result.</span>
+                  </p>
+                </div>
+              ) : (
+                <ul className="h-test-results">
+                  {results.map((test) => (
+                    <li key={test.name} data-pass={test.passed}>
+                      {test.passed ? (
+                        <CheckCircle size={16} />
+                      ) : (
+                        <XCircle size={16} />
+                      )}
+                      <details>
+                        <summary>{test.name}</summary>
+                        <code>
+                          Input: {JSON.stringify(test.input)}
+                          <br />
+                          Expected: {JSON.stringify(test.expected)}
+                          <br />
+                          Received: {JSON.stringify(test.actual)}
+                        </code>
+                      </details>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {verified
+                ? command(
+                    "checks",
+                    phase === "done" ? "Task complete" : "Complete task",
+                    () => {
+                      setPhase("done");
+                      setNotice(
+                        "Task complete. The patch passed all four checks and is ready in this local sample.",
+                      );
+                    },
+                    { disabled: phase === "done" },
+                  )
+                : command(
+                    "checks",
+                    patched ? "Run checks on patch" : "Run baseline checks",
+                    verify,
+                    { quiet: !patched, cursor: "verify" },
+                  )}
+              <p className="h-micro">Real checks, executed in your browser.</p>
+            </section>
+            {mode === "character" && position !== null && (
+              <div
+                className="h-operator"
+                aria-hidden="true"
+                data-surface={active}
+                data-walking={walking}
+                style={{
+                  transform: `translate(${position.x}px, ${position.y}px)`,
+                }}
+              >
+                <Person walking={walking} carrying={hasPatch} facing={facing} />
+                <span />
+              </div>
+            )}
           </div>
-          <div className="world-status">
-            <p role="status" aria-live="polite">
-              {notice}
-            </p>
-            <span>{phase} / 3 steps</span>
+          <div className="h-status" role="status">
+            <span
+              className={`h-status-dot ${phase === "running" ? "h-status-dot--working" : ""}`}
+            />
+            {notice}
+          </div>
+          <div className="h-commandbar">
+            <span>
+              <Diamond size={12} />
+              {hint !== ""
+                ? hint
+                : mode === "character"
+                  ? "Select a card to move. Use its controls to act."
+                  : "Use any component directly."}
+            </span>
+            <span className="h-key-hint">
+              {mode === "character" ? (
+                <>
+                  <kbd>↑↓←→</kbd> move <kbd>E</kbd> interact
+                </>
+              ) : (
+                "Same actions. Direct input."
+              )}
+            </span>
           </div>
         </section>
-        <div className="world-below">
-          <p id="world-instructions">
-            {mode === "character" ? (
-              <>
-                <kbd>Click</kbd> to walk · <kbd>WASD</kbd> or arrows to move ·{" "}
-                <kbd>E</kbd> to interact
-              </>
-            ) : (
-              "Select an object to use its action. The pointer changes with the target."
-            )}
+        <div className="h-study-note">
+          <p>
+            <strong>A working interaction study.</strong> Agent activity and its
+            patch are authored examples. Checks execute the sample function
+            locally. Nothing connects to your repositories.
           </p>
-          <button className="world-text-button" onClick={resetSample}>
-            <ArrowCounterClockwise size={14} /> Reset task
-          </button>
+          <details>
+            <summary>
+              How this becomes a design system <ArrowRight size={14} />
+            </summary>
+            <div className="h-system-detail">
+              <p>
+                Bind each interface component to a command, its prerequisites,
+                and its result. The character, pointer, and keyboard all operate
+                those same controls.
+              </p>
+              <dl>
+                {surfaces.map((surface) => (
+                  <div key={surface.id}>
+                    <dt>{surface.title}</dt>
+                    <dd>{surface.command}</dd>
+                  </div>
+                ))}
+              </dl>
+              <p>
+                Configure the agent through Context and Tool access. Character
+                mode moves your operator between components; pointer mode uses
+                them directly. Focus the workspace for arrow keys or WASD, then
+                press E to focus an action. Reduced motion places the character
+                immediately.
+              </p>
+            </div>
+          </details>
         </div>
-        <div className="world-inventory">
-          <span className="world-eyebrow">YOUR INVENTORY</span>
-          <button disabled={phase < 1} onClick={() => openDocument("notes")}>
-            <FileText size={17} />
-            <span>
-              Source notes
-              <small>{phase >= 1 ? "6 collected" : "Waiting to collect"}</small>
-            </span>
-          </button>
-          <button disabled={phase < 2} onClick={() => openDocument("brief")}>
-            <FileText size={17} />
-            <span>
-              Weekly brief
-              <small>
-                {phase === 3
-                  ? "Reviewed"
-                  : phase >= 2
-                    ? "Ready to review"
-                    : "Waiting to prepare"}
-              </small>
-            </span>
-          </button>
-          <button
-            className="world-setup-link"
-            onClick={openSetup}
-            disabled={running !== null}
-          >
-            <GearSix size={17} /> Set up objects
-          </button>
-        </div>
-        <details className="world-details">
-          <summary>
-            The design system behind the room <span>+</span>
-          </summary>
-          <div>
-            <p>
-              <strong>Object → action → result.</strong> Each object has a
-              label, an app action, a position, and an interaction distance.
-              Approach it with a character or select it with a pointer. Both
-              routes use the same action and state.
-            </p>
-            <p>
-              Use “Set up objects” to move or rename objects, change their
-              action, and add a new one. This sample uses predefined data; the
-              same interaction contract can call your app’s handlers.
-            </p>
-          </div>
-        </details>
-        <footer className="world-footer">
-          <span>One space. Useful objects. Visible consequences.</span>
-          <span>shupp.dev / SaaS Game UI</span>
-        </footer>
       </main>
+      <footer className="h-footer">
+        <span>SaaS Game UI</span>
+        <span>RPG interaction × useful software</span>
+        <a href="https://github.com/shuppel/shupp-dev/pull/55">
+          View the study <ArrowRight size={13} />
+        </a>
+      </footer>
       <dialog
-        ref={documentDialog}
-        className="world-dialog"
-        aria-labelledby="world-document-title"
+        className="h-dialog"
+        ref={dialog}
+        onClose={() => {
+          setDocumentView(null);
+          documentOpener.current?.focus();
+        }}
+        aria-labelledby="h-document-title"
       >
-        <div className="world-dialog-top">
-          <span className="world-eyebrow">SAMPLE DOCUMENT</span>
-          <form method="dialog">
-            <button aria-label="Close document" className="world-close">
-              <X size={20} />
-            </button>
-          </form>
+        <div className="h-dialog-heading">
+          <h2 id="h-document-title">{documentView?.title}</h2>
+          <button
+            className="h-icon-button"
+            aria-label="Close document"
+            onClick={() => dialog.current?.close()}
+          >
+            <X size={20} />
+          </button>
         </div>
-        <h2 id="world-document-title">
-          {documentKind === "notes" ? "Customer notes" : "Weekly brief"}
-        </h2>
-        {documentKind === "brief" && (
-          <p className="world-document-state">
-            {phase === 3
-              ? "Reviewed in this sample"
-              : "Draft · awaiting your review"}
-          </p>
-        )}
-        <ol className="world-document-list">
-          {(documentKind === "notes" ? notes : brief).map((line, index) => (
-            <li key={line}>
-              <span>
-                {documentKind === "notes" ? "NOTE" : "RECOMMENDATION"} 0
-                {index + 1}
-              </span>
-              {line}
-              {documentKind === "brief" && (
-                <small>
-                  Source notes{" "}
-                  {index === 0 ? "01, 02, 03" : index === 1 ? "04" : "05, 06"}
-                </small>
-              )}
-            </li>
-          ))}
-        </ol>
-        <div className="world-dialog-actions">
-          <form method="dialog">
-            <button className="world-primary">
-              Back to the room <ArrowRight size={16} />
-            </button>
-          </form>
-          {phase >= 2 && (
-            <button
-              className="world-text-button"
-              onClick={() =>
-                setDocumentKind(documentKind === "notes" ? "brief" : "notes")
-              }
-            >
-              {documentKind === "notes" ? "View brief" : "View source notes"}
-            </button>
-          )}
-        </div>
-      </dialog>
-      <dialog
-        ref={setupDialog}
-        className="world-dialog world-setup-dialog"
-        aria-labelledby="world-setup-title"
-      >
-        <div className="world-dialog-top">
-          <span className="world-eyebrow">SCENE SETUP</span>
-          <form method="dialog">
-            <button aria-label="Close setup" className="world-close">
-              <X size={20} />
-            </button>
-          </form>
-        </div>
-        <h2 id="world-setup-title">Give an object a job.</h2>
-        <p>Choose an app action and where someone can use it.</p>
-        <form onSubmit={saveObject} className="world-setup-form">
-          <label>
-            Object
-            <select
-              aria-label="Object"
-              value={editing.id}
-              onChange={(event) => {
-                setEditing(
-                  event.target.value === "new"
-                    ? emptyObject()
-                    : {
-                        ...(objects.find(
-                          (item) => item.id === event.target.value,
-                        ) ?? objects[0]),
-                      },
-                );
-                setSetupError("");
-              }}
-            >
-              {objects.map((item) => (
-                <option key={item.id} value={item.id}>
-                  {item.label}
-                </option>
-              ))}
-              {objects.length < 6 && (
-                <option value="new">+ Add an object</option>
-              )}
-            </select>
-          </label>
-          <label>
-            Name
-            <input
-              value={editing.label}
-              onChange={(event) =>
-                setEditing({ ...editing, label: event.target.value })
-              }
-              maxLength={30}
-              required
-            />
-          </label>
-          <label>
-            App action
-            <select
-              aria-label="App action"
-              value={editing.action}
-              onChange={(event) =>
-                setEditing({
-                  ...editing,
-                  action: event.target.value as ObjectAction,
-                })
-              }
-            >
-              <option value="collect">Collect source notes</option>
-              <option value="draft">Prepare a brief</option>
-              <option value="review">Review the brief</option>
-            </select>
-          </label>
-          <div className="world-setup-grid">
-            <label>
-              Position X (%)
-              <input
-                type="number"
-                min={8}
-                max={92}
-                step={1}
-                value={editing.x}
-                onChange={(event) =>
-                  setEditing({ ...editing, x: event.target.valueAsNumber })
-                }
-                required
-              />
-            </label>
-            <label>
-              Position Y (%)
-              <input
-                type="number"
-                min={46}
-                max={82}
-                step={1}
-                value={editing.y}
-                onChange={(event) =>
-                  setEditing({ ...editing, y: event.target.valueAsNumber })
-                }
-                required
-              />
-            </label>
-          </div>
-          <label>
-            Interaction distance <span>{editing.radius}% of the scene</span>
-            <input
-              type="range"
-              aria-label="Interaction distance"
-              min={6}
-              max={18}
-              step={1}
-              value={editing.radius}
-              onChange={(event) =>
-                setEditing({ ...editing, radius: Number(event.target.value) })
-              }
-            />
-          </label>
-          {setupError !== "" && (
-            <p className="world-setup-error" role="alert">
-              {setupError}
-            </p>
-          )}
-          <div className="world-dialog-actions">
-            <button type="submit" className="world-primary">
-              {editing.id === "new" ? (
-                <>
-                  <Plus size={16} /> Add object
-                </>
-              ) : (
-                <>
-                  Save object <Check size={16} />
-                </>
-              )}
-            </button>
-            <button
-              type="button"
-              className="world-text-button"
-              onClick={() => {
-                setObjects(initialObjects);
-                setEditing(initialObjects[0]);
-                setSetupError("");
-                setSelectedId(null);
-                setNotice("The original object layout is restored.");
-              }}
-            >
-              Restore original objects
-            </button>
-          </div>
-        </form>
-        <small className="world-setup-note">
-          Scene edits last for this visit. Reset task keeps your layout.
-        </small>
+        <pre>
+          <code>{documentView?.code}</code>
+        </pre>
+        <p>Local sample file · read only</p>
       </dialog>
     </div>
   );

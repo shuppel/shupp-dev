@@ -1,6 +1,6 @@
 ---
 title: "SaaS Game UI"
-description: "Operate a SaaS interface through a character: approach objects, discover contextual actions, and change the app."
+description: "An AI harness you can inhabit: assign work, equip context, review a patch, and verify the result through the interface itself."
 projectDate: 2026-09-20
 completed: false
 technologies:
@@ -19,13 +19,14 @@ customUrl: "/design/saas-game-ui"
 
 ## SaaS Game UI
 
-[Enter the interactive workroom](/design/saas-game-ui). Move your character to an
-object, discover its available action, and use it to change the application.
+[Try the AI harness](/design/saas-game-ui). Assign a task, equip context, run the
+sample agent, review its patch, and verify the result. The dashboard components
+are the interactive objects; an illustrated character operates their controls.
 
-The archive collects source notes. The writing desk prepares a brief. The review
-stand holds the final decision. Cursors, object states, and inventory change as
-the sample progresses. Direct pointer input operates the same objects.
+The test case is small and concrete: prevent empty searches. Agent activity and
+the proposed patch are authored examples. Four checks execute the original or
+patched function in the browser, exposing the result of each interaction.
 
-Use **Set up objects** to change an object's action, position, and interaction
-distance, or add another object to the room. The sample uses predefined local
-data and smooth illustrated 2D artwork, with Inter for readable interface text.
+Character, pointer, keyboard, and touch use the same actions. Tool access and
+context form the agent’s configurable loadout. Smooth 2D artwork, restrained
+RPG framing, and Inter keep the focus on the work.
