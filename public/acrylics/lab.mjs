@@ -226,8 +226,10 @@ if (!context) {
   });
   get('specimen-button').addEventListener('click', () => {
     const button = get('specimen-button'), saved = button.getAttribute('aria-pressed') !== 'true';
+    const paintSample = root.querySelector('#wet-sample')?.textContent;
+    const specimenColor = /^#[0-9a-f]{6}$/i.test(paintSample || '') ? paintSample : pickedHex;
     button.setAttribute('aria-pressed', String(saved));button.textContent = saved ? 'Color kept ✓' : 'Keep this color +';
-    get('specimen-status').textContent = saved ? `${pickedHex} kept in this study. Click again to release it.` : 'A tactile little interaction.';
+    get('specimen-status').textContent = saved ? `${specimenColor} kept in this study. Click again to release it.` : 'A tactile little interaction.';
   });
 
   render();
