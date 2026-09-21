@@ -14,3 +14,136 @@
 @media(max-width:820px){.acrylics .ac-workbench{grid-template-columns:1fr}.acrylics .ac-inspector{display:grid;grid-template-columns:1fr 1fr;gap:0 25px;padding:20px}.acrylics .ac-inspector>*{grid-column:1/-1}.acrylics .ac-inspector .ac-two-controls{grid-template-columns:1fr 1fr}.acrylics .ac-control{margin:12px 0}.acrylics .ac-layer-tabs{max-width:360px}.acrylics .ac-inspector .ac-position-controls{grid-column:auto}.acrylics .ac-section-head{align-items:start}.acrylics .ac-section-head h2{font-size:26px}.acrylics .ac-preset{flex-direction:column;align-items:start;gap:4px}.acrylics .ac-math-body{gap:25px}.acrylics .ac-hero-meta .ac-eyebrow{font-size:10px}.acrylics .ac-palette{grid-template-columns:repeat(4,minmax(0,1fr))}.acrylics .ac-palette-chip>div{font-size:11px;padding:10px}.acrylics .ac-palette-chip:nth-child(-n+4){border-bottom:1px solid #b4a18166}.acrylics .ac-principles{gap:18px}.acrylics .ac-principles h3{font-size:19px}}
 @media(max-width:580px){.acrylics .ac-masthead{padding:11px 16px;gap:10px}.acrylics .ac-brand{font-size:21px}.acrylics .ac-brand span{display:none}.acrylics .ac-masthead nav{gap:12px;font-size:10px}.acrylics .ac-masthead nav a{min-height:44px}.acrylics .ac-hero{padding:22px 17px 25px}.acrylics .ac-hero-meta{gap:12px}.acrylics .ac-hero-meta>.ac-eyebrow{max-width:170px;font-size:9px}.acrylics .ac-hero-meta>span{font-size:8px;white-space:nowrap;padding:5px}.acrylics h1{font-size:16.8vw;margin:25px 0 28px}.acrylics h1>span{font-size:16px;top:5px;margin-left:2px}.acrylics .ac-overprint i{width:200px;height:200px;right:25%;top:100px}.acrylics .ac-overprint i:nth-child(2){width:240px;height:240px;right:-22%;top:0}.acrylics .ac-overprint i:nth-child(3){width:220px;height:220px;right:-10%;top:180px}.acrylics .ac-hero-bottom{grid-template-columns:1fr;gap:19px}.acrylics .ac-hero-bottom>p{font-size:35px}.acrylics .ac-hero-bottom>div{max-width:310px}.acrylics .ac-lab{padding:30px 14px 0}.acrylics .ac-section-head{flex-wrap:wrap;gap:18px}.acrylics .ac-section-head h2{font-size:25px}.acrylics .ac-preset{flex-direction:row;align-items:center;gap:15px;width:100%;justify-content:space-between}.acrylics .ac-preset select{font-size:16px;max-width:210px}.acrylics .ac-board-tools{padding:6px 8px;gap:4px}.acrylics .ac-segment{gap:1px}.acrylics .ac-segment button{font-size:11px;padding:6px 8px}.acrylics .ac-board-tools .ac-text-button{font-size:10px;padding:4px;max-width:80px;line-height:1.4}.acrylics .ac-board-caption{flex-wrap:wrap;gap:4px}.acrylics .ac-sample-bar{padding:12px;gap:9px;flex-wrap:wrap}.acrylics #sample-swatch{width:41px;height:41px}.acrylics #sample-hex{font-size:21px}.acrylics .ac-sample-numbers{font-size:9px;flex:1;min-width:112px}.acrylics .ac-inspector{padding:18px 15px;gap:0 16px}.acrylics .ac-inspector>select{font-size:16px}.acrylics .ac-inspector .ac-position-controls{grid-column:1/-1}.acrylics .ac-control>div{font-size:13px}.acrylics output{font-size:12px}.acrylics .ac-inspector input[type=color]{width:44px;height:44px}.acrylics .ac-palette-head{align-items:start;gap:15px}.acrylics .ac-palette-head h3{font-size:18px;max-width:200px}.acrylics .ac-palette-head .ac-secondary{font-size:11px;max-width:118px;padding:8px 10px}.acrylics .ac-palette-chip>div{font-size:9px;padding:9px 6px}.acrylics .ac-palette-chip i{height:53px}.acrylics .ac-math summary{padding:15px;gap:10px;font-size:17px}.acrylics .ac-math summary .ac-eyebrow{display:none}.acrylics .ac-math-body{grid-template-columns:1fr;padding:18px 15px;gap:25px}.acrylics .ac-shape-math{border-top:1px solid #c9b696;padding-top:23px}.acrylics .ac-formula{font-size:14px;letter-spacing:-.5px}.acrylics .ac-math-foot{padding:14px 15px}.acrylics .ac-language{padding:35px 17px}.acrylics .ac-principles{grid-template-columns:1fr;gap:32px}.acrylics .ac-figure{height:160px}.acrylics .ac-principles h3{font-size:23px}.acrylics .ac-principles p:last-child{font-size:14px}.acrylics .ac-footer{padding:20px 17px;flex-wrap:wrap;gap:15px;font-size:10px}}
 @media(prefers-reduced-motion:reduce){.acrylics{scroll-behavior:auto}.acrylics *{transition:none!important}}
+
+/* Paint study. Material variation belongs to the marks; controls stay quiet. */
+.acrylics .ac-painted-hero {
+  position:absolute; inset:-40px -90px -50px 37%; z-index:-1;
+  background:url('/images/projects/acrylics-paint.webp') center/cover no-repeat;
+  transform:rotate(-8deg); opacity:.88; mix-blend-mode:multiply;
+}
+.acrylics .ac-paint-studio { scroll-margin-top:18px; }
+.acrylics .ac-paint-studio h2 {
+  font:400 clamp(38px,5vw,63px)/1 var(--display); letter-spacing:-.02em;
+}
+.acrylics .ac-intro { font-size:13px; margin-top:13px; max-width:46ch; }
+.acrylics .ac-wet-sticker {
+  display:block; padding:11px 22px; margin-right:12px; border:1px solid #433319;
+  background:#edbe38; color:#34261e; font:400 23px/1.1 var(--display);
+  transform:rotate(8deg); box-shadow:2px 3px 0 #43331933;
+}
+.acrylics .ac-paint-workbench { grid-template-columns:minmax(0,1fr) 280px; gap:22px; }
+.acrylics .ac-wet-board {
+  position:relative; aspect-ratio:760/480; background:#f8f0dd; overflow:hidden;
+}
+.acrylics .ac-wet-board canvas,.acrylics .ac-wet-board img {
+  display:block; width:100%; height:100%; object-fit:contain;
+}
+.acrylics #wet-canvas { cursor:crosshair; touch-action:none; }
+.acrylics #wet-probe {
+  position:absolute; width:22px; height:22px; border:2px solid #fff;
+  outline:1px solid #252321; box-shadow:inset 0 0 0 1px #252321;
+  border-radius:50%; transform:translate(-50%,-50%); pointer-events:none;
+}
+.acrylics #wet-chip {
+  width:48px; height:48px; border:1px solid #8c7b63; border-radius:39% 48% 34% 46%; flex-shrink:0;
+}
+.acrylics #wet-sample { font:500 25px/1.25 var(--mono); letter-spacing:-1px; }
+.acrylics .ac-surface-actions {
+  display:flex; align-items:center; flex-wrap:wrap; gap:12px 22px;
+  padding:12px 16px; border-top:1px solid #c7bda8; background:#eee4cf;
+}
+.acrylics .ac-surface-actions .ac-secondary { margin-right:auto; }
+.acrylics .ac-pigment-tray {
+  display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px;
+}
+.acrylics .ac-pigment-tray button {
+  border:1px solid transparent; background:transparent; padding:5px 3px;
+  border-radius:5px; font:10px/1.5 var(--mono); display:flex;
+  flex-direction:column; align-items:center; gap:5px;
+}
+.acrylics .ac-pigment-tray button[aria-pressed=true] {
+  border-color:#62513b; background:#fffaed; box-shadow:0 2px 0 #9b886b;
+}
+.acrylics .ac-pigment-tray i {
+  display:block; width:38px; height:33px; border-radius:36% 46% 31% 42%;
+  background:var(--pigment); transform:rotate(-9deg);
+  box-shadow:inset 2px 3px 0 #ffffff22,inset -2px -3px 0 #00000014;
+  border:1px solid #35291c22;
+}
+.acrylics .ac-selected-pigment { font:11px/1.5 var(--mono); margin:-10px 0 17px; }
+.acrylics #wet-gesture { width:100%; margin:9px 0; }
+.acrylics .ac-paint-tip { font-size:11px; line-height:1.7; color:#67563e; margin:8px 0; }
+.acrylics .ac-mix-study {
+  display:grid; grid-template-columns:1fr 1.15fr; gap:50px; padding:30px;
+  margin-top:30px; border:1px solid #b7a485; background:#f0e6d2;
+}
+.acrylics .ac-mix-story h3 {
+  font:400 clamp(27px,3vw,41px)/1.15 var(--display); margin:16px 0;
+}
+.acrylics .ac-mix-story>p:not(.ac-eyebrow) { font-size:13px; max-width:43ch; line-height:1.8; }
+.acrylics .ac-mix-controls { border:0; padding:0; margin:0; }
+.acrylics .ac-mix-colors { display:flex; gap:24px; align-items:center; }
+.acrylics .ac-mix-colors label {
+  display:flex; align-items:center; justify-content:space-between; flex:1;
+  gap:10px; font-size:12px;
+}
+.acrylics .ac-mix-stops { display:grid; grid-template-columns:repeat(9,1fr); height:42px; border:1px solid #9f8b6c; }
+.acrylics .ac-mix-results { display:grid; grid-template-columns:1fr 1fr; gap:24px; margin:17px 0; }
+.acrylics .ac-mix-results>div { display:flex; align-items:center; gap:10px; font-size:11px; }
+.acrylics .ac-mix-results i { display:block; flex-shrink:0; width:40px; height:38px; border-radius:40% 28% 36% 26%; }
+.acrylics .ac-mix-results strong { display:block; font:12px/1.6 var(--mono); margin-top:2px; }
+.acrylics .ac-sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip-path:inset(50%); white-space:nowrap; }
+.acrylics .ac-material-notes { margin:20px 0 34px; border-bottom:1px solid #b7a485; padding-bottom:16px; }
+.acrylics .ac-material-notes summary { font-size:13px; min-height:44px; padding:12px 0; }
+.acrylics .ac-material-notes>div { display:grid; grid-template-columns:1fr 1fr; gap:35px; padding:15px 0; }
+.acrylics .ac-material-notes article p { font-size:12px; line-height:1.8; margin:12px 0; max-width:60ch; }
+.acrylics .ac-material-notes code { display:block; font:11px/1.8 var(--mono); }
+.acrylics .ac-geometry-study { margin:0 35px; border:1px solid #b7a485; border-radius:6px; }
+.acrylics .ac-geometry-study>summary {
+  display:flex; align-items:center; flex-wrap:wrap; gap:15px 25px;
+  padding:23px; background:#eee5d5; min-height:70px;
+}
+.acrylics .ac-geometry-study>summary>span:first-child { font:10px/1.6 var(--mono); }
+.acrylics .ac-geometry-study>summary>strong { font-size:17px; font-weight:500; }
+.acrylics .ac-geometry-study>summary>span:last-child { margin-left:auto; font-size:23px; }
+.acrylics .ac-geometry-study>.ac-lab { padding:25px; padding-bottom:25px; }
+.acrylics .ac-figure-paint { background:#f0dfbc url('/images/projects/acrylics-paint.webp') center/cover; }
+@media(max-width:1050px) {
+  .acrylics .ac-paint-workbench { grid-template-columns:minmax(0,1fr) 250px; gap:16px; }
+  .acrylics .ac-mix-study { gap:28px; padding:24px; }
+  .acrylics .ac-geometry-study { margin:0 24px; }
+}
+@media(max-width:820px) {
+  .acrylics .ac-paint-workbench { grid-template-columns:1fr; }
+  .acrylics #wet-inspector { display:block; }
+  .acrylics .ac-pigment-tray { grid-template-columns:repeat(6,1fr); }
+  .acrylics .ac-mix-study { grid-template-columns:1fr; gap:23px; }
+  .acrylics .ac-mix-story h3 br { display:none; }
+  .acrylics .ac-mix-story>p:not(.ac-eyebrow) { max-width:60ch; }
+}
+@media(max-width:580px) {
+  .acrylics .ac-painted-hero { inset:80px -170px -30px -80px; opacity:.65; }
+  .acrylics .ac-paint-studio .ac-section-head { flex-wrap:nowrap; gap:12px; }
+  .acrylics .ac-paint-studio h2 { font-size:39px; }
+  .acrylics .ac-intro { font-size:12px; }
+  .acrylics .ac-wet-sticker { font-size:17px; padding:10px 12px; margin:0; flex-shrink:0; }
+  .acrylics .ac-paint-tools { flex-wrap:wrap; gap:3px; }
+  .acrylics .ac-paint-tools .ac-segment button { padding:5px 9px; }
+  .acrylics .ac-paint-tools #wet-undo { padding:5px 9px; margin-left:auto; }
+  .acrylics .ac-pigment-tray { gap:2px; }
+  .acrylics .ac-pigment-tray i { width:32px; height:30px; }
+  .acrylics .ac-pigment-tray button { font-size:9px; }
+  .acrylics .ac-surface-actions { padding:10px 12px; gap:8px; }
+  .acrylics #wet-sample { font-size:21px; }
+  .acrylics #wet-chip { width:38px; height:38px; }
+  .acrylics .ac-mix-study { padding:20px 16px; }
+  .acrylics .ac-mix-colors { gap:12px; }
+  .acrylics .ac-mix-colors label { font-size:11px; gap:8px; }
+  .acrylics .ac-mix-results { gap:12px; }
+  .acrylics .ac-material-notes>div { grid-template-columns:1fr; gap:20px; }
+  .acrylics .ac-geometry-study { margin:0 14px; }
+  .acrylics .ac-geometry-study>summary { padding:17px; gap:8px; }
+  .acrylics .ac-geometry-study>summary>span:first-child { width:100%; }
+  .acrylics .ac-geometry-study>summary>strong { max-width:85%; font-size:15px; }
+  .acrylics .ac-geometry-study>.ac-lab { padding:18px 12px; }
+}
