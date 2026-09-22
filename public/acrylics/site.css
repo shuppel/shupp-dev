@@ -290,6 +290,12 @@
 .ac-site .paint-mark--blot {
   mask-image: url("/acrylics/blot.svg");
 }
+.ac-site .paint-mark--drag {
+  mask-image: url("/acrylics/stroke-drag.svg");
+}
+.ac-site .paint-mark--loaded {
+  mask-image: url("/acrylics/stroke-loaded.svg");
+}
 .ac-site .paint-mark--blot:after {
   background:
     radial-gradient(ellipse at 35% 25%, #ffffff4a, transparent 40%),
@@ -323,6 +329,7 @@
   position: relative;
   isolation: isolate;
   color: var(--ac-on-accent);
+  background: var(--ac-accent);
   padding: 0 6px 9px;
   margin-top: 9px;
 }
@@ -564,12 +571,14 @@
   position: absolute;
   inset: 0 -3%;
   background: var(--ac-ink);
-  mask: url("/acrylics/stroke.svg") center/100% 100%;
+  mask: url("/acrylics/stroke-loaded.svg") center/100% 100%;
   opacity: 0;
   z-index: -1;
 }
 .ac-site .ac-choice[aria-pressed="true"] {
   color: var(--ac-field);
+  background: var(--ac-ink);
+  border-radius: 4px;
 }
 .ac-site .ac-choice[aria-pressed="true"]:before {
   opacity: 1;
@@ -667,7 +676,7 @@
   inset: 49px 20px 41px;
   transform: rotate(-7deg);
 }
-.ac-site .specimen-stroke > span {
+.ac-site .specimen-stroke > span:not(.paint-mark) {
   position: relative;
   padding: 8px 18px;
   background: var(--ac-surface);
@@ -690,7 +699,7 @@
   transform: rotate(-12deg);
   mix-blend-mode: multiply;
 }
-.ac-site .specimen-layers > span {
+.ac-site .specimen-layers > span:not(.paint-mark) {
   position: relative;
   background: var(--ac-surface);
   border: 1px solid var(--ac-ink);
@@ -712,6 +721,105 @@
 }
 .ac-site .material-specimen > code {
   font-size: 11px;
+  overflow-wrap: anywhere;
+}
+.ac-site .pressure-example {
+  margin-top: 40px;
+  padding: 28px;
+  border: 1px solid var(--ac-line);
+  border-radius: 4px 22px 4px 4px;
+  background: var(--ac-surface);
+  scroll-margin-top: 24px;
+}
+.ac-site .pressure-heading,
+.ac-site .pressure-layout {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 36px;
+}
+.ac-site .pressure-heading {
+  align-items: end;
+  margin-bottom: 28px;
+}
+.ac-site .pressure-heading h3 {
+  font: 40px/1.1 var(--ac-display);
+  margin-top: 10px;
+}
+.ac-site .pressure-heading > p,
+.ac-site .pressure-footnote p {
+  color: var(--ac-muted);
+  font-size: 15px;
+  line-height: 1.6;
+}
+.ac-site .pressure-comparison,
+.ac-site .pressure-settings {
+  min-width: 0;
+}
+.ac-site .pressure-comparison figure {
+  margin: 0 0 20px;
+}
+.ac-site .pressure-comparison figcaption {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font: 11px/1.5 var(--ac-mono);
+  border-bottom: 1px solid var(--ac-line);
+  padding-bottom: 10px;
+}
+.ac-site .pressure-comparison figcaption span {
+  color: var(--ac-muted);
+}
+.ac-site .pressure-stroke {
+  color: var(--ac-pigment);
+  margin-top: 8px;
+}
+.ac-site .pressure-stroke svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.ac-site .pressure-equation {
+  font-size: 13px;
+  line-height: 2;
+  padding-bottom: 10px;
+  overflow-wrap: anywhere;
+}
+.ac-site .pressure-control {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  margin-top: 16px;
+  gap: 0 12px;
+}
+.ac-site .pressure-control label {
+  font-size: 14px;
+  font-weight: 600;
+}
+.ac-site .pressure-control label span {
+  margin-left: 8px;
+  color: var(--ac-muted);
+}
+.ac-site .pressure-control output {
+  font: 12px/1.5 var(--ac-mono);
+}
+.ac-site .pressure-control input {
+  grid-column: 1/-1;
+  width: 100%;
+  min-height: 44px;
+  margin: 0;
+  accent-color: var(--ac-accent);
+}
+.ac-site .pressure-footnote {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 36px;
+  padding-top: 22px;
+  margin-top: 24px;
+  border-top: 1px solid var(--ac-line);
+  align-items: start;
+}
+.ac-site .pressure-footnote code {
+  font-size: 12px;
   overflow-wrap: anywhere;
 }
 .ac-site .mix-example {
@@ -1619,6 +1727,22 @@
   }
   .ac-site .material-specimen > p:not(.eyebrow) {
     font-size: 16px;
+  }
+  .ac-site .pressure-example {
+    padding: 22px 19px;
+  }
+  .ac-site .pressure-heading,
+  .ac-site .pressure-layout,
+  .ac-site .pressure-footnote {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .ac-site .pressure-heading h3 {
+    font-size: 34px;
+  }
+  .ac-site .pressure-comparison figcaption {
+    flex-wrap: wrap;
+    gap: 4px 12px;
   }
   .ac-site .mix-example {
     grid-template-columns: 1fr;

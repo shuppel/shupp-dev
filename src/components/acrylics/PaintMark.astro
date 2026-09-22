@@ -2,8 +2,9 @@
 interface Props {
   color?: string;
   shape?: 'stroke' | 'blot';
+  pressure?: 'swell' | 'drag' | 'loaded';
   class?: string;
 }
-const { color = 'var(--ac-pigment)', shape = 'stroke', class: className = '' } = Astro.props;
+const { color = 'var(--ac-pigment)', shape = 'stroke', pressure = 'swell', class: className = '' } = Astro.props;
 ---
-<span aria-hidden="true" class:list={['paint-mark', `paint-mark--${shape}`, className]} style={`--pigment:${color}`}></span>
+<span aria-hidden="true" class:list={['paint-mark', `paint-mark--${shape}`, shape === 'stroke' && `paint-mark--${pressure}`, className]} style={`--pigment:${color}`}></span>

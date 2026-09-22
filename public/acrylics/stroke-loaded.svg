@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 160" preserveAspectRatio="none">
+<defs><filter id="drag" x="-5%" y="-20%" width="110%" height="140%"><feTurbulence type="fractalNoise" baseFrequency=".018 .21" numOctaves="3" seed="17"/><feDisplacementMap in="SourceGraphic" scale="13" xChannelSelector="R" yChannelSelector="G"/></filter></defs>
+<g fill="white" filter="url(#drag)"><path opacity=".38" d="M18 18 630 8 619 144 4 137Z"/><path opacity=".7" d="m31 14 580 10 18 19-10 91-588 15L12 48Z"/><path d="M45 27 601 17 629 45 604 132 19 126 25 41Z"/><path opacity=".6" d="M4 46 27 40 20 119 8 118ZM620 42l17 8-9 62-13 9Z"/></g>
+<g fill="black" opacity=".16"><path d="m30 34 570 5-4 2-571-3Zm-2 72 562-4-1 3-565 5ZM50 60l570 9v2L46 65Zm-4 60 567-9-3 2-563 11Z"/></g>
+</svg>

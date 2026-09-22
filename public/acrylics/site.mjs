@@ -1,5 +1,29 @@
 import { Color, mix } from "./spectral.mjs";
 import { schemeCss, digitalCoat } from "./site-state.mjs";
+import { PRESSURE_PROFILES, strokeSvg } from "./pressure.mjs";
+
+const pressureInputs = [
+  ...document.querySelectorAll(".pressure-control input"),
+];
+function updatePressure() {
+  const max = Number(document.querySelector("#pressure-width").value);
+  const peak = Number(document.querySelector("#pressure-peak").value) / 100;
+  const spread = Number(document.querySelector("#pressure-spread").value) / 100;
+  document.querySelector("#pressure-width-value").value = `${max} units`;
+  document.querySelector("#pressure-peak-value").value =
+    `${Math.round(peak * 100)}%`;
+  document.querySelector("#pressure-spread-value").value = spread.toFixed(2);
+  document.querySelector("#pressure-stroke").innerHTML = strokeSvg({
+    ...PRESSURE_PROFILES.swell,
+    max,
+    peak,
+    spread,
+  });
+}
+pressureInputs.forEach((input) => {
+  input.addEventListener("input", updatePressure);
+  input.disabled = false;
+});
 
 const root = document.documentElement;
 let tokens;

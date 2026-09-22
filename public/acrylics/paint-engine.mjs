@@ -1,4 +1,5 @@
 import { Color, mix } from './spectral.mjs';
+import { gaussianPressure } from './pressure.mjs';
 
 export const PAINT_WIDTH = 760;
 export const PAINT_HEIGHT = 480;
@@ -125,7 +126,7 @@ export class PaintSurface {
     this.stroke = {
       color: rgb(settings.color), size: settings.size, load: settings.load,
       roughness: settings.roughness, tool: settings.tool, pressure: settings.pressure,
-      seed: ++this.seed, distance: 0, remainder: 0, x, y, angle: -.18,
+      seed: ++this.seed, distance: 0, remainder: 0, x, y, angle: -.18, pointerPressure: pressure,
     };
     this.dab(x, y, -.18, pressure);
     if (settings.tool === 'blot') {
@@ -147,17 +148,18 @@ export class PaintSurface {
     if (!s) return;
     const dx = x - s.x, dy = y - s.y;
     const distance = Math.hypot(dx, dy);
-    if (distance === 0) return;
+    if (distance === 0) { s.pointerPressure = pressure; return; }
     const spacing = Math.max(2, s.size * .065);
     const angle = Math.atan2(dy, dx);
     const before = s.distance;
     for (let travel = spacing - s.remainder; travel <= distance; travel += spacing) {
       s.distance = before + travel;
-      this.dab(s.x + dx * travel / distance, s.y + dy * travel / distance, angle, pressure);
+      const interpolatedPressure = s.pointerPressure + (pressure - s.pointerPressure) * travel / distance;
+      this.dab(s.x + dx * travel / distance, s.y + dy * travel / distance, angle, interpolatedPressure);
     }
     s.distance = before + distance;
     s.remainder = (s.remainder + distance) % spacing;
-    s.x = x; s.y = y; s.angle = angle;
+    s.x = x; s.y = y; s.angle = angle; s.pointerPressure = pressure;
   }
 
   end() { this.stroke = null; }
@@ -166,8 +168,8 @@ export class PaintSurface {
     const s = this.stroke;
     if (!s) return;
     const p = clamp(pointerPressure * s.pressure, .08, 1);
-    const radius = s.size * (.27 + .28 * p);
     const blot = s.tool === 'blot';
+    const radius = s.size * (blot ? .27 + .28 * p : .06 + .49 * p);
     const dry = s.tool === 'dry';
     const reach = radius * (blot ? 1.22 : 1.08);
     const ca = Math.cos(angle), sa = Math.sin(angle);
@@ -214,16 +216,25 @@ export class PaintSurface {
 }
 
 export function paintGesture(surface, points, settings) {
-  surface.begin(points[0][0], points[0][1], settings);
+  if (!points.length) return;
+  const samples = [points[0]];
+  const distances = [0];
   for (let i = 0; i < points.length - 1; i++) {
     const p0 = points[Math.max(0, i - 1)], p1 = points[i];
     const p2 = points[i + 1], p3 = points[Math.min(points.length - 1, i + 2)];
     for (let step = 1; step <= 12; step++) {
       const t = step / 12;
       const xy = [0, 1].map((axis) => .5 * ((2 * p1[axis]) + (-p0[axis] + p2[axis]) * t + (2 * p0[axis] - 5 * p1[axis] + 4 * p2[axis] - p3[axis]) * t * t + (-p0[axis] + 3 * p1[axis] - 3 * p2[axis] + p3[axis]) * t * t * t));
-      surface.move(xy[0], xy[1]);
+      const previous = samples[samples.length - 1];
+      distances.push(distances[distances.length - 1] + Math.hypot(xy[0] - previous[0], xy[1] - previous[1]));
+      samples.push(xy);
     }
   }
+  const length = distances[distances.length - 1];
+  // Preset gestures know their full path. Hardware pen pressure remains direct.
+  const pressure = (i) => length ? gaussianPressure(distances[i] / length) : 1;
+  surface.begin(samples[0][0], samples[0][1], settings, pressure(0));
+  for (let i = 1; i < samples.length; i++) surface.move(samples[i][0], samples[i][1], pressure(i));
   surface.end();
 }
 
