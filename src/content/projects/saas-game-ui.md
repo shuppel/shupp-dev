@@ -1,6 +1,6 @@
 ---
 title: "SaaS Game UI"
-description: "An AI harness you can inhabit: assign work, equip context, review a patch, and verify the result through the interface itself."
+description: "A playable 2D RPG interface: collect context, equip agents, target commands, recover a patch, and verify the result."
 projectDate: 2026-09-20
 completed: false
 technologies:
@@ -19,14 +19,14 @@ customUrl: "/design/saas-game-ui"
 
 ## SaaS Game UI
 
-[Try the AI harness](/design/saas-game-ui). Assign a task, equip context, run the
-sample agent, review its patch, and verify the result. The dashboard components
-are the interactive objects; an illustrated character operates their controls.
+[Play the encounter](/design/saas-game-ui). Walk through an illustrated 2D field,
+collect source files, equip your implementer, and target a task with a command.
+Recover its proposed patch, inspect it, and ask the verifier to check the result.
 
-The test case is small and concrete: prevent empty searches. Agent activity and
-the proposed patch are authored examples. Four checks execute the original or
-patched function in the browser, exposing the result of each interaction.
+Movement, proximity, inventory, equipment, and command targeting affect the
+application. The party moves and acts in the field; a proposed patch becomes an
+object you can collect and use. Successful verification completes the encounter.
 
-Character, pointer, keyboard, and touch use the same actions. Tool access and
-context form the agent’s configurable loadout. Smooth 2D artwork, restrained
-RPG framing, and Inter keep the focus on the work.
+The sample coding agent is scripted. Checks execute actual local JavaScript
+fixtures, exposing baseline failures and the patched result. Keyboard, pointer,
+touch, and reduced-motion controls operate the same game state.

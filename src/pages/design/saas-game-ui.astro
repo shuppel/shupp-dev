@@ -2,11 +2,11 @@
 import SaasGameUI from '../../components/design/SaasGameUI/SaasGameUI';
 import { isFeatureEnabled } from '../../config/features';
 
-// Standalone AI harness interaction study with local Inter typography.
+// Standalone playable 2D harness encounter with local Inter typography.
 if (!isFeatureEnabled('enableSaasGameUI')) return Astro.redirect('/portfolio');
 
-const title = 'SaaS Game UI — An AI harness you can inhabit | shupp.dev';
-const description = 'An AI harness where tasks, context, agents, patches, and checks are interactive game objects. A character-driven interface with a working local coding sample.';
+const title = 'SaaS Game UI — Play the AI harness | shupp.dev';
+const description = 'A playable 2D RPG interface for an AI harness. Walk, collect context, equip your party, target commands, recover a patch, and verify the result.';
 ---
 
 <!doctype html>
@@ -15,7 +15,7 @@ const description = 'An AI harness where tasks, context, agents, patches, and ch
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
-    <meta name="color-scheme" content="light" />
+    <meta name="color-scheme" content="dark" />
     <title>{title}</title>
     <link rel="canonical" href="https://shupp.dev/design/saas-game-ui" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
@@ -26,11 +26,11 @@ const description = 'An AI harness where tasks, context, agents, patches, and ch
     <meta property="og:description" content={description} />
     <meta property="og:url" content="https://shupp.dev/design/saas-game-ui" />
     <meta property="og:image" content="https://shupp.dev/images/projects/saas-game-ui.png" />
-    <meta property="og:image:alt" content="An AI harness dashboard with an illustrated operator and interactive task, context, agent, patch, and verification panels." />
+    <meta property="og:image:alt" content="A playable illustrated 2D field with an operator, two agents, context objects, a task target, and JRPG command menus." />
     <meta name="twitter:card" content="summary_large_image" />
   </head>
   <body class="sg-document">
     <SaasGameUI client:load />
-    <noscript><p class="sg-noscript">JavaScript is off. Enable it to operate the AI harness, configure the sample agent, inspect its patch, and execute local checks.</p></noscript>
+    <noscript><p class="sg-noscript">JavaScript is off. Enable it to play the encounter: move your character, collect context, equip agents, target commands, and verify the patch.</p></noscript>
   </body>
 </html>

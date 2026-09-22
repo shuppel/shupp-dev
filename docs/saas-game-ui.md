@@ -1,95 +1,93 @@
-# SaaS Game UI — an AI harness you can inhabit
+# SaaS Game UI — playable harness encounter
 
-**Intent:** make the actual SaaS interface playable. Tasks, context files, agent
-controls, patches, and checks are interactive objects. The character is the
-operator within that interface. Each action changes application state and leaves
-its result on the component it belongs to.
+**Intent:** operate software through a 2D JRPG's field, inventory, equipment,
+party commands, targeting, and visible consequences. This revision replaces the
+card dashboard with a playable encounter. The operator moves independently;
+agents move to their targets and produce objects in the field.
 
-Route: `/design/saas-game-ui`. One AI harness replaces the previous workroom
-metaphor. Smooth illustrated 2D and restrained RPG framing remain provisional;
-the art direction is not presented as approved. Inter is the chosen typeface.
-No saved aesthetic or named design style is imported.
+Route: `/design/saas-game-ui`. Smooth original SVG illustrations and Inter form
+an implementable 2D style. The previously generated concept image is not used as
+a fake interactive surface. Its painted detail is not claimed to be reproduced.
+No named saved aesthetic is imported.
 
-## The working example
+## Play the encounter
 
-A task asks the implementer to reject blank searches, trim surrounding spaces,
-and retain valid queries. The original `prepareSearch` returns its input.
+1. Walk to `search.ts` and `search.test.ts`. Take each into the context inventory.
+   Inspection is available first; collecting adds a reference and leaves the
+   source object in place.
+2. Approach the implementer. Open Equip and attach both files. Read files and
+   Propose patch must also be equipped for Implement to become available.
+3. Choose Implement. The cursor enters targeting mode and the task highlights.
+   Select Search guard and confirm the command. Other objects reject that target
+   type. Selecting or approaching something alone never executes the command.
+4. The implementer walks to the task, performs its authored sequence, and leaves
+   a proposed patch in the field. Pause, resume, and cancel control that sequence.
+5. Collect the patch and inspect the diff. Use on task remains unavailable until
+   the patch is collected and inspected. Target Search guard and confirm Apply.
+6. Approach the verifier, equip `search.test.ts`, and select Verify. Target the
+   task and confirm. The verifier moves to the task and executes four checks.
+7. All four checks on the applied patch complete the encounter. The task gains a
+   completion mark and the evidence is available from the result window.
 
-1. Assign the task with its button, or drag it onto the agent.
-2. Equip `src/search.ts` and `search.test.ts` in Context. Inspect either file.
-3. Configure Read files and Propose patch under Tool access. Both are required.
-4. Run the agent. Pause and resume its authored sequence if needed.
-5. Inspect the proposed diff. Approve and apply it to the local sample, or reject
-   it and reconfigure the agent. Applying is gated by opening the diff.
-6. Run checks. Expand any result to inspect input, expected, and actual values.
-7. Complete the task only after the patched version passes all four checks.
+Verification can run before applying the patch: one baseline check passes and
+three fail. Each check produces a visible result on the task. Applying the patch
+clears previous verification. Partial or cancelled checks cannot complete the
+encounter. Rejecting a proposal removes its inventory reference and allows a new
+implementation run. Restart cancels pending work and restores the entire scene.
 
-Baseline checks are available before the run. Three fail; one passes. Applying
-the patch invalidates prior verification. The patch trims the query and returns
-null for empty values; all four checks then pass. Those checks execute actual
-JavaScript fixtures in the browser. They are not tests of the user's repository.
+## Input and game rules
 
-Agent activity and the proposed patch are predefined, explicitly labeled sample
-output. There is no model inference, shell execution, file system write, API
-connection, repository access, or persistence. Reset cancels the pending sample
-sequence and restores the task, context, tool access, and results.
+- Click/tap ground to walk there. Hold WASD or arrow keys for continuous movement.
+- Click an object to approach it and open its contextual commands. E interacts
+  with the nearest object within reach. Movement alone never collects or runs.
+- Files and the task are obstacles. An eight-way navigation grid routes around
+  them; diagonal movement cannot cut obstacle corners. Movement stays within the
+  walkable terrace.
+- I opens inventory. Escape cancels targeting, closes the current command view,
+  and stops movement. Key release, lost pointer capture, focus loss, and hidden
+  document state clear movement input.
+- Coarse pointers have a directional pad. Object buttons and command menus are
+  native controls. Tab/Enter work throughout. The command menu also provides a
+  native Target Search guard action.
+- Reduced motion or the optional Instant approach setting removes travel delay.
+  Keyboard movement remains directly controlled. Animation is suppressed under
+  reduced motion.
+- The cursor distinguishes approach, collect, inspect, target, and invalid target
+  states. Labels and command availability provide the same information.
+- Agent equipment locks while that agent is executing or paused. File references
+  can be shared between party members; they are not consumable resources.
 
-## Interaction contract
+The scene has one current interaction, one party strip, and one command area.
+Inventory, equipment, code, and evidence appear on demand. No fake health,
+currency, experience points, or arbitrary scores are added.
 
-Each native UI component owns its actions and results. There is no detached
-context-action panel. A button executes its explicit command and moves the
-operator to that component. Selecting a component heading only moves the
-character; movement never executes work by itself.
+## Implementation
 
-Character mode keeps the operator visible and marks the current component.
-Pointer mode uses the same handlers directly. Focus the workspace and use arrow
-keys or WASD to cycle through components in task order. E or Enter focuses the
-current component's primary available control. Tab and native keyboard controls
-remain available. The character transitions between component docks without
-imposing a travel delay on commands. Reduced motion places it immediately.
+- `field.ts`: typed entities, positions, proximity, bounds, and obstacle routing.
+- `useWalker.ts`: continuous frame-based movement shared by operator and agents,
+  with path following, directional motion, cancellation, and arrival callbacks.
+- `SaasGameUI.tsx`: inventory, equipment, target selection, command guards, agent
+  execution, patch review/application, evidence, and encounter completion.
+- `WorldArtwork.tsx`: original layered field, three character appearances, and
+  document objects. No pixelated rendering or screenshot hotspots.
+- `harness.ts`: authored source/patch/run steps and executable check fixtures.
 
-The cursor changes for assignment, equipping, running, inspection, applying, and
-unavailable commands. Text labels, disabled states, and a status message also
-convey the action; cursor appearance is supplementary. Drag assignment has an
-equivalent native button. Mobile uses the same components in workflow order.
-Dialogs use native modality, Escape, and focus return.
+The code-native game adds no dependencies or general-purpose game engine. The
+existing Astro page hosts a React island with local CSS and self-hosted Inter.
 
-## Reusable structure
+## Simulation boundary
 
-`harness.ts` defines the five surfaces, commands, authored files, run steps, and
-executable check fixtures. `SaasGameUI.tsx` owns command guards and state.
-`WorldArtwork.tsx` contains only the illustrated operator. Layout and artwork do
-not determine whether a command is allowed.
+The game mechanics operate real local application state. The agent's coding
+sequence and proposed patch are authored examples. Checks execute the original
+or patched sample function in the browser. This is not connected to a model,
+user repository, shell, or filesystem. There are no external actions or saved
+progress beyond the current page visit.
 
-| Component | Command           | Prerequisite                    | Visible result                   |
-| --------- | ----------------- | ------------------------------- | -------------------------------- |
-| Task      | Assign            | Unassigned task                 | Agent receives task              |
-| Context   | Equip             | No run in progress              | Equipped count and file state    |
-| Agent     | Run               | Task, both files, both tools    | Activity and proposed patch      |
-| Patch     | Approve & apply   | Finished run and inspected diff | Local implementation changes     |
-| Checks    | Verify / complete | Patch required for completion   | Per-case evidence and task state |
-
-Configuration is meaningful to the harness: context and tool access define what
-the agent can run with. These controls lock during a run and unlock on rejection
-or reset. Character/pointer selection configures the input method. This is a
-single worked design example, not a generic canvas editor or an agent platform.
-
-## Implementation and release
-
-Standalone Astro document, React island, native controls, CSS, and smooth inline
-SVG. No added dependencies. Self-hosted Inter and its OFL license remain under
-`public/saas-game-ui/fonts/`.
+## Release
 
 `ENABLE_SAAS_GAME_UI` defaults to enabled. Setting it to `false` at build time
 redirects the route to `/portfolio` and hides its portfolio card. The content
 entry remains available. Review the temporary flag after 2026-10-20.
 
-## Definition of done
-
-- Every work interaction belongs to a functioning dashboard component.
-- Character and direct inputs share the same command guards and state.
-- Context and tool configuration affect run availability.
-- The complete assign → equip → run → inspect → apply → verify flow works.
-- Baseline failures, passing patched checks, rejection, pause, and reset are observable.
-- Simulation boundaries are clear, without overwhelming the primary interface.
-- Desktop and mobile layouts stay usable; art uses smooth contours, not pixels.
+The MR stays open for review. Behavior and art quality should be judged separately:
+a completed input test proves the mechanic, not approval of the visual direction.

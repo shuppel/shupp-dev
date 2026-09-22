@@ -1,14 +1,4 @@
 /** Authored agent output; executable local fixtures. No model or repository access. */
-export type Surface = "task" | "context" | "agent" | "patch" | "checks";
-
-export const surfaces: { id: Surface; title: string; command: string }[] = [
-  { id: "task", title: "Task", command: "Assign" },
-  { id: "context", title: "Context", command: "Equip" },
-  { id: "agent", title: "Agent", command: "Run" },
-  { id: "patch", title: "Patch", command: "Review & apply" },
-  { id: "checks", title: "Checks", command: "Verify" },
-];
-
 export const sourceCode = `export function prepareSearch(query: string): string | null {
   return query;
 }`;
