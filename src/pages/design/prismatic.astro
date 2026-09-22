@@ -353,9 +353,10 @@ const paintSeed: string[] = [
       .ds-audit { margin-top: 1rem; line-height: 1.7; }
       .ds-audit code { color: currentColor; }
     </style>
+    <link rel="stylesheet" href="/prism/guide.css" />
   </head>
 
-  <body>
+  <body class="prism-guide">
     <a class="ds-skip" href="#ds-main">Skip to content</a>
 
     <!-- The light itself — one compositor layer, driven by the reference beam -->
@@ -389,154 +390,122 @@ const paintSeed: string[] = [
         <span class="prism-aside">Light splits at the edges; shadows carry color, not gray.</span>
         <p class="prism-body ds-intro prism-muted">
           A light-mode-first design system built on a prism-glass material model. One
-          anchor hue drives the entire palette — rotate it and the whole system
-          re-derives. Two modes: day, and redshift (night) as a wavelength shift, not a
-          darkness. Drag the hue. Flip the mode. Move the pointer — you are the light
-          source, and every edge, cast and glint on this page follows. Nothing breaks.
+          anchor hue derives the brand palette. Material density expresses permanence.
+          A shared light reference ties the objects together. Start with those ideas,
+          then follow the equations, style rules, components, and information patterns.
+          The controls above let you inspect the same system in day and redshift modes.
         </p>
       </header>
 
-      <!-- ========================= DISPERSION =========================== -->
-      <section class="ds-section" aria-labelledby="ds-dispersion">
+<nav class="guide-index" aria-label="Prismatic chapters"><p class="prism-eyebrow">READ THE SYSTEM / FROM IDEA TO INTERFACE</p><ol>
+<li><a href="#concepts"><span>01</span><strong>Core concepts</strong><small>What makes this Prismatic?</small></a></li>
+<li><a href="#model"><span>02</span><strong>Objects &amp; mathematics</strong><small>Define the material and its behavior.</small></a></li>
+<li><a href="#style-guide"><span>03</span><strong>Style guide</strong><small>Color, type, geometry, restraint.</small></a></li>
+<li><a href="#components"><span>04</span><strong>Components</strong><small>Derive the family from the rules.</small></a></li>
+<li><a href="#information"><span>05</span><strong>Information patterns</strong><small>Give the light a reading order.</small></a></li>
+<li><a href="#use"><span>06</span><strong>Build with it</strong><small>Recipes, limits, and source.</small></a></li>
+</ol></nav><section id="concepts" class="guide-chapter" aria-labelledby="concepts-title"><header><div><p class="prism-eyebrow">01 / CORE CONCEPTS</p><h2 id="concepts-title">One light. A family of objects.</h2></div><p>Prismatic makes relationships visible: colors belong to an anchor, objects have a degree of permanence, and their light comes from one place.</p></header><div class="guide-concepts">
+<article class="prism-card"><p class="prism-eyebrow">I1 / DERIVE THE SPECTRUM</p><div class="guide-bands" aria-hidden="true"><i></i><i></i><i></i><i></i></div><h3>One hue, related bands.</h3><p>The anchor is a parameter, not a bag of swatches. Offsets derive a family of colors. Semantic success, warning, and danger keep their own fixed hue angles.</p></article>
+<article class="prism-card" style="box-shadow:var(--elev-dense)"><p class="prism-eyebrow">I2 / GIVE PERMANENCE WEIGHT</p><h3>Light becomes substance.</h3><p>Transient objects float. Standing objects settle. Structural and destructive actions become dense. Material treatment tells you what kind of object you are dealing with.</p><p class="guide-contract">transient → standing → immovable</p></article>
+<article class="prism-card"><p class="prism-eyebrow">I3 / SHARE THE LIGHT</p><h3>A common reference.</h3><div class="prism-holo" aria-hidden="true"></div><p>Edges, casts, and foil read the same light variables. Moving the pointer changes their relationship together; each object interprets the reference through its own material rules.</p></article>
+</div><div class="guide-invariant"><strong>THE IDENTITY TEST</strong><p>Rotate the hue and the system should remain recognizable: chromatic edges, density that signals permanence, and objects that share a light source. The optical language is a design metaphor, not a physical optics simulation.</p></div></section><section id="model" class="guide-chapter" aria-labelledby="model-title"><header><div><p class="prism-eyebrow">02 / OBJECTS &amp; MATHEMATICS</p><h2 id="model-title">Define the object. Derive the behavior.</h2></div><p>The vocabulary is finite. Hue, light, and timing provide measured variation inside it. Each formula below corresponds to the implementation on this page.</p></header><div class="guide-table-wrap"><table class="guide-table"><caption>Object contract / discrete choices before continuous parameters</caption><thead><tr><th scope="col">Axis</th><th scope="col">Allowed vocabulary</th><th scope="col">What it controls</th></tr></thead><tbody>
+<tr><th scope="row">Mode</th><td>day | night</td><td>Figure and ground, cast versus halo, filled versus outlined display type.</td></tr>
+<tr><th scope="row">Density</th><td>transient | standing | immovable</td><td>The relative weight of edge, wash, fill, and shadow.</td></tr>
+<tr><th scope="row">Role</th><td>brand | info | success | warning | danger</td><td>Brand and info follow the anchor. Other semantic hues remain fixed.</td></tr>
+<tr><th scope="row">Geometry</th><td>button: xs–xl; badge/chip: sm–lg</td><td>A finite size family; the dichroic edge stays 1.5px.</td></tr>
+<tr><th scope="row">Reference</th><td>angle, vector, intensity, position</td><td>Six shared numbers drive the light. Consumers read CSS custom properties.</td></tr>
+</tbody></table></div><p class="guide-contract">Object = (mode, density, role, geometry) + shared light reference</p><p>This is the design contract. CSS classes, semantic tokens, and the root mode implement it; it is not a separate widget configuration API.</p>
+<div class="guide-equations">
+<article class="prism-card"><h3>Color is a derived coordinate.</h3><code>Hᵢ = wrap(H + Δᵢ, 360°)<br>colorᵢ = oklch(Lᵢ Cᵢ Hᵢ)</code><p>Day offsets: 0°, −35°, +75°, −140°. Night offsets: 0°, −25°, +55°, −95°. Each band has its own lightness and chroma. Hue rotation alone is not a contrast guarantee.</p><p id="guide-hue-equation" class="guide-contract">Day: H = 185° → bands 185°, 150°, 260°, 45°</p></article>
+<article class="prism-card"><h3>Updates have a defined resolution.</h3><code>Q(x, δ) = δ · round(x / δ)<br>δangle = 3° · δvector = 0.02<br>δintensity = 0.05 · δposition = 2%</code><p>Write a light variable when it crosses a step, at most once per animation frame. CSS interpolates between steps. Quantization limits updates; it does not eliminate the cost of rendering more objects.</p></article>
+<article class="prism-card"><h3>Night uses an art-directed hue map.</h3><code>R(h) = h, if h ≤ 45<br>R(h) = round(h − 0.4(h − 45)), if h ≤ 300<br>R(h) = round((h + 0.4(385 − h)) mod 360), otherwise</code><p>At the default h = 185°, R(h) = 129°. This piecewise mapping intentionally changes branches above 300°; it is not a smooth wavelength conversion. Night also changes lightness, chroma, and band offsets.</p></article>
+<article class="prism-card"><h3>Timing comes from a small scale.</h3><code>q = 40ms · duration = n · q<br>flash 3q · arrive 6q · settle 10q<br>shadow lag 2q · mode change 25q</code><p>Press-in is the explicit 1.5q exception: 60ms. Three easing curves separate light, mass, and refraction. Reduced motion removes animation and transition time.</p></article>
+</div><section class="ds-section" aria-labelledby="ds-holography">
         <header>
-          <span class="ds-law">LAW 1–2 · COLOR</span>
-          <h2 id="ds-dispersion">Dispersion</h2>
+          <span class="ds-law">LAW 21 · HOLOGRAPHY</span>
+          <h3 id="ds-holography">Holography — one light, cascaded by reference</h3>
           <p>
-            Brand bands sit at fixed angular offsets from the anchor (+0, &minus;35, +75,
-            &minus;140), all held in L&nbsp;0.70&ndash;0.78 / C&nbsp;0.11&ndash;0.14 so
-            contrast survives any rotation. Field and ink take the cast — never neutral gray.
-          </p>
-        </header>
-
-        <div class="ds-grid ds-grid--4" aria-label="Brand bands">
-          <div class="prism-swatch" style="background: var(--anchor);"><span class="ds-swatch-label">anchor<small>+0°</small></span></div>
-          <div class="prism-swatch" style="background: var(--near);"><span class="ds-swatch-label">near<small>&minus;35°</small></span></div>
-          <div class="prism-swatch" style="background: var(--far);"><span class="ds-swatch-label">far<small>+75°</small></span></div>
-          <div class="prism-swatch" style="background: var(--counter);"><span class="ds-swatch-label">counter<small>&minus;140°</small></span></div>
-        </div>
-
-        <div class="ds-grid ds-grid--4" style="margin-top: 1rem;" aria-label="Role tokens">
-          <div class="prism-swatch" style="background: var(--field);"><span class="ds-swatch-label">field<small>ground</small></span></div>
-          <div class="prism-swatch" style="background: var(--surface);"><span class="ds-swatch-label">surface<small>raised</small></span></div>
-          <div class="prism-swatch" style="background: var(--ink); color: var(--surface);"><span class="ds-swatch-label">ink<small>text</small></span></div>
-          <div class="prism-swatch" style="background: var(--dense); color: var(--on-dense);"><span class="ds-swatch-label">dense<small>immovable</small></span></div>
-        </div>
-      </section>
-
-      <!-- ========================== DENSITY ============================= -->
-      <section class="ds-section" aria-labelledby="ds-density">
-        <header>
-          <span class="ds-law">LAW 5 · DENSITY</span>
-          <h2 id="ds-density">Density — permanence condenses light into pigment</h2>
-          <p>
-            The more permanent a component, the more its color condenses: transient lives on
-            the edge and glow; standing earns a tinted wash and a 1px border; immovable is
-            opaque pigment with near-zero shadow. Destructive actions live in the immovable
-            tier — no spectral play.
-          </p>
-        </header>
-
-        <div class="ds-grid ds-grid--3">
-          <div class="prism-card ds-lift">
-            <p class="prism-eyebrow">Transient</p>
-            <p class="prism-body" style="color: var(--ink-soft); margin: 0.4rem 0 1rem;">Seconds. Edge + spectral glow only.</p>
-            <button class="prism-btn prism-btn--primary prism-edge" type="button">Primary action</button>
-          </div>
-
-          <div class="prism-card" style="border: 1px solid var(--hairline); background: var(--standing-tint); box-shadow: var(--elev-dense);">
-            <p class="prism-eyebrow">Standing</p>
-            <p class="prism-body" style="color: var(--ink-soft); margin: 0.4rem 0 1rem;">Session. Tinted wash + 1px border, short shadow.</p>
-            <button class="prism-btn" type="button" style="box-shadow: var(--elev-dense);">Secondary</button>
-          </div>
-
-          <div class="prism-card" style="background: var(--dense); color: var(--on-dense); box-shadow: var(--elev-dense);">
-            <p class="prism-eyebrow">Immovable</p>
-            <p class="prism-body" style="opacity: 0.85; margin: 0.4rem 0 1rem;">Structural. Opaque pigment, compact, no spectra.</p>
-            <div class="ds-row-actions">
-              <button class="prism-btn prism-btn--dense" type="button">Save</button>
-              <button class="prism-btn prism-btn--dense prism-btn--danger" type="button">Delete</button>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <!-- ========================= SEMANTICS ============================ -->
-      <section class="ds-section" aria-labelledby="ds-semantics">
-        <header>
-          <span class="ds-law">LAW 4 · SEMANTICS ARE PHYSICS</span>
-          <h2 id="ds-semantics">Semantics — fixed wavelengths</h2>
-          <p>
-            success&nbsp;152°, danger&nbsp;27°, warning&nbsp;75° are pinned in both modes —
-            they never rotate with the brand. Info alone inherits the anchor. Only the shade
-            adapts at night. State is never hue-only: badges carry words.
-          </p>
-        </header>
-
-        <div class="ds-grid ds-grid--4">
-          <div class="prism-card ds-stack" style="box-shadow: var(--elev-dense);">
-            <span class="prism-swatch" style="background: var(--success);">success<small> 152°</small></span>
-            <span class="prism-badge prism-badge--ok">✓ Approved</span>
-          </div>
-          <div class="prism-card ds-stack" style="box-shadow: var(--elev-dense);">
-            <span class="prism-swatch" style="background: var(--danger);">danger<small> 27°</small></span>
-            <span class="prism-badge prism-badge--no">✕ Rejected</span>
-          </div>
-          <div class="prism-card ds-stack" style="box-shadow: var(--elev-dense);">
-            <span class="prism-swatch" style="background: var(--warning);">warning<small> 75°</small></span>
-            <span class="prism-badge prism-badge--warn">! Pending</span>
-          </div>
-          <div class="prism-card ds-stack" style="box-shadow: var(--elev-dense);">
-            <span class="prism-swatch" style="background: var(--info);">info<small> = anchor</small></span>
-            <span class="prism-badge" style="background: var(--info-dense); color: var(--on-info);">i Info</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- ========================= ELEVATION ============================ -->
-      <section class="ds-section" aria-labelledby="ds-elevation">
-        <header>
-          <span class="ds-law">LAW 6–7 · ELEVATION</span>
-          <h2 id="ds-elevation">Elevation — cast floats, hairline grounds</h2>
-          <p>
-            Day shadows are 3-layer chromatic casts thrown along the light axis (135° at
-            rest — move the pointer and every cast on the page swings away from it);
-            night shadows are axis-free halos. No black shadows, ever. Inside data, casts are forbidden —
-            elevation collapses to 1px hairlines, and refraction enters only as a 2px seam on
-            the hovered row. A cast now <em>means</em> "floats above the data."
+            The pointer is the light source, and the whole page is the hologram. Six
+            registered custom properties on the root — cast angle, cast vector, intensity,
+            position — form the <em>reference beam</em>; every dichroic edge, chromatic
+            cast, glint and tilt derives from them in pure CSS <code class="prism-data">calc()</code>.
+            The driver writes the root at most once per frame, and only when a value
+            crosses its quantum (Δ3° angle, Δ0.02 vector) — most frames write nothing,
+            and the typed properties refract between quanta on their own. The light driver updates shared references; each material consumer reads them through CSS.
           </p>
         </header>
 
         <div class="ds-grid ds-grid--2" style="align-items: start;">
-          <div class="prism-card ds-lift prism-edge">
-            <p class="prism-eyebrow">Floating card</p>
-            <p class="prism-body" style="margin: 0.5rem 0 0; color: var(--ink-soft);">
-              Full cast (day) / halo (night). Hover to lift — at night it glows brighter
-              instead, because there's nothing to lift toward.
+          <div class="ds-stack">
+            <div class="ds-grid ds-grid--2">
+              <div class="prism-holo">
+                <p class="prism-eyebrow">Foil</p>
+                <p class="prism-ui" style="margin-top: 0.4rem;">Spectrum = <span class="prism-data">--la</span></p>
+              </div>
+              <div class="prism-holo">
+                <p class="prism-eyebrow">Glint</p>
+                <p class="prism-ui" style="margin-top: 0.4rem;">Highlight = <span class="prism-data">--lxp/--lyp</span></p>
+              </div>
+            </div>
+            <p class="ds-caption">
+              Foil chips: gradient angle, glint position and ±3° tilt are all var() reads.
+              No per-card light listener. More objects still add style, paint, and compositing work.
             </p>
           </div>
 
-          <div>
-            <div class="prism-table" role="table" aria-label="Dense data (hairline elevation)" style="--cols: 1fr 1fr 1fr;">
-              <div class="ds-thead" role="row">
-                <span role="columnheader">Run</span><span role="columnheader">Hue</span><span role="columnheader">State</span>
-              </div>
-              <div class="prism-row" role="row" tabindex="0"><span>0xA1</span><span>185°</span><span>ok</span></div>
-              <div class="prism-row" role="row" tabindex="0" aria-selected="true"><span>0xA2</span><span>150°</span><span>ok</span></div>
-              <div class="prism-row" role="row" tabindex="0"><span>0xA3</span><span>027°</span><span>fail</span></div>
-              <div class="prism-row" role="row" tabindex="0"><span>0xA4</span><span>075°</span><span>warn</span></div>
-            </div>
-            <p class="ds-caption">No cast inside the table. Hover a row → 2px left seam.</p>
+          <div class="prism-card" style="box-shadow: var(--elev-dense);">
+            <p class="prism-eyebrow">Reference monitor · live</p>
+            <p class="prism-data ds-holo-mono" aria-live="off">
+              --la <b id="ds-ref-la">135</b>° · --lv <b id="ds-ref-v">0.71, 0.71</b> · --li <b id="ds-ref-li">0.35</b>
+            </p>
+            <p class="prism-data ds-holo-mono">
+              frames <b id="ds-ref-frames">0</b> · write batches <b id="ds-ref-writes">0</b> · quanta Δ3° / Δ0.02 / Δ0.05 / Δ2%
+            </p>
+            <p class="prism-body prism-muted" style="margin-top: 0.9rem;">
+              This readout is the entire runtime contract: the beam is written, the cascade
+              does the rest. Write batches never exceed frames, and once the pointer settles
+              they stop — quantization avoids repeated light-variable writes at rest. At night the casts are
+              already halos, so only the glint and the foil answer the light: physics
+              conserved.
+            </p>
           </div>
         </div>
-      </section>
+      </section><section class="ds-section" aria-labelledby="ds-redshift">
+        <header>
+          <span class="ds-law">LAW 16–19 · REDSHIFT</span>
+          <h3 id="ds-redshift">Redshift — reinterpret the same roles at night</h3>
+          <p>
+            Toggle the mode (top right). Night recomputes the same roles: a dark field, a light surface,
+            edge↔fill, cast→halo, filled display→outline. An art-directed hue map drives <code class="prism-data">redshift(h)</code>. Mode changes take 25q; reduced motion removes the transition.
+          </p>
+        </header>
 
-      <!-- =========================== MOTION ============================= -->
-      <section class="ds-section" aria-labelledby="ds-motion">
+        <div class="ds-grid ds-grid--2" style="align-items: start;">
+          <div class="prism-card prism-edge">
+            <p class="prism-eyebrow">Figure / ground swap</p>
+            <p class="prism-body" style="color: var(--ink-soft); margin: 0.5rem 0 0;">
+              In day this card is paper on a near-white field with a dichroic edge. In night
+              the field goes dark, this surface becomes the paper figure, and the edge inverts
+              to quiet while the body carries the spectrum.
+            </p>
+          </div>
+          <div class="prism-card ds-stack" style="box-shadow: var(--elev-dense);">
+            <p class="prism-eyebrow">Conserved palette</p>
+            <div class="ds-grid ds-grid--4">
+              <span class="prism-swatch" style="background: var(--anchor);"></span>
+              <span class="prism-swatch" style="background: var(--near);"></span>
+              <span class="prism-swatch" style="background: var(--far);"></span>
+              <span class="prism-swatch" style="background: var(--counter);"></span>
+            </div>
+            <p class="ds-caption">Same bands, recomputed from <code class="prism-data">--hr</code> at night.</p>
+          </div>
+        </div>
+      </section><section class="ds-section" aria-labelledby="ds-motion">
         <header>
           <span class="ds-law">LAW 8–15 · MOTION + QUANTUM</span>
-          <h2 id="ds-motion">Motion — quantized, massless, causal</h2>
+          <h3 id="ds-motion">Motion — quantized, massless, causal</h3>
           <p>
-            q&nbsp;=&nbsp;40ms; every duration is an integer multiple. Two easings, no springs.
+            q&nbsp;=&nbsp;40ms; durations use integer multiples except the 1.5q press. Three easing curves, no springs.
             Properties animate brightness → form → shadow, and the shadow trails its object by
             2q. Unknown state is superposed; entangled elements break the lag.
           </p>
@@ -606,54 +575,138 @@ const paintSeed: string[] = [
             </div>
           </div>
         </div>
-      </section>
-
-      <!-- ========================= REDSHIFT ============================= -->
-      <section class="ds-section" aria-labelledby="ds-redshift">
+      </section></section><section id="style-guide" class="guide-chapter" aria-labelledby="style-guide-title"><header><div><p class="prism-eyebrow">03 / STYLE GUIDE</p><h2 id="style-guide-title">Make the vocabulary consistent.</h2></div><p>Color roles, type roles, and geometry turn the optical idea into repeatable choices. Use the hue and mode controls to inspect those choices together.</p></header><section class="ds-section" aria-labelledby="ds-dispersion">
         <header>
-          <span class="ds-law">LAW 16–19 · REDSHIFT</span>
-          <h2 id="ds-redshift">Redshift — night is a wavelength, not a darkness</h2>
+          <span class="ds-law">LAW 1–2 · COLOR</span>
+          <h3 id="ds-dispersion">Dispersion</h3>
           <p>
-            Toggle the mode (top right). Night mints zero new colors: dense→field,
-            field→surface, edge↔fill, cast→halo, filled display→outline. The hue slides toward
-            the long-wavelength end via <code class="prism-data">redshift(h)</code>. Sunsets
-            refract over 25q — never snap.
+            Brand bands sit at fixed angular offsets from the anchor (+0, &minus;35, +75,
+            &minus;140), all held in L&nbsp;0.70&ndash;0.78 / C&nbsp;0.11&ndash;0.14 for the day palette. Night uses its own offsets and L/C values. Verify foreground and background pairs together; the palette alone does not guarantee contrast.
           </p>
         </header>
 
-        <div class="ds-grid ds-grid--2" style="align-items: start;">
-          <div class="prism-card prism-edge">
-            <p class="prism-eyebrow">Figure / ground swap</p>
-            <p class="prism-body" style="color: var(--ink-soft); margin: 0.5rem 0 0;">
-              In day this card is paper on a near-white field with a dichroic edge. In night
-              the field goes dark, this surface becomes the paper figure, and the edge inverts
-              to quiet while the body carries the spectrum.
-            </p>
+        <div class="ds-grid ds-grid--4" aria-label="Brand bands">
+          <div class="prism-swatch" style="background: var(--anchor);"><span class="ds-swatch-label">anchor<small data-band-offset="0">+0°</small></span></div>
+          <div class="prism-swatch" style="background: var(--near);"><span class="ds-swatch-label">near<small data-band-offset="1">&minus;35°</small></span></div>
+          <div class="prism-swatch" style="background: var(--far);"><span class="ds-swatch-label">far<small data-band-offset="2">+75°</small></span></div>
+          <div class="prism-swatch" style="background: var(--counter);"><span class="ds-swatch-label">counter<small data-band-offset="3">&minus;140°</small></span></div>
+        </div>
+
+        <div class="ds-grid ds-grid--4" style="margin-top: 1rem;" aria-label="Role tokens">
+          <div class="prism-swatch" style="background: var(--field); color:var(--on-ground)"><span class="ds-swatch-label">field<small>ground</small></span></div>
+          <div class="prism-swatch" style="background: var(--surface);"><span class="ds-swatch-label">surface<small>raised</small></span></div>
+          <div class="prism-swatch" style="background: var(--ink); color: var(--surface);"><span class="ds-swatch-label">ink<small>text</small></span></div>
+          <div class="prism-swatch" style="background: var(--dense); color: var(--on-dense);"><span class="ds-swatch-label">dense<small>immovable</small></span></div>
+        </div>
+      </section><section class="ds-section" aria-labelledby="ds-semantics">
+        <header>
+          <span class="ds-law">STYLE / SEMANTIC HUES</span>
+          <h3 id="ds-semantics">Semantics — fixed hue angles</h3>
+          <p>
+            success&nbsp;152°, danger&nbsp;27°, warning&nbsp;75° are pinned in both modes —
+            they never rotate with the brand. Info alone inherits the anchor. Only the shade
+            adapts at night. State is never hue-only: badges carry words.
+          </p>
+        </header>
+
+        <div class="ds-grid ds-grid--4">
+          <div class="prism-card ds-stack" style="box-shadow: var(--elev-dense);">
+            <span class="prism-swatch" style="background: var(--success);">success<small> 152°</small></span>
+            <span class="prism-badge prism-badge--ok">✓ Approved</span>
           </div>
           <div class="prism-card ds-stack" style="box-shadow: var(--elev-dense);">
-            <p class="prism-eyebrow">Conserved palette</p>
-            <div class="ds-grid ds-grid--4">
-              <span class="prism-swatch" style="background: var(--anchor);"></span>
-              <span class="prism-swatch" style="background: var(--near);"></span>
-              <span class="prism-swatch" style="background: var(--far);"></span>
-              <span class="prism-swatch" style="background: var(--counter);"></span>
-            </div>
-            <p class="ds-caption">Same bands, recomputed from <code class="prism-data">--hr</code> at night.</p>
+            <span class="prism-swatch" style="background: var(--danger);">danger<small> 27°</small></span>
+            <span class="prism-badge prism-badge--no">✕ Rejected</span>
+          </div>
+          <div class="prism-card ds-stack" style="box-shadow: var(--elev-dense);">
+            <span class="prism-swatch" style="background: var(--warning);">warning<small> 75°</small></span>
+            <span class="prism-badge prism-badge--warn">! Pending</span>
+          </div>
+          <div class="prism-card ds-stack" style="box-shadow: var(--elev-dense);">
+            <span class="prism-swatch" style="background: var(--info);">info<small> = anchor</small></span>
+            <span class="prism-badge" style="background: var(--info-dense); color: var(--on-info);">i Info</span>
           </div>
         </div>
-      </section>
+      </section><section class="ds-section" aria-labelledby="ds-type">
+        <header>
+          <span class="ds-law">LAW 20 · TYPE</span>
+          <h3 id="ds-type">Type — five roles, line work on top</h3>
+          <p>
+            Display is constructed line work (Tilt&nbsp;Prism), allowed only ≥40px — below
+            that it falls back to Instrument&nbsp;Sans 600. Day fills it; night outlines it.
+          </p>
+        </header>
 
-      <!-- ========================== MATRIX ============================== -->
-      <section class="ds-section" aria-labelledby="ds-matrix">
+        <div class="prism-card ds-type-stack" style="box-shadow: var(--elev-dense);">
+          <div>
+            <span class="ds-type-meta">display · line work · ≥40px</span>
+            <p class="prism-display">Refraction</p>
+          </div>
+          <div>
+            <span class="ds-type-meta">headline · Instrument Sans 600</span>
+            <p class="prism-headline">Light splits into spectra at the boundary.</p>
+          </div>
+          <div>
+            <span class="ds-type-meta">body · Sans 400</span>
+            <p class="prism-body" style="margin: 0;">The near-white field does the work. Color appears only at edges and in shadows.</p>
+          </div>
+          <div>
+            <span class="ds-type-meta">data · Spline Sans Mono</span>
+            <p class="prism-data" style="margin: 0;">--h: 185 → --hr: 129 · q = 40ms · AA ≥ 4.5:1</p>
+          </div>
+          <div>
+            <span class="ds-type-meta">aside · Instrument Serif italic · one phrase</span>
+            <p class="prism-aside" style="margin: 0;">the human voice, used sparingly.</p>
+          </div>
+        </div>
+      </section><div class="guide-table-wrap"><table class="guide-table"><caption>Geometry / choose the family before the size</caption><thead><tr><th scope="col">Family</th><th scope="col">Defined values</th><th scope="col">Usage rule</th></tr></thead><tbody>
+<tr><th scope="row">Radius</th><td>10px / 16px / 24px</td><td>Default control / foil / surface. Button size variants use 7, 8, 10, 12, and 14px.</td></tr>
+<tr><th scope="row">Boundary</th><td>1.5px dichroic edge / 1px data hairline / 2px row seam</td><td>Keep these roles distinct; increasing every edge weakens hierarchy.</td></tr>
+<tr><th scope="row">Spacing</th><td>1rem component gap / 1.5rem group gap / 2.5–3rem section space</td><td>Reference-page defaults. Group related items first; adapt density to the reading task.</td></tr>
+<tr><th scope="row">Display type</th><td>Tilt Prism at 40px or larger</td><td>Use Instrument Sans below that threshold. Data uses Spline Sans Mono.</td></tr>
+</tbody></table></div></section><section id="components" class="guide-chapter" aria-labelledby="components-title"><header><div><p class="prism-eyebrow">04 / COMPONENTS</p><h2 id="components-title">The rules become a family.</h2></div><p>Choose permanence, then role, then size. These specimens share the same edge, shadow, color, and motion definitions; each is a combination of the model.</p></header><section class="ds-section" aria-labelledby="ds-density">
+        <header>
+          <span class="ds-law">LAW 5 · DENSITY</span>
+          <h3 id="ds-density">Density — permanence condenses light into pigment</h3>
+          <p>
+            The more permanent a component, the more its color condenses: transient lives on
+            the edge and glow; standing earns a tinted wash and a 1px border; immovable is
+            opaque pigment with near-zero shadow. Destructive actions live in the immovable
+            tier — no spectral play.
+          </p>
+        </header>
+
+        <div class="ds-grid ds-grid--3">
+          <div class="prism-card ds-lift">
+            <p class="prism-eyebrow">Transient</p>
+            <p class="prism-body" style="color: var(--ink-soft); margin: 0.4rem 0 1rem;">Seconds. Edge + spectral glow only.</p>
+            <button class="prism-btn prism-btn--primary prism-edge" type="button">Primary action</button>
+          </div>
+
+          <div class="prism-card" style="border: 1px solid var(--hairline); background: var(--standing-tint); color:var(--on-ground); box-shadow: var(--elev-dense);">
+            <p class="prism-eyebrow">Standing</p>
+            <p class="prism-body" style="color: inherit; margin: 0.4rem 0 1rem;">Session. Tinted wash + 1px border, short shadow.</p>
+            <button class="prism-btn" type="button" style="box-shadow: var(--elev-dense);">Secondary</button>
+          </div>
+
+          <div class="prism-card" style="background: var(--dense); color: var(--on-dense); box-shadow: var(--elev-dense);">
+            <p class="prism-eyebrow">Immovable</p>
+            <p class="prism-body" style="opacity: 0.85; margin: 0.4rem 0 1rem;">Structural. Opaque pigment, compact, no spectra.</p>
+            <div class="ds-row-actions">
+              <button class="prism-btn prism-btn--dense" type="button">Save</button>
+              <button class="prism-btn prism-btn--dense prism-btn--danger" type="button">Delete</button>
+            </div>
+          </div>
+        </div>
+      </section><section class="ds-section" aria-labelledby="ds-matrix">
         <header>
           <span class="ds-law">SIZES × STYLES</span>
-          <h2 id="ds-matrix">The set, laid out</h2>
+          <h3 id="ds-matrix">The set, laid out</h3>
           <p>
             Five button sizes over four styles, three chip sizes over two, and the
             role tokens with their live values. Every one of them is derived from the
             anchor hue, so the whole sheet rotates when you drag the slider — and
-            every one of them inverts on its own terms at night, because redshift
-            mints no new colour.
+            every one of them inverts on its own terms at night, using the night values of the same role tokens.
           </p>
         </header>
 
@@ -725,111 +778,19 @@ const paintSeed: string[] = [
             </div>
             <p class="ds-caption" style="margin-top: 1rem">
               Four brand bands at fixed angular offsets, three semantics pinned to
-              their wavelengths, and one hairline. Everything else on this page is
+              their hue angles, and one hairline. Everything else on this page is
               built from those.
             </p>
           </div>
         </div>
-      </section>
-
-      <!-- =========================== TYPE ============================== -->
-      <section class="ds-section" aria-labelledby="ds-type">
-        <header>
-          <span class="ds-law">LAW 20 · TYPE</span>
-          <h2 id="ds-type">Type — five roles, line work on top</h2>
-          <p>
-            Display is constructed line work (Tilt&nbsp;Prism), allowed only ≥40px — below
-            that it falls back to Instrument&nbsp;Sans 600. Day fills it; night outlines it.
-          </p>
-        </header>
-
-        <div class="prism-card ds-type-stack" style="box-shadow: var(--elev-dense);">
-          <div>
-            <span class="ds-type-meta">display · line work · ≥40px</span>
-            <p class="prism-display">Refraction</p>
-          </div>
-          <div>
-            <span class="ds-type-meta">headline · Instrument Sans 600</span>
-            <p class="prism-headline">Light splits into spectra at the boundary.</p>
-          </div>
-          <div>
-            <span class="ds-type-meta">body · Sans 400</span>
-            <p class="prism-body" style="margin: 0;">The near-white field does the work. Color appears only at edges and in shadows.</p>
-          </div>
-          <div>
-            <span class="ds-type-meta">data · Spline Sans Mono</span>
-            <p class="prism-data" style="margin: 0;">--h: 185 → --hr: 129 · q = 40ms · AA ≥ 4.5:1</p>
-          </div>
-          <div>
-            <span class="ds-type-meta">aside · Instrument Serif italic · one phrase</span>
-            <p class="prism-aside" style="margin: 0;">the human voice, used sparingly.</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ======================== HOLOGRAPHY ============================ -->
-      <section class="ds-section" aria-labelledby="ds-holography">
-        <header>
-          <span class="ds-law">LAW 21 · HOLOGRAPHY</span>
-          <h2 id="ds-holography">Holography — one light, cascaded by reference</h2>
-          <p>
-            The pointer is the light source, and the whole page is the hologram. Six
-            registered custom properties on the root — cast angle, cast vector, intensity,
-            position — form the <em>reference beam</em>; every dichroic edge, chromatic
-            cast, glint and tilt derives from them in pure CSS <code class="prism-data">calc()</code>.
-            The driver writes the root at most once per frame, and only when a value
-            crosses its quantum (Δ3° angle, Δ0.02 vector) — most frames write nothing,
-            and the typed properties refract between quanta on their own. No element is
-            ever touched by JavaScript.
-          </p>
-        </header>
-
-        <div class="ds-grid ds-grid--2" style="align-items: start;">
-          <div class="ds-stack">
-            <div class="ds-grid ds-grid--2">
-              <div class="prism-holo">
-                <p class="prism-eyebrow">Foil</p>
-                <p class="prism-ui" style="margin-top: 0.4rem;">Spectrum = <span class="prism-data">--la</span></p>
-              </div>
-              <div class="prism-holo">
-                <p class="prism-eyebrow">Glint</p>
-                <p class="prism-ui" style="margin-top: 0.4rem;">Highlight = <span class="prism-data">--lxp/--lyp</span></p>
-              </div>
-            </div>
-            <p class="ds-caption">
-              Foil chips: gradient angle, glint position and ±3° tilt are all var() reads.
-              Zero per-element JS — add a thousand of these and the frame cost is unchanged.
-            </p>
-          </div>
-
-          <div class="prism-card" style="box-shadow: var(--elev-dense);">
-            <p class="prism-eyebrow">Reference monitor · live</p>
-            <p class="prism-data ds-holo-mono" aria-live="off">
-              --la <b id="ds-ref-la">135</b>° · --lv <b id="ds-ref-v">0.71, 0.71</b> · --li <b id="ds-ref-li">0.35</b>
-            </p>
-            <p class="prism-data ds-holo-mono">
-              frames <b id="ds-ref-frames">0</b> · write batches <b id="ds-ref-writes">0</b> · quanta Δ3° / Δ0.02 / Δ2%
-            </p>
-            <p class="prism-body prism-muted" style="margin-top: 0.9rem;">
-              This readout is the entire runtime contract: the beam is written, the cascade
-              does the rest. Write batches never exceed frames, and once the pointer settles
-              they stop — quantization makes still frames free. At night the casts are
-              already halos, so only the glint and the foil answer the light: physics
-              conserved.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <!-- ===================== ICONS & DISPLAYS ========================= -->
-      <section class="ds-section" aria-labelledby="ds-displays">
+      </section><section class="ds-section" aria-labelledby="ds-displays">
         <header>
           <span class="ds-law">LAW 22 · ICONS &amp; DISPLAYS</span>
-          <h2 id="ds-displays">Icons &amp; displays — quantized light on tiny screens</h2>
+          <h3 id="ds-displays">Icons &amp; displays — quantized light on tiny screens</h3>
           <p>
             After Ink &amp; Switch's <a href="https://www.inkandswitch.com/project/tenfold/playground/">Tenfold</a>:
             icons live on coarse 8×8 displays that <em>emit</em> rather than print, so the
-            glass stays dark in both modes and only the wavelength changes. Click an icon to
+            glass stays dark in both modes and the emitted color follows its band. Click an icon to
             re-tune its band (anchor → near → far → counter). And in Tenfold's spirit —
             click and drag everywhere: the big display is paintable.
           </p>
@@ -881,7 +842,56 @@ const paintSeed: string[] = [
             </div>
           </div>
         </div>
-      </section>
+      </section></section><section id="information" class="guide-chapter" aria-labelledby="information-title"><header><div><p class="prism-eyebrow">05 / INFORMATION PATTERNS</p><h2 id="information-title">Give light a reading order.</h2></div><p>A material treatment must help explain the information. Separate the overview from the evidence; separate selection from status. These are compositions of the same primitives.</p></header><div class="guide-composition"><div class="prism-card prism-edge"><p class="prism-eyebrow">PATTERN / SUMMARY</p><h3>One release needs attention.</h3><p>Two checks are ready. One needs a decision. Summarize the state before asking someone to inspect the records.</p><p style="margin-top:1.2rem"><span class="prism-badge prism-badge--warn">! Review required</span></p><p class="ds-caption">Sample content. The card floats above the records; the status is named explicitly.</p></div>
+<div class="guide-table-wrap"><table class="guide-table"><caption>Pattern / comparison and decision</caption><thead><tr><th scope="col">Check</th><th scope="col">Result</th><th scope="col">Next step</th></tr></thead><tbody>
+<tr class="guide-record"><th scope="row">Typography</th><td>✓ Ready</td><td>Keep scale</td></tr><tr class="guide-record" data-current="true"><th scope="row">Focus states<small>Current review</small></th><td>! Review</td><td>Inspect ring</td></tr><tr class="guide-record"><th scope="row">Motion</th><td>✓ Ready</td><td>Keep timing</td></tr>
+</tbody></table><details><summary>Why a seam instead of a glow?</summary><p>The shared ground keeps rows comparable. A narrow seam identifies the current record without making every row float. The label still identifies it when color is unavailable.</p></details></div></div>
+<div class="guide-invariant"><strong>THE INFORMATION RULE</strong><p>At low density, a cast establishes a focal object. At high density, alignment and hairlines establish relationships. Use the same material vocabulary at a quieter intensity as the amount of information grows.</p></div><section class="ds-section" aria-labelledby="ds-elevation">
+        <header>
+          <span class="ds-law">LAW 6–7 · ELEVATION</span>
+          <h3 id="ds-elevation">Elevation — cast floats, hairline grounds</h3>
+          <p>
+            Day shadows are 3-layer chromatic casts thrown along the light axis (135° at
+            rest — move the pointer and every cast on the page swings away from it);
+            night shadows are axis-free halos. Shadows read chromatic tokens. Inside data, casts are forbidden —
+            elevation collapses to 1px hairlines, and refraction enters only as a 2px seam on
+            the hovered row. A cast now <em>means</em> "floats above the data."
+          </p>
+        </header>
+
+        <div class="ds-grid ds-grid--2" style="align-items: start;">
+          <div class="prism-card ds-lift prism-edge">
+            <p class="prism-eyebrow">Floating card</p>
+            <p class="prism-body" style="margin: 0.5rem 0 0; color: var(--ink-soft);">
+              Full cast (day) / halo (night). Hover to lift — at night it glows brighter
+              instead, because there's nothing to lift toward.
+            </p>
+          </div>
+
+          <div>
+            <div class="prism-table" role="table" aria-label="Dense data (hairline elevation)" style="--cols: 1fr 1fr 1fr;">
+              <div class="ds-thead" role="row">
+                <span role="columnheader">Run</span><span role="columnheader">Hue</span><span role="columnheader">State</span>
+              </div>
+              <div class="prism-row" role="row" tabindex="0"><span>0xA1</span><span>185°</span><span>ok</span></div>
+              <div class="prism-row" role="row" tabindex="0" aria-selected="true"><span>0xA2</span><span>150°</span><span>ok</span></div>
+              <div class="prism-row" role="row" tabindex="0"><span>0xA3</span><span>027°</span><span>fail</span></div>
+              <div class="prism-row" role="row" tabindex="0"><span>0xA4</span><span>075°</span><span>warn</span></div>
+            </div>
+            <p class="ds-caption">No cast inside the table. Hover a row → 2px left seam.</p>
+          </div>
+        </div>
+      </section></section><section id="use" class="guide-chapter" aria-labelledby="use-title"><header><div><p class="prism-eyebrow">06 / BUILD WITH IT</p><h2 id="use-title">A recipe, with boundaries.</h2></div><p>Use the material classes to construct the interface. Keep the model visible in your choices, then verify the resulting composition.</p></header><div class="ds-grid ds-grid--2"><div><h3>Load the material layer.</h3><pre class="guide-code" tabindex="0" aria-label="Prismatic starter markup"><code>{`<html data-mode="day" style="--h:185; --hr:129">
+<link rel="stylesheet" href="/prism/prism.css">
+
+<article class="prism-card prism-edge">
+  <h2>Review the release</h2>
+  <p>A quiet surface for the decision.</p>
+  <button class="prism-btn prism-btn--dense">
+    Inspect release
+  </button>
+</article>
+</html>`}</code></pre><p>Load the CSS for the resting material. A hue control must also update the derived night hue. The pointer driver is optional; static light values are built in.</p></div><div><h3>Know what to avoid.</h3><ul class="guide-avoid"><li><strong>Independent colors</strong><p>Derive brand bands from the anchor; use fixed semantic roles for state.</p></li><li><strong>Glow on every row</strong><p>Dense information needs alignment, hairlines, and a narrow selection seam.</p></li><li><strong>Every object floats</strong><p>Use density to distinguish a temporary surface from a structural action.</p></li><li><strong>Color as the only message</strong><p>Keep status labels, visible focus, and a reduced-motion path.</p></li></ul><p>Check the foreground on its actual ground in both modes. The body-text audit covers selected pairs and hues; it does not certify every gradient, button, or application layout.</p></div></div><div class="ds-row-actions" style="margin-top:1.5rem"><a href="/prism/prism.tokens.json" download>Token reference ↓</a><a href="/prism/prism.css" download>Material stylesheet ↓</a><a href="/design/void">Read VOID ↗</a><a href="/design/acrylics">Read Acrylics ↗</a></div></section>
     </main>
 
     <footer class="ds-footer">
@@ -924,6 +934,16 @@ const paintSeed: string[] = [
           root.style.setProperty('--hr', hr);
           dayH.textContent = h + '°';
           nightH.textContent = hr + '°';
+          const night = root.dataset.mode === 'night';
+          const offsets = night ? [0, -25, 55, -95] : [0, -35, 75, -140];
+          const base = night ? hr : h;
+          const bands = offsets.map(offset => ((base + offset) % 360 + 360) % 360);
+          document.getElementById('guide-hue-equation').textContent =
+            (night ? 'Night' : 'Day') + ': H = ' + base + '° → bands ' + bands.map(band => band + '°').join(', ');
+          document.querySelectorAll('[data-band-offset]').forEach(function (label) {
+            const offset = offsets[Number(label.dataset.bandOffset)];
+            label.textContent = (offset >= 0 ? '+' : '−') + Math.abs(offset) + '°';
+          });
         }
 
         slider.addEventListener('input', function (e) { applyHue(parseInt(e.target.value, 10)); });
@@ -935,6 +955,7 @@ const paintSeed: string[] = [
           root.dataset.mode = next;
           modeLabel.textContent = next === 'night' ? 'Redshift' : 'Day';
           modeBtn.setAttribute('aria-pressed', String(next === 'night'));
+          applyHue(parseInt(slider.value, 10));
         });
 
         // Replay helper: re-trigger an entrance animation by reflow.

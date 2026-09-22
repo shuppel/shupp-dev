@@ -176,12 +176,15 @@ document.querySelector("#copy-tokens").addEventListener("click", async () => {
 // Navigation is tied to the section being read, including unlinked sections.
 const navigation = [...document.querySelectorAll(".main-nav a")];
 const anchors = {
-  colors: "#colors",
-  material: "#colors",
+  concepts: "#concepts",
+  material: "#concepts",
+  "style-guide": "#style-guide",
+  colors: "#style-guide",
   components: "#components",
-  type: "#rules",
-  rules: "#rules",
-  use: "#rules",
+  type: "#style-guide",
+  rules: "#style-guide",
+  information: "#components",
+  use: "#components",
 };
 const observer = new IntersectionObserver(
   (entries) => {

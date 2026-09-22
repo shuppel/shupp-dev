@@ -6,12 +6,21 @@ The content is about the design system itself.
 
 ## Reference structure
 
-1. Color schemes and semantic roles: Market, Cobalt, After hours.
-2. Material: stroke, blot, layer, pressure-to-width profiles, pigment mix versus digital multiply.
-3. Components: actions, selection, input validation, feedback, disclosures,
+1. Core concepts: a stable gesture, color with history, and readable ground.
+2. Objects and mathematics: stroke/blot/ground/layer definitions, Gaussian
+   pressure-to-width profiles, coverage, and pigment mix versus digital multiply.
+3. Style guide: Market/Cobalt/After hours, semantic roles, typography, geometry,
+   motion, and usage rules.
+4. Components: actions, selection, input validation, feedback, disclosures,
    surfaces, and dialogs.
-4. Typography, spacing, geometry, and motion.
-5. Usage rules and implementation examples.
+5. Information patterns: an editorial summary and a comparison of the same
+   three schemes, showing how treatment changes with information density.
+6. Implementation examples and downloads.
+
+See `docs/design-reference-format.md` for the presentation structure shared with
+Prismatic. VOID supplies the premise-to-mechanism-to-component reference.
+`guide.css` styles the chapter index and explanatory patterns separately from
+the portable component layer.
 
 `/design/acrylics/materials` preserves the earlier paint and geometry workshop.
 The primary page does not load the canvas engine.
@@ -96,10 +105,13 @@ retains that visual direction and corrects the page's content and purpose.
 
 ## Change radius and verification
 
-The change remains confined to Acrylics routes, assets, components, project
-entry, documentation, and tests. No shared homepage, navigation, themes,
-dependencies, deployment configuration, or APIs are changed. Existing content
-collection consumers pick up the Acrylics entry.
+The Acrylics implementation remains confined to its routes, assets, components,
+project entry, documentation, and tests. The accompanying presentation revision
+also reorganizes `/design/prismatic`, adds its chapter styles, aligns its token
+descriptions with the implementation, and corrects the resting night hue to
+129° (the existing hue function's output for 185°). No shared homepage,
+navigation, other theme, dependency, deployment configuration, or API changes.
+Existing content collection consumers pick up the Acrylics entry.
 
 ```sh
 npx astro build
