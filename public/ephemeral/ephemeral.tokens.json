@@ -1,0 +1,43 @@
+{
+  "name": "Ephemeral",
+  "version": "0.2",
+  "color": {
+    "ink": "#000000",
+    "paper": "#FFFFFF",
+    "canary": "#F4FF00"
+  },
+  "colorRoles": {
+    "canvas": "paper",
+    "text": "ink",
+    "border": "ink",
+    "selected": "canary",
+    "primaryAction": "canary",
+    "textOnAccent": "ink"
+  },
+  "type": {
+    "expression": { "family": "Martel", "weight": 400 },
+    "interface": { "family": "Nunito Sans", "weights": [400, 600] }
+  },
+  "geometry": {
+    "borderWidthPx": 1,
+    "controlRadiusPx": 6,
+    "surfaceRadiusPx": 12,
+    "pillRadiusPx": 999,
+    "spaceStepPx": 8,
+    "minimumPrimaryTargetPx": 44,
+    "shadow": "none"
+  },
+  "components": [
+    "intent-field", "preference-switch", "context-chip", "avatar",
+    "social-post", "briefing-card", "conversation-thread", "source-disclosure",
+    "reading-card", "saved-item", "completion-state"
+  ],
+  "composition": {
+    "catchUp": ["intent-field", "context-chip", "briefing-card", "completion-state"],
+    "understand": ["intent-field", "conversation-thread", "source-disclosure"],
+    "browse": ["intent-field", "reading-card", "saved-item"],
+    "persistent": ["identity", "preferences", "saved-items"],
+    "release": "Remove the temporary view; keep deliberate saves for the page visit."
+  },
+  "prototype": "Authored content and deterministic rules. No inference or tracking."
+}

@@ -54,9 +54,16 @@ const eligible = () => available().filter(p => !designOnly() || p.topic !== 'loc
 const isLong = () => $('reading-first').checked || state.long;
 const intentQueries = { brief:'Catch me up. I have three minutes.', focus:'Help me understand the Fold launch.', browse:'Let me browse. Something interesting to read.' };
 
+function icon(name) {
+  return `<svg class="icon" aria-hidden="true"><use href="#ep-${name}"></use></svg>`;
+}
+function avatar(name, dark=false) {
+  const initials=name.split(' ').slice(0,2).map(part=>part[0]).join('');
+  return `<span class="avatar ${dark?'dark':''}" aria-hidden="true">${escapeHTML(initials)}</span>`;
+}
 function saveButton(id) {
   const saved = state.saved.has(id);
-  return `<button type="button" data-save="${id}" aria-pressed="${saved}" aria-label="${saved?'Unsave':'Save'} ${escapeHTML(byId.get(id).title)}">${saved?'Saved ✓':'Save for later'}</button>`;
+  return `<button type="button" data-save="${id}" aria-pressed="${saved}" aria-label="${saved?'Unsave':'Save'} ${escapeHTML(byId.get(id).title)}">${icon('save')}${saved?'Saved':'Save'}</button>`;
 }
 function sourcePost(id, expanded=false) {
   const p = byId.get(id);
@@ -66,15 +73,15 @@ function sourceDisclosure(ids, open=false) {
   return `<details class="source-disclosure" ${open?'open':''}><summary>${ids.length} original post${ids.length===1?'':'s'}</summary>${ids.map(id=>sourcePost(id)).join('')}</details>`;
 }
 function completion(label='You’re caught up on this selection.') {
-  return `<div class="completion"><p>${label}</p><button type="button" class="solid-button" data-action="done">I’m done for now</button></div>`;
+  return `<div class="completion"><p>${icon('check')}${label}</p><button type="button" class="solid-button" data-action="done">I’m done for now</button></div>`;
 }
 function feedView() {
-  return `<div class="feed"><div class="feed-heading"><p class="eyebrow">Following · latest first</p><h3 class="scene-title">Your regular feed.</h3><p class="scene-intro">Individual posts from the same sample snapshot.</p></div>${eligible().slice().reverse().map(p=>`<article class="feed-post" data-post="${p.id}"><header class="post-meta"><strong>${p.author}</strong><span>${p.handle}</span><time>${p.time}</time></header><p>${escapeHTML(p.body)}</p><div class="item-actions">${saveButton(p.id)}${p.excerpt?`<button type="button" data-read="${p.id}" aria-expanded="false" aria-controls="read-${p.id}">Read more</button>`:''}</div>${p.excerpt?`<p id="read-${p.id}" hidden>${escapeHTML(p.excerpt)}</p>`:''}</article>`).join('')}<p class="scene-intro">End of this fictional snapshot.</p></div>`;
+  return `<div class="feed"><div class="feed-heading"><p class="eyebrow">Following · latest first</p><h3 class="scene-title">Your regular feed.</h3><p class="scene-intro">Individual posts from the same sample snapshot.</p></div>${eligible().slice().reverse().map(p=>`<article class="feed-post" data-post="${p.id}"><header class="post-meta">${avatar(p.author,p.author==='Fold team')}<div><strong>${p.author}</strong><span>${p.handle}</span></div><time>${p.time}</time></header><p>${escapeHTML(p.body)}</p><div class="item-actions">${saveButton(p.id)}${p.excerpt?`<button type="button" data-read="${p.id}" aria-expanded="false" aria-controls="read-${p.id}">Read more</button>`:''}</div>${p.excerpt?`<p id="read-${p.id}" hidden>${escapeHTML(p.excerpt)}</p>`:''}</article>`).join('')}<p class="scene-intro">End of this fictional snapshot.</p></div>`;
 }
 function briefView() {
   const groups = briefings[state.visit].filter(g=>!designOnly() || g.topic!=='local').slice(0,state.one?1:3);
   const short = $('short-brief').checked;
-  return `<div class="scene-top"><div><p class="eyebrow">A finite briefing</p><h3 class="scene-title">${state.one?'One thing for right now.':`${groups.length===3?'Three':'Two'} things to take with you.`}</h3></div><button type="button" data-action="scope">${designOnly()?'All my interests':'Only design & tools'}</button></div><div class="brief-list">${groups.map(g=>`<article class="brief-item" data-brief="${g.topic}"><h4>${g.title}</h4><p>${g.summary}</p>${short?'':`<p>${g.detail}</p>`}${g.topic==='design'?'<div class="item-actions"><button type="button" data-intent="focus">Follow the Fold conversation ↗</button></div>':''}${sourceDisclosure(g.sources,!short)}</article>`).join('')}</div>${completion()}`;
+  return `<div class="scene-top"><div><p class="eyebrow">A finite briefing</p><h3 class="scene-title">${state.one?'One thing for right now.':`${groups.length===3?'Three':'Two'} things to take with you.`}</h3></div><button type="button" data-action="scope">${designOnly()?'All my interests':'Only design & tools'}</button></div><div class="brief-list">${groups.map(g=>`<article class="brief-item" data-brief="${g.topic}"><div class="brief-item-header"><span class="tag yellow">${g.topic==='design'?'Design & tools':g.topic==='craft'?'Ideas & craft':'Around town'}</span>${icon(g.topic==='design'?'layers':g.topic==='craft'?'spark':'home')}</div><h4>${g.title}</h4><p>${g.summary}</p>${short?'':`<p>${g.detail}</p>`}${g.topic==='design'?'<div class="item-actions"><button type="button" data-intent="focus">Open conversation ↗</button></div>':''}${sourceDisclosure(g.sources,!short)}</article>`).join('')}</div>${completion()}`;
 }
 function focusView() {
   const later = state.visit!=='morning';
@@ -88,17 +95,17 @@ function focusView() {
     { title:'The promise', text:'Discuss a prototype beside the scene itself, with fewer screenshots passed between tools.', ids:['p01','p04'] },
     ...(later ? [{ title:'The qualification', text:'The team confirms incomplete keyboard navigation and no offline editing. A shared review flow still needs to work for everyone.', ids:['p07','p10'] },{ title:evening?'The next step':'The early experience', text:evening?'Ivo is trying one review tomorrow, keeping the change small enough to compare.':'Ivo finds it useful for review, while keeping the existing workspace alongside the trial.', ids:[evening?'p18':'p11'] }] : [])
   ];
-  return `<div class="focus-view"><p class="eyebrow">One conversation, brought together</p><h3 class="scene-title">${state.angle==='limits'?'What should I know before trying it?':'So, what’s happening with Fold?'}</h3><p class="lede">${later?'The appeal is fewer detours. The open question is whether everyone can take part.':'The beta moves comments closer to the work. It is early in the conversation.'}</p><div class="focus-thread">${sections.map(s=>`<article><h4>${s.title}</h4><p>${s.text}</p>${sourceDisclosure(s.ids)}</article>`).join('')}</div><div class="focus-questions"><button type="button" data-action="angle">${state.angle==='limits'?'Back to the whole conversation':'What are the limitations?'}</button><button type="button" data-intent="brief">Back to a quick catch-up</button></div>${completion('Enough context to choose your next step.')}</div>`;
+  return `<div class="focus-view"><p class="eyebrow">One conversation, brought together</p><h3 class="scene-title">${state.angle==='limits'?'What should I know before trying it?':'So, what’s happening with Fold?'}</h3><p class="lede">${later?'The appeal is fewer detours. The open question is whether everyone can take part.':'The beta moves comments closer to the work. It is early in the conversation.'}</p><div class="focus-thread">${sections.map(s=>`<article><h4>${avatar(byId.get(s.ids[0]).author)}${s.title}</h4><p>${s.text}</p>${sourceDisclosure(s.ids)}</article>`).join('')}</div><div class="focus-questions"><button type="button" data-action="angle">${state.angle==='limits'?'Back to the whole conversation':'What are the limitations?'}</button><button type="button" data-intent="brief">Back to a quick catch-up</button></div>${completion('Enough context to choose your next step.')}</div>`;
 }
 function browseView() {
   let pool = eligible().slice().reverse();
   if (isLong()) pool = pool.filter(p=>p.kind==='read');
   // The authored collection is deliberately small; more is an explicit choice.
   const featured = pool.slice(0,3);
-  return `<div class="scene-top"><div><p class="eyebrow">An open collection</p><h3 class="scene-title">${isLong()?'A little longer with each thought.':'Follow whatever catches you.'}</h3><p class="scene-intro">${isLong()?'Longer reads from this moment in the sample.':'A few voices. No particular hurry.'}</p></div><button type="button" data-action="reads">${isLong()?'Mix it up':'Longer reads'}</button></div><div class="browse-grid ${isLong()?'reading':''}">${featured.map(p=>`<article class="browse-post" data-post="${p.id}"><p class="eyebrow">${p.topic==='local'?'Around town':p.kind==='read'?'Something to read':'A passing thought'}</p><blockquote>${escapeHTML(p.title)}</blockquote><p>${escapeHTML(p.body)}</p>${isLong() && p.excerpt?`<p class="excerpt">${escapeHTML(p.excerpt)}</p>`:''}<p class="byline">${p.author} · ${p.time}</p><div class="item-actions">${saveButton(p.id)}</div>${sourceDisclosure([p.id])}</article>`).join('')}</div>${completion('Keep what you like. Leave whenever you’re ready.')}`;
+  return `<div class="scene-top"><div><p class="eyebrow">An open collection</p><h3 class="scene-title">${isLong()?'A little longer with each thought.':'Follow whatever catches you.'}</h3><p class="scene-intro">${isLong()?'Longer reads from this moment in the sample.':'A few voices. No particular hurry.'}</p></div><button type="button" data-action="reads">${isLong()?'Mix it up':'Longer reads'}</button></div><div class="browse-grid ${isLong()?'reading':''}">${featured.map(p=>`<article class="browse-post" data-post="${p.id}"><div class="post-art ${p.topic}" aria-hidden="true"></div><p class="eyebrow">${p.topic==='local'?'Around town':p.kind==='read'?'Something to read':'A passing thought'}</p><blockquote>${escapeHTML(p.title)}</blockquote><p>${escapeHTML(p.body)}</p>${isLong() && p.excerpt?`<p class="excerpt">${escapeHTML(p.excerpt)}</p>`:''}<p class="byline">${avatar(p.author)}${p.author} · ${p.time}</p><div class="item-actions">${saveButton(p.id)}</div>${sourceDisclosure([p.id])}</article>`).join('')}</div>${completion('Keep what you like. Leave whenever you’re ready.')}`;
 }
 function releasedView() {
-  return `<div class="quiet-state"><p class="eyebrow">This visit is complete</p><h3 class="scene-title">A little space, again.</h3><p>The view is gone. ${state.saved.size?`${state.saved.size} saved post${state.saved.size===1?' is':'s are'} still here.`:'Your preferences are still here.'}</p><button type="button" class="solid-button" data-action="restart">Start another visit</button><button type="button" data-mode="feed">Open the regular feed</button></div>`;
+  return `<div class="quiet-state"><span class="completion-glyph">${icon('check')}</span><p class="eyebrow">This visit is complete</p><h3 class="scene-title">A little space, again.</h3><p>The view is gone. ${state.saved.size?`${state.saved.size} saved post${state.saved.size===1?' is':'s are'} still here.`:'Your preferences are still here.'}</p><button type="button" class="solid-button" data-action="restart">Start another visit</button><button type="button" data-mode="feed">Open the regular feed</button></div>`;
 }
 function unsupportedView() {
   return '<div class="quiet-state"><p class="eyebrow">Outside this small sketch</p><h3 class="scene-title">Try a different starting point.</h3><p>This demo understands a catch-up, the Fold conversation, or browsing. You can add “only design,” “one minute,” or “longer reads.” It doesn’t infer an answer to other requests.</p><button type="button" class="solid-button" data-intent="brief">Try a catch-up</button></div>';
@@ -127,7 +134,7 @@ function render(announce=true) {
   document.querySelectorAll('.comparison [data-mode]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.mode===state.mode)));
   document.querySelectorAll('.intent-choices [data-intent]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.intent===state.intent && !state.released && !state.unsupported)));
   $('format-note').textContent=state.mode==='feed'?'Control · individual posts, latest first':state.released?'Released · saved items remain':state.unsupported?'No matching example':{brief:'Briefing · grouped developments, a clear end',focus:'Conversation · context, qualifications, sources',browse:isLong()?'Reading · fewer pieces, more room':'Collection · room to wander'}[state.intent];
-  $('benefit-note').textContent=state.mode==='feed'?'The control leaves the work of grouping, connecting, and choosing when to stop to the reader.':state.released?'The temporary view ends without taking your saved items with it.':state.unsupported?'A bounded example should acknowledge when it cannot understand a request.':{brief:'The user can finish catching up without deciding where an endless feed ends.',focus:'The user can understand a discussion without piecing it together across separate threads.',browse:'The user can follow their curiosity in a layout that gives individual thoughts room.'}[state.intent];
+  $('benefit-note').textContent=state.mode==='feed'?'Control: individual posts. You connect the dots.':state.released?'The view ends. Your saved items stay.':state.unsupported?'No match: choose one of the example intents.':{brief:'Brief: a small selection and a clear ending.',focus:'Conversation: related posts, connected.',browse:'Collection: space to follow your curiosity.'}[state.intent];
   renderSaved();renderWhy();
   if(announce)$('announcement').textContent=$('format-note').textContent;
 }
@@ -178,7 +185,7 @@ document.addEventListener('click',event=>{
     const id=button.dataset.save;
     if(state.saved.has(id))state.saved.delete(id);else state.saved.add(id);
     // Update in place to preserve expanded sources, focus, and reading position.
-    document.querySelectorAll(`[data-save="${id}"]`).forEach(b=>{if(!$('saved-panel').contains(b)){b.setAttribute('aria-pressed',String(state.saved.has(id)));b.setAttribute('aria-label',`${state.saved.has(id)?'Unsave':'Save'} ${byId.get(id).title}`);b.textContent=state.saved.has(id)?'Saved ✓':'Save for later';}});
+    document.querySelectorAll(`[data-save="${id}"]`).forEach(b=>{if(!$('saved-panel').contains(b)){b.setAttribute('aria-pressed',String(state.saved.has(id)));b.setAttribute('aria-label',`${state.saved.has(id)?'Unsave':'Save'} ${byId.get(id).title}`);b.innerHTML=icon('save')+(state.saved.has(id)?'Saved':'Save');}});
     const fromSaved=$('saved-panel').contains(button);renderSaved();
     if(state.released)render();
     if(fromSaved)$('saved-toggle').focus({preventScroll:true});
@@ -196,5 +203,38 @@ document.addEventListener('click',event=>{
     }
     render();focusScene();
   }
+});
+function renderSpecimenBrief(value) {
+  const q=value.toLowerCase();
+  const one=/one|1|just/.test(q);
+  const supported=one || /catch|brief|three|3|update/.test(q);
+  $('specimen-results').innerHTML=supported ? ['Fold beta','Less interface','Open studio'].slice(0,one?1:3).map((title,i)=>`<span><i>0${i+1}</i>${title}</span>`).join('') : '<span>Try “catch me up” or “one thing.”</span>';
+  document.querySelectorAll('[data-spec-query]').forEach(button=>button.setAttribute('aria-pressed',String(supported && /one/i.test(button.dataset.specQuery)===one)));
+}
+$('specimen-form').addEventListener('submit',event=>{event.preventDefault();renderSpecimenBrief($('specimen-query').value);});
+document.querySelectorAll('[data-spec-query]').forEach(button=>button.addEventListener('click',()=>{$('specimen-query').value=button.dataset.specQuery;renderSpecimenBrief(button.dataset.specQuery);}));
+function renderPreferenceSpecimen() {
+  const short=$('specimen-short').checked,design=$('specimen-design').checked;
+  const items=design?['Fold beta','Less interface']:['Fold beta','Less interface','Open studio'];
+  $('preference-preview').innerHTML=`<span class="tag yellow">${short?'Brief':'Expanded'}</span><span>${design?'Design & tools':'All interests'} · ${items.length} pieces${short?'':`<br />${items.join(' / ')}`}</span>`;
+}
+$('specimen-short').addEventListener('change',renderPreferenceSpecimen);
+$('specimen-design').addEventListener('change',renderPreferenceSpecimen);
+$('specimen-save').addEventListener('click',()=>{
+  const saved=$('specimen-save').getAttribute('aria-pressed')!=='true';
+  $('specimen-save').setAttribute('aria-pressed',String(saved));
+  $('specimen-save').setAttribute('aria-label',saved?'Unsave example post':'Save example post');
+  $('specimen-save-status').textContent=saved?'Saved for this page visit.':'Save for this page visit.';
+  $('specimen-kept').textContent=saved?'Your saved thought stays.':'Your preferences stay.';
+});
+$('specimen-dismiss').addEventListener('click',()=>{
+  $('specimen-complete').hidden=true;$('specimen-empty').hidden=false;
+  $('specimen-release-status').textContent='View released. Your saved thought and preferences stay.';
+  $('specimen-restore').focus({preventScroll:true});
+});
+$('specimen-restore').addEventListener('click',()=>{
+  $('specimen-complete').hidden=false;$('specimen-empty').hidden=true;
+  $('specimen-release-status').textContent='Completion view restored.';
+  $('specimen-dismiss').focus({preventScroll:true});
 });
 render(false);
