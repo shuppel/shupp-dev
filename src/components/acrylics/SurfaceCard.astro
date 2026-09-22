@@ -1,0 +1,13 @@
+---
+import PaintMark from './PaintMark.astro';
+interface Props { title: string; eyebrow?: string; layered?: boolean; }
+const { title, eyebrow, layered = false } = Astro.props;
+---
+<div class:list={['ac-card-wrap', { 'ac-card-wrap--layered': layered }]}>
+  {layered && <><PaintMark color="var(--ac-pigment)" class="ac-card-coat ac-card-coat--one" /><PaintMark color="var(--ac-pigment-2)" class="ac-card-coat ac-card-coat--two" /></>}
+  <article class="ac-surface-card">
+    {eyebrow && <p class="eyebrow">{eyebrow}</p>}
+    <h3>{title}</h3>
+    <slot />
+  </article>
+</div>

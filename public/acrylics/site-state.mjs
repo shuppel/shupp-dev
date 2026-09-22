@@ -1,30 +1,31 @@
-/** Pure state rules shared by the site and its small behavior tests. */
-export function restoreSelection(raw, validIds) {
-  try {
-    const value = JSON.parse(raw);
-    return new Set(
-      Array.isArray(value)
-        ? value.filter((id) => typeof id === "string" && validIds.has(id))
-        : [],
-    );
-  } catch {
-    return new Set();
-  }
+/** Pure color and export rules for the Acrylics design-system reference. */
+export function schemeCss(scheme) {
+  return `.ac-site {\n  color-scheme: ${scheme.colorScheme};\n${Object.entries(
+    scheme.roles,
+  )
+    .map(([key, value]) => `  --ac-${key}: ${value};`)
+    .join("\n")}\n}`;
 }
-export function matchesProject(project, category, query) {
+export function digitalCoat(first, second, coverage) {
+  const rgb = (hex) =>
+    hex
+      .slice(1)
+      .match(/../g)
+      .map((channel) => parseInt(channel, 16));
+  const base = rgb(first),
+    coat = rgb(second);
+  const alpha = Math.max(0, Math.min(1, coverage));
   return (
-    (category === "all" || project.category === category) &&
-    project.search.includes(query.trim().toLowerCase())
-  );
-}
-export function composeBrief({ name, email, interest, idea }, projects) {
-  const references = projects.length
-    ? projects
-        .map(
-          (project) =>
-            `- ${project.title}: ${new URL(project.href, "https://shupp.dev").href}`,
+    "#" +
+    base
+      .map((channel, index) =>
+        Math.round(
+          channel * (1 - alpha) + ((channel * coat[index]) / 255) * alpha,
         )
-        .join("\n")
-    : "No project references selected.";
-  return `Hi Erikk,\n\nI'd like to talk about: ${interest}\n\n${idea.trim()}\n\nA few references from your work:\n${references}\n\n${name.trim()}\n${email.trim()}`;
+          .toString(16)
+          .padStart(2, "0"),
+      )
+      .join("")
+      .toUpperCase()
+  );
 }

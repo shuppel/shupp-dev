@@ -4,6 +4,7 @@ interface Props {
   shape?: 'stroke' | 'blot';
   class?: string;
 }
-const { color = 'var(--red)', shape = 'stroke', class: className = '' } = Astro.props;
+const { color = 'var(--ac-pigment)', shape = 'stroke', class: className = '' } = Astro.props;
 ---
 <span aria-hidden="true" class:list={['paint-mark', `paint-mark--${shape}`, className]} style={`--pigment:${color}`}></span>
+

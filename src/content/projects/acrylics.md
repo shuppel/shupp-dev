@@ -1,40 +1,35 @@
 ---
 title: "Acrylics"
-description: "A working portfolio in Acrylics: billboard typography, pigment-soaked controls, layered project cards, and collections that mix as you save."
+description: "A paint-inspired design system: layered color schemes, brush and blot materials, tactile components, and tall billboard typography."
 projectDate: 2026-09-20
 completed: false
-technologies: ["Design Systems", "UI Components", "Pigment Mixing", "Astro", "Accessibility"]
+technologies: ["Design Systems", "Design Tokens", "UI Components", "Pigment Mixing", "Astro"]
 featured: false
 image: "/images/projects/acrylics-paint.webp"
 customUrl: "/design/acrylics"
 ---
 
-## A material language for a working website
+## A design system in layers
 
-[Acrylics](/design/acrylics) applies tall market-sign typography, irregular paint,
-and tactile early-web controls to an alternate portfolio for Erikk Shupp.
+[Acrylics](/design/acrylics) documents a visual language built from tall market-sign
+typography, loaded brushstrokes, pooled blots, and tactile early-web controls.
+The page demonstrates the language while explaining how to build with it.
 
-Browse real projects, filter and search, open project details, and save a personal
-collection. Every saved project contributes its pigment to the collection's
-color. A project enquiry brings those references together into a draft you can
-review, copy, or open in your email app. The page never sends a message itself.
+Three schemes—Market, Cobalt, and After hours—recolor the whole reference page.
+Semantic tokens separate ground, surface, ink, action, and supporting pigments.
+Raw pigments can mix into muted colors; action and text colors use explicit,
+contrast-checked pairs.
 
-Reusable Astro components cover buttons, painted marks, filter chips, project
-cards, and dialogs. Brush marks indicate active filters; pooled blots mark saved
-work; pressed controls gain a denser coat. Opaque surfaces keep text readable.
-The portfolio's content and links work without JavaScript; enhancements include
-keyboard-operable controls, native modal dialogs, and reduced-motion support.
+The component reference covers actions, selection, fields, validation, feedback,
+disclosures, surfaces, and dialogs. Five reusable Astro primitives form the core:
+Button, ChoiceChip, PaintMark, SurfaceCard, and Dialog. Typography, geometry,
+spacing, motion, and usage rules explain how the parts work together. Copy the
+current scheme's CSS or download the token definitions and stylesheet.
 
-Collections stay in browser storage. Enquiry text stays in page memory until you
-copy it or choose to open your email application.
+The [material workshop](/design/acrylics/materials) keeps the paint studio and
+geometry experiments as an optional deeper reference. Spectral.js (MIT) provides
+pigment-inspired mixing; digital overlays use sRGB compositing. Neither model
+predicts a particular brand of physical paint.
 
-## Under the surface
-
-The [material workshop](/design/acrylics/materials) preserves the paint studio
-and geometry experiments as a secondary destination. The brush and collection
-use Spectral.js (MIT) for pigment-inspired mixing; the geometry lab uses digital
-RGB compositing. These are procedural approximations, not predictions for a
-specific brand of physical paint.
-
-Acrylics is an isolated alternate design at `/design/acrylics`; it does not
-replace the site's existing homepage or themes.
+Interactive examples stay in page memory and reset on reload. The reference
+page is isolated from the site's existing homepage and visual themes.

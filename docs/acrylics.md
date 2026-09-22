@@ -1,63 +1,81 @@
-# Acrylics, applied
+# Acrylics design-system reference
 
-`/design/acrylics` is an alternate portfolio using existing project and author
-collections. `/design/acrylics/materials` preserves the material experiments.
-Neither route imports the shared layout or changes the site's active theme.
+`/design/acrylics` follows the purpose of the existing VOID and PRISM pages:
+it documents a visual system while demonstrating its rules and components.
+The content is about the design system itself.
 
-## Component contracts
+## Reference structure
 
-| Component | Job | Material behavior |
-| --- | --- | --- |
-| `Button.astro` | Links and actions | Highlighted gel edge; a pressed control sinks into a denser coat |
-| `PaintMark.astro` | Decorative stroke or blot | Rough SVG masks, bristle bands, pooled highlights; never carries text alone |
-| `FilterChip.astro` | Category selection | Active stroke plus explicit `aria-pressed` state and a result count |
-| `ProjectCard.astro` | Project discovery | Painted cover, readable paper body, a saved blot plus text/checkmark |
-| `Dialog.astro` | Details, collection, enquiry review | Native modal focus containment, Escape, explicit close control |
+1. Color schemes and semantic roles: Market, Cobalt, After hours.
+2. Material: stroke, blot, layer, pigment mix versus digital multiply.
+3. Components: actions, selection, input validation, feedback, disclosures,
+   surfaces, and dialogs.
+4. Typography, spacing, geometry, and motion.
+5. Usage rules and implementation examples.
 
-Use `public/acrylics/site.css` only inside `.ac-site`. The standalone document
-loads it exclusively; shared site pages do not load this stylesheet.
+`/design/acrylics/materials` preserves the earlier paint and geometry workshop.
+The primary page does not load the canvas engine.
 
-The primary page contains six curated real projects. The full portfolio remains
-one link away. Category and query filters intersect. Project links work without
-JavaScript; enhancement-only controls appear after initialization.
+## Reusable primitives
 
-A collection's pigment uses the existing vendored Spectral.js implementation,
-with equal contributions from the selected projects. Complementary pigments
-can become muted. The collection count, project names, and saved labels carry
-the meaning without relying on color. Its sole storage key is
-`shupp.acrylics.collection.v1`; unknown IDs are discarded, and blocked storage
-falls back to memory with a visible explanation. Clearing a collection only
-clears that key's contents. No analytics or new network API is introduced.
+| Component | Contract |
+| --- | --- |
+| `Button.astro` | `variant="ink|cream|paint"`, optional `href`, native button attributes; tactile rest/hover/press and visible focus |
+| `ChoiceChip.astro` | `value`, `label`, `active`, `controls`, `disabled`; a painted selection mark plus `aria-pressed` |
+| `PaintMark.astro` | `color`, `shape="stroke|blot"`, optional class; stable decorative masks, always hidden from assistive technology |
+| `SurfaceCard.astro` | `title`, optional `eyebrow`, `layered`; opaque content ground with optional paint behind it |
+| `Dialog.astro` | `id`, `title`, optional class; native modal, labelled title, close button, Escape and focus restoration |
 
-Enquiries are prepared locally. The visitor must review and choose to copy the
-draft or open a `mailto:` URL. This is not a submission endpoint; the page does
-not send email or store enquiry text.
+Use native HTML for fields, disclosures, and status rows. Their presentation
+comes from the same CSS role tokens rather than new per-example colors.
 
-## Visual choices
+## Tokens and schemes
 
-Warm paper, vermilion, dark forest, ochre, and blue give the design a physical
-base. Typography: Hind Madurai was observed in Fontjoy's initial
-Montserrat/Lora/Hind Madurai combination. Anton is a deliberate independent
-adaptation for the tall market-billboard brief; IBM Plex Mono handles captions.
-Texture is stable and responsive; no background rendering loop runs on the
-portfolio. The larger canvas paint engine only loads on the workshop route.
+`public/acrylics/acrylics.tokens.json` is the scheme reference. It includes paired
+text colors, focus, success/error, raw pigments, fonts, spacing, radii, and motion.
+`site.css` is scoped to `.ac-site` and supplies the Market defaults. Load the
+three fonts (Anton, Hind Madurai, IBM Plex Mono), the stylesheet, and both SVG
+masks when using the components elsewhere. Preserve the `/acrylics/` asset path
+or update the two mask URLs in the stylesheet.
 
-## Change radius
+`site.mjs` fetches the static token JSON and applies the selected scheme to
+custom properties on the page root. The same data drives labels, copyable CSS,
+and the pigment examples. There is no account, saved collection, enquiry flow,
+localStorage, analytics, or external submission on this page. Scheme choice and
+component state reset on reload. Disabled demo controls become available only
+after initialization; the default reference and download links remain readable
+without JavaScript or when token loading fails.
 
-- New Acrylics page, components, styles, scripts, masks, workshop, and tests.
-- The Acrylics project entry appears through the existing collection-driven
-  portfolio, related-project lists, and sitemap.
-- No changes to the homepage, shared layout/navigation, other design themes,
-  package dependencies, APIs, or deployment configuration.
+Raw pigments and action colors have separate roles. The decorative blend uses
+Spectral.js; it never replaces semantic ink, focus, or action tokens. Digital
+multiply is shown alongside it with an explicitly different label. This is a
+material approximation, not a claim about a physical paint brand.
 
-## Verification
+## Visual rules
 
-`npx astro build` builds the static site. Run the behavior/material tests with:
+- Use stable seeds, frayed coverage, and bristle tracks; do not rerandomize on render.
+- Put body text on opaque surfaces. Test each foreground/background role pair.
+- Give selection and errors a label or symbol in addition to color.
+- Keep rectangular hit targets at least 44px high even when the paint is irregular.
+- Move on deliberate input, then settle; respect reduced-motion preferences.
+
+Hind Madurai was observed in Fontjoy's Montserrat/Lora/Hind Madurai pairing.
+Anton was independently selected for the tall billboard brief. This revision
+retains that visual direction and corrects the page's content and purpose.
+
+## Change radius and verification
+
+The change remains confined to Acrylics routes, assets, components, project
+entry, documentation, and tests. No shared homepage, navigation, themes,
+dependencies, deployment configuration, or APIs are changed. Existing content
+collection consumers pick up the Acrylics entry.
 
 ```sh
+npx astro build
 node --test scripts/acrylics-site.test.mjs scripts/acrylics-math.test.mjs scripts/acrylics-paint.test.mjs
 ```
 
-Browser checks should cover filtering, an empty search, save/unsave and reload,
-project details and Escape, collection-to-enquiry navigation, draft preparation,
-and readable narrow layout. Do not send the sample enquiry.
+Tests cover semantic color-pair contrast across the three schemes, complete CSS
+exports, digital-color endpoints, and the existing geometry/pigment behavior.
+Browser checks should exercise scheme propagation, pigment comparison, action
+feedback, selection, validation/error recovery, modal open/close, and CSS copy.
