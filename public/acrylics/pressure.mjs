@@ -38,10 +38,12 @@ export function strokeOutline(
   seed = 17,
   top = -1,
   bottom = 1,
+  start = 0,
+  end = 1,
 ) {
   const edge = (side) =>
     Array.from({ length: 81 }, (_, i) => {
-      const t = i / 80;
+      const t = start + (i / 80) * (end - start);
       const halfWidth = strokeWidth(t, profile) / 2;
       return [
         round(12 + t * 616),
@@ -65,8 +67,11 @@ export function strokeSvg(profile = PRESSURE_PROFILES.swell, seed = 17) {
       1,
       top + 0.047 + (Math.sin(i * 7 + seed) + 1) * 0.009,
     );
-    const opacity = round(0.26 + (Math.sin(i * 13 + seed) + 1) * 0.28);
-    return `<path d="${strokeOutline(profile, seed + i, top, bottom)}" opacity="${opacity}"/>`;
+    const opacity = round(0.4 + (Math.sin(i * 13 + seed) + 1) * 0.25);
+    const start = (Math.sin(i * 11 + seed) + 1) * 0.022;
+    const end = 1 - (Math.sin(i * 17 + seed) + 1) * 0.028;
+    // Neighboring bristles share their flow instead of crossing like threads.
+    return `<path d="${strokeOutline(profile, seed, top, bottom, start, end)}" opacity="${opacity}"/>`;
   }).join("");
-  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 160" preserveAspectRatio="none" aria-hidden="true"><g fill="currentColor"><path d="${outline}" opacity=".32"/>${ribbons}</g></svg>`;
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 160" preserveAspectRatio="none" aria-hidden="true"><g fill="currentColor"><path d="${outline}" opacity=".42"/>${ribbons}</g></svg>`;
 }

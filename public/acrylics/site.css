@@ -789,7 +789,7 @@
   grid-template-columns: 1fr auto;
   align-items: center;
   margin-top: 16px;
-  gap: 0 12px;
+  gap: 8px 12px;
 }
 .ac-site .pressure-control label {
   font-size: 14px;
@@ -808,6 +808,9 @@
   min-height: 44px;
   margin: 0;
   accent-color: var(--ac-accent);
+}
+.ac-site .pressure-settings > .small-note:last-child {
+  margin-top: 10px;
 }
 .ac-site .pressure-footnote {
   display: grid;
