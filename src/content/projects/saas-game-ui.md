@@ -1,6 +1,6 @@
 ---
 title: "SaaS Game UI"
-description: "A playable 2D RPG interface: collect context, equip agents, target commands, recover a patch, and verify the result."
+description: "A game UI design system with three playable studies: an AI harness, creature-based scheduled workers, and a tactical agent relay."
 projectDate: 2026-09-20
 completed: false
 technologies:
@@ -19,14 +19,16 @@ customUrl: "/design/saas-game-ui"
 
 ## SaaS Game UI
 
-[Play the encounter](/design/saas-game-ui). Walk through an illustrated 2D field,
-collect source files, equip your implementer, and target a task with a command.
-Recover its proposed patch, inspect it, and ask the verifier to check the result.
+[Explore the design system](/design/saas-game-ui): the shared actors, objects,
+commands, equipment, feedback, and records behind three playable studies.
 
-Movement, proximity, inventory, equipment, and command targeting affect the
-application. The party moves and acts in the field; a proposed patch becomes an
-object you can collect and use. Successful verification completes the encounter.
+- [Fieldwork](/design/saas-game-ui/fieldwork): walk, collect context, equip agents,
+  target a task, and verify a proposed patch.
+- [Creature Works](/design/saas-game-ui/creature-works): hatch a creature for each
+  scheduled job. Edit schedules, inspect stats and logs, and equip runtime upgrades.
+- [Relay Guild](/design/saas-game-ui/relay-guild): coordinate a party, queue work,
+  hand off evidence, and deliver a reviewed brief.
 
-The sample coding agent is scripted. Checks execute actual local JavaScript
-fixtures, exposing baseline failures and the patched result. Keyboard, pointer,
-touch, and reduced-motion controls operate the same game state.
+Escape opens a game menu with a route back to the design system. The examples
+operate local state with authored agent and job outputs. Checks execute in the
+browser; Creature Works uses a simulated UTC clock and local browser saves.

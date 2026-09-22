@@ -26,6 +26,7 @@ import {
   type ObjectId,
 } from "./field";
 import { useWalker } from "./useWalker";
+import GameMenu from "./GameMenu";
 import {
   checkCases,
   patchCode,
@@ -90,6 +91,7 @@ export default function SaasGameUI(): React.JSX.Element {
   const [reduced, setReduced] = useState(false),
     [instant, setInstant] = useState(false);
   const [patchAvailable, setPatchAvailable] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const blocks = fixedBlocks.filter((o) => o.id !== "patch" || patchAvailable);
   const player = useWalker({
     initial: spawn,
@@ -97,18 +99,21 @@ export default function SaasGameUI(): React.JSX.Element {
     blocks,
     reduced: reduced || instant,
     keyboard: keys,
+    paused: menuOpen,
   });
   const implementer = useWalker({
     initial: homePoints.implementer,
     field,
     blocks,
     reduced: reduced || instant,
+    paused: menuOpen,
   });
   const verifier = useWalker({
     initial: homePoints.verifier,
     field,
     blocks,
     reduced: reduced || instant,
+    paused: menuOpen,
   });
   const [active, setActive] = useState<ObjectId | null>(null),
     [tray, setTray] = useState<Tray>("none");
@@ -217,7 +222,7 @@ export default function SaasGameUI(): React.JSX.Element {
     };
   }, []);
   useEffect(() => {
-    if (run !== "working") return;
+    if (run !== "working" || menuOpen) return;
     const timer = window.setTimeout(() => {
       if (runStep < runSteps.length - 1) {
         setRunStep(runStep + 1);
@@ -232,9 +237,9 @@ export default function SaasGameUI(): React.JSX.Element {
       }
     }, 1100);
     return () => clearTimeout(timer);
-  }, [run, runStep]);
+  }, [run, runStep, menuOpen]);
   useEffect(() => {
-    if (checkState !== "working") return;
+    if (checkState !== "working" || menuOpen) return;
     const timer = window.setTimeout(() => {
       const all = runChecks(checkVersion.current),
         visible = all.slice(0, checkStep + 1);
@@ -262,7 +267,7 @@ export default function SaasGameUI(): React.JSX.Element {
       }
     }, 650);
     return () => clearTimeout(timer);
-  }, [checkState, checkStep]);
+  }, [checkState, checkStep, menuOpen]);
   useEffect(() => {
     if (documentKind !== null) {
       keys.current.clear();
@@ -515,6 +520,7 @@ export default function SaasGameUI(): React.JSX.Element {
       closeCommand();
       setTray(tray === "inventory" ? "none" : "inventory");
     } else if (key === "escape") {
+      if (command !== null || tray !== "none") event.preventDefault();
       player.stop();
       keys.current.clear();
       closeCommand();
@@ -613,12 +619,17 @@ export default function SaasGameUI(): React.JSX.Element {
   return (
     <div className="r-page" onKeyDown={onKeyDown}>
       <header className="r-site">
-        <a href="/portfolio">
+        <a href="/design/saas-game-ui">
           <ArrowLeft size={14} />
-          shupp.dev
+          Design system
         </a>
-        <span>SaaS Game UI / playable study</span>
-        <a href="https://github.com/shuppel/shupp-dev/pull/55">MR 55 ↗</a>
+        <span>01 / Embodied interaction</span>
+        <GameMenu
+          onOpenChange={(open) => {
+            keys.current.clear();
+            setMenuOpen(open);
+          }}
+        />
       </header>
       <main className="r-game" aria-label="Fieldwork playable AI harness">
         <div className="r-topbar">

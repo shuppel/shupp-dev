@@ -1,11 +1,88 @@
-# SaaS Game UI — playable harness encounter
+# SaaS Game UI — system and three playable studies
+
+The main route `/design/saas-game-ui` is a non-demo design-system page. It explains
+six shared primitives (actor, world object, command, equipment, feedback, record),
+visual foundations, interaction rules, and the exact simulation boundary. It links
+to three games. Each has a visible Menu button and Escape exit menu. Escape first
+cancels active targeting or closes a native dialog; a subsequent Escape opens the
+menu. The menu pauses execution and links back to the system.
+
+The new pages extend the accepted smooth 2D JRPG direction and Inter typography.
+No dependencies, game engine, external model, or background scheduler are added.
+
+## Creature Works
+
+Route: `/design/saas-game-ui/creature-works`.
+
+Hatch up to six named creatures. Sprout, finch, and moth are cosmetic forms; jobs
+and equipment determine behavior. A worker can deliver digests, index notes, or
+check uptime. Its schedule uses one of three UTC presets: `*/5`, `*/15`, or `*/30`
+minutes. The clock advances a simulated minute per real second while enabled and
+visible, or one/five minutes per manual step. It does not catch up real-world time.
+
+Every worker has a dashboard (runs started, successes, failed runs, last duration,
+next occurrence), an augmentation view, and the latest 30 log events. Editing a
+schedule recalculates the next UTC boundary. Run now leaves that schedule intact.
+Pause disables future scheduled starts while active work finishes. Overlapping
+occurrences are skipped and recorded rather than duplicated.
+
+Swift wings reduce an attempt from three simulated minutes to one. A retry charm
+retries a failed attempt once after one minute. Both visibly augment the creature.
+Equipment and job edits lock during an active run. A deliberate failure control
+simulates one service timeout; attempt failures and terminal failed runs remain
+distinct. The completion goal is two workers, an augmentation, and three successful
+jobs. Play can continue afterward.
+
+Worker state and logs save to a bounded, versioned localStorage record. Returning
+restores progress with the clock stopped. Invalid saves reset safely; unavailable
+storage falls back to an unsaved session. Reset requires confirmation.
+
+## Relay Guild
+
+Route: `/design/saas-game-ui/relay-guild`.
+
+A tactical board coordinates Sora (researcher), Ren (writer), and Aki (reviewer).
+Choose an actor, command, and valid target, then confirm. Each turn advances all
+active orders; Auto run advances a turn every 600ms while the page is visible.
+The scene renders movement and order destinations. Orders can pause or cancel.
+
+1. Research at the Archive to obtain two source notes.
+2. Hand those notes from Sora to Ren.
+3. Write a brief at the writing desk.
+4. Hand the draft from Ren to Aki.
+5. Review at the tower. Three local checks inspect source count, proposed action,
+   and evidence citation.
+6. Deliver the approved brief at the dispatch gate.
+
+Orders can be issued before their inputs arrive. Agents walk to their stations,
+wait with an explicit reason, and resume when a handoff supplies the missing
+artifact. A handoff shares a reference without removing the sender's record.
+Agent panels expose commands, context artifacts, completed-order counts, and the
+latest 24 log events. The game cannot finish without an approved artifact.
+This mission resets when its page is left. Restart requires confirmation.
+
+## Verification and maintenance
+
+`npm run test:saas-game-ui` runs deterministic model tests for scheduling boundaries,
+manual runs, overlap, pause/edit, duration/retry upgrades, independent workers,
+save validation, role/target guards, cancellation, dependency waiting, handoffs,
+review failure, and full mission completion. Browser interaction checks cover the
+creator, dashboards, menus, persistence, and the full relay. Targeted TypeScript
+and ESLint checks plus `npm run build` are the release gates. Existing unrelated
+repository-wide type errors are not claimed as passing.
+
+All four routes honor the existing `ENABLE_SAAS_GAME_UI` build-time flag.
+
+---
+
+# Fieldwork — playable harness encounter
 
 **Intent:** operate software through a 2D JRPG's field, inventory, equipment,
 party commands, targeting, and visible consequences. This revision replaces the
 card dashboard with a playable encounter. The operator moves independently;
 agents move to their targets and produce objects in the field.
 
-Route: `/design/saas-game-ui`. Smooth original SVG illustrations and Inter form
+Fieldwork route: `/design/saas-game-ui/fieldwork`. Smooth original SVG illustrations and Inter form
 an implementable 2D style. The previously generated concept image is not used as
 a fake interactive surface. Its painted detail is not claimed to be reproduced.
 No named saved aesthetic is imported.

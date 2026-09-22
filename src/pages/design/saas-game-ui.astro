@@ -1,36 +1,41 @@
 ---
-import SaasGameUI from '../../components/design/SaasGameUI/SaasGameUI';
+import GameStudy from '../../layouts/GameStudy.astro';
 import { isFeatureEnabled } from '../../config/features';
-
-// Standalone playable 2D harness encounter with local Inter typography.
+import { Person } from '../../components/design/SaasGameUI/WorldArtwork';
+import { Creature } from '../../components/design/SaasGameUI/CreatureArt';
 if (!isFeatureEnabled('enableSaasGameUI')) return Astro.redirect('/portfolio');
-
-const title = 'SaaS Game UI — Play the AI harness | shupp.dev';
-const description = 'A playable 2D RPG interface for an AI harness. Walk, collect context, equip your party, target commands, recover a patch, and verify the result.';
 ---
-
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content={description} />
-    <meta name="color-scheme" content="dark" />
-    <title>{title}</title>
-    <link rel="canonical" href="https://shupp.dev/design/saas-game-ui" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <link rel="preload" href="/saas-game-ui/fonts/inter-latin-variable.woff2" as="font" type="font/woff2" crossorigin />
-    <link rel="stylesheet" href="/saas-game-ui/saas-game-ui.css" />
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:url" content="https://shupp.dev/design/saas-game-ui" />
-    <meta property="og:image" content="https://shupp.dev/images/projects/saas-game-ui.png" />
-    <meta property="og:image:alt" content="A playable illustrated 2D field with an operator, two agents, context objects, a task target, and JRPG command menus." />
-    <meta name="twitter:card" content="summary_large_image" />
-  </head>
-  <body class="sg-document">
-    <SaasGameUI client:load />
-    <noscript><p class="sg-noscript">JavaScript is off. Enable it to play the encounter: move your character, collect context, equip agents, target commands, and verify the patch.</p></noscript>
-  </body>
-</html>
+<GameStudy title="SaaS Game UI — a small design system" description="A rudimentary design system for operating software through game interactions. Three playable studies explore AI harnesses, scheduled workers, and agent coordination.">
+  <main class="ds-page">
+    <nav class="ds-nav" aria-label="Design study"><a href="/portfolio">← shupp.dev</a><span>Design studies / SaaS Game UI</span><a href="https://github.com/shuppel/shupp-dev/pull/55">MR 55 ↗</a></nav>
+    <header class="ds-hero"><div><span class="g-eyebrow">SaaS Game UI · Rudimentary system / 01</span><h1>Make the interface<br/>a place.</h1></div><p>A character can be an agent. Equipment can be a capability. A creature can be a scheduled job. Borrow the clarity of a 2D JRPG to make software’s actions, dependencies, and consequences visible.</p></header>
+    <section aria-labelledby="play-studies"><div class="ds-section-label" id="play-studies">01 / Play the idea</div><div class="ds-games">
+      <a class="ds-game" href="/design/saas-game-ui/fieldwork"><div class="ds-game-art"><div class="ds-mini-person"><Person kind="operator"/></div><span class="ds-mini-object" aria-hidden="true">▤</span></div><div class="ds-game-copy"><span class="g-eyebrow">01 · Embodied interaction</span><h2>Fieldwork</h2><p>Walk, collect context, equip your party, and recover a patch. Operate an AI harness through a character.</p><strong>Enter the field <span>↗</span></strong></div></a>
+      <a class="ds-game" href="/design/saas-game-ui/creature-works"><div class="ds-game-art ds-art-creature"><Creature kind="finch"/><Creature kind="sprout" upgrades={['wings','retry']}/><Creature kind="moth"/></div><div class="ds-game-copy"><span class="g-eyebrow">02 · Scheduled workers</span><h2>Creature Works</h2><p>Hatch a cron job. Give it a schedule, watch it work, inspect its log, and augment how it runs.</p><strong>Open the sanctuary <span>↗</span></strong></div></a>
+      <a class="ds-game" href="/design/saas-game-ui/relay-guild"><div class="ds-game-art ds-art-relay"><div class="ds-mini-person"><Person kind="operator"/></div><div class="ds-mini-person"><Person kind="implementer"/></div><div class="ds-mini-person"><Person kind="verifier"/></div></div><div class="ds-game-copy"><span class="g-eyebrow">03 · Agent coordination</span><h2>Relay Guild</h2><p>Queue party orders. Pass evidence between agents. Watch waiting work resume when its input arrives.</p><strong>Gather the party <span>↗</span></strong></div></a>
+    </div></section>
+    <section class="ds-chapter" id="language" aria-labelledby="language-title"><div class="ds-section-label">02 / The shared language</div><div class="ds-chapter-intro"><h2 id="language-title">Every game action needs a software consequence.</h2><p>The world is the working surface. A focused command panel exposes the next action; inventory, settings, and evidence appear when requested. Six primitives connect the scene to the application.</p></div><div class="ds-mapping">
+      <article class="ds-primitive"><div class="ds-specimen"><div class="ds-mini-person"><Person kind="implementer"/></div><Creature kind="sprout"/></div><h3>Actor</h3><span>Agent / worker / operator</span><p>A named entity with a job, capabilities, and current state. Select its character to inspect and direct it.</p></article>
+      <article class="ds-primitive"><div class="ds-specimen"><code>search.ts</code><em>→ context</em></div><h3>World object</h3><span>Input / destination / output</span><p>A meaningful resource you can approach, target, collect, or inspect. Objects retain a useful identity.</p></article>
+      <article class="ds-primitive"><div class="ds-specimen"><span class="ds-command">▸ Research → Archive</span></div><h3>Command</h3><span>Action + target</span><p>Choose an actor, choose an action, then its target. Preview the consequence before execution.</p></article>
+      <article class="ds-primitive"><div class="ds-specimen"><Creature kind="moth" upgrades={['wings','retry']}/></div><h3>Equipment</h3><span>Context / tool / policy</span><p>Changes what an actor can do or how it runs. Wings change duration. A charm changes retry behavior.</p></article>
+      <article class="ds-primitive"><div class="ds-specimen"><span class="ds-status">✓ 4 checks passed</span></div><h3>Feedback</h3><span>State / progress / result</span><p>Movement, labels, and marks reveal what is happening. Completion follows verified work.</p></article>
+      <article class="ds-primitive"><div class="ds-specimen"><div class="ds-log-lines"><span>00:05 · Scheduled run</span><span>00:08 · Digest delivered</span><span>00:10 · Next occurrence</span></div></div><h3>Record</h3><span>Stats / log / evidence</span><p>Open the character’s dashboard for exact values, history, and artifacts. The metaphor has an inspectable truth.</p></article>
+    </div></section>
+    <section class="ds-chapter" aria-labelledby="foundations-title"><div class="ds-section-label">03 / Visual foundations</div><div class="ds-chapter-intro"><h2 id="foundations-title">A quiet frame.<br/>A legible little world.</h2><p>Smooth 2D characters, a readable field, and restrained JRPG panels. Use modern type and familiar controls wherever precision matters.</p></div><div class="ds-foundations">
+      <div class="ds-foundation"><h3>Color has a job</h3><div class="ds-swatches" aria-label="Midnight, panel blue, parchment, gold, sage"><span style="background:#101d29"></span><span style="background:#192d3e"></span><span style="background:#eee7d6"></span><span style="background:#dec18a"></span><span style="background:#90aa7f"></span></div><p>Midnight canvas · blue panels · parchment text.<br/>Gold identifies selection and intent. Sage supports completed work. Status always has a text label.</p></div>
+      <div class="ds-foundation"><h3>Inter, throughout</h3><div class="ds-type">Aa 0123</div><p>One family. Regular body, medium labels.<br/>10–12px metadata · 14–16px content · 26–36px game titles. Large editorial type belongs outside the game.</p></div>
+      <div class="ds-foundation"><h3>Frames, with purpose</h3><div class="ds-frame-sample"><span>Actor → command → consequence</span></div><p>Thin borders group related controls. A second inset line adds the JRPG reference. Use a 4px spacing base and clear separation between field and commands.</p></div>
+    </div></section>
+    <section class="ds-chapter" aria-labelledby="rules-title"><div class="ds-section-label">04 / Interaction principles</div><div class="ds-chapter-intro"><h2 id="rules-title">Keep the play.<br/>Respect the work.</h2><p>The system is useful when the game makes a relationship easier to understand. These are the rules each study exercises.</p></div><ol class="ds-rules">
+      <li><b>Make selection distinct from execution.</b>Approaching an object or selecting an actor opens its available actions. Targeted commands have a confirmation step.</li>
+      <li><b>Reveal one layer at a time.</b>The field shows who and where. Selection shows what can happen. A dashboard or log explains the exact state.</li>
+      <li><b>Make upgrades change behavior.</b>Equipment controls context, tools, duration, and retries. The creature’s appearance reflects its configuration.</li>
+      <li><b>Show dependencies in the world.</b>An agent can wait for an artifact. A handoff transfers that input and lets the queued work continue.</li>
+      <li><b>Keep the controls accessible.</b>Keyboard and touch have equivalent commands. Reduced motion removes travel animation. Native inputs handle exact settings.</li>
+      <li><b>Leave the player an exit.</b>Escape cancels active targeting first, then opens the game menu. Resume the scene or return here to understand its design.</li>
+    </ol></section>
+    <aside class="ds-boundary"><h2>A working design study.<br/>A clear simulation boundary.</h2><p>All three games operate local application state. Agent text and job outputs are authored examples. Checks execute in the browser. Creature Works saves its workers locally and advances a simulated UTC clock; it does not schedule background jobs. Fieldwork and Relay Guild reset when their pages are left. Connecting a real agent or scheduler is a separate integration.</p></aside>
+    <footer class="ds-footer"><span>Three playable studies · One evolving language</span><a href="#play-studies">Choose a game ↑</a></footer>
+  </main>
+</GameStudy>
