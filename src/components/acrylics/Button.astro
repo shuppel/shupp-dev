@@ -1,0 +1,10 @@
+---
+import type { HTMLAttributes } from 'astro/types';
+type Props = HTMLAttributes<'button'> & {
+  href?: string;
+  variant?: 'ink' | 'cream' | 'paint';
+};
+const { href, variant = 'ink', class: className, ...rest } = Astro.props;
+const Tag = href ? 'a' : 'button';
+---
+<Tag href={href} class:list={['ac-button', `ac-button--${variant}`, className]} {...rest}><slot /></Tag>

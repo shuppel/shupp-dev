@@ -1,142 +1,114 @@
 ---
-// Like VOID and PRISM, this study owns its document and material model.
-// No Layout import, shared theme changes, persistent preferences, or API calls.
-const title = 'Acrylics — Paint, Pigment & Play';
-const description = 'A playful design language made of loaded brushstrokes, broken edges, pooled blots, pigment mixing, and tall billboard typography.';
+import { getCollection } from 'astro:content';
+import Button from '../../components/acrylics/Button.astro';
+import PaintMark from '../../components/acrylics/PaintMark.astro';
+import FilterChip from '../../components/acrylics/FilterChip.astro';
+import ProjectCard from '../../components/acrylics/ProjectCard.astro';
+import Dialog from '../../components/acrylics/Dialog.astro';
+const allProjects = await getCollection('projects');
+const selection = [
+  { id: 'thoughtful-app-co', category: 'Products', pigment: '#D63228', headline: 'Apps for humans.' },
+  { id: 'humansonly-fm', category: 'Stories', pigment: '#E2B72D', headline: 'Still human.' },
+  { id: 'void', category: 'Design', pigment: '#174C3C', headline: 'Less light. More depth.' },
+  { id: 'prismatic', category: 'Design', pigment: '#285799', headline: 'A different spectrum.' },
+  { id: 'entropy', category: 'Stories', pigment: '#D63228', headline: 'Into the unknown.' },
+  { id: 'nodetus-consultancy', category: 'Products', pigment: '#174C3C', headline: 'Make complex work.' },
+];
+const projects = selection.flatMap(item => {
+  const project = allProjects.find(entry => entry.id === item.id);
+  return project ? [{ ...item, project }] : [];
+});
+const author = (await getCollection('authors'))[0];
+const title = 'Erikk Shupp — Acrylics';
+const description = 'Products, stories, and digital experiences by Erikk Shupp. A human approach to making things, expressed in Acrylics.';
 ---
 <!doctype html>
-<html lang="en" class="acrylics">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={description} />
-    <meta name="theme-color" content="#FFF9ED" />
-    <meta name="color-scheme" content="light" />
-    <title>{title}</title>
-    <link rel="canonical" href="https://shupp.dev/design/acrylics" />
-    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://shupp.dev/design/acrylics" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="/acrylics/acrylics.css" />
-  </head>
-  <body>
-    <a class="ac-skip" href="#paint-studio">Skip to the paint studio</a>
-    <header class="ac-masthead">
-      <a class="ac-brand" href="/">shupp.dev <span>/ design studies</span></a>
-      <nav aria-label="Design studies"><a href="/design/void">VOID</a><a href="/design/prismatic">PRISM</a><a href="/portfolio">All work ↗</a></nav>
+<html lang="en" class="ac-site">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content={description} />
+  <meta name="theme-color" content="#F3EEDF" />
+  <meta name="color-scheme" content="light" />
+  <title>{title}</title>
+  <link rel="canonical" href="https://shupp.dev/design/acrylics" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://shupp.dev/design/acrylics" />
+  <meta property="og:image" content="https://shupp.dev/images/projects/acrylics-paint.webp" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <!-- Hind Madurai came from Fontjoy's observed Montserrat/Lora/Hind Madurai pairing.
+       Anton is an independent adaptation for the requested tall billboard headings. -->
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Hind+Madurai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/acrylics/site.css" />
+  <script type="module" src="/acrylics/site.mjs" is:inline></script>
+</head>
+<body>
+  <a class="skip-link" href="#work">Skip to selected work</a>
+  <div class="site-wrap">
+    <header class="site-header">
+      <a class="wordmark" href="/design/acrylics" aria-label="Acrylics by Erikk Shupp home"><span class="brand-blot" aria-hidden="true">a</span><span>ACRYLICS<small>by Erikk Shupp</small></span></a>
+      <nav class="main-nav" aria-label="Main navigation"><a href="#work" class="nav-current">The work</a><a href="#about">The human</a><a href="#contact">Say hello <span aria-hidden="true">↗</span></a></nav>
+      <Button variant="cream" class="collection-trigger" data-open="collection-dialog" hidden><span class="collection-dot" aria-hidden="true"></span>My collection <span data-saved-count>0</span></Button>
     </header>
     <main>
-      <section class="ac-hero" aria-labelledby="ac-title">
-        <div class="ac-painted-hero" aria-hidden="true"></div>
-        <div class="ac-hero-meta"><p class="ac-eyebrow">A material study by Erikk Shupp</p><span>NO. 03 / FRESH PAINT</span></div>
-        <h1 id="ac-title">ACRYLICS<span aria-hidden="true">✳</span></h1>
-        <div class="ac-hero-bottom"><p>LEAVE A MARK.<br>LET IT MIX.</p><div><span class="ac-equation">1 + 1 = something else.</span><p>Drag the bristles. Let the color muddy.<br>Keep the beautiful accidents.</p></div><a class="ac-gel" href="#paint-studio">Make a little mess <span aria-hidden="true">↘</span></a></div>
-      </section>
-
-      <section class="ac-lab ac-paint-studio" id="paint-studio" aria-labelledby="paint-title">
-        <header class="ac-section-head"><div><p class="ac-eyebrow">01 / ACTUAL MARK MAKING</p><h2 id="paint-title">LET IT GET MESSY.</h2><p class="ac-intro">Loaded bristles. Broken edges. Colors that get into each other.</p></div><span class="ac-wet-sticker">Careful.<br>Still wet.</span></header>
-        <div class="ac-workbench ac-paint-workbench">
-          <div class="ac-artboard-column">
-            <div class="ac-window-bar"><span>work-in-progress.acrylics</span><span>BRUSH / PIGMENT / CANVAS</span></div>
-            <div class="ac-board-tools ac-paint-tools"><div class="ac-segment" role="group" aria-label="Painting tool"><button type="button" data-paint-tool="brush" data-wet-control disabled aria-pressed="true">Brush</button><button type="button" data-paint-tool="dry" data-wet-control disabled aria-pressed="false">Dry brush</button><button type="button" data-paint-tool="blot" data-wet-control disabled aria-pressed="false">Blot</button><button type="button" data-paint-tool="pick" data-wet-control disabled aria-pressed="false">Sample</button></div><button id="wet-undo" class="ac-text-button" type="button" disabled>Undo ↶</button></div>
-            <div class="ac-wet-board">
-              <img id="wet-fallback" src="/images/projects/acrylics-paint.webp" alt="Red and ochre bristle strokes cross forest green. Their wet intersections mix into earthy colors; blue and red blots pool beside a broken white stroke." width="760" height="480" />
-              <canvas id="wet-canvas" width="760" height="480" tabindex="0" aria-label="Paint canvas. Drag to paint; click to make a blot. Arrow keys move the mark position; Enter places a mark. Sample mode reads the color. The Lay a sample stroke button is an alternative to dragging." aria-describedby="wet-help" hidden></canvas>
-              <span id="wet-probe" aria-hidden="true" hidden></span>
-            </div>
-            <div class="ac-board-caption"><span id="wet-help">Drag to paint. Lift to reload. Pen pressure changes the deposit.</span><span>760 × 480</span></div>
-            <div class="ac-sample-bar"><span id="wet-chip" aria-hidden="true"></span><div><p class="ac-eyebrow">UNDER THE BRUSH</p><strong id="wet-sample">—</strong></div><div class="ac-sample-numbers"><span id="wet-thickness">Paint loading…</span><span id="wet-coordinates">385, 171</span></div></div>
-            <div class="ac-surface-actions"><button id="wet-dry" class="ac-secondary" type="button" data-wet-control disabled>Dry the paint</button><button id="wet-study" class="ac-text-button" type="button" data-wet-control disabled>Another mess ↗</button><button id="wet-clear" class="ac-text-button" type="button" data-wet-control disabled>Fresh canvas</button></div>
-          </div>
-          <fieldset class="ac-inspector" id="wet-inspector" disabled>
-            <legend class="ac-eyebrow">LOAD THE BRUSH</legend>
-            <div class="ac-pigment-tray" role="group" aria-label="Paint tubes">
-              <button type="button" data-pigment="#D63228" aria-label="Vermilion" aria-pressed="true" style="--pigment:#D63228"><i></i><span>Red</span></button>
-              <button type="button" data-pigment="#174C3C" aria-label="Forest green" aria-pressed="false" style="--pigment:#174C3C"><i></i><span>Forest</span></button>
-              <button type="button" data-pigment="#E2B72D" aria-label="Ochre" aria-pressed="false" style="--pigment:#E2B72D"><i></i><span>Ochre</span></button>
-              <button type="button" data-pigment="#285799" aria-label="Ultramarine" aria-pressed="false" style="--pigment:#285799"><i></i><span>Blue</span></button>
-              <button type="button" data-pigment="#F4EEE1" aria-label="Warm white" aria-pressed="false" style="--pigment:#F4EEE1"><i></i><span>White</span></button>
-              <button type="button" data-pigment="#27292B" aria-label="Carbon" aria-pressed="false" style="--pigment:#27292B"><i></i><span>Carbon</span></button>
-            </div>
-            <div class="ac-color-row"><label for="wet-color">Your pigment</label><input id="wet-color" type="color" value="#d63228" /></div><p id="wet-color-name" class="ac-selected-pigment">Vermilion</p>
-            <div class="ac-control"><div><label for="wet-size">Brush width</label><output id="wet-size-value" for="wet-size">76</output></div><input type="range" id="wet-size" min="12" max="170" step="1" value="76" /></div>
-            <div class="ac-control"><div><label for="wet-load">Paint on the brush</label><output id="wet-load-value" for="wet-load">90%</output></div><input type="range" id="wet-load" min="10" max="100" value="90" /></div>
-            <div class="ac-control"><div><label for="wet-roughness">Bristle breakup</label><output id="wet-roughness-value" for="wet-roughness">60%</output></div><input type="range" id="wet-roughness" min="0" max="100" value="60" /></div>
-            <div class="ac-control"><div><label for="wet-pressure">Hand pressure</label><output id="wet-pressure-value" for="wet-pressure">85%</output></div><input type="range" id="wet-pressure" min="15" max="100" value="85" /></div>
-            <button id="wet-gesture" class="ac-gel" type="button">Lay a sample stroke</button>
-            <p class="ac-paint-tip">A longer stroke runs low on paint. Dry bristles catch the canvas grain. A blot leaves a pooled rim and little satellites.</p>
-          </fieldset>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="tiny-cross" aria-hidden="true">✳</span> Product thinking. Human feeling.</p>
+          <h1 id="hero-title">MAKE<br>SOMETHING<br><span class="hero-human">HUMAN.<PaintMark /></span></h1>
+          <div class="hero-intro"><p>I'm Erikk. I turn tangled ideas into products,<br class="desktop-break"> stories, and things people want to use.</p><Button href="#work" variant="ink">Find your kind of work <span aria-hidden="true">↘</span></Button></div>
         </div>
-        <p id="wet-status" class="ac-status" role="status">Preparing the paint surface…</p>
-        <noscript><p class="ac-notice">JavaScript enables painting. The static marks above show the same brush model.</p></noscript>
-
-        <div class="ac-mix-study">
-          <div class="ac-mix-story"><p class="ac-eyebrow">THE COLOR GETS COMPLICATED</p><h3>A little green takes<br>the heat out.</h3><p>Work forest green into vermilion and the mix turns earthy. The same colors laid over a dry coat behave differently: the underpainting shows through the gaps.</p><p class="ac-fineprint">Change either pigment, then load the mix onto your brush.</p></div>
-          <fieldset id="wet-mix-controls" class="ac-mix-controls" disabled><legend class="ac-sr-only">Pigment mixing comparison</legend><div class="ac-mix-colors"><label for="mix-a">First pigment<input type="color" id="mix-a" value="#d63228" /></label><span aria-hidden="true">+</span><label for="mix-b">Second pigment<input type="color" id="mix-b" value="#174c3c" /></label></div><div class="ac-control"><div><label for="mix-ratio">Mixing ratio</label><output id="mix-ratio-value" for="mix-ratio">50 : 50</output></div><input type="range" id="mix-ratio" min="0" max="100" value="50" /></div><div id="mix-stops" class="ac-mix-stops" role="group" aria-label="Spectral pigment mixing progression"></div><div class="ac-mix-results"><div><i id="pigment-result" aria-hidden="true"></i><span>Pigment mix<strong id="pigment-value">—</strong></span></div><div><i id="digital-result" aria-hidden="true"></i><span>RGB average<strong id="digital-value">—</strong></span></div></div><button class="ac-secondary" id="mix-load" type="button">Put this mix on the brush ↗</button></fieldset>
+        <div class="hero-composition">
+          <PaintMark color="#D63228" class="hero-red" />
+          <PaintMark color="#174C3C" class="hero-green" />
+          <PaintMark color="#E2B72D" shape="blot" class="hero-yellow" />
+          <span class="hero-scribble" aria-hidden="true">↙</span>
+          <a class="hero-feature" href="/portfolio/thoughtful-app-co">
+            <div class="feature-top"><span class="status-pill">IN GOOD COMPANY</span><span aria-hidden="true">↗</span></div>
+            <div class="feature-type">THOUGHT<span>FUL.</span><i aria-hidden="true">*</i></div>
+            <p>Technology with a little<br>more humanity.</p>
+            <div class="feature-bottom"><span>Thoughtful App Co.</span><span>01 / SELECTED WORK</span></div>
+          </a>
+          <div class="hero-stamp"><span>MADE OF</span><strong>MANY<br>THINGS.</strong><span>AND STILL BECOMING</span></div>
+          <p class="composition-note">A little product. A little story.<br>A whole lot of overlap.</p>
         </div>
-        <details class="ac-material-notes"><summary>What makes this feel like paint?</summary><div><article><h3>Every mark has a history.</h3><p>Paint load falls with distance. Pressure changes the contact area and deposit. A fixed seed gives each stroke its own bristle tracks, gaps, and uneven thickness. Those marks stay put when the page redraws.</p><code>load(d) = load₀ × exp(−d / reach)<br>coverage = 1 − exp(−2.8 × deposit)</code></article><article><h3>Wet color is a mixture.</h3><p>Estimated reflectance is mixed across 38 wavelengths using Spectral.js and the Kubelka–Munk model. The brush uses a cached approximation for speed. Drying fixes the underpainting; new marks then cover it.</p><code>K/S = (1 − R)² / (2R)</code></article></div><p class="ac-fineprint">A procedural paint study, with approximate relief and instant drying. RGB colors stand in for pigments; this does not predict a particular tube of paint or simulate fluid flow. <a href="https://github.com/rvanwijnen/spectral.js" target="_blank" rel="noopener noreferrer">Spectral.js · MIT license ↗</a></p></details>
       </section>
-
-      <details class="ac-geometry-study"><summary><span>02 / THE GEOMETRY UNDERNEATH</span><strong>Shapes, overlaps & digital color math</strong><span aria-hidden="true">＋</span></summary>
-      <section class="ac-lab" id="mixing-floor" aria-labelledby="lab-title">
-        <header class="ac-section-head"><div><p class="ac-eyebrow">THE ORIGINAL SHAPE STUDY</p><h2 id="lab-title">Geometry has its place.</h2></div><label class="ac-preset">Start somewhere<select id="preset" data-control disabled><option value="overprint">Overprint</option><option value="orbit">Orbit</option><option value="bloom">Flower market</option></select></label></header>
-        <div class="ac-workbench">
-          <div class="ac-artboard-column">
-            <div class="ac-window-bar"><span>untitled-003.acrylics</span><span class="ac-window-dots" aria-hidden="true">○ ○ ●</span></div>
-            <div class="ac-board-tools"><div class="ac-segment" role="group" aria-label="Canvas tool"><button type="button" data-tool="move" data-control disabled aria-pressed="true">Move shapes</button><button type="button" data-tool="probe" data-control disabled aria-pressed="false">Pick color</button></div><button id="reset" type="button" class="ac-text-button" data-control disabled>Reset scene ↺</button></div>
-            <div class="ac-board" id="board-wrap">
-              <img id="board-fallback" src="/images/projects/acrylics.svg" alt="Pink, cyan, and yellow geometric shapes overlap into new colors on a warm ground." width="1000" height="750" />
-              <canvas id="paint-board" width="1000" height="750" tabindex="0" aria-label="Color mixing canvas. In Move shapes mode, drag a shape or use arrow keys to move the selected layer. In Pick color mode, click or use arrows to move the sample point. Equivalent position sliders are available below." aria-describedby="canvas-help" hidden></canvas>
-            </div>
-            <div class="ac-board-caption"><span id="canvas-help">Drag a shape. Pick a color. Follow the crosshair.</span><span id="board-position">POINT 500, 375</span></div>
-            <p id="lab-error" class="ac-notice" hidden>The interactive canvas could not start. The static study and design rules are still available below.</p>
-            <noscript><p class="ac-notice">Enable JavaScript to mix colors and move shapes. The artwork and design notes work without it.</p></noscript>
-            <div class="ac-sample-bar"><span id="sample-swatch" aria-hidden="true"></span><div><p class="ac-eyebrow" id="sample-layers">At the crosshair</p><strong id="sample-hex">#FFF9ED</strong></div><div class="ac-sample-numbers"><span id="sample-rgb">RGB 255 · 249 · 237</span><span id="sample-count">Ground</span></div></div>
-          </div>
-
-          <fieldset class="ac-inspector" id="inspector" disabled>
-            <legend class="ac-eyebrow">THE PAINTBOX</legend>
-            <label class="ac-label" for="blend-mode">How the colors meet</label>
-            <select id="blend-mode"><option value="multiply">Multiply / glaze</option><option value="normal">Normal / paint over</option><option value="screen">Screen / light</option></select>
-            <p class="ac-mini-equation" id="blend-equation">f(B,S) = B × S</p>
-            <div class="ac-inspector-heading"><span class="ac-label">Choose a layer</span><span class="ac-small" id="layer-order">A → B → C</span></div>
-            <div class="ac-layer-tabs" role="group" aria-label="Selected layer"><button type="button" data-layer="A" aria-pressed="true"><i></i>A</button><button type="button" data-layer="B" aria-pressed="false"><i></i>B</button><button type="button" data-layer="C" aria-pressed="false"><i></i>C</button></div>
-            <div class="ac-color-row"><label for="layer-color">Layer color</label><input type="color" id="layer-color" value="#f66a9a" /><output id="layer-hex" for="layer-color">#F66A9A</output></div>
-            <div class="ac-control"><div><label for="opacity">Opacity</label><output id="opacity-value" for="opacity">72%</output></div><input id="opacity" type="range" min="0" max="100" value="72" step="1" /></div>
-            <label class="ac-label" for="shape">Shape language</label>
-            <select id="shape"><option value="circle">Circle / ellipse</option><option value="superellipse">Soft square / superellipse</option><option value="polygon">Polygon</option><option value="rosette">Rosette</option></select>
-            <div class="ac-control" id="shape-parameter-wrap" hidden><div><label id="shape-parameter-label" for="shape-parameter">Exponent n</label><output id="shape-parameter-value" for="shape-parameter">4</output></div><input id="shape-parameter" type="range" min="2" max="10" step=".25" value="4" /></div>
-            <div class="ac-two-controls"><div class="ac-control"><div><label for="size">Size</label><output id="size-value" for="size">245</output></div><input id="size" type="range" min="65" max="340" value="245" step="1" /></div><div class="ac-control"><div><label for="rotation">Turn</label><output id="rotation-value" for="rotation">0°</output></div><input id="rotation" type="range" min="-180" max="180" value="0" step="1" /></div></div>
-            <button type="button" class="ac-secondary" id="bring-forward">Bring A to front ↑</button>
-            <details class="ac-position-controls"><summary>Position & proportions</summary><div class="ac-control"><div><label for="position-x">X position</label><output id="position-x-value" for="position-x">360</output></div><input id="position-x" type="range" min="0" max="1000" value="360" /></div><div class="ac-control"><div><label for="position-y">Y position</label><output id="position-y-value" for="position-y">320</output></div><input id="position-y" type="range" min="0" max="750" value="320" /></div><div class="ac-control"><div><label for="aspect">Width / height</label><output id="aspect-value" for="aspect">1.00</output></div><input id="aspect" type="range" min=".4" max="1.6" step=".05" value="1" /></div><div class="ac-color-row"><label for="ground-color">Ground</label><input type="color" id="ground-color" value="#fff9ed" /></div></details>
-            <details class="ac-position-controls"><summary>Move the color sampler</summary><div class="ac-control"><div><label for="probe-x">Sample X</label><output id="probe-x-value" for="probe-x">500</output></div><input id="probe-x" type="range" min="0" max="999" value="500" /></div><div class="ac-control"><div><label for="probe-y">Sample Y</label><output id="probe-y-value" for="probe-y">375</output></div><input id="probe-y" type="range" min="0" max="749" value="375" /></div></details>
-          </fieldset>
+      <div class="discipline-strip" aria-label="Areas of practice"><span>PRODUCT + ENGINEERING</span><b aria-hidden="true">✳</b><span>DESIGN + FEELING</span><b aria-hidden="true">✳</b><span>STORIES + SOFTWARE</span><b aria-hidden="true">✳</b><span>HUMANS FIRST</span></div>
+      <section id="work" class="work-section" aria-labelledby="work-title">
+        <div class="section-heading"><div><p class="eyebrow">01 / A few things I've put into the world</p><h2 id="work-title">GOOD THINGS<br>COME IN <span class="underline-paint">LAYERS.</span></h2></div><p>Different mediums. Same curiosity.<br>Pick a thread—or save a few pieces<br>to talk about together.</p></div>
+        <div class="work-toolbar" hidden>
+          <div class="filter-group" role="group" aria-label="Filter projects"><FilterChip value="all" label="All work" count={projects.length} active />{['Products', 'Design', 'Stories'].map(category => <FilterChip value={category} label={category} count={projects.filter(item => item.category === category).length} />)}</div>
+          <label class="search-field"><span aria-hidden="true">⌕</span><span class="visually-hidden">Search projects</span><input type="search" id="project-search" placeholder="Find something…" autocomplete="off" /></label>
         </div>
-        <p class="ac-status" id="lab-status" role="status">The paint stays in this browser session.</p>
-
-        <div class="ac-palette-head"><div><p class="ac-eyebrow">THE PALETTE YOU MADE</p><h3>Three coats. Eight possibilities.</h3></div><button id="copy-palette" class="ac-secondary" type="button" data-control disabled>Copy color tokens ↗</button></div>
-        <div class="ac-palette" id="palette" aria-label="Colors from every possible subset of layers"></div>
-        <p class="ac-fineprint">These are all possible layer combinations; your arrangement determines which ones appear on the canvas.</p>
-        <details id="token-fallback" class="ac-token-fallback" hidden><summary>Your color tokens</summary><label for="token-output">Select and copy the CSS below.</label><textarea id="token-output" readonly rows="10"></textarea></details>
-
-        <details class="ac-math" id="math-details" open>
-          <summary><span>Show me the math.</span><span class="ac-eyebrow">COLOR × GEOMETRY</span></summary>
-          <div class="ac-math-body"><div class="ac-color-math"><h3>At the crosshair</h3><p class="ac-formula">C = (1 − α)B + α f(B, S)</p><p class="ac-math-key">B: color underneath · S: new color · α: coat opacity.<br>RGB channels are normalized to 0–1 before blending.</p><ol id="mix-steps"><li>Choose a point to inspect its layers.</li></ol><p id="rounding-note" class="ac-fineprint">The hex readout samples the rendered canvas before guides. Edges include antialiasing; channel rounding can differ slightly from the ideal equation.</p></div><div class="ac-shape-math"><h3 id="geometry-title">Circle / ellipse</h3><p class="ac-formula" id="geometry-formula">(x/a)² + (y/b)² = 1</p><p id="geometry-values">a = 245 · b = 245</p><p class="ac-math-key" id="geometry-description">Stretch one axis to turn a circle into an ellipse.</p><div class="ac-transform"><span>Rotate, then place</span><code id="transform-equation">x′ = x cos θ − y sin θ + tx<br>y′ = x sin θ + y cos θ + ty</code><output id="transform-values">θ = 0° · t = (360, 320)</output></div></div></div>
-          <p class="ac-math-foot">Digital color arithmetic, inspired by paint. This does not predict real pigment mixtures. <a href="https://www.w3.org/TR/compositing-1/#blending" target="_blank" rel="noopener noreferrer">Compositing reference ↗</a></p>
-        </details>
+        <p class="result-status eyebrow" id="result-status" role="status" hidden>{projects.length} projects / all work</p>
+        <div id="project-grid" class="project-grid">{projects.map((item, index) => <ProjectCard {...item} index={index} />)}</div>
+        <div id="empty-results" class="empty-results" hidden><PaintMark shape="blot" color="#E2B72D" /><h3>No marks here yet.</h3><p>Try another word or start with all the work.</p><Button variant="cream" id="reset-search">Clear filters</Button></div>
+        <div class="work-foot"><span>There's more where this came from.</span><a class="text-link" href="/portfolio">The full archive <span aria-hidden="true">↗</span></a></div>
       </section>
-
-      </details>
-
-      <section class="ac-language" aria-labelledby="language-title"><header class="ac-section-head"><div><p class="ac-eyebrow">03 / A LANGUAGE OF PAINT</p><h2 id="language-title">The material becomes the language.</h2></div></header><div class="ac-principles"><article><div class="ac-figure ac-figure-type" aria-hidden="true">Aa<span>×</span></div><p class="ac-eyebrow">TYPE / STREET PRESENCE</p><h3>Headlines stand tall.</h3><p>Condensed display type, short statements, generous margins. Body copy gets an opaque ground and room to breathe.</p></article><article><div class="ac-figure ac-figure-paint" aria-hidden="true"></div><p class="ac-eyebrow">COLOR / VISIBLE HISTORY</p><h3>Keep the imperfect edge.</h3><p>A stroke can underline a headline. A blot can hold an accent. Let the paint carry the expression; keep text and controls on a calm, readable ground.</p></article><article><div class="ac-figure ac-figure-ui"><button class="ac-gel" id="specimen-button" type="button" aria-pressed="false" data-control disabled>Keep this color +</button><span id="specimen-status" role="status">A tactile little interaction.</span></div><p class="ac-eyebrow">INTERACTION / EARLY WEB JOY</p><h3>Make it feel pressable.</h3><p>Glazed buttons, window tabs, crisp borders. Shape and color respond to deliberate actions, then settle.</p></article></div></section>
+      <section id="about" class="about-section" aria-labelledby="about-title">
+        <div class="about-portrait"><PaintMark color="#285799" /><img src={author.data.avatar} alt={author.data.name} width="360" height="420" loading="lazy" /><span class="portrait-label">THE HUMAN BEHIND THE PIXELS ↗</span></div>
+        <div class="about-copy"><p class="eyebrow">02 / Arlington, Virginia & the internet</p><h2 id="about-title">A STORYTELLER.<br>WHO BUILDS.</h2><p class="about-lead">The storytelling came first.<br>The technical skills followed.</p><p>Creative writing. Product thinking. Software engineering. I work where these things overlap, making technology that respects people's time and attention.</p><div class="about-tags"><span>Product manager</span><span>Software engineer</span><span>Fractional founder</span></div><a class="text-link" href="/about">A little more about me <span aria-hidden="true">↗</span></a></div>
+      </section>
+      <section id="contact" class="contact-section" aria-labelledby="contact-title">
+        <div class="contact-copy"><p class="eyebrow">03 / Start with the interesting bit</p><h2 id="contact-title">WHAT ARE<br>YOU <span>MAKING?</span></h2><p>A half-formed idea is a perfectly good place to start.</p><a href="mailto:erikk@shupp.dev" class="text-link">erikk@shupp.dev <span aria-hidden="true">↗</span></a><PaintMark color="#174C3C" shape="blot" class="contact-blot" /></div>
+        <form id="brief-form" class="brief-form" hidden>
+          <fieldset><legend>I'd like to talk about…</legend><div class="interest-options">{['A product', 'A website', 'A story', 'Something else'].map((label, index) => <label class="interest-chip"><input type="radio" name="interest" value={label} checked={index === 0} /><span>{label}</span></label>)}</div></fieldset>
+          <div class="form-row"><label>Your name<input name="name" autocomplete="name" required maxlength="80" placeholder="How should I call you?" /></label><label>Your email<input name="email" type="email" autocomplete="email" required maxlength="160" placeholder="you@somewhere.good" /></label></div>
+          <label>The interesting bit<textarea name="idea" rows="3" required maxlength="3000" placeholder="What would you like to put into the world?"></textarea></label>
+          <p class="brief-saved-note"><span data-saved-count>0</span> saved projects will be included as references.</p>
+          <div class="form-bottom"><Button type="submit" variant="paint">Put it together <span aria-hidden="true">↗</span></Button><small>Prepare a draft, then open your email.<br>Nothing is sent from this page.</small></div>
+        </form>
+        <noscript><p>Have an idea? Email <a href="mailto:erikk@shupp.dev">erikk@shupp.dev</a> to start a conversation.</p></noscript>
+      </section>
     </main>
-    <footer class="ac-footer"><a href="/portfolio">← Back to the work</a><span>ACRYLICS / STUDY 0.4</span><span>Erikk Shupp · 2026</span></footer>
-    <script is:inline type="module" src="/acrylics/lab.mjs"></script>
-    <script is:inline type="module" src="/acrylics/paint-studio.mjs"></script>
-  </body>
+    <footer class="site-footer"><a class="footer-wordmark" href="/design/acrylics">ACRYLICS<span aria-hidden="true">✳</span></a><div class="footer-bottom"><span>© {new Date().getUTCFullYear()} Erikk Shupp. Still making things.</span><nav aria-label="Elsewhere"><a href="/design/acrylics/materials">Material workshop ↗</a><a href={author.data.socialLinks.github}>GitHub ↗</a><a href="/">shupp.dev ↗</a></nav><span>LEAVE A LITTLE TEXTURE.</span></div></footer>
+  </div>
+  <Dialog id="project-dialog" title="Project details"><div id="project-dialog-content"></div></Dialog>
+  <Dialog id="collection-dialog" title="Your kind of work." class="collection-dialog"><p>Keep the pieces that speak to you. Bring them into the conversation.</p><div class="collection-mix"><PaintMark shape="blot" color="var(--collection-pigment, #E2B72D)" /><div><strong id="collection-summary">A fresh start.</strong><p id="collection-mixture">Save a project to begin your collection.</p></div></div><ul id="saved-projects" class="saved-projects"></ul><p class="collection-local" id="storage-note">Saved in this browser. Yours to clear.</p><div class="dialog-actions"><Button id="collection-to-brief" variant="paint">Bring these to a conversation ↗</Button><button class="text-button" id="clear-collection">Clear collection</button></div></Dialog>
+  <Dialog id="brief-dialog" title="An idea, taking shape."><p>Review your draft. Open it in your email app when you're ready.</p><label class="visually-hidden" for="brief-preview">Your prepared message</label><textarea id="brief-preview" rows="12" readonly></textarea><div class="dialog-actions"><Button href="mailto:erikk@shupp.dev" id="email-draft" variant="paint">Open email draft ↗</Button><Button id="copy-brief" variant="cream">Copy draft</Button></div><p id="copy-status" role="status"></p><small>Your email app handles sending. You can also copy this draft into any email service.</small></Dialog>
+  <div class="save-notice" id="save-notice" role="status" aria-live="polite"></div>
+</body>
 </html>

@@ -1,0 +1,30 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import PaintMark from './PaintMark.astro';
+interface Props {
+  project: CollectionEntry<'projects'>;
+  category: string;
+  pigment: string;
+  index: number;
+  headline: string;
+}
+const { project, category, pigment, index, headline } = Astro.props;
+const { title, description, technologies, image, customUrl } = project.data;
+---
+<article class:list={['project-card', `project-card--${project.id}`]} data-project={project.id} data-category={category} data-pigment={pigment} data-search={`${title} ${description} ${technologies.join(' ')}`.toLowerCase()} style={`--card-pigment:${pigment}`}>
+  <div class="project-cover">
+    <PaintMark color={pigment} class="cover-coat" />
+    {image && <img src={image} alt="" loading="lazy" width="800" height="500" />}
+    <div class="cover-caption" aria-hidden="true"><span>{headline}</span><span class="cover-arrow">↗</span></div>
+    <span class="project-index" aria-hidden="true">{String(index + 1).padStart(2, '0')} / SHUPP</span>
+    <button class="save-button" type="button" data-save={project.id} aria-label={`Save ${title}`} aria-pressed="false" hidden>
+      <span class="save-symbol" aria-hidden="true">+</span><span class="save-label">Save</span>
+    </button>
+  </div>
+  <div class="project-info">
+    <div class="project-meta"><span>{category}</span><span>{project.data.projectDate.getUTCFullYear()}</span></div>
+    <h3><a href={customUrl ?? `/portfolio/${project.id}`} data-project-link>{title}<span aria-hidden="true">↗</span></a></h3>
+    <p data-description>{description}</p>
+    <div class="project-tail"><span>{technologies.slice(0, 2).join(' / ')}</span><button type="button" class="text-button" data-details={project.id} hidden>Quick look <span aria-hidden="true">↗</span></button></div>
+  </div>
+</article>

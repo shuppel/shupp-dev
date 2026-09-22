@@ -1,35 +1,40 @@
 ---
 title: "Acrylics"
-description: "A playful design system made of loaded brushstrokes, broken edges, pooled blots, pigment mixing, and tall billboard typography."
+description: "A working portfolio in Acrylics: billboard typography, pigment-soaked controls, layered project cards, and collections that mix as you save."
 projectDate: 2026-09-20
 completed: false
-technologies: ["Design Systems", "Color Math", "Geometry", "Canvas", "Astro"]
+technologies: ["Design Systems", "UI Components", "Pigment Mixing", "Astro", "Accessibility"]
 featured: false
 image: "/images/projects/acrylics-paint.webp"
 customUrl: "/design/acrylics"
 ---
 
-## Color with visible history
+## A material language for a working website
 
-Acrylics combines tall market-sign typography, translucent coats of color, and
-tactile early-web controls. Color intersections generate the palette; a quiet,
-opaque ground protects anything you need to read.
+[Acrylics](/design/acrylics) applies tall market-sign typography, irregular paint,
+and tactile early-web controls to an alternate portfolio for Erikk Shupp.
 
-[Open the interactive Acrylics study](/design/acrylics).
+Browse real projects, filter and search, open project details, and save a personal
+collection. Every saved project contributes its pigment to the collection's
+color. A project enquiry brings those references together into a draft you can
+review, copy, or open in your email app. The page never sends a message itself.
 
-The paint studio lets you brush, dry-brush, and blot pigment onto a textured canvas.
-Paint runs low along a stroke; pressure and bristle breakup shape its coverage.
-Wet colors mingle using a spectral pigment approximation. Dry the paint to build
-a new coat over the existing marks. Undo and preset gestures support exploration.
+Reusable Astro components cover buttons, painted marks, filter chips, project
+cards, and dialogs. Brush marks indicate active filters; pooled blots mark saved
+work; pressed controls gain a denser coat. Opaque surfaces keep text readable.
+The portfolio's content and links work without JavaScript; enhancements include
+keyboard-operable controls, native modal dialogs, and reduced-motion support.
 
-The original geometry lab lets you drag, rotate, stretch, and morph three layers. Explore
-circles, superellipses, polygons, and rosettes. Switch between multiply, normal,
-and screen blending; pick a point to inspect its rendered color and the
-equations behind it. Position sliders and keyboard controls provide alternatives
-to dragging. Copy the eight possible color combinations as CSS tokens.
+Collections stay in browser storage. Enquiry text stays in page memory until you
+copy it or choose to open your email application.
 
-The brush uses Spectral.js (MIT) for pigment-inspired color mixing. The separate
-geometry lab uses digital RGB compositing. Neither predicts a specific physical
-paint brand. Texture, relief, and instant drying are procedural approximations.
-All interactions are local to the page. This is an experimental standalone design
-study, not a replacement for the site's existing visual themes.
+## Under the surface
+
+The [material workshop](/design/acrylics/materials) preserves the paint studio
+and geometry experiments as a secondary destination. The brush and collection
+use Spectral.js (MIT) for pigment-inspired mixing; the geometry lab uses digital
+RGB compositing. These are procedural approximations, not predictions for a
+specific brand of physical paint.
+
+Acrylics is an isolated alternate design at `/design/acrylics`; it does not
+replace the site's existing homepage or themes.

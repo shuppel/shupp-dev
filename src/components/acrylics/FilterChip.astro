@@ -1,0 +1,7 @@
+---
+interface Props { value: string; label: string; count: number; active?: boolean; }
+const { value, label, count, active = false } = Astro.props;
+---
+<button class="filter-chip" type="button" data-filter={value} aria-pressed={active} aria-controls="project-grid">
+  <span>{label}</span><small>{String(count).padStart(2, '0')}</small>
+</button>
