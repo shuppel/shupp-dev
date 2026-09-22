@@ -418,7 +418,7 @@ const paintSeed: string[] = [
 <div class="guide-equations">
 <article class="prism-card"><h3>Color is a derived coordinate.</h3><code>Hᵢ = wrap(H + Δᵢ, 360°)<br>colorᵢ = oklch(Lᵢ Cᵢ Hᵢ)</code><p>Day offsets: 0°, −35°, +75°, −140°. Night offsets: 0°, −25°, +55°, −95°. Each band has its own lightness and chroma. Hue rotation alone is not a contrast guarantee.</p><p id="guide-hue-equation" class="guide-contract">Day: H = 185° → bands 185°, 150°, 260°, 45°</p></article>
 <article class="prism-card"><h3>Updates have a defined resolution.</h3><code>Q(x, δ) = δ · round(x / δ)<br>δangle = 3° · δvector = 0.02<br>δintensity = 0.05 · δposition = 2%</code><p>Write a light variable when it crosses a step, at most once per animation frame. CSS interpolates between steps. Quantization limits updates; it does not eliminate the cost of rendering more objects.</p></article>
-<article class="prism-card"><h3>Night uses an art-directed hue map.</h3><code>R(h) = h, if h ≤ 45<br>R(h) = round(h − 0.4(h − 45)), if h ≤ 300<br>R(h) = round((h + 0.4(385 − h)) mod 360), otherwise</code><p>At the default h = 185°, R(h) = 129°. This piecewise mapping intentionally changes branches above 300°; it is not a smooth wavelength conversion. Night also changes lightness, chroma, and band offsets.</p></article>
+<article class="prism-card"><h3>Night uses an art-directed hue map.</h3><code>h ∈ [0°, 360°]<br>R(h) = h, if h ≤ 45<br>R(h) = round(h − 0.4(h − 45)), if 45 &lt; h ≤ 300<br>R(h) = round((h + 0.4(385 − h)) mod 360), otherwise</code><p>At the default h = 185°, R(h) = 129°. This piecewise mapping intentionally changes branches above 300°; it is not a smooth wavelength conversion. Night also changes lightness, chroma, and band offsets.</p></article>
 <article class="prism-card"><h3>Timing comes from a small scale.</h3><code>q = 40ms · duration = n · q<br>flash 3q · arrive 6q · settle 10q<br>shadow lag 2q · mode change 25q</code><p>Press-in is the explicit 1.5q exception: 60ms. Three easing curves separate light, mass, and refraction. Reduced motion removes animation and transition time.</p></article>
 </div><section class="ds-section" aria-labelledby="ds-holography">
         <header>
@@ -465,8 +465,7 @@ const paintSeed: string[] = [
               This readout is the entire runtime contract: the beam is written, the cascade
               does the rest. Write batches never exceed frames, and once the pointer settles
               they stop — quantization avoids repeated light-variable writes at rest. At night the casts are
-              already halos, so only the glint and the foil answer the light: physics
-              conserved.
+              already halos, so only the glint and the foil answer the light: the material rules stay consistent.
             </p>
           </div>
         </div>
@@ -630,10 +629,10 @@ const paintSeed: string[] = [
       </section><section class="ds-section" aria-labelledby="ds-type">
         <header>
           <span class="ds-law">LAW 20 · TYPE</span>
-          <h3 id="ds-type">Type — five roles, line work on top</h3>
+          <h3 id="ds-type">Type — seven roles, line work on top</h3>
           <p>
             Display is constructed line work (Tilt&nbsp;Prism), allowed only ≥40px — below
-            that it falls back to Instrument&nbsp;Sans 600. Day fills it; night outlines it.
+            that, use Instrument&nbsp;Sans 600. Day fills it; night outlines it.
           </p>
         </header>
 
@@ -648,12 +647,14 @@ const paintSeed: string[] = [
           </div>
           <div>
             <span class="ds-type-meta">body · Sans 400</span>
-            <p class="prism-body" style="margin: 0;">The near-white field does the work. Color appears only at edges and in shadows.</p>
+            <p class="prism-body" style="margin: 0;">The reading ground stays quiet. Color concentrates at edges, status, and dense actions.</p>
           </div>
           <div>
             <span class="ds-type-meta">data · Spline Sans Mono</span>
             <p class="prism-data" style="margin: 0;">--h: 185 → --hr: 129 · q = 40ms · AA ≥ 4.5:1</p>
           </div>
+          <div><span class="ds-type-meta">UI · Sans 500 · 13.5px</span><p class="prism-ui">Inspect release · Save changes</p></div>
+          <div><span class="ds-type-meta">eyebrow · Mono · 12px</span><p class="prism-eyebrow">04 / COMPONENT FAMILY</p></div>
           <div>
             <span class="ds-type-meta">aside · Instrument Serif italic · one phrase</span>
             <p class="prism-aside" style="margin: 0;">the human voice, used sparingly.</p>
@@ -704,8 +705,8 @@ const paintSeed: string[] = [
           <h3 id="ds-matrix">The set, laid out</h3>
           <p>
             Five button sizes over four styles, three chip sizes over two, and the
-            role tokens with their live values. Every one of them is derived from the
-            anchor hue, so the whole sheet rotates when you drag the slider — and
+            role-token names and live swatches. Brand treatments derive from the
+            anchor hue, while semantic hues stay fixed. The sheet updates when you drag the slider — and
             every one of them inverts on its own terms at night, using the night values of the same role tokens.
           </p>
         </header>
