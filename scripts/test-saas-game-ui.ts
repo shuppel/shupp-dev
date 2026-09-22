@@ -1,3 +1,13 @@
+import {
+  distance,
+  findTownPath,
+  isWalkable,
+  nearbyPlace,
+  nearbyWalkable,
+  places,
+  townSpawn,
+  walkStep,
+} from "../src/components/design/SaasGameUI/townModel";
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
@@ -364,4 +374,51 @@ void test("mission focus changes the sample artifact and long-term progress caps
   assert.notDeepEqual(work.sections, life.sections);
   assert.equal(work.intro, "My request");
   assert.equal(levelFor(9999), 5);
+});
+
+void test("every town entrance is physically reachable without crossing buildings", () => {
+  for (const start of [townSpawn, ...places.map((p) => p.door)]) {
+    for (const place of places) {
+      const path = findTownPath(start, place.door);
+      assert.ok(
+        path.length > 0,
+        `${place.id} reachable from ${JSON.stringify(start)}`,
+      );
+      assert.ok(path.every(isWalkable));
+      assert.ok(distance(path[path.length - 1], place.door) < 0.01);
+      for (let i = 1; i < path.length; i++)
+        assert.ok(
+          distance(path[i - 1], path[i]) <= 0.9,
+          "no teleporting over blocked cells",
+        );
+    }
+  }
+});
+void test("town interaction requires proximity; collisions and invalid destinations are enforced", () => {
+  assert.equal(nearbyPlace(townSpawn), undefined);
+  const shop = places.find((p) => p.id === "shop");
+  assert.ok(shop);
+  assert.equal(nearbyPlace(shop.door)?.id, "shop");
+  assert.equal(isWalkable({ x: shop.x, z: shop.z }), false);
+  assert.equal(isWalkable({ x: Infinity, z: 0 }), false);
+  assert.equal(isWalkable({ x: 13, z: 0 }), false);
+  assert.deepEqual(findTownPath(townSpawn, { x: shop.x, z: shop.z }), []);
+  const atWall = { x: 7, z: -1.35 };
+  assert.deepEqual(walkStep(atWall, { x: 7, z: -1.65 }), atWall);
+  assert.equal(
+    isWalkable({ x: 7, z: 6.5 }),
+    true,
+    "expedition arch has a walkable opening",
+  );
+});
+
+void test("companions spawn and follow on valid ground near buildings", () => {
+  for (const place of places) {
+    const candidate = nearbyWalkable({
+      x: place.door.x - 1.3,
+      z: place.door.z + 1.1,
+    });
+    assert.ok(isWalkable(candidate));
+    assert.ok(findTownPath(place.door, candidate).length > 0);
+  }
 });

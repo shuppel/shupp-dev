@@ -1,6 +1,6 @@
 ---
 title: "SaaS Game UI"
-description: "A game UI design system with three playable studies: an AI harness, personal agent companions, and a tactical agent relay."
+description: "A game UI design system with three playable studies: an AI harness, a walkable dinosaur town, and a tactical agent relay."
 projectDate: 2026-09-20
 completed: false
 technologies:
@@ -24,8 +24,8 @@ commands, equipment, feedback, and records behind three playable studies.
 
 - [Fieldwork](/design/saas-game-ui/fieldwork): walk, collect context, equip agents,
   target a task, and verify a proposed patch.
-- [Creature Works](/design/saas-game-ui/creature-works): adopt a little assistant.
-  Give it missions, review its results, earn XP, and equip a new specialty.
+- [Creature Works](/design/saas-game-ui/creature-works): walk through Fernhaven,
+  adopt dinosaur assistants, buy tools in a store, and assign missions at the board.
 - [Relay Guild](/design/saas-game-ui/relay-guild): coordinate a party, queue work,
   hand off evidence, and deliver a reviewed brief.
 

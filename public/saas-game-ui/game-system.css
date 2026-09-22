@@ -2101,3 +2101,26 @@
     font-size: 10px;
   }
 }
+
+/* Fernhaven specimens use the same lit dinosaur models as the game. */
+.ds-art-dinosaur {
+  background: radial-gradient(ellipse at center, #e7edd7, #c5d1b5);
+}
+.ds-art-dinosaur astro-island {
+  width: 100%;
+  height: 100%;
+}
+.ds-art-dinosaur .ct-dino-portrait {
+  width: 100%;
+  height: 235px;
+}
+.ds-companion-example .ct-dino-portrait {
+  width: 100%;
+  height: 280px;
+}
+.ds-companion-example .ct-dino-portrait canvas,
+.ds-art-dinosaur .ct-dino-portrait canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}

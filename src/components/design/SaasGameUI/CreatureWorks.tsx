@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import GameMenu from "./GameMenu";
-import { Creature, NurseryArt } from "./CreatureArt";
+import CreatureTown, { type TownControl } from "./CreatureTown";
+import DinoPortrait from "./DinoPortrait";
+import { species } from "./dinoScene";
+import { places, type PlaceId } from "./townModel";
 import {
   actOnCompanion,
   adoptCompanion,
@@ -26,85 +28,180 @@ import {
   type Focus,
   type GearId,
   type MissionId,
-  type Report,
   type Temperament,
 } from "./companions";
 
-const saveKey = "saas-game-ui-creature-works-v2",
-  legacyKey = "saas-game-ui-creature-works-v1";
-type Tab = "companion" | "missions" | "kit";
 type Panel =
-  | "adopt"
+  | "hatchery"
+  | "shop"
+  | "missions"
   | "mission"
+  | "inventory"
+  | "character"
+  | "journal"
+  | "camp"
   | "report"
   | "reward"
-  | "journal"
-  | "settings"
+  | "map"
+  | "menu"
+  | "help"
   | "reset"
   | null;
-function ReportView({ report }: { report: Report }): React.JSX.Element {
+const saveKey = "saas-game-ui-creature-works-v2";
+function GearArt({ id }: { id: GearId }): React.JSX.Element {
   return (
-    <article className="cw-report">
-      <p className="cw-brief">“{report.intro}”</p>
-      {report.sections.map((s, i) => (
-        <section key={s.title}>
-          <span>{String(i + 1).padStart(2, "0")}</span>
-          <div>
-            <h3>{s.title}</h3>
-            <p>{s.body}</p>
-          </div>
-        </section>
-      ))}
-      <p className="g-small">{report.footnote}</p>
-    </article>
+    <svg className="ct-gear-art" viewBox="0 0 100 100" aria-hidden="true">
+      <ellipse cx="50" cy="85" rx="24" ry="5" fill="#725d3920" />
+      {id === "lens" ? (
+        <>
+          <circle
+            cx="44"
+            cy="42"
+            r="25"
+            fill="#b5d9cf"
+            stroke="#9e783d"
+            strokeWidth="7"
+          />
+          <circle cx="44" cy="42" r="18" fill="#deeee280" />
+          <path
+            d="m64 62 19 20"
+            stroke="#6b573e"
+            strokeWidth="12"
+            strokeLinecap="round"
+          />
+          <path
+            d="M32 31q8-10 18-5"
+            fill="none"
+            stroke="#fff9e2"
+            strokeWidth="5"
+            strokeLinecap="round"
+          />
+        </>
+      ) : id === "planner" ? (
+        <>
+          <rect x="24" y="13" width="54" height="70" rx="7" fill="#77948a" />
+          <rect x="29" y="18" width="44" height="59" rx="3" fill="#f7edcd" />
+          <rect x="39" y="9" width="23" height="13" rx="4" fill="#b08b50" />
+          {[35, 49, 63].map((y) => (
+            <g key={y}>
+              <path
+                d={`m35 ${y} 4 4 6-7`}
+                stroke="#6c927d"
+                strokeWidth="3"
+                fill="none"
+              />
+              <path d={`M51 ${y}h15`} stroke="#9c987b" strokeWidth="3" />
+            </g>
+          ))}
+        </>
+      ) : id === "scarf" ? (
+        <>
+          <path d="M20 26q35-20 58 0l-8 23q-31 9-47-1Z" fill="#ce7054" />
+          <path d="m55 43 17 3-5 38-18-5Z" fill="#b95540" />
+          <path
+            d="M25 31q25-9 46-1M54 67l15 4"
+            fill="none"
+            stroke="#ec9d75"
+            strokeWidth="5"
+          />
+        </>
+      ) : id === "retry" ? (
+        <>
+          <path
+            d="M29 13q-15 37 21 42 36-4 23-42"
+            fill="none"
+            stroke="#7b654b"
+            strokeWidth="5"
+          />
+          <circle
+            cx="50"
+            cy="65"
+            r="22"
+            fill="#d9b269"
+            stroke="#a98543"
+            strokeWidth="4"
+          />
+          <path
+            d="M62 65a12 12 0 1 1-8-11m-1-6 3 9-10 1"
+            fill="none"
+            stroke="#fff2cb"
+            strokeWidth="4"
+          />
+        </>
+      ) : (
+        <>
+          <path
+            d="M46 72C8 62 12 29 14 16q21 6 36 31Q63 20 86 16q6 46-33 57Z"
+            fill="#e5d6ab"
+            stroke="#b5a374"
+            strokeWidth="3"
+          />
+          <path
+            d="M20 31 43 54M20 48l21 16M80 31 57 54M79 48 59 64"
+            stroke="#c3b387"
+            strokeWidth="3"
+          />
+          <circle cx="50" cy="68" r="9" fill="#c39450" />
+        </>
+      )}
+    </svg>
   );
 }
 export default function CreatureWorks(): React.JSX.Element {
   const [state, setState] = useState(freshNursery),
     [ready, setReady] = useState(false),
-    [saved, setSaved] = useState(false);
-  const [playing, setPlaying] = useState(false),
-    [menu, setMenu] = useState(false),
-    [selected, setSelected] = useState<number | null>(null);
-  const [tab, setTab] = useState<Tab>("companion"),
-    [panel, setPanel] = useState<Panel>(null);
+    [saved, setSaved] = useState(false),
+    [selected, setSelected] = useState<number | null>(null),
+    [panel, setPanel] = useState<Panel>(null),
+    [near, setNear] = useState<PlaceId | null>(null),
+    [playing, setPlaying] = useState(false),
+    [moved, setMoved] = useState(false);
   const [name, setName] = useState("Pip"),
     [kind, setKind] = useState<CreatureKind>("sprout"),
-    [temperament, setTemperament] = useState<Temperament>("curious");
-  const [job, setJob] = useState<Job>("deliver"),
-    [interval, setInterval] = useState(15);
-  const [chosenMission, setChosenMission] = useState<MissionId>("morning"),
+    [temperament, setTemperament] = useState<Temperament>("curious"),
+    [missionId, setMissionId] = useState<MissionId>("morning"),
     [brief, setBrief] = useState(missions.morning.prompt),
-    [focus, setFocus] = useState<Focus>("balanced");
-  const [notice, setNotice] = useState(
-    "Adopt a little companion. Give them something good to do.",
-  );
-  const [reward, setReward] = useState({
-    xp: 0,
-    buttons: 0,
-    level: 1,
-    leveled: false,
-  });
+    [focus, setFocus] = useState<Focus>("balanced"),
+    [job, setJob] = useState<Job>("deliver"),
+    [interval, setInterval] = useState(15),
+    [notice, setNotice] = useState(
+      "Welcome to Fernhaven. Your first friend is waiting at the hatchery.",
+    ),
+    [reward, setReward] = useState({
+      level: 1,
+      xp: 0,
+      buttons: 0,
+      leveled: false,
+    });
   const dialog = useRef<HTMLDialogElement>(null),
-    inspector = useRef<HTMLElement>(null),
-    world = useRef<HTMLElement>(null);
+    town = useRef<TownControl>(null),
+    lastPanel = useRef<Panel>(null);
   const worker = state.workers.find((w) => w.id === selected),
-    pet = worker?.companion;
-  const level = levelFor(pet?.xp ?? 0),
-    assignment = pet?.assignment ?? null;
-  const working = worker !== undefined && worker.remaining > 0;
-  const locked = working || assignment !== null;
+    pet = worker?.companion,
+    assignment = pet?.assignment ?? null,
+    level = levelFor(pet?.xp ?? 0),
+    locked =
+      worker !== undefined && (worker.remaining > 0 || assignment !== null);
+  const nearby = places.find((p) => p.id === near),
+    paused = panel !== null;
+  const open = (next: Panel): void => {
+    setPanel(next);
+  };
+  const close = (): void => {
+    dialog.current?.close();
+    setPanel(null);
+    requestAnimationFrame(() => town.current?.focus());
+  };
   useEffect(() => {
     try {
       const restored = restoreNursery(
-        localStorage.getItem(saveKey) ?? localStorage.getItem(legacyKey),
+        localStorage.getItem(saveKey) ??
+          localStorage.getItem("saas-game-ui-creature-works-v1"),
       );
       setState(restored);
       setSelected(restored.workers[0]?.id ?? null);
       if (restored.workers.length > 0)
-        setNotice(
-          "Welcome back. Your companions and their progress are here. Time is paused until you resume.",
-        );
+        setNotice("Welcome back, keeper. Your companions are here.");
     } catch {
       /* Session-only fallback. */
     }
@@ -120,1185 +217,1348 @@ export default function CreatureWorks(): React.JSX.Element {
     }
   }, [state, ready]);
   useEffect(() => {
-    if (!playing || menu || panel !== null) return;
-    const id = window.setInterval(() => {
+    if (!playing || paused) return;
+    const timer = window.setInterval(() => {
       if (!document.hidden) setState((s) => advanceNursery(s));
-    }, 1000);
-    return () => clearInterval(id);
-  }, [playing, menu, panel]);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, [playing, paused]);
   useEffect(() => {
-    if (panel !== null && dialog.current?.open !== true)
-      dialog.current?.showModal();
+    if (playing && state.workers.every((w) => w.remaining === 0 && !w.enabled))
+      setPlaying(false);
+  }, [playing, state.workers]);
+  useEffect(() => {
+    if (panel !== null) {
+      if (dialog.current?.open !== true) dialog.current?.showModal();
+      if (panel !== lastPanel.current) dialog.current?.scrollTo(0, 0);
+    }
+    lastPanel.current = panel;
   }, [panel]);
   useEffect(() => {
-    if (
-      playing &&
-      state.workers.length > 0 &&
-      state.workers.every((w) => w.remaining === 0 && !w.enabled)
-    )
-      setPlaying(false);
-  }, [state.workers, playing]);
-  function showTab(next: Tab): void {
-    setTab(next);
-    if (matchMedia("(max-width: 800px)").matches)
-      requestAnimationFrame(() =>
-        inspector.current?.scrollIntoView({
-          block: "start",
-          behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
-            ? "instant"
-            : "smooth",
-        }),
-      );
-  }
-  function close(): void {
-    dialog.current?.close();
-    setPanel(null);
-  }
-  function create(): void {
-    setName(
-      ["Pip", "Momo", "Taro", "Nori", "Fenn", "Kiki"][state.workers.length] ??
-        "Pip",
-    );
-    setKind("sprout");
-    setTemperament("curious");
-    setPanel("adopt");
-  }
+    const key = (e: KeyboardEvent): void => {
+      if (
+        e.ctrlKey ||
+        e.metaKey ||
+        e.altKey ||
+        e.repeat ||
+        ["INPUT", "TEXTAREA", "SELECT"].includes(
+          (e.target as HTMLElement).tagName,
+        )
+      )
+        return;
+      const k = e.key.toLowerCase(),
+        target =
+          k === "i"
+            ? "inventory"
+            : k === "c"
+              ? "character"
+              : k === "m"
+                ? "map"
+                : null;
+      if (target !== null) {
+        e.preventDefault();
+        if (panel === target) close();
+        else open(target);
+      } else if (k === "escape" && panel === null) {
+        e.preventDefault();
+        open("menu");
+      }
+    };
+    window.addEventListener("keydown", key);
+    return () => window.removeEventListener("keydown", key);
+  }, [panel]);
   function act(action: CompanionAction): void {
-    if (worker) setState((s) => actOnCompanion(s, worker.id, action));
+    if (worker !== undefined)
+      setState((s) => actOnCompanion(s, worker.id, action));
   }
   function routine(action: WorkerAction): void {
-    if (worker) setState((s) => changeWorker(s, worker.id, action));
+    if (worker !== undefined)
+      setState((s) => changeWorker(s, worker.id, action));
+  }
+  function navigate(id: PlaceId): void {
+    close();
+    town.current?.goTo(id);
+    setNotice(
+      `Walking to ${places.find((p) => p.id === id)?.name ?? "your destination"}. Press E when you arrive.`,
+    );
+  }
+  function interact(id: PlaceId): void {
+    if (id !== near) return;
+    if (id === "hatchery") {
+      setName(
+        ["Pip", "Momo", "Taro", "Nori", "Fenn", "Kiki"][state.workers.length] ??
+          "Pip",
+      );
+      open("hatchery");
+    } else if (id === "gate") {
+      open("character");
+    } else if (id === "camp") {
+      if (worker !== undefined) {
+        setJob(worker.job);
+        setInterval(worker.interval);
+      }
+      open("camp");
+    } else open(id);
   }
   function chooseMission(id: MissionId): void {
-    if (!worker) {
-      create();
-      return;
-    }
-    setChosenMission(id);
+    setMissionId(id);
     setBrief(missions[id].prompt);
     setFocus("balanced");
-    setPanel("mission");
+    open("mission");
   }
-  function startMission(e: React.FormEvent): void {
+  function launch(e: React.FormEvent): void {
     e.preventDefault();
-    if (!worker || !pet || locked || missionLock(pet, chosenMission) !== null)
+    if (
+      worker === undefined ||
+      pet === undefined ||
+      locked ||
+      missionLock(pet, missionId) !== null
+    )
       return;
-    act({ type: "mission", mission: chosenMission, brief, focus });
+    act({ type: "mission", mission: missionId, brief, focus });
     setPlaying(true);
-    setTab("companion");
     close();
     setNotice(
-      `${worker.name} is off on a mission. They’ll bring back a result for you to review.`,
+      `${worker.name} is heading into the wilds. Watch for their return.`,
     );
-    if (matchMedia("(max-width: 800px)").matches)
-      world.current?.scrollIntoView({
-        block: "start",
-        behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
-          ? "auto"
-          : "smooth",
-      });
   }
   function accept(): void {
-    if (!pet || !assignment?.result) return;
-    const mission = missions[assignment.id],
-      nextLevel = levelFor(pet.xp + mission.xp);
+    if (pet === undefined || assignment?.result == null) return;
+    const m = missions[assignment.id],
+      next = levelFor(pet.xp + m.xp);
     setReward({
-      xp: mission.xp,
-      buttons: mission.buttons,
-      level: nextLevel,
-      leveled: nextLevel > level,
+      level: next,
+      xp: m.xp,
+      buttons: m.buttons,
+      leveled: next > level,
     });
     act({ type: "accept" });
-    setPanel("reward");
+    open("reward");
     setNotice(
-      `Result accepted. +${mission.xp} XP and +${mission.buttons} buttons${nextLevel > level ? ` · Level ${nextLevel}!` : "."}`,
+      `${worker?.name ?? "Your companion"} earned +${m.xp} XP and ${m.buttons} buttons.`,
     );
   }
-  function edit(): void {
-    if (!worker) return;
-    setName(worker.name);
-    setJob(worker.job);
-    setInterval(worker.interval);
-    setPanel("settings");
-  }
-  const progress = pet
-    ? level >= 5
-      ? 100
-      : ((pet.xp - levelStarts[level - 1]) /
-          (levelStarts[level] - levelStarts[level - 1])) *
-        100
-    : 0;
-  const elapsed =
-    assignment && worker ? assignment.duration - worker.remaining : 0;
-  const phase =
-    assignment?.failed === true
-      ? "A little help needed"
-      : assignment?.result
-        ? "Back with something for you"
-        : assignment
-          ? elapsed < assignment.duration / 3
-            ? "On the way"
-            : elapsed < assignment.duration * 0.75
-              ? "Figuring things out"
-              : "Heading home"
-          : working
-            ? "Taking care of a routine"
-            : "Ready for a little adventure";
-  const nextGoal = !pet
-    ? "Adopt your first companion."
-    : assignment?.result
-      ? "Your companion brought something back."
-      : assignment?.failed === true
-        ? "The mission hit a timeout."
-        : assignment
-          ? missions[assignment.id].title
-          : pet.missions === 0
-            ? "Your first mission awaits."
-            : level === 2 && !pet.equipped.includes("lens")
-              ? "A research lens opens new adventures."
-              : level === 3 && !pet.equipped.includes("planner")
-                ? "Try a planner pin for a different specialty."
-                : "What shall we do together?";
-  const mission = missions[chosenMission];
-  return (
-    <div className="g-page g-creature-page cw-page">
-      <header className="g-site">
-        <a href="/design/saas-game-ui">← Design system</a>
-        <span>02 / Little AI companions</span>
-        <GameMenu saved={saved} onOpenChange={setMenu} />
-      </header>
-      <main className="g-shell">
-        <header className="g-game-title">
-          <div>
-            <span className="g-eyebrow">
-              A little friend. A little help. A new adventure.
-            </span>
-            <h1>Creature Works</h1>
-          </div>
-          <div className="cw-pocket">
-            <span aria-hidden="true">◉</span>
-            <div>
-              <b>{pet?.buttons ?? 12}</b>
-              <small>
-                {worker ? `${worker.name}’s buttons` : "Starter buttons"}
-              </small>
-            </div>
-          </div>
-        </header>
-        <div className="g-toolbar cw-toolbar">
-          <p>Raise a companion. Bring useful things back.</p>
-          <div className="g-button-row">
-            <button
-              className="g-primary"
-              onClick={() => (worker ? showTab("missions") : create())}
-            >
-              Mission board
-            </button>
-            <button onClick={() => (worker ? showTab("kit") : create())}>
-              Outfitter
-            </button>
-            <button onClick={create} disabled={state.workers.length >= 6}>
-              + Adopt
-            </button>
-          </div>
-        </div>
-        <div className="g-play-layout">
-          <section
-            className="g-nursery cw-world"
-            ref={world}
-            aria-label="Companion village"
-          >
-            <NurseryArt />
-            <div className="g-world-goal cw-world-goal">
-              <span className="g-eyebrow">
-                {assignment ? "Current adventure" : "A small next step"}
-              </span>
-              <h2>{nextGoal}</h2>
-              <p>
-                {!pet
-                  ? "Choose a face and a name. We’ll take it from there."
-                  : assignment?.result
-                    ? "Read their result, then collect the mission reward."
-                    : assignment
-                      ? phase
-                      : `${rankFor(pet.xp)} · Level ${level}`}
-              </p>
-              {assignment?.result ? (
-                <button onClick={() => setPanel("report")}>
-                  Open the result ↗
-                </button>
-              ) : !pet ? (
-                <button onClick={create}>Meet your companion ↗</button>
-              ) : (
-                !assignment && (
-                  <button
-                    onClick={() =>
-                      showTab(
-                        level > 1 &&
-                          ((level === 2 && !pet.equipped.includes("lens")) ||
-                            (level === 3 && !pet.equipped.includes("planner")))
-                          ? "kit"
-                          : "missions",
-                      )
-                    }
-                  >
-                    {pet.missions === 0
-                      ? "Choose a first mission ↗"
-                      : "Let’s see ↗"}
-                  </button>
-                )
-              )}
-            </div>
-            <div className="g-station-labels">
-              <span>Post office</span>
-              <span>Archive</span>
-              <span>Observatory</span>
-            </div>
-            {state.workers.map((w, i) => {
-              const a = w.companion.assignment,
-                running = w.remaining > 0;
-              const outward =
-                running &&
-                (a === null || w.remaining > Math.ceil(a.duration / 4));
-              const slot = state.workers
-                .filter(
-                  (other) =>
-                    other.remaining > 0 &&
-                    (other.companion.assignment?.id ?? other.job) ===
-                      (a?.id ?? w.job),
-                )
-                .findIndex((other) => other.id === w.id);
-              const x = outward
-                ? (a
-                    ? missions[a.id].destination
-                    : { deliver: 19, index: 50, watch: 82 }[w.job]) +
-                  (slot % 2) * 14 -
-                  7
-                : [21, 50, 79][i % 3];
-              const y = outward
-                ? 49 + Math.floor(slot / 2) * 17
-                : i < 3
-                  ? 71
-                  : 88;
-              return (
-                <button
-                  key={w.id}
-                  className="g-world-worker cw-world-pet"
-                  data-worker={w.id}
-                  data-state={
-                    a?.result ? "returned" : running ? "working" : "idle"
-                  }
-                  aria-label={`Visit ${w.name}`}
-                  aria-pressed={selected === w.id}
-                  style={{ left: `${x}%`, top: `${y}%` }}
-                  onClick={() => {
-                    setSelected(w.id);
-                    showTab("companion");
-                  }}
-                >
-                  <Creature
-                    kind={w.kind}
-                    upgrades={w.upgrades}
-                    equipment={w.companion.equipped}
-                    level={levelFor(w.companion.xp)}
-                    active={running && playing && !menu && panel === null}
-                  />
-                  {a?.result && (
-                    <i className="cw-result-marker" aria-label="Result ready">
-                      ✉
-                    </i>
-                  )}
-                  <span>
-                    {w.name}
-                    <small>
-                      {a?.result
-                        ? "A gift for you!"
-                        : a?.failed === true
-                          ? "Needs your help"
-                          : running
-                            ? a
-                              ? "On a mission…"
-                              : "On a routine…"
-                            : `Lv. ${levelFor(w.companion.xp)} · ${w.companion.temperament}`}
-                    </small>
-                  </span>
-                </button>
-              );
-            })}
-            {state.workers.length === 0 && (
-              <button
-                className="g-hatch-plinth cw-adopt-plinth"
-                onClick={create}
-              >
-                <Creature kind="sprout" />
-                <strong>A small beginning.</strong>
-                <small>Adopt a companion</small>
-              </button>
-            )}
-            <div className="cw-world-clock">
-              {playing ? "●" : "Ⅱ"} {clockLabel(state.now)}
-              <span>Village time</span>
-            </div>
-          </section>
-          <aside
-            className="g-inspector cw-inspector"
-            ref={inspector}
-            aria-label="Companion panel"
-          >
-            {worker && pet ? (
-              <>
-                <div className="g-inspector-heading cw-identity">
-                  <Creature
-                    kind={worker.kind}
-                    upgrades={worker.upgrades}
-                    equipment={pet.equipped}
-                    level={level}
-                  />
-                  <div>
-                    <span className="g-eyebrow">{rankFor(pet.xp)}</span>
-                    {state.workers.length > 1 ? (
-                      <select
-                        className="g-worker-picker"
-                        aria-label="Choose companion"
-                        value={worker.id}
-                        onChange={(e) => {
-                          setSelected(Number(e.target.value));
-                          setTab("companion");
-                        }}
-                      >
-                        {state.workers.map((w) => (
-                          <option key={w.id} value={w.id}>
-                            {w.name}
-                          </option>
-                        ))}
-                      </select>
-                    ) : (
-                      <h2>{worker.name}</h2>
-                    )}
-                    <p className="cw-personality">
-                      {pet.temperament} · Level {level}
-                    </p>
-                  </div>
-                </div>
-                <div className="cw-level">
-                  <div>
-                    <b>Level {level}</b>
-                    <span>
-                      {level >= 5
-                        ? `${pet.xp} XP · All mission types unlocked`
-                        : `${pet.xp} / ${levelStarts[level]} XP`}
-                    </span>
-                  </div>
-                  <div
-                    className="cw-xp-track"
-                    role="progressbar"
-                    aria-label="Companion level progress"
-                    aria-valuenow={Math.round(progress)}
-                    aria-valuemin={0}
-                    aria-valuemax={100}
-                  >
-                    <span style={{ width: `${progress}%` }} />
-                  </div>
-                </div>
-                <div className="g-tabs">
-                  {(["companion", "missions", "kit"] as const).map((t) => (
-                    <button
-                      key={t}
-                      aria-pressed={tab === t}
-                      onClick={() => setTab(t)}
-                    >
-                      {t === "kit"
-                        ? "Equipment"
-                        : t === "missions"
-                          ? "Missions"
-                          : "Companion"}
-                    </button>
-                  ))}
-                </div>
-                <div className="g-inspector-content cw-content">
-                  {tab === "companion" && (
-                    <>
-                      <div className="cw-speech">
-                        <p>{greeting(pet, worker.name)}</p>
-                        <button
-                          onClick={() => {
-                            act({ type: "hello" });
-                            setNotice(
-                              `${worker.name} leans in. A little attention, no XP required.`,
-                            );
-                          }}
-                          aria-label={`Say hello to ${worker.name}`}
-                        >
-                          ♡ Say hello
-                        </button>
-                      </div>
-                      {assignment ? (
-                        <div className="cw-active-mission">
-                          <span className="g-eyebrow">
-                            {assignment.failed
-                              ? "Mission interrupted"
-                              : assignment.result
-                                ? "Mission returned"
-                                : "Out on an adventure"}
-                          </span>
-                          <h3>{missions[assignment.id].title}</h3>
-                          <p>
-                            {phase}
-                            {working
-                              ? ` · ${worker.remaining} village min left`
-                              : ""}
-                          </p>
-                          {assignment.result ? (
-                            <button
-                              className="g-primary"
-                              onClick={() => setPanel("report")}
-                            >
-                              Review result & reward
-                            </button>
-                          ) : assignment.failed ? (
-                            <>
-                              <p className="g-small">
-                                The sample service timed out. Recall this
-                                mission, then equip a retry charm before trying
-                                again.
-                              </p>
-                              <button
-                                onClick={() => {
-                                  act({ type: "cancelMission" });
-                                  setNotice(
-                                    "Mission recalled. Equip a charm or choose a new mission.",
-                                  );
-                                }}
-                              >
-                                Recall mission
-                              </button>
-                            </>
-                          ) : (
-                            <>
-                              <div className="cw-journey" aria-label={phase}>
-                                <span data-done={elapsed >= 0}>Depart</span>
-                                <span
-                                  data-done={elapsed >= assignment.duration / 3}
-                                >
-                                  Explore
-                                </span>
-                                <span
-                                  data-done={
-                                    elapsed >= assignment.duration * 0.75
-                                  }
-                                >
-                                  Return
-                                </span>
-                              </div>
-                              <div className="g-button-row">
-                                <button onClick={() => setPlaying(!playing)}>
-                                  {playing
-                                    ? "Pause adventure"
-                                    : "Resume adventure"}
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    act({ type: "cancelMission" });
-                                    setNotice(
-                                      "Mission recalled. No reward was claimed.",
-                                    );
-                                  }}
-                                >
-                                  Recall
-                                </button>
-                              </div>
-                            </>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="cw-next">
-                          <span className="g-eyebrow">
-                            {pet.missions === 0
-                              ? "Your first adventure"
-                              : "Ready when you are"}
-                          </span>
-                          <h3>
-                            {pet.missions === 0
-                              ? "Make today a little lighter."
-                              : "What could use a little help?"}
-                          </h3>
-                          <p>
-                            Choose a mission. They’ll bring back something you
-                            can read, review, and keep.
-                          </p>
-                          <button
-                            className="g-primary"
-                            disabled={working}
-                            onClick={() => setTab("missions")}
-                          >
-                            Give a mission
-                          </button>
-                        </div>
-                      )}
-                      <div className="cw-memory">
-                        <span>
-                          {pet.missions} accepted{" "}
-                          {pet.missions === 1 ? "mission" : "missions"}
-                        </span>
-                        <button onClick={() => setPanel("journal")}>
-                          Open journal ↗
-                        </button>
-                      </div>
-                    </>
-                  )}
-                  {tab === "missions" && (
-                    <>
-                      <p className="g-small cw-panel-intro">
-                        Useful little adventures. XP arrives when you review and
-                        accept what comes back.
-                      </p>
-                      {Object.entries(missions).map(([id, m]) => {
-                        const lock = missionLock(pet, id as MissionId);
-                        return (
-                          <button
-                            className="cw-mission-card"
-                            key={id}
-                            data-locked={lock !== null}
-                            onClick={() => chooseMission(id as MissionId)}
-                          >
-                            <span className="g-eyebrow">{m.tag}</span>
-                            <b>{m.title}</b>
-                            <small>{m.description}</small>
-                            <span className="cw-reward-line">
-                              ✧ {m.xp} XP <span>◉ {m.buttons}</span>
-                            </span>
-                            <em>
-                              {lock ??
-                                (locked
-                                  ? "Finish your current work first"
-                                  : `${Math.max(1, m.duration - (worker.upgrades.includes("wings") ? 2 : 0))} village min · View mission →`)}
-                            </em>
-                          </button>
-                        );
-                      })}
-                    </>
-                  )}
-                  {tab === "kit" && (
-                    <>
-                      <div className="cw-kit-summary">
-                        <span>Two tool slots. One little flourish.</span>
-                        <b>
-                          {
-                            pet.equipped.filter(
-                              (id) => gear[id].cosmetic !== true,
-                            ).length
-                          }
-                          /2 tools
-                        </b>
-                      </div>
-                      <div className="cw-slots">
-                        {[0, 1].map((i) => {
-                          const id = pet.equipped.filter(
-                            (g) => gear[g].cosmetic !== true,
-                          )[i];
-                          return (
-                            <span key={i}>
-                              {id ? (
-                                <>
-                                  <b>{gear[id].icon}</b>
-                                  {gear[id].name}
-                                </>
-                              ) : (
-                                <>
-                                  <b>＋</b>Empty tool slot
-                                </>
-                              )}
-                            </span>
-                          );
-                        })}
-                      </div>
-                      {locked && (
-                        <p className="g-small">
-                          Finish or recall the mission before changing your
-                          loadout.
-                        </p>
-                      )}
-                      <div className="cw-shop">
-                        {Object.entries(gear).map(([id, item]) => {
-                          const key = id as GearId,
-                            owned = pet.owned.includes(key),
-                            equipped = pet.equipped.includes(key),
-                            levelLocked = level < item.level,
-                            full =
-                              !equipped &&
-                              item.cosmetic !== true &&
-                              pet.equipped.filter(
-                                (g) => gear[g].cosmetic !== true,
-                              ).length >= 2;
-                          return (
-                            <article
-                              key={id}
-                              className="cw-shop-item"
-                              data-equipped={equipped}
-                            >
-                              <div className="cw-item-icon">{item.icon}</div>
-                              <div>
-                                <h3>{item.name}</h3>
-                                <p>{item.description}</p>
-                                <span>
-                                  {levelLocked
-                                    ? `Unlocks at level ${item.level}`
-                                    : equipped
-                                      ? "Equipped"
-                                      : owned
-                                        ? "In your wardrobe"
-                                        : `${item.cost} buttons`}
-                                </span>
-                              </div>
-                              <button
-                                aria-label={`${owned ? (equipped ? "Unequip" : "Equip") : "Buy"} ${item.name}`}
-                                disabled={
-                                  levelLocked ||
-                                  (owned
-                                    ? locked || full
-                                    : pet.buttons < item.cost)
-                                }
-                                onClick={() => {
-                                  act({
-                                    type: owned ? "equip" : "buy",
-                                    item: key,
-                                  });
-                                  setNotice(
-                                    owned
-                                      ? `${item.name} ${equipped ? "put away" : "equipped"}.`
-                                      : `${item.name} is yours. Equip it from the wardrobe.`,
-                                  );
-                                }}
-                              >
-                                {owned
-                                  ? equipped
-                                    ? "Remove"
-                                    : full
-                                      ? "Slots full"
-                                      : "Equip"
-                                  : levelLocked
-                                    ? `Lv. ${item.level}`
-                                    : `◉ ${item.cost}`}
-                              </button>
-                            </article>
-                          );
-                        })}
-                      </div>
-                      <p className="g-small">
-                        Earn buttons from accepted missions. All equipment here
-                        uses the demo’s earned currency.
-                      </p>
-                    </>
-                  )}
-                </div>
-              </>
-            ) : (
-              <div className="g-empty cw-welcome">
-                <div className="cw-welcome-friends">
-                  <Creature kind="finch" />
-                  <Creature kind="sprout" />
-                  <Creature kind="moth" />
-                </div>
-                <span className="g-eyebrow">Your own little assistant</span>
-                <h2>
-                  Someone small.
-                  <br />
-                  Something useful.
-                </h2>
-                <p>
-                  Adopt a companion, give it missions, and help it grow into a
-                  specialty. It’ll bring back a result. You decide whether it
-                  earned the reward.
-                </p>
-                <button className="g-primary" onClick={create}>
-                  Adopt your first companion
-                </button>
-                <span className="g-small">
-                  Three forms · Three personalities · A pocketful of possibility
-                </span>
-              </div>
-            )}
-          </aside>
-        </div>
-        <div className="g-announcement cw-notice" role="status">
-          {assignment?.result
-            ? `${worker?.name ?? "Your companion"} is home! Open the result to collect the reward.`
-            : notice}
-        </div>
-        <footer className="g-game-footer cw-footer">
-          <span>
-            {saved ? "Saved in this browser" : "Local session"} · Sample
-            missions · No live AI connection
-          </span>
-          <details className="cw-clock-controls">
-            <summary>Village clock</summary>
-            <div>
-              <p>
-                1 second = 1 simulated minute. Pauses when the page is hidden or
-                a dialog is open.
-              </p>
-              <div className="g-button-row">
-                <button onClick={() => setPlaying(!playing)}>
-                  {playing ? "Pause clock" : "Start clock"}
-                </button>
-                <button onClick={() => setState((s) => advanceNursery(s))}>
-                  +1 minute
-                </button>
-                <button onClick={() => setState((s) => advanceNursery(s, 5))}>
-                  +5 minutes
-                </button>
-              </div>
-            </div>
-          </details>
-          <button
-            onClick={() => {
-              setPlaying(false);
-              setPanel("reset");
-            }}
-          >
-            Reset village
-          </button>
-        </footer>
-      </main>
-      <p className="g-under-note">
-        Companion = personal agent · Mission = useful work · Equipment =
-        capabilities · XP = accepted results.{" "}
-        <a href="/design/saas-game-ui#companions">
-          Explore this design pattern ↗
-        </a>
+  const title: Record<Exclude<Panel, null>, string> = {
+    hatchery: "A little prehistoric possibility.",
+    shop: "Good gear. Big adventures.",
+    missions: "What shall we do today?",
+    mission: missions[missionId].title,
+    inventory: "Your field bag.",
+    character: "The keeper & the company.",
+    journal: "Things we brought home.",
+    camp: "A little work, on repeat.",
+    report: assignment?.result?.title ?? "A result from the wilds.",
+    reward: reward.leveled
+      ? `Level ${reward.level}!`
+      : "A good little adventure.",
+    map: "Around Fernhaven.",
+    menu: "Take a breather.",
+    help: "Make yourself at home.",
+    reset: "Start a new chapter?",
+  };
+  const eyebrow: Record<Exclude<Panel, null>, string> = {
+    hatchery: "Fern & Fossil · Hatchery",
+    shop: "The Amber Outfitter",
+    missions: "Adventure board",
+    mission: "Prepare a mission",
+    inventory: "Inventory · I",
+    character: "Character · C",
+    journal: "Companion journal",
+    camp: "Keeper’s camp",
+    report: "Look what I found",
+    reward: "A little celebration",
+    map: "Town map · M",
+    menu: "Creature Works",
+    help: "Keeper’s field guide",
+    reset: "Reset village",
+  };
+  const partyPicker =
+    state.workers.length > 1 ? (
+      <label className="ct-party-select">
+        Companion
+        <select
+          aria-label="Choose companion"
+          value={selected ?? ""}
+          onChange={(e) => {
+            const id = Number(e.target.value);
+            setSelected(id);
+            const w = state.workers.find((w) => w.id === id);
+            if (w !== undefined) {
+              setJob(w.job);
+              setInterval(w.interval);
+            }
+          }}
+        >
+          {state.workers.map((w) => (
+            <option key={w.id} value={w.id}>
+              {w.name} · Lv. {levelFor(w.companion.xp)}
+            </option>
+          ))}
+        </select>
+      </label>
+    ) : null;
+  const noPet = (
+    <div className="ct-empty">
+      <span className="ct-empty-icon">◌</span>
+      <h3>Your company starts with one friend.</h3>
+      <p>
+        Visit Fern & Fossil to meet the dinosaurs. Choose a form, a name, and a
+        little personality.
       </p>
+      <button className="ct-primary" onClick={() => navigate("hatchery")}>
+        Walk to the hatchery ↗
+      </button>
+    </div>
+  );
+  return (
+    <main className="ct-game">
+      {ready && (
+        <CreatureTown
+          ref={town}
+          workers={state.workers}
+          selected={selected}
+          paused={paused}
+          onNear={setNear}
+          onInteract={interact}
+          onMove={() => setMoved(true)}
+        />
+      )}
+      <header className="ct-hud-top">
+        <div className="ct-town-title">
+          <span>CREATURE WORKS</span>
+          <h1>
+            Fernhaven<span>✦</span>
+          </h1>
+          <small>A small town. A big little life.</small>
+        </div>
+        <div className="ct-top-actions">
+          <span
+            className="ct-wallet"
+            title="Earned currency for the selected companion"
+          >
+            <i>◉</i>
+            {pet?.buttons ?? 0}
+            <small>buttons</small>
+          </span>
+          <button onClick={() => open("map")} aria-label="Town map (M)">
+            <span>Map</span>
+            <kbd>M</kbd>
+          </button>
+          <button onClick={() => open("menu")} aria-label="Game menu (Escape)">
+            <span>Menu</span>
+            <kbd>Esc</kbd>
+          </button>
+        </div>
+      </header>
+      <div className="ct-objective">
+        <span className="ct-quest-mark">!</span>
+        <div>
+          <small>
+            {state.workers.length === 0
+              ? "YOUR FIRST CHAPTER"
+              : assignment?.result != null
+                ? "A FRIEND HAS RETURNED"
+                : assignment !== null
+                  ? "AN ADVENTURE UNDERWAY"
+                  : "A LITTLE POSSIBILITY"}
+          </small>
+          <b>
+            {state.workers.length === 0
+              ? "Meet your first companion."
+              : assignment?.result != null
+                ? `${worker?.name ?? "Someone"} brought you something.`
+                : assignment !== null
+                  ? missions[assignment.id].title
+                  : pet?.missions === 0
+                    ? "Find your first mission."
+                    : "Where will today take you?"}
+          </b>
+          <p>
+            {state.workers.length === 0
+              ? "Walk to the hatchery. Press E at the door."
+              : assignment?.result != null
+                ? "Open your companion to review the result."
+                : assignment !== null
+                  ? playing
+                    ? "Explore town while they work."
+                    : "Resume the expedition from Character (C)."
+                  : "Visit the adventure board in the square."}
+          </p>
+        </div>
+      </div>
+      {!moved && (
+        <div className="ct-first-hint">
+          <kbd>W</kbd>
+          <span>
+            <kbd>A</kbd>
+            <kbd>S</kbd>
+            <kbd>D</kbd>
+          </span>
+          <p>Move, or click a place to walk there.</p>
+        </div>
+      )}
+      <div className="ct-context">
+        {nearby !== undefined && (
+          <button onClick={() => interact(nearby.id)}>
+            <kbd>E</kbd>
+            <span>
+              {nearby.action}
+              <small>{nearby.name}</small>
+            </span>
+            <b>↗</b>
+          </button>
+        )}
+      </div>
+      <div className="ct-bottom-hud">
+        <button
+          className={`ct-buddy ${assignment?.result != null ? "has-result" : ""}`}
+          onClick={() => open("character")}
+          aria-label="Open character and companions"
+        >
+          <span className={`ct-species-dot ${worker?.kind ?? "empty"}`}>
+            {worker === undefined
+              ? "◌"
+              : worker.kind === "sprout"
+                ? "♧"
+                : worker.kind === "finch"
+                  ? "ϟ"
+                  : "≈"}
+          </span>
+          <span>
+            <small>
+              {worker !== undefined
+                ? `${species[worker.kind].family} · Lv. ${level}`
+                : "KEEPER’S COMPANY"}
+            </small>
+            <b>{worker?.name ?? "A friend is waiting"}</b>
+            <i>
+              {assignment?.result != null
+                ? "✉ Result ready"
+                : assignment !== null
+                  ? worker !== undefined && worker.remaining > 0
+                    ? `${worker.remaining} min · ${playing ? "Exploring" : "Paused"}`
+                    : "Needs your help"
+                  : worker !== undefined && worker.remaining > 0
+                    ? `${worker.remaining} min · ${playing ? "Routine running" : "Paused"}`
+                    : worker !== undefined
+                      ? rankFor(pet?.xp ?? 0)
+                      : "Visit the hatchery"}
+            </i>
+          </span>
+          <kbd>C</kbd>
+        </button>
+        <nav className="ct-hotbar" aria-label="Game screens">
+          <button onClick={() => open("inventory")} aria-label="Inventory (I)">
+            <span>▤</span>
+            <b>Inventory</b>
+            <kbd>I</kbd>
+          </button>
+          <button onClick={() => open("character")} aria-label="Character (C)">
+            <span>♙</span>
+            <b>Character</b>
+            <kbd>C</kbd>
+          </button>
+          <button onClick={() => open("help")} aria-label="How to play">
+            <span>?</span>
+            <b>Guide</b>
+          </button>
+        </nav>
+        <div className="ct-day">
+          <b>✦ Day {Math.floor(state.now / 1440) + 1}</b>
+          <span>Fernhaven · Local demo</span>
+        </div>
+      </div>
+      <div className="ct-touch-move" aria-label="Touch movement">
+        {[
+          { key: "w", label: "Walk north", symbol: "↑" },
+          { key: "a", label: "Walk west", symbol: "←" },
+          { key: "s", label: "Walk south", symbol: "↓" },
+          { key: "d", label: "Walk east", symbol: "→" },
+        ].map((k) => (
+          <button
+            key={k.key}
+            aria-label={k.label}
+            onPointerDown={(e) => {
+              e.preventDefault();
+              e.currentTarget.setPointerCapture(e.pointerId);
+              town.current?.direction(k.key, true);
+            }}
+            onPointerUp={() => town.current?.direction(k.key, false)}
+            onPointerCancel={() => town.current?.direction(k.key, false)}
+            onLostPointerCapture={() => town.current?.direction(k.key, false)}
+          >
+            {k.symbol}
+          </button>
+        ))}
+      </div>
+      <div className="ct-sr-notice" role="status">
+        {notice}
+      </div>
       <dialog
         ref={dialog}
-        className={`g-dialog cw-dialog ${panel === "journal" || panel === "report" ? "cw-dialog-wide" : ""}`}
-        aria-labelledby="cw-panel-title"
-        onClose={() => setPanel(null)}
+        className={`ct-dialog ct-panel-${panel ?? "closed"}`}
+        aria-labelledby="ct-panel-title"
+        onClose={() => {
+          if (dialog.current?.open !== true) setPanel(null);
+        }}
       >
-        <div className="g-dialog-heading">
-          <span className="g-eyebrow">
-            {panel === "adopt"
-              ? "A new friendship"
-              : panel === "mission"
-                ? "Mission board"
-                : panel === "report"
-                  ? "Look what I brought back"
-                  : panel === "reward"
-                    ? "A little celebration"
-                    : panel === "journal"
-                      ? "Companion journal"
-                      : "Your village"}
-          </span>
-          <button aria-label="Close panel" onClick={close}>
-            ×
-          </button>
-        </div>
-        {panel === "adopt" && (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              const id = state.nextId;
-              setState((s) => adoptCompanion(s, name, kind, temperament));
-              setSelected(id);
-              close();
-              showTab("companion");
-              setNotice(
-                `${name.trim() || "Your companion"} is here! Choose a first mission to get to know each other.`,
-              );
-            }}
-          >
-            <h2 id="cw-panel-title">Who’s coming home?</h2>
-            <div className="g-creator-preview cw-adopt-preview">
-              <Creature kind={kind} />
-              <p>
-                {name || "Your companion"}
-                <small>{temperament} · Level 1 · 12 starter buttons</small>
-              </p>
-            </div>
-            <label className="cw-field">
-              Their name
-              <input
-                required
-                maxLength={24}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                autoComplete="off"
-              />
-            </label>
-            <fieldset className="cw-forms">
-              <legend>A little face</legend>
-              <div className="g-species">
-                {(["sprout", "finch", "moth"] as const).map((k) => (
-                  <label key={k}>
-                    <input
-                      type="radio"
-                      name="creature-form"
-                      checked={kind === k}
-                      onChange={() => setKind(k)}
-                    />
-                    <Creature kind={k} />
-                    <span>{k}</span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-            <fieldset className="cw-temperaments">
-              <legend>
-                A way of seeing the world <span>· dialogue style</span>
-              </legend>
-              {(
-                [
-                  { id: "curious", description: "Always one more question." },
-                  { id: "cozy", description: "One gentle step at a time." },
-                  { id: "bold", description: "Small creature, big plans." },
-                ] as { id: Temperament; description: string }[]
-              ).map((t) => (
-                <label key={t.id}>
-                  <input
-                    type="radio"
-                    name="temperament"
-                    checked={temperament === t.id}
-                    onChange={() => setTemperament(t.id)}
-                  />
-                  <span>
-                    <b>{t.id}</b>
-                    <small>{t.description}</small>
-                  </span>
-                </label>
-              ))}
-            </fieldset>
-            <button className="g-primary cw-wide-button" type="submit">
-              Bring {name.trim() || "them"} home
-            </button>
-          </form>
-        )}
-        {panel === "mission" && worker && pet && (
-          <form onSubmit={startMission}>
-            <h2 id="cw-panel-title">{mission.title}</h2>
-            <p>{mission.description}</p>
-            <div className="cw-mission-terms">
-              <span>✧ {mission.xp} XP</span>
-              <span>◉ {mission.buttons} buttons</span>
-              <span>
-                {Math.max(
-                  1,
-                  mission.duration -
-                    (worker.upgrades.includes("wings") ? 2 : 0),
-                )}{" "}
-                village min
-              </span>
-            </div>
-            <label className="cw-field">
-              Your brief
-              <textarea
-                aria-label="Your brief"
-                maxLength={240}
-                rows={3}
-                value={brief}
-                onChange={(e) => setBrief(e.target.value)}
-              />
-            </label>
-            <label className="cw-field">
-              Where should they focus?
-              <select
-                value={focus}
-                onChange={(e) => setFocus(e.target.value as Focus)}
-                aria-label="Mission focus"
-              >
-                <option value="balanced">A bit of both</option>
-                <option value="work">Work first</option>
-                <option value="life">Everyday life</option>
-              </select>
-            </label>
-            <p className="g-small">
-              Your focus changes the sample result. The brief is kept with it as
-              your intent. This demo does not interpret free text with a model.
-            </p>
-            {missionLock(pet, chosenMission) !== null && (
-              <div className="cw-lock">
-                <p>{missionLock(pet, chosenMission)}</p>
-                <button
-                  type="button"
-                  onClick={() => {
-                    close();
-                    showTab("kit");
-                  }}
-                >
-                  Visit the outfitter
-                </button>
-              </div>
-            )}
-            {locked && (
-              <p className="g-small">
-                {assignment?.result
-                  ? "Review the result already waiting for you first."
-                  : "Finish or recall the current work first."}
-              </p>
-            )}
-            <button
-              className="g-primary cw-wide-button"
-              type="submit"
-              disabled={locked || missionLock(pet, chosenMission) !== null}
-            >
-              Send {worker.name} on this mission
-            </button>
-          </form>
-        )}
-        {panel === "report" && assignment?.result && (
+        {panel !== null && (
           <>
-            <h2 id="cw-panel-title">{assignment.result.title}</h2>
-            <ReportView report={assignment.result} />
-            <div className="cw-review-reward">
-              <span>Accept this result</span>
-              <b>
-                +{missions[assignment.id].xp} XP · +
-                {missions[assignment.id].buttons} buttons
-              </b>
-            </div>
-            <div className="g-button-row">
-              <button className="g-primary" onClick={accept}>
-                Accept & collect reward
-              </button>
+            <header className="ct-panel-head">
+              <div>
+                <span className="ct-eyebrow">{eyebrow[panel]}</span>
+                <h2 id="ct-panel-title">{title[panel]}</h2>
+              </div>
               <button
-                onClick={() => {
-                  act({ type: "dismiss" });
+                onClick={close}
+                className="ct-close"
+                aria-label="Close screen"
+              >
+                ×<small>Esc</small>
+              </button>
+            </header>
+            {["shop", "missions", "inventory", "camp", "journal"].includes(
+              panel,
+            ) &&
+              worker !== undefined && (
+                <div className="ct-panel-meta">
+                  <span>
+                    {worker.name} · Level {level}
+                  </span>
+                  {partyPicker}
+                  <b>◉ {pet?.buttons ?? 0} buttons</b>
+                </div>
+              )}
+            {panel === "hatchery" && (
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (state.workers.length >= 6) return;
+                  const id = state.nextId;
+                  setState((s) => adoptCompanion(s, name, kind, temperament));
+                  setSelected(id);
                   close();
-                  showTab("missions");
                   setNotice(
-                    "Another pass it is. No reward claimed; choose a mission and refine the focus.",
+                    `${name.trim() || "Your companion"} joined your company. Walk to the adventure board together.`,
                   );
                 }}
               >
-                Needs another pass
-              </button>
-            </div>
-          </>
-        )}
-        {panel === "reward" && worker && pet && (
-          <div className="cw-celebration">
-            <div className="cw-reward-art">
-              <span>✧</span>
-              <Creature
-                kind={worker.kind}
-                upgrades={worker.upgrades}
-                equipment={pet.equipped}
-                level={reward.level}
-              />
-              <span>✧</span>
-            </div>
-            <h2 id="cw-panel-title">
-              {reward.leveled
-                ? `Level ${reward.level}!`
-                : "A good little adventure."}
-            </h2>
-            <p>
-              {reward.leveled
-                ? `${worker.name} is now a ${rankFor(pet.xp).toLowerCase()}.`
-                : `${worker.name} brought something useful home.`}
-            </p>
-            <div className="cw-mission-terms">
-              <span>+{reward.xp} XP</span>
-              <span>+{reward.buttons} buttons</span>
-            </div>
-            {reward.leveled && (
-              <p className="cw-unlock">
-                {reward.level === 2
-                  ? "New in the outfitter: Research lens. Your next specialty awaits."
-                  : reward.level === 3
-                    ? "Planner pin unlocked. A new specialty, and a little star badge."
-                    : "A new title, and a history of useful adventures together."}
-              </p>
+                <p className="ct-intro">
+                  Three small dinosaurs. A thousand things to discover together.
+                </p>
+                <div className="ct-adoption-lineup">
+                  {(Object.keys(species) as CreatureKind[]).map((k) => (
+                    <label key={k} data-selected={kind === k}>
+                      <input
+                        type="radio"
+                        name="species"
+                        value={k}
+                        checked={kind === k}
+                        onChange={() => setKind(k)}
+                      />
+                      <DinoPortrait kind={k} />
+                      <span>
+                        <b>{species[k].name}</b>
+                        <small>{species[k].family}</small>
+                      </span>
+                      <p>{species[k].description}</p>
+                    </label>
+                  ))}
+                </div>
+                <div className="ct-form-row">
+                  <label>
+                    Their name
+                    <input
+                      aria-label="Companion name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      maxLength={24}
+                      required
+                    />
+                  </label>
+                  <label>
+                    Personality
+                    <select
+                      aria-label="Companion personality"
+                      value={temperament}
+                      onChange={(e) =>
+                        setTemperament(e.target.value as Temperament)
+                      }
+                    >
+                      <option value="curious">
+                        Curious · one more question
+                      </option>
+                      <option value="cozy">Cozy · one gentle step</option>
+                      <option value="bold">Bold · big little plans</option>
+                    </select>
+                  </label>
+                </div>
+                <div className="ct-panel-foot">
+                  <span>12 starter buttons · A place in your company</span>
+                  <button
+                    type="submit"
+                    className="ct-primary"
+                    disabled={state.workers.length >= 6}
+                  >
+                    {state.workers.length >= 6
+                      ? "Your company is full"
+                      : `Adopt ${name.trim() || "your companion"}`}
+                  </button>
+                </div>
+              </form>
             )}
-            <button
-              className="g-primary cw-wide-button"
-              onClick={() => {
-                close();
-                showTab("kit");
-              }}
-            >
-              Visit the outfitter
-            </button>
-            <button
-              className="cw-wide-button"
-              onClick={() => {
-                close();
-                showTab("missions");
-              }}
-            >
-              Choose another adventure
-            </button>
-          </div>
-        )}
-        {panel === "journal" && worker && pet && (
-          <>
-            <h2 id="cw-panel-title">{worker.name}’s little history.</h2>
-            <dl className="g-stats">
-              <div>
-                <dt>Accepted missions</dt>
-                <dd>{pet.missions}</dd>
-              </div>
-              <div>
-                <dt>Total XP</dt>
-                <dd>{pet.xp}</dd>
-              </div>
-              <div>
-                <dt>Successful runs</dt>
-                <dd>{worker.successes}</dd>
-              </div>
-              <div>
-                <dt>Failed runs</dt>
-                <dd>{worker.failures}</dd>
-              </div>
-            </dl>
-            <h3 className="cw-journal-heading">Things they brought back</h3>
-            {pet.journal.length === 0 ? (
-              <p className="g-small">
-                A quiet first page. Accepted mission results will live here.
-              </p>
-            ) : (
-              pet.journal.map((item, i) => (
-                <details className="cw-journal-entry" key={`${item.at}-${i}`}>
-                  <summary>
-                    {item.result.title}
-                    <span>{clockLabel(item.at)}</span>
-                  </summary>
-                  <ReportView report={item.result} />
-                </details>
-              ))
+            {panel === "shop" &&
+              (worker === undefined || pet === undefined ? (
+                noPet
+              ) : (
+                <>
+                  <div className="ct-merchant">
+                    <span>✦</span>
+                    <p>
+                      “A good tool makes the adventure. A good scarf makes the
+                      entrance.”<small>— Amber, your local outfitter</small>
+                    </p>
+                  </div>
+                  <div className="ct-shop-grid">
+                    {(Object.keys(gear) as GearId[]).map((id) => {
+                      const item = gear[id],
+                        owned = pet.owned.includes(id);
+                      return (
+                        <article key={id} data-owned={owned}>
+                          <div className="ct-item-stage">
+                            <GearArt id={id} />
+                            <span>
+                              {item.cosmetic === true ? "COSMETIC" : "TOOL"}
+                            </span>
+                          </div>
+                          <h3>{item.name}</h3>
+                          <p>{item.description}</p>
+                          <button
+                            className={owned ? "" : "ct-primary"}
+                            disabled={
+                              owned ||
+                              level < item.level ||
+                              pet.buttons < item.cost
+                            }
+                            onClick={() => {
+                              act({ type: "buy", item: id });
+                              setNotice(
+                                `${item.name} added to ${worker.name}’s bag. Press I to equip it.`,
+                              );
+                            }}
+                            aria-label={`Buy ${item.name}`}
+                          >
+                            {owned
+                              ? "✓ In your bag"
+                              : level < item.level
+                                ? `Unlocks at Lv. ${item.level}`
+                                : `◉ ${item.cost} buttons`}
+                          </button>
+                        </article>
+                      );
+                    })}
+                  </div>
+                  <div className="ct-panel-foot">
+                    <p className="ct-panel-notice" role="status">
+                      {notice.includes("bag")
+                        ? notice
+                        : "Purchases go into your field bag. Equip them before an adventure."}
+                    </p>
+                    <button onClick={() => open("inventory")}>
+                      Open inventory <kbd>I</kbd>
+                    </button>
+                  </div>
+                </>
+              ))}
+            {panel === "inventory" &&
+              (worker === undefined || pet === undefined ? (
+                noPet
+              ) : (
+                <div className="ct-inventory-layout">
+                  <section>
+                    <p className="ct-intro">
+                      {worker.name}’s belongings. Pick a tool to equip it.
+                    </p>
+                    <div className="ct-bag-grid">
+                      {pet.owned.map((id) => {
+                        const item = gear[id],
+                          equipped = pet.equipped.includes(id),
+                          full =
+                            !equipped &&
+                            item.cosmetic !== true &&
+                            pet.equipped.filter(
+                              (g) => gear[g].cosmetic !== true,
+                            ).length >= 2;
+                        return (
+                          <button
+                            key={id}
+                            className="ct-bag-item"
+                            data-equipped={equipped}
+                            disabled={locked || full}
+                            onClick={() => act({ type: "equip", item: id })}
+                            aria-label={`${equipped ? "Unequip" : "Equip"} ${item.name}`}
+                          >
+                            <GearArt id={id} />
+                            <b>{item.name}</b>
+                            <span>
+                              {equipped
+                                ? "Equipped · remove"
+                                : full
+                                  ? "Tool slots full"
+                                  : item.cosmetic === true
+                                    ? "Wear accessory"
+                                    : "Equip tool"}
+                            </span>
+                          </button>
+                        );
+                      })}
+                      {Array.from(
+                        { length: Math.max(0, 6 - pet.owned.length) },
+                        (_, i) => (
+                          <div key={`empty-${i}`} className="ct-bag-empty">
+                            +
+                          </div>
+                        ),
+                      )}
+                    </div>
+                    <p className="ct-caption">
+                      {locked
+                        ? "Finish or recall the current work before changing equipment."
+                        : "Two tool slots and a cosmetic. Owning a tool is only the beginning."}
+                    </p>
+                    <button onClick={() => navigate("shop")}>
+                      Walk to the outfitter ↗
+                    </button>
+                  </section>
+                  <section className="ct-paperdoll">
+                    <DinoPortrait
+                      kind={worker.kind}
+                      equipment={pet.equipped}
+                      level={level}
+                    />
+                    <h3>{worker.name}</h3>
+                    <p>
+                      {species[worker.kind].family} · {rankFor(pet.xp)}
+                    </p>
+                    <div className="ct-loadout">
+                      {[0, 1].map((i) => {
+                        const id = pet.equipped.filter(
+                          (g) => gear[g].cosmetic !== true,
+                        )[i];
+                        return (
+                          <span key={i}>
+                            <small>TOOL {i + 1}</small>
+                            <b>
+                              {id !== undefined ? gear[id].name : "Empty slot"}
+                            </b>
+                          </span>
+                        );
+                      })}
+                      <span>
+                        <small>ACCESSORY</small>
+                        <b>
+                          {pet.equipped.includes("scarf")
+                            ? "Sunset scarf"
+                            : "A little room for flair"}
+                        </b>
+                      </span>
+                    </div>
+                  </section>
+                </div>
+              ))}
+            {panel === "character" && (
+              <>
+                <div className="ct-character-top">
+                  <div>
+                    <span className="ct-eyebrow">YOU · THE KEEPER</span>
+                    <h3>A company of your own.</h3>
+                    <p>
+                      You explore. They assist. Good work becomes a shared
+                      history.
+                    </p>
+                  </div>
+                  <div className="ct-keeper-stats">
+                    <span>
+                      <b>{state.workers.length}/6</b>companions
+                    </span>
+                    <span>
+                      <b>
+                        {state.workers.reduce(
+                          (sum, w) => sum + w.companion.missions,
+                          0,
+                        )}
+                      </b>
+                      accepted missions
+                    </span>
+                  </div>
+                </div>
+                {worker === undefined || pet === undefined ? (
+                  noPet
+                ) : (
+                  <>
+                    <div
+                      className="ct-party-strip"
+                      aria-label="Your companions"
+                    >
+                      {state.workers.map((w) => (
+                        <button
+                          key={w.id}
+                          aria-pressed={selected === w.id}
+                          onClick={() => setSelected(w.id)}
+                        >
+                          <i className={w.kind}>●</i>
+                          {w.name}
+                          <small>Lv. {levelFor(w.companion.xp)}</small>
+                        </button>
+                      ))}
+                    </div>
+                    <div className="ct-character-layout">
+                      <div className="ct-character-art">
+                        <DinoPortrait
+                          kind={worker.kind}
+                          equipment={pet.equipped}
+                          level={level}
+                        />
+                        <span>
+                          {species[worker.kind].name} ·{" "}
+                          {species[worker.kind].family}
+                        </span>
+                      </div>
+                      <section>
+                        <span className="ct-eyebrow">
+                          {rankFor(pet.xp)} · {pet.temperament}
+                        </span>
+                        <h3>
+                          {worker.name}
+                          <small>Level {level}</small>
+                        </h3>
+                        <div className="ct-xp">
+                          <span>
+                            <b>{pet.xp} XP</b>
+                            <small>
+                              {level >= 5
+                                ? "Highest rank reached"
+                                : `${levelStarts[level] - pet.xp} to level ${level + 1}`}
+                            </small>
+                          </span>
+                          <progress
+                            value={
+                              level >= 5 ? 1 : pet.xp - levelStarts[level - 1]
+                            }
+                            max={
+                              level >= 5
+                                ? 1
+                                : levelStarts[level] - levelStarts[level - 1]
+                            }
+                          />
+                        </div>
+                        <blockquote>
+                          {greeting(pet, worker.name)}
+                          <button onClick={() => act({ type: "hello" })}>
+                            ♡ Say hello
+                          </button>
+                        </blockquote>
+                        {assignment !== null ? (
+                          <div className="ct-current-mission">
+                            <small>
+                              {assignment.result !== null
+                                ? "RESULT READY"
+                                : assignment.failed
+                                  ? "NEEDS YOUR HELP"
+                                  : "CURRENT MISSION"}
+                            </small>
+                            <h4>{missions[assignment.id].title}</h4>
+                            {assignment.result !== null ? (
+                              <button
+                                className="ct-primary"
+                                onClick={() => open("report")}
+                              >
+                                Review result & reward
+                              </button>
+                            ) : (
+                              <>
+                                <p>
+                                  {assignment.failed
+                                    ? "A sample service timed out. Recall and equip a retry charm."
+                                    : `${worker.remaining} village minutes left · ${playing ? "Exploring" : "Paused"}`}
+                                </p>
+                                <div className="ct-buttons">
+                                  {!assignment.failed && (
+                                    <button
+                                      onClick={() => {
+                                        setPlaying(!playing);
+                                        close();
+                                      }}
+                                    >
+                                      {playing
+                                        ? "Pause expedition"
+                                        : "Resume expedition"}
+                                    </button>
+                                  )}
+                                  <button
+                                    onClick={() => {
+                                      act({ type: "cancelMission" });
+                                      setNotice(
+                                        "Mission recalled. No reward claimed.",
+                                      );
+                                    }}
+                                  >
+                                    Recall mission
+                                  </button>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        ) : (
+                          <button
+                            className="ct-primary"
+                            onClick={() => navigate("missions")}
+                          >
+                            Walk to the mission board ↗
+                          </button>
+                        )}
+                        <div className="ct-character-links">
+                          <button onClick={() => open("inventory")}>
+                            Equipment <kbd>I</kbd>
+                          </button>
+                          <button onClick={() => open("journal")}>
+                            Journal <span>{pet.missions}</span>
+                          </button>
+                        </div>
+                      </section>
+                    </div>
+                  </>
+                )}
+              </>
             )}
-            <details className="cw-routines">
-              <summary>Scheduled routines & run log</summary>
-              <p className="g-small">
-                {jobs[worker.job].name} · Every {worker.interval} village
-                minutes · <code>*/{worker.interval} * * * *</code>
-                <br />
-                {worker.enabled
-                  ? `Next occurrence ${clockLabel(worker.next)}`
-                  : "Schedule paused"}
-                . Missions take priority; overlapping occurrences are skipped.
-              </p>
-              <div className="g-button-row">
-                <button onClick={() => routine({ type: "pause" })}>
-                  {worker.enabled ? "Pause schedule" : "Enable schedule"}
+            {panel === "missions" &&
+              (worker === undefined || pet === undefined ? (
+                noPet
+              ) : (
+                <>
+                  <p className="ct-intro">
+                    Choose something worth bringing back. Your companion earns
+                    its reward after you review the result.
+                  </p>
+                  <div className="ct-mission-board">
+                    {(Object.keys(missions) as MissionId[]).map((id, i) => {
+                      const m = missions[id],
+                        lock = missionLock(pet, id);
+                      return (
+                        <button
+                          key={id}
+                          className="ct-mission-paper"
+                          onClick={() => chooseMission(id)}
+                          data-locked={lock !== null}
+                        >
+                          <span className="ct-paper-pin" />
+                          <small>
+                            REQUEST No. 0{i + 1} · {m.tag}
+                          </small>
+                          <span className="ct-mission-symbol">
+                            {i === 0 ? "☀" : i === 1 ? "⌕" : "♧"}
+                          </span>
+                          <h3>{m.title}</h3>
+                          <p>{m.description}</p>
+                          <div>
+                            <b>✦ {m.xp} XP</b>
+                            <b>◉ {m.buttons}</b>
+                          </div>
+                          <em>
+                            {lock ??
+                              (locked
+                                ? "Finish your current work first"
+                                : "Prepare this mission ↗")}
+                          </em>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </>
+              ))}
+            {panel === "mission" &&
+              worker !== undefined &&
+              pet !== undefined && (
+                <form onSubmit={launch}>
+                  <p className="ct-intro">{missions[missionId].description}</p>
+                  <div className="ct-mission-rewards">
+                    <span>✦ {missions[missionId].xp} XP</span>
+                    <span>◉ {missions[missionId].buttons} buttons</span>
+                    <span>
+                      ◷{" "}
+                      {Math.max(
+                        1,
+                        missions[missionId].duration -
+                          (worker.upgrades.includes("wings") ? 2 : 0),
+                      )}{" "}
+                      village min
+                    </span>
+                  </div>
+                  <label className="ct-field">
+                    Your brief
+                    <textarea
+                      aria-label="Your brief"
+                      value={brief}
+                      rows={3}
+                      maxLength={240}
+                      onChange={(e) => setBrief(e.target.value)}
+                    />
+                  </label>
+                  <label className="ct-field">
+                    Where should {worker.name} focus?
+                    <select
+                      aria-label="Mission focus"
+                      value={focus}
+                      onChange={(e) => setFocus(e.target.value as Focus)}
+                    >
+                      <option value="balanced">A bit of both</option>
+                      <option value="work">Work first</option>
+                      <option value="life">Everyday life</option>
+                    </select>
+                  </label>
+                  <p className="ct-caption">
+                    Focus changes the sample result. Your brief is saved with
+                    it; this demo does not interpret it with a live model.
+                  </p>
+                  {missionLock(pet, missionId) !== null && (
+                    <div className="ct-locked">
+                      <b>{missionLock(pet, missionId)}</b>
+                      <button type="button" onClick={() => navigate("shop")}>
+                        Visit the outfitter ↗
+                      </button>
+                    </div>
+                  )}
+                  {locked && (
+                    <p>Finish, recall, or review the current mission first.</p>
+                  )}
+                  <div className="ct-panel-foot">
+                    <button type="button" onClick={() => open("missions")}>
+                      Back to the board
+                    </button>
+                    <button
+                      className="ct-primary"
+                      type="submit"
+                      disabled={locked || missionLock(pet, missionId) !== null}
+                    >
+                      Send {worker.name} on this mission
+                    </button>
+                  </div>
+                </form>
+              )}
+            {panel === "report" && assignment?.result != null && (
+              <>
+                <article className="ct-report">
+                  <blockquote>“{assignment.result.intro}”</blockquote>
+                  {assignment.result.sections.map((s, i) => (
+                    <section key={s.title}>
+                      <span>0{i + 1}</span>
+                      <div>
+                        <h3>{s.title}</h3>
+                        <p>{s.body}</p>
+                      </div>
+                    </section>
+                  ))}
+                  <p className="ct-caption">{assignment.result.footnote}</p>
+                </article>
+                <div className="ct-panel-foot">
+                  <button
+                    onClick={() => {
+                      act({ type: "dismiss" });
+                      close();
+                      setNotice("Another pass it is. No reward claimed.");
+                    }}
+                  >
+                    Needs another pass
+                  </button>
+                  <button className="ct-primary" onClick={accept}>
+                    Accept & collect reward
+                  </button>
+                </div>
+              </>
+            )}
+            {panel === "reward" &&
+              worker !== undefined &&
+              pet !== undefined && (
+                <div className="ct-reward">
+                  <DinoPortrait
+                    kind={worker.kind}
+                    equipment={pet.equipped}
+                    level={level}
+                  />
+                  <p>
+                    {worker.name} is a {rankFor(pet.xp).toLowerCase()}.
+                  </p>
+                  <div className="ct-mission-rewards">
+                    <span>+{reward.xp} XP</span>
+                    <span>+{reward.buttons} buttons</span>
+                  </div>
+                  {reward.leveled && (
+                    <p className="ct-unlock">
+                      {reward.level === 2
+                        ? "The Research lens is now waiting at the outfitter."
+                        : reward.level === 3
+                          ? "The Planner pin is unlocked. A new specialty awaits."
+                          : "A new title. A few more good adventures together."}
+                    </p>
+                  )}
+                  <div className="ct-buttons">
+                    <button
+                      className="ct-primary"
+                      onClick={() => navigate("shop")}
+                    >
+                      Walk to the outfitter ↗
+                    </button>
+                    <button onClick={close}>Back to town</button>
+                  </div>
+                </div>
+              )}
+            {panel === "camp" &&
+              (worker === undefined || pet === undefined ? (
+                noPet
+              ) : (
+                <>
+                  <p className="ct-intro">
+                    Give {worker.name} a recurring job. Missions take priority;
+                    routines wait while they’re away.
+                  </p>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      routine({
+                        type: "edit",
+                        name: worker.name,
+                        job,
+                        interval,
+                      });
+                      setNotice("Routine updated.");
+                    }}
+                  >
+                    <div className="ct-form-row">
+                      <label>
+                        Routine job
+                        <select
+                          aria-label="Routine job"
+                          value={job}
+                          onChange={(e) => setJob(e.target.value as Job)}
+                        >
+                          {Object.entries(jobs).map(([id, j]) => (
+                            <option key={id} value={id}>
+                              {j.name}
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        Repeat every
+                        <select
+                          aria-label="Routine schedule"
+                          value={interval}
+                          onChange={(e) => setInterval(Number(e.target.value))}
+                        >
+                          {[5, 15, 30].map((n) => (
+                            <option key={n} value={n}>
+                              {n} village minutes
+                            </option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                    <button type="submit" disabled={locked}>
+                      Save routine
+                    </button>
+                  </form>
+                  <div className="ct-routine-state">
+                    <div>
+                      <b>
+                        {worker.enabled ? "Routine enabled" : "Routine paused"}
+                      </b>
+                      <p>
+                        {jobs[worker.job].name} · every {worker.interval} min
+                      </p>
+                    </div>
+                    <button
+                      className="ct-primary"
+                      onClick={() => {
+                        routine({ type: "pause" });
+                        setPlaying(true);
+                        close();
+                      }}
+                    >
+                      {worker.enabled ? "Pause routine" : "Enable routine"}
+                    </button>
+                  </div>
+                  <div className="ct-buttons">
+                    {worker.enabled && !playing && (
+                      <button
+                        className="ct-primary"
+                        onClick={() => {
+                          setPlaying(true);
+                          close();
+                        }}
+                      >
+                        Resume village clock
+                      </button>
+                    )}
+                    <button
+                      disabled={locked}
+                      onClick={() => {
+                        routine({ type: "run" });
+                        setPlaying(true);
+                        close();
+                      }}
+                    >
+                      Run routine now
+                    </button>
+                    <button onClick={() => open("journal")}>
+                      View run log
+                    </button>
+                  </div>
+                  <p className="ct-caption">
+                    Local simulation. One village minute takes three seconds. No
+                    background work runs while this page is closed.
+                  </p>
+                </>
+              ))}
+            {panel === "journal" &&
+              worker !== undefined &&
+              pet !== undefined && (
+                <>
+                  <div className="ct-journal-stats">
+                    <span>
+                      <b>{pet.missions}</b>accepted missions
+                    </span>
+                    <span>
+                      <b>{pet.xp}</b>total XP
+                    </span>
+                    <span>
+                      <b>{worker.successes}</b>successful runs
+                    </span>
+                    <span>
+                      <b>{worker.failures}</b>failed runs
+                    </span>
+                  </div>
+                  {pet.journal.length === 0 ? (
+                    <p className="ct-intro">
+                      The first page is still waiting for an adventure.
+                    </p>
+                  ) : (
+                    pet.journal.map((entry, i) => (
+                      <details
+                        className="ct-journal-entry"
+                        key={`${entry.at}-${i}`}
+                      >
+                        <summary>
+                          <b>{entry.result.title}</b>
+                          <small>{clockLabel(entry.at)}</small>
+                        </summary>
+                        <p>“{entry.brief}”</p>
+                        {entry.result.sections.map((s) => (
+                          <section key={s.title}>
+                            <h4>{s.title}</h4>
+                            <p>{s.body}</p>
+                          </section>
+                        ))}
+                      </details>
+                    ))
+                  )}
+                  <details className="ct-run-log">
+                    <summary>Routine & mission run log</summary>
+                    <ol>
+                      {worker.log.map((entry, i) => (
+                        <li key={i} data-tone={entry.tone}>
+                          <time>{clockLabel(entry.at)}</time>
+                          {entry.text}
+                        </li>
+                      ))}
+                    </ol>
+                    <button
+                      disabled={worker.faultNext}
+                      onClick={() => routine({ type: "fault" })}
+                    >
+                      {worker.faultNext
+                        ? "Next timeout armed"
+                        : "Simulate next timeout"}
+                    </button>
+                  </details>
+                  <button onClick={() => navigate("camp")}>
+                    Walk to camp to edit routines ↗
+                  </button>
+                </>
+              )}
+            {panel === "map" && (
+              <>
+                <p className="ct-intro">
+                  Pick a destination. Your keeper will walk there.
+                </p>
+                <div className="ct-town-map">
+                  <svg
+                    viewBox="0 0 640 420"
+                    role="img"
+                    aria-label="Town plan with hatchery west, outfitter east, missions north, camp southwest and wilds southeast"
+                  >
+                    <rect
+                      x="6"
+                      y="6"
+                      width="628"
+                      height="408"
+                      rx="38"
+                      fill="#e1e7cf"
+                    />
+                    <path
+                      d="M90 230H550M320 90v200M160 220v105M490 220v105"
+                      fill="none"
+                      stroke="#d2bc96"
+                      strokeWidth="36"
+                      strokeLinecap="round"
+                    />
+                    <ellipse cx="258" cy="330" rx="35" ry="24" fill="#9dbdbc" />
+                    {places.map((p) => (
+                      <g
+                        key={p.id}
+                        transform={`translate(${320 + p.x * 22},${205 + p.z * 18})`}
+                      >
+                        <rect
+                          x="-31"
+                          y="-28"
+                          width="62"
+                          height="45"
+                          rx="7"
+                          fill={p.color}
+                        />
+                        <path
+                          d="m-38-28 38-22 38 22"
+                          fill={p.color}
+                          stroke="#435f4540"
+                          strokeWidth="3"
+                        />
+                      </g>
+                    ))}
+                  </svg>
+                  {places.map((p) => (
+                    <button
+                      key={p.id}
+                      style={{
+                        left: `${((320 + p.x * 22) / 640) * 100}%`,
+                        top: `${((205 + p.z * 18) / 420) * 100}%`,
+                      }}
+                      onClick={() => navigate(p.id)}
+                      aria-label={`Travel to ${p.name}`}
+                    >
+                      <b>{p.label}</b>
+                      <span>↗</span>
+                    </button>
+                  ))}
+                </div>
+                <div className="ct-map-legend">
+                  <span>WASD / arrows · Move</span>
+                  <span>Click ground · Walk</span>
+                  <span>E · Interact nearby</span>
+                </div>
+              </>
+            )}
+            {panel === "menu" && (
+              <div className="ct-menu">
+                <p>The town can wait. Your progress stays in this browser.</p>
+                <button className="ct-primary" onClick={close}>
+                  Resume game
                 </button>
+                <button onClick={() => open("help")}>How to play</button>
+                <a href="/design/saas-game-ui">Explore the design system ↗</a>
+                <button className="ct-subtle" onClick={() => open("reset")}>
+                  Reset village
+                </button>
+                <small>
+                  {saved ? "Progress saved" : "Local session"} · Sample missions
+                  · No live AI connection
+                </small>
+              </div>
+            )}
+            {panel === "help" && (
+              <div className="ct-guide">
+                <p className="ct-intro">
+                  You’re the keeper. Explore town with your prehistoric
+                  assistants.
+                </p>
+                <dl>
+                  <div>
+                    <dt>
+                      <kbd>WASD</kbd> / <kbd>↑↓←→</kbd>
+                    </dt>
+                    <dd>Move through town. Buildings have solid walls.</dd>
+                  </div>
+                  <div>
+                    <dt>Click / tap the world</dt>
+                    <dd>Walk to a point, or choose a labelled destination.</dd>
+                  </div>
+                  <div>
+                    <dt>
+                      <kbd>E</kbd>
+                    </dt>
+                    <dd>Interact when you reach a place’s entrance.</dd>
+                  </div>
+                  <div>
+                    <dt>
+                      <kbd>I</kbd> Inventory
+                    </dt>
+                    <dd>Equip owned tools and accessories.</dd>
+                  </div>
+                  <div>
+                    <dt>
+                      <kbd>C</kbd> Character
+                    </dt>
+                    <dd>
+                      Choose your walking companion, inspect progress, and
+                      review results.
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>
+                      <kbd>M</kbd> Map
+                    </dt>
+                    <dd>
+                      Find the hatchery, outfitter, board, camp, and wilds.
+                    </dd>
+                  </div>
+                  <div>
+                    <dt>
+                      <kbd>Esc</kbd>
+                    </dt>
+                    <dd>
+                      Close a screen; press again to pause or leave the game.
+                    </dd>
+                  </div>
+                </dl>
+                <p className="ct-caption">
+                  Missions and routines use sample data. They pause while a
+                  screen is open or this page is hidden. XP rewards accepted
+                  results. Purchases use earned buttons.
+                </p>
+              </div>
+            )}
+            {panel === "reset" && (
+              <div className="ct-menu">
+                <p>
+                  This removes your companions, equipment, and history from this
+                  browser.
+                </p>
+                <button onClick={close}>Keep my company</button>
                 <button
-                  disabled={locked}
+                  className="ct-danger"
                   onClick={() => {
-                    routine({ type: "run" });
-                    setPlaying(true);
+                    setState(freshNursery());
+                    setSelected(null);
+                    setPlaying(false);
                     close();
+                    setNotice("A new chapter begins. Visit the hatchery.");
                   }}
                 >
-                  Run routine now
-                </button>
-                <button disabled={locked} onClick={edit}>
-                  Edit routine
+                  Reset everything
                 </button>
               </div>
-              <p className="g-small">
-                {worker.runs} runs started · {worker.attempts} attempts · last
-                duration{" "}
-                {worker.lastDuration === null ? "—" : `${worker.lastDuration}m`}
-                . Routine runs do not award mission XP.
-              </p>
-              <button
-                disabled={working || worker.faultNext || assignment !== null}
-                onClick={() => routine({ type: "fault" })}
-              >
-                {worker.faultNext ? "Timeout armed" : "Simulate next timeout"}
-              </button>
-              <ol className="g-log">
-                {worker.log.map((l, i) => (
-                  <li key={`${l.at}-${i}`} data-tone={l.tone}>
-                    <time>{clockLabel(l.at)}</time>
-                    <span>{l.text}</span>
-                  </li>
-                ))}
-              </ol>
-            </details>
-          </>
-        )}
-        {panel === "settings" && worker && (
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              routine({ type: "edit", name, interval, job });
-              setPanel("journal");
-            }}
-          >
-            <h2 id="cw-panel-title">The everyday routine.</h2>
-            <label className="cw-field">
-              Companion name
-              <input
-                required
-                maxLength={24}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </label>
-            <label className="cw-field">
-              Job
-              <select
-                aria-label="Routine job"
-                value={job}
-                onChange={(e) => setJob(e.target.value as Job)}
-              >
-                {Object.entries(jobs).map(([id, j]) => (
-                  <option key={id} value={id}>
-                    {j.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="cw-field">
-              Schedule
-              <select
-                aria-label="Routine schedule"
-                value={interval}
-                onChange={(e) => setInterval(Number(e.target.value))}
-              >
-                {[5, 15, 30].map((n) => (
-                  <option key={n} value={n}>
-                    Every {n} minutes
-                  </option>
-                ))}
-              </select>
-            </label>
-            <p className="g-small">
-              A simulated UTC schedule. No jobs run after you leave this page.
-            </p>
-            <button
-              className="g-primary cw-wide-button"
-              type="submit"
-              disabled={locked}
-            >
-              Save routine
-            </button>
-          </form>
-        )}
-        {panel === "reset" && (
-          <>
-            <h2 id="cw-panel-title">A new beginning?</h2>
-            <p>
-              This removes every companion, their equipment, and their journals
-              saved in this browser.
-            </p>
-            <div className="g-button-row">
-              <button onClick={close}>Keep my companions</button>
-              <button
-                onClick={() => {
-                  setState(freshNursery());
-                  setSelected(null);
-                  setTab("companion");
-                  setPlaying(false);
-                  close();
-                  setNotice("A fresh village. Who’s coming home first?");
-                }}
-              >
-                Reset everything
-              </button>
-            </div>
+            )}
           </>
         )}
       </dialog>
-    </div>
+    </main>
   );
 }

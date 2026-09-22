@@ -7,74 +7,109 @@ to three games. Each has a visible Menu button and Escape exit menu. Escape firs
 cancels active targeting or closes a native dialog; a subsequent Escape opens the
 menu. The menu pauses execution and links back to the system.
 
-The new pages extend the accepted smooth 2D JRPG direction and Inter typography.
-No dependencies, game engine, external model, or background scheduler are added.
+The studies explore game interfaces with Inter typography. Fernhaven retools the companion study as a lit 2.5D town. No new dependency, external model, or background scheduler is added.
 
-## Creature Works
+## Creature Works — Fernhaven
 
 Route: `/design/saas-game-ui/creature-works`.
 
-Creature Works now explores an assistant you raise: adopt → equip → mission →
-review → grow. Adopt up to six original companions (sprout, finch, or moth) and
-choose a curious, cozy, or bold dialogue style. Say hello changes its response;
-there is no XP reward or penalty for attention. New companions start at level 1
-with 12 buttons and recurring routines turned off.
+The world is now the operating surface. A controllable keeper walks through a
+sunlit town with a selected dinosaur companion following. A persistent sidebar
+no longer exposes every activity. Each place has a purpose and an entrance:
 
-### The playable progression loop
+| Place               | Interaction                       | Result                                   |
+| ------------------- | --------------------------------- | ---------------------------------------- |
+| Fern & Fossil       | Approach the hatchery and press E | Adopt and name a companion               |
+| The Amber Outfitter | Walk to the shop and press E      | Buy tools and accessories                |
+| Adventure board     | Read the board in the square      | Prepare and dispatch a mission           |
+| Keeper’s camp       | Visit the tent                    | Configure, enable, or run recurring jobs |
+| The wilds           | Reach the expedition gate         | Inspect the company and current missions |
 
-- Rescue my morning: sort six sample inbox items; 4 village minutes; 30 XP and
-  18 buttons after acceptance.
-- Find my next rabbit hole: curate an authored practice shelf; level 2 and an
-  equipped Research lens; 6 minutes; 45 XP and 24 buttons.
-- Make room for a good day: create a three-hour sample itinerary; level 3 and an
-  equipped Planner pin; 8 minutes; 60 XP and 30 buttons.
+### Movement and game screens
 
-The focus control (work, everyday life, or a balance) changes the computed result.
-The brief is preserved as user intent; no model interprets it. Returned results
-must be opened and accepted before rewards are granted. Rejecting or recalling
-work grants no XP or buttons. Accepting twice cannot duplicate a reward. Accepted
-results remain in a bounded journal (latest 12), alongside the latest 30 run events.
+WASD/arrows move continuously. Click/tap the ground or a named destination to
+walk there. A navigation grid routes around building colliders. E opens an
+interaction only within the entrance radius. Choosing a destination from the
+map moves the keeper; it does not teleport or remotely execute its action.
+Touch has the same location prompts and a four-direction pad.
 
-Levels begin at 0, 30, 75, 135, and 210 XP, with the visible level capped at 5.
-Level 2 unlocks the Research lens shop item; level 3 unlocks the Planner pin and
-adds a small star badge. Higher levels add titles. The demo does not claim that
-XP makes an underlying model smarter or grants external permissions.
+- I: inventory, containing owned gear. Equip two tools and one cosmetic.
+- C: keeper/party screen, companion choice, level/XP, equipment and journal.
+- M: town map and walking destinations.
+- Escape: close the current screen; press again to open the pause/exit menu.
 
-### Equipment
+The selected companion follows the keeper. Working companions move toward the
+expedition gate or their routine’s town destination. Movement, mission time, and
+routine time pause while a screen is open or the page is hidden. Opening a
+result and accepting it awards XP and buttons; rejection and recall award none.
 
-Each companion has two functional tool slots and a cosmetic slot. Buttons are
-local game rewards, never purchased. Gear must be owned, equipped, and meet its
-level requirement; owning an item alone does not unlock a mission.
+### Dinosaur direction and rendering
 
-| Item          | Cost | Level | Effect                                                        |
-| ------------- | ---: | ----: | ------------------------------------------------------------- |
-| Swift wings   |    6 |     1 | Routine attempts take 1 minute; missions take 2 fewer minutes |
-| Retry charm   |    6 |     1 | One automatic retry after a timeout                           |
-| Research lens |   18 |     2 | Unlocks scouting missions                                     |
-| Planner pin   |   24 |     3 | Unlocks planning missions                                     |
-| Sunset scarf  |    6 |     1 | Appearance only; no tool slot used                            |
+Mossback is a triceratops, Embertail a raptor, and Tidecrest a sauropod. These are
+original procedural models rendered in an orthographic Three.js scene. Surface
+maps provide scale pigment and bump detail; a custom material shader shades the
+dorsal/underside color. Hemisphere, sunlight, rim light, and shadow maps give
+forms volume. The same models and equipped accessories appear in portraits.
+No image is used as the playable world. WebGL is required; an explicit fallback
+message handles unavailable graphics support. No new package dependency was
+added: Three.js was already present in the repository.
 
-Equipment is reflected on the original SVG creature. Active missions and results
-awaiting review lock equipment changes. Purchases, affordability, slot limits,
-mission prerequisites, cancellations, and reward claims are enforced by the model.
+The current art is stylized procedural geometry, not a claim of photorealism or
+finished production character art. Reduced motion removes decorative bobbing
+and camera easing while preserving physical navigation.
 
-### Routines and saves
+Typography remains Inter per the explicit user preference. Fontjoy was revisited
+at https://fontjoy.com/; its visible Montserrat/Lora/Hind Madurai pairing was not
+adopted. The new visual system uses warm parchment `#f7f2e5`, fern `#486c54`, amber
+`#ce9659`, and a sunlit sage world. Game screens replace permanent side panels.
 
-The earlier scheduled-worker controls remain under Journal → Scheduled routines
-& run log. Jobs deliver digests, index notes, or check uptime using `*/5`, `*/15`,
-or `*/30` simulated UTC schedules. Missions take priority; overlapping occurrences
-are skipped and logged. Pausing a schedule lets active work finish. Routine work
-does not award mission XP. A deliberate timeout control demonstrates recovery.
+### Missions, inventory, and progression
 
-Time advances one simulated minute per second during an adventure, only while
-the page is visible and no dialog/menu is open. Manual clock controls remain
-available. Returning restores progress with time stopped; no real-world catch-up
-or background execution occurs. Browser saves use schema v2 and migrate v1 workers
-without losing names, schedules, equipment, statistics, or logs. New progress,
-owned/equipped items, and journals persist. Reset requires confirmation.
+Adopt up to six companions with curious, cozy, or bold dialogue. New companions
+begin with 12 buttons, level 1, and routines disabled. Saying hello changes
+dialogue without a reward or penalty.
 
-These are local simulations with sample catalogs and readable outputs. No model,
-email, calendar, payments, tokens, or external actions are connected.
+| Mission                  | Requirement                     | Duration      | Accepted reward   |
+| ------------------------ | ------------------------------- | ------------- | ----------------- |
+| Rescue my morning        | Level 1                         | 4 village min | 30 XP, 18 buttons |
+| Find my next rabbit hole | Level 2, equipped Research lens | 6 min         | 45 XP, 24 buttons |
+| Make room for a good day | Level 3, equipped Planner pin   | 8 min         | 60 XP, 30 buttons |
+
+Focus changes the computed sample result. The brief is retained as intent;
+there is no live model interpreting it. Accepted reports stay in a bounded
+journal (latest 12) with the latest 30 run events. Duplicate acceptance cannot
+award twice. Levels begin at 0, 30, 75, 135, and 210 XP; visible level caps at 5.
+Levels add titles and shop prerequisites, not intelligence or external permissions.
+
+| Gear          | Buttons | Minimum level | Effect                                         |
+| ------------- | ------: | ------------: | ---------------------------------------------- |
+| Swift wings   |       6 |             1 | Routines take 1 min; missions take 2 fewer min |
+| Retry charm   |       6 |             1 | One automatic retry after a simulated timeout  |
+| Research lens |      18 |             2 | Unlock scouting when equipped                  |
+| Planner pin   |      24 |             3 | Unlock planning when equipped                  |
+| Sunset scarf  |       6 |             1 | Cosmetic; no tool slot consumed                |
+
+Purchases happen in the store and enter that companion’s inventory. Ownership
+alone does not unlock a mission. Equipment changes lock during active work or
+an unreviewed result. Prices, slots, tool prerequisites, and claims retain their
+model-level guards.
+
+### Routines and persistence
+
+Camp configures digest delivery, note indexing, and uptime checks at simulated
+UTC schedules of 5, 15, or 30 minutes. Missions take priority; overlaps are logged.
+Pausing a schedule lets current work finish. Routine runs do not earn mission XP.
+The journal retains the deliberate timeout/retry demonstration.
+
+One village minute takes three seconds while time is running. Browser saves
+remain schema v2; v1 worker saves still migrate. Existing species keys map to the
+new dinosaur forms without losing names, schedules, equipment, stats, or logs.
+The keeper’s position is saved separately after validation against town bounds
+and colliders. Returning restores time paused; resume an expedition from C or
+the clock from camp. There is no real-time catch-up. Reset requires confirmation.
+
+These are local sample simulations. No live model, email, calendar, payment,
+token, or external action is connected.
 
 ## Relay Guild
 
@@ -106,7 +141,7 @@ This mission resets when its page is left. Restart requires confirmation.
 manual runs, overlap, pause/edit, duration/retry upgrades, independent workers,
 save validation, role/target guards, cancellation, dependency waiting, handoffs,
 review failure, and full mission completion. Browser interaction checks cover the
-creator, mission progression, equipment, rewards, journals, menus, persistence, and the full relay. Targeted TypeScript
+town movement, entrance proximity, inventory/character shortcuts, mission progression, equipment, rewards, journals, menus, persistence, and the full relay. Targeted TypeScript
 and ESLint checks plus `npm run build` are the release gates. Existing unrelated
 repository-wide type errors are not claimed as passing.
 
