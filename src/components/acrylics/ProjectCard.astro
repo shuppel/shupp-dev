@@ -11,7 +11,7 @@ interface Props {
 const { project, category, pigment, index, headline } = Astro.props;
 const { title, description, technologies, image, customUrl } = project.data;
 ---
-<article class:list={['project-card', `project-card--${project.id}`]} data-project={project.id} data-category={category} data-pigment={pigment} data-search={`${title} ${description} ${technologies.join(' ')}`.toLowerCase()} style={`--card-pigment:${pigment}`}>
+<article class:list={['project-card', `project-card--${project.id}`]} data-project={project.id} data-category={category} data-pigment={pigment} data-search={`${title} ${description} ${technologies.join(' ')}`.toLowerCase()} style={`--card-pigment:${pigment};--saved-ink:${pigment === '#E2B72D' ? '#202820' : '#fffaf0'}`}>
   <div class="project-cover">
     <PaintMark color={pigment} class="cover-coat" />
     {image && <img src={image} alt="" loading="lazy" width="800" height="500" />}
