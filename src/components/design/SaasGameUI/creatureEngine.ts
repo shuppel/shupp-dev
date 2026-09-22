@@ -1,3 +1,18 @@
+import {
+  freshCompanion,
+  gear,
+  levelFor,
+  makeReport,
+  missionLock,
+  missions,
+  validCompanion,
+  type Companion,
+  type Focus,
+  type GearId,
+  type MissionId,
+  type Temperament,
+} from "./companions";
+
 export type CreatureKind = "sprout" | "finch" | "moth";
 export type Job = "deliver" | "index" | "watch";
 export type Upgrade = "wings" | "retry";
@@ -7,6 +22,7 @@ export interface Entry {
   tone: "info" | "good" | "bad";
 }
 export interface Worker {
+  companion: Companion;
   id: number;
   name: string;
   kind: CreatureKind;
@@ -27,7 +43,7 @@ export interface Worker {
   log: Entry[];
 }
 export interface Nursery {
-  version: 1;
+  version: 2;
   now: number;
   nextId: number;
   workers: Worker[];
@@ -49,7 +65,7 @@ export const jobs: Record<
   },
 };
 export const freshNursery = (): Nursery => ({
-  version: 1,
+  version: 2,
   now: 0,
   nextId: 1,
   workers: [],
@@ -76,6 +92,7 @@ export function hatch(
   if (state.workers.length >= 6 || ![5, 15, 30].includes(interval))
     return state;
   const worker: Worker = {
+    companion: freshCompanion(),
     id: state.nextId,
     name: name.trim().slice(0, 24) || `Worker ${state.nextId}`,
     kind,
@@ -125,7 +142,12 @@ export function changeWorker(
   const result = structuredClone(state);
   const w = result.workers.find((worker) => worker.id === id);
   if (!w) return state;
-  if (action.type === "run" && w.remaining === 0) begin(w, state.now, true);
+  if (
+    action.type === "run" &&
+    w.remaining === 0 &&
+    w.companion.assignment === null
+  )
+    begin(w, state.now, true);
   if (action.type === "pause") {
     w.enabled = !w.enabled;
     w.next = nextDue(state.now, w.interval);
@@ -142,9 +164,21 @@ export function changeWorker(
     entry(w, state.now, "Next attempt will simulate a service timeout.");
   }
   if (action.type === "upgrade" && w.remaining === 0) {
+    if (w.companion.assignment !== null) return state;
+    if (
+      !w.upgrades.includes(action.upgrade) &&
+      w.companion.equipped.filter((id) => gear[id].cosmetic !== true).length >=
+        2
+    )
+      return state;
     w.upgrades = w.upgrades.includes(action.upgrade)
       ? w.upgrades.filter((u) => u !== action.upgrade)
       : [...w.upgrades, action.upgrade];
+    w.companion.owned = [...new Set([...w.companion.owned, action.upgrade])];
+    w.companion.equipped = [
+      ...w.companion.equipped.filter((id) => id !== "wings" && id !== "retry"),
+      ...w.upgrades,
+    ];
     entry(
       w,
       state.now,
@@ -154,6 +188,7 @@ export function changeWorker(
   if (
     action.type === "edit" &&
     w.remaining === 0 &&
+    w.companion.assignment === null &&
     [5, 15, 30].includes(action.interval)
   ) {
     w.name = action.name.trim().slice(0, 24) || w.name;
@@ -163,6 +198,155 @@ export function changeWorker(
     entry(w, state.now, "Worker updated. Next run recalculated.");
   }
   return result;
+}
+
+export function adoptCompanion(
+  state: Nursery,
+  name: string,
+  kind: CreatureKind,
+  temperament: Temperament,
+): Nursery {
+  const next = hatch(state, name, kind, "deliver", 15);
+  if (next === state) return state;
+  const w = next.workers[next.workers.length - 1];
+  w.enabled = false;
+  w.companion.temperament = temperament;
+  w.log = [
+    {
+      at: next.now,
+      text: "Adopted! Ready for a first mission. Routines are off until you enable them.",
+      tone: "good",
+    },
+  ];
+  return next;
+}
+export type CompanionAction =
+  | { type: "hello" }
+  | { type: "buy" | "equip"; item: GearId }
+  | { type: "mission"; mission: MissionId; brief: string; focus: Focus }
+  | { type: "accept" | "dismiss" | "cancelMission" };
+
+export function actOnCompanion(
+  state: Nursery,
+  id: number,
+  action: CompanionAction,
+): Nursery {
+  const next = structuredClone(state),
+    w = next.workers.find((worker) => worker.id === id);
+  if (!w) return state;
+  const pet = w.companion;
+  if (action.type === "hello") pet.greetings++;
+  if (action.type === "buy") {
+    const item = gear[action.item];
+    if (
+      pet.owned.includes(action.item) ||
+      pet.buttons < item.cost ||
+      levelFor(pet.xp) < item.level
+    )
+      return state;
+    pet.buttons -= item.cost;
+    pet.owned.push(action.item);
+    entry(
+      w,
+      next.now,
+      `Bought ${item.name} for ${item.cost} buttons. Ready to equip.`,
+    );
+  }
+  if (action.type === "equip") {
+    if (
+      !pet.owned.includes(action.item) ||
+      pet.assignment !== null ||
+      w.remaining > 0
+    )
+      return state;
+    if (pet.equipped.includes(action.item))
+      pet.equipped = pet.equipped.filter((item) => item !== action.item);
+    else {
+      if (
+        gear[action.item].cosmetic !== true &&
+        pet.equipped.filter((item) => gear[item].cosmetic !== true).length >= 2
+      )
+        return state;
+      pet.equipped.push(action.item);
+    }
+    w.upgrades = pet.equipped.filter(
+      (item): item is Upgrade => item === "wings" || item === "retry",
+    );
+    entry(
+      w,
+      next.now,
+      `${gear[action.item].name} ${pet.equipped.includes(action.item) ? "equipped" : "put away"}.`,
+    );
+  }
+  if (action.type === "mission") {
+    if (
+      w.remaining > 0 ||
+      pet.assignment !== null ||
+      missionLock(pet, action.mission) !== null
+    )
+      return state;
+    const mission = missions[action.mission],
+      duration = Math.max(
+        1,
+        mission.duration - (w.upgrades.includes("wings") ? 2 : 0),
+      );
+    pet.assignment = {
+      id: action.mission,
+      brief: action.brief.trim().slice(0, 240) || mission.prompt,
+      focus: action.focus,
+      duration,
+      result: null,
+      failed: false,
+    };
+    w.remaining = duration;
+    w.started = next.now;
+    w.retrying = false;
+    w.runs++;
+    w.attempts++;
+    entry(w, next.now, `Set off on a mission: ${mission.title}.`);
+  }
+  if (action.type === "accept") {
+    const assignment = pet.assignment;
+    if (!assignment?.result || assignment.failed || w.remaining > 0)
+      return state;
+    const mission = missions[assignment.id],
+      before = levelFor(pet.xp);
+    pet.xp += mission.xp;
+    pet.buttons += mission.buttons;
+    pet.missions++;
+    pet.journal = [
+      {
+        mission: assignment.id,
+        at: next.now,
+        brief: assignment.brief,
+        result: assignment.result,
+      },
+      ...pet.journal,
+    ].slice(0, 12);
+    pet.assignment = null;
+    entry(
+      w,
+      next.now,
+      `Result accepted! +${mission.xp} XP · +${mission.buttons} buttons.${levelFor(pet.xp) > before ? ` Level ${levelFor(pet.xp)} reached!` : ""}`,
+      "good",
+    );
+  }
+  if (action.type === "dismiss" || action.type === "cancelMission") {
+    if (pet.assignment === null) return state;
+    if (action.type === "dismiss" && pet.assignment.result === null)
+      return state;
+    pet.assignment = null;
+    w.remaining = 0;
+    w.retrying = false;
+    entry(
+      w,
+      next.now,
+      action.type === "dismiss"
+        ? "Result needs another pass. No XP or buttons awarded."
+        : "Mission recalled. No reward claimed.",
+    );
+  }
+  return next;
 }
 export function advanceNursery(state: Nursery, minutes = 1): Nursery {
   const result = structuredClone(state);
@@ -183,24 +367,42 @@ export function advanceNursery(state: Nursery, minutes = 1): Nursery {
             } else {
               w.failures++;
               w.lastDuration = result.now - w.started;
+              if (w.companion.assignment !== null)
+                w.companion.assignment.failed = true;
             }
           } else {
             w.successes++;
             w.lastDuration = result.now - w.started;
             w.retrying = false;
-            entry(w, result.now, `${jobs[w.job].output}.`, "good");
+            const assignment = w.companion.assignment;
+            if (assignment !== null) {
+              assignment.result = makeReport(
+                assignment.id,
+                assignment.brief,
+                assignment.focus,
+              );
+              entry(
+                w,
+                result.now,
+                `Returned from ${missions[assignment.id].title}. Review the result to earn its reward.`,
+                "good",
+              );
+            } else entry(w, result.now, `${jobs[w.job].output}.`, "good");
           }
         }
       }
       if (result.now >= w.next) {
         w.next = nextDue(result.now, w.interval);
         if (w.enabled) {
-          if (w.remaining === 0) begin(w, result.now, false);
+          if (w.remaining === 0 && w.companion.assignment === null)
+            begin(w, result.now, false);
           else
             entry(
               w,
               result.now,
-              "Scheduled occurrence skipped: previous run still active.",
+              w.companion.assignment !== null
+                ? "Scheduled occurrence skipped: companion has a mission."
+                : "Scheduled occurrence skipped: previous run still active.",
             );
         }
       }
@@ -212,9 +414,9 @@ export function advanceNursery(state: Nursery, minutes = 1): Nursery {
 export function restoreNursery(raw: string | null): Nursery {
   if (raw === null || raw === "") return freshNursery();
   try {
-    const s = JSON.parse(raw) as Nursery;
+    const s = JSON.parse(raw) as Omit<Nursery, "version"> & { version: number };
     if (
-      s.version !== 1 ||
+      ![1, 2].includes(s.version) ||
       !Number.isSafeInteger(s.now) ||
       s.now < 0 ||
       !Number.isSafeInteger(s.nextId) ||
@@ -222,6 +424,13 @@ export function restoreNursery(raw: string | null): Nursery {
       s.workers.length > 6
     )
       return freshNursery();
+    if (s.version === 1) {
+      s.workers = s.workers.map((w) => ({
+        ...w,
+        companion: freshCompanion(w.upgrades),
+      }));
+      s.version = 2;
+    }
     const valid = s.workers.every(
       (w) =>
         Number.isSafeInteger(w.id) &&
@@ -245,7 +454,12 @@ export function restoreNursery(raw: string | null): Nursery {
           w.attempts,
           w.started,
         ].every((n) => Number.isSafeInteger(n) && n >= 0) &&
-        w.remaining <= 3 &&
+        w.remaining <= 8 &&
+        validCompanion(w.companion) &&
+        w.upgrades.length ===
+          w.companion.equipped.filter((g) => g === "wings" || g === "retry")
+            .length &&
+        w.upgrades.every((g) => w.companion.equipped.includes(g)) &&
         (w.lastDuration === null || Number.isFinite(w.lastDuration)) &&
         Array.isArray(w.log) &&
         w.log.length <= 30 &&
@@ -259,7 +473,7 @@ export function restoreNursery(raw: string | null): Nursery {
     return valid &&
       new Set(s.workers.map((w) => w.id)).size === s.workers.length &&
       s.workers.every((w) => w.id < s.nextId)
-      ? s
+      ? { ...s, version: 2 }
       : freshNursery();
   } catch {
     return freshNursery();

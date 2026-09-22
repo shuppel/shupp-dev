@@ -4,7 +4,7 @@ import CreatureWorks from '../../../components/design/SaasGameUI/CreatureWorks';
 import { isFeatureEnabled } from '../../../config/features';
 if (!isFeatureEnabled('enableSaasGameUI')) return Astro.redirect('/portfolio');
 ---
-<GameStudy title="Creature Works — scheduled workers" description="Hatch a creature for each cron job. Set its schedule, inspect its dashboard and log, and equip augmentations that change its behavior." path="/creature-works">
+<GameStudy title="Creature Works — little AI companions" description="Adopt a little personal assistant. Give it missions, review what it brings back, earn XP, and equip a new specialty." path="/creature-works" stylePath="/saas-game-ui/companions.css">
   <CreatureWorks client:load/>
   <noscript><p class="sg-noscript">Enable JavaScript to play Creature Works. <a href="/design/saas-game-ui">Explore the design system</a>.</p></noscript>
 </GameStudy>

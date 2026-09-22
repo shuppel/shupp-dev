@@ -2,11 +2,17 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
   advanceNursery,
+  actOnCompanion,
+  adoptCompanion,
   changeWorker,
   freshNursery,
   hatch,
   restoreNursery,
 } from "../src/components/design/SaasGameUI/creatureEngine";
+import {
+  levelFor,
+  makeReport,
+} from "../src/components/design/SaasGameUI/companions";
 import {
   advanceGuild,
   assignOrder,
@@ -170,4 +176,192 @@ void test("review detects missing evidence and cannot produce an approved artifa
   state = assignOrder(state, "reviewer", "deliver", "client");
   state = until(state, (s) => s.units[2].status.startsWith("Waiting"));
   assert.equal(state.won, false);
+});
+
+void test("accepted missions award progression once and unlock an equipped specialty", () => {
+  let state = adoptCompanion(freshNursery(), "Pip", "sprout", "cozy");
+  assert.equal(state.workers[0].enabled, false);
+  const locked = actOnCompanion(state, 1, {
+    type: "mission",
+    mission: "research",
+    brief: "Explore",
+    focus: "work",
+  });
+  assert.deepEqual(locked, state);
+  state = actOnCompanion(state, 1, {
+    type: "mission",
+    mission: "morning",
+    brief: "A calmer day",
+    focus: "life",
+  });
+  state = advanceNursery(state, 4);
+  assert.equal(
+    state.workers[0].companion.xp,
+    0,
+    "completed work still needs acceptance",
+  );
+  assert.equal(
+    state.workers[0].companion.assignment?.result?.sections[0].title,
+    "Reply to a friend",
+  );
+  state = actOnCompanion(state, 1, { type: "accept" });
+  assert.equal(state.workers[0].companion.xp, 30);
+  assert.equal(levelFor(state.workers[0].companion.xp), 2);
+  assert.equal(state.workers[0].companion.buttons, 30);
+  assert.equal(state.workers[0].companion.journal.length, 1);
+  assert.deepEqual(
+    actOnCompanion(state, 1, { type: "accept" }),
+    state,
+    "no double reward",
+  );
+  state = actOnCompanion(state, 1, { type: "buy", item: "lens" });
+  assert.equal(state.workers[0].companion.buttons, 12);
+  assert.deepEqual(
+    actOnCompanion(state, 1, { type: "buy", item: "lens" }),
+    state,
+    "no duplicate purchase",
+  );
+  assert.equal(
+    actOnCompanion(state, 1, {
+      type: "mission",
+      mission: "research",
+      brief: "Explore",
+      focus: "work",
+    }).workers[0].companion.assignment,
+    null,
+    "ownership alone does not equip a tool",
+  );
+  state = actOnCompanion(state, 1, { type: "equip", item: "lens" });
+  state = actOnCompanion(state, 1, {
+    type: "mission",
+    mission: "research",
+    brief: "Explore",
+    focus: "work",
+  });
+  assert.equal(state.workers[0].remaining, 6);
+  assert.deepEqual(
+    actOnCompanion(state, 1, { type: "equip", item: "lens" }),
+    state,
+    "gear locks during a mission",
+  );
+  state = advanceNursery(state, 6);
+  state = actOnCompanion(state, 1, { type: "accept" });
+  assert.equal(levelFor(state.workers[0].companion.xp), 3);
+  state = actOnCompanion(state, 1, { type: "buy", item: "planner" });
+  state = actOnCompanion(state, 1, { type: "equip", item: "planner" });
+  state = actOnCompanion(state, 1, {
+    type: "mission",
+    mission: "weekend",
+    brief: "A lovely Saturday",
+    focus: "balanced",
+  });
+  state = advanceNursery(state, 8);
+  state = actOnCompanion(state, 1, { type: "accept" });
+  assert.equal(state.workers[0].companion.missions, 3);
+  assert.equal(levelFor(state.workers[0].companion.xp), 4);
+  assert.equal(state.workers[0].companion.journal.length, 3);
+});
+void test("gear has a price and two functional slots; a cosmetic uses neither slot", () => {
+  let state = adoptCompanion(freshNursery(), "Nori", "moth", "curious");
+  state = actOnCompanion(state, 1, { type: "buy", item: "wings" });
+  state = actOnCompanion(state, 1, { type: "buy", item: "retry" });
+  assert.equal(state.workers[0].companion.buttons, 0);
+  assert.deepEqual(
+    actOnCompanion(state, 1, { type: "buy", item: "scarf" }),
+    state,
+  );
+  state = actOnCompanion(state, 1, { type: "equip", item: "wings" });
+  state = actOnCompanion(state, 1, { type: "equip", item: "retry" });
+  state = changeWorker(state, 1, { type: "fault" });
+  state = actOnCompanion(state, 1, {
+    type: "mission",
+    mission: "morning",
+    brief: "Hello",
+    focus: "balanced",
+  });
+  assert.equal(state.workers[0].remaining, 2);
+  state = advanceNursery(state, 2);
+  assert.equal(state.workers[0].retrying, true);
+  state = advanceNursery(state);
+  assert.ok(state.workers[0].companion.assignment?.result);
+  assert.equal(state.workers[0].attempts, 2);
+  state = actOnCompanion(state, 1, { type: "accept" });
+  state = actOnCompanion(state, 1, { type: "buy", item: "lens" });
+  assert.deepEqual(
+    actOnCompanion(state, 1, { type: "equip", item: "lens" }),
+    state,
+  );
+  state = actOnCompanion(state, 1, { type: "equip", item: "wings" });
+  state = actOnCompanion(state, 1, { type: "equip", item: "lens" });
+  assert.deepEqual(state.workers[0].upgrades, ["retry"]);
+  state.workers[0].companion.buttons = 6;
+  state = actOnCompanion(state, 1, { type: "buy", item: "scarf" });
+  state = actOnCompanion(state, 1, { type: "equip", item: "scarf" });
+  assert.equal(state.workers[0].companion.equipped.length, 3);
+  assert.deepEqual(restoreNursery(JSON.stringify(state)), state);
+});
+void test("recalled, rejected, failed, and routine work cannot claim mission XP", () => {
+  let state = adoptCompanion(freshNursery(), "Pip", "finch", "bold");
+  state = actOnCompanion(state, 1, {
+    type: "mission",
+    mission: "morning",
+    brief: "Help",
+    focus: "work",
+  });
+  state = actOnCompanion(state, 1, { type: "cancelMission" });
+  state = advanceNursery(state, 10);
+  assert.equal(state.workers[0].companion.assignment, null);
+  state = actOnCompanion(state, 1, {
+    type: "mission",
+    mission: "morning",
+    brief: "Help",
+    focus: "work",
+  });
+  state = advanceNursery(state, 4);
+  state = actOnCompanion(state, 1, { type: "dismiss" });
+  state = actOnCompanion(state, 1, { type: "accept" });
+  assert.equal(state.workers[0].companion.xp, 0);
+  state = changeWorker(state, 1, { type: "fault" });
+  state = actOnCompanion(state, 1, {
+    type: "mission",
+    mission: "morning",
+    brief: "Help",
+    focus: "work",
+  });
+  state = advanceNursery(state, 4);
+  assert.equal(state.workers[0].companion.assignment?.failed, true);
+  assert.equal(state.workers[0].companion.assignment?.result, null);
+  state = actOnCompanion(state, 1, { type: "accept" });
+  assert.equal(state.workers[0].companion.xp, 0);
+  state = actOnCompanion(state, 1, { type: "cancelMission" });
+  state = changeWorker(state, 1, { type: "pause" });
+  state = advanceNursery(state, 45);
+  assert.ok(state.workers[0].successes > 1);
+  assert.equal(state.workers[0].companion.xp, 0);
+});
+void test("existing worker saves migrate without losing schedules, equipment, or history", () => {
+  let state = hatch(freshNursery(), "Old friend", "finch", "index", 5);
+  state = changeWorker(state, 1, { type: "upgrade", upgrade: "wings" });
+  state = advanceNursery(state, 8);
+  const worker = Object.fromEntries(
+    Object.entries(state.workers[0]).filter(([key]) => key !== "companion"),
+  );
+  const migrated = restoreNursery(
+    JSON.stringify({ ...state, version: 1, workers: [worker] }),
+  );
+  assert.equal(migrated.version, 2);
+  assert.equal(migrated.now, 8);
+  assert.equal(migrated.workers[0].successes, 1);
+  assert.equal(migrated.workers[0].enabled, true);
+  assert.deepEqual(migrated.workers[0].companion.owned, ["wings"]);
+  assert.deepEqual(migrated.workers[0].log, worker.log);
+  assert.equal(migrated.workers[0].companion.xp, 0);
+  assert.deepEqual(restoreNursery(JSON.stringify(migrated)), migrated);
+});
+void test("mission focus changes the sample artifact and long-term progress caps the visible level", () => {
+  const work = makeReport("morning", "My request", "work"),
+    life = makeReport("morning", "My request", "life");
+  assert.notDeepEqual(work.sections, life.sections);
+  assert.equal(work.intro, "My request");
+  assert.equal(levelFor(9999), 5);
 });

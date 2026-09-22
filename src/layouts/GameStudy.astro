@@ -1,6 +1,6 @@
 ---
-interface Props { title: string; description: string; path?: string }
-const { title, description, path = '' } = Astro.props;
+interface Props { title: string; description: string; path?: string; stylePath?: string }
+const { title, description, path = '', stylePath } = Astro.props;
 ---
 <!doctype html>
 <html lang="en">
@@ -15,6 +15,7 @@ const { title, description, path = '' } = Astro.props;
     <link rel="preload" href="/saas-game-ui/fonts/inter-latin-variable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="/saas-game-ui/saas-game-ui.css" />
     <link rel="stylesheet" href="/saas-game-ui/game-system.css" />
+    {stylePath !== undefined && <link rel="stylesheet" href={stylePath} />}
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content="https://shupp.dev/images/projects/saas-game-ui.png" />

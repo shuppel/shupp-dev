@@ -14,28 +14,67 @@ No dependencies, game engine, external model, or background scheduler are added.
 
 Route: `/design/saas-game-ui/creature-works`.
 
-Hatch up to six named creatures. Sprout, finch, and moth are cosmetic forms; jobs
-and equipment determine behavior. A worker can deliver digests, index notes, or
-check uptime. Its schedule uses one of three UTC presets: `*/5`, `*/15`, or `*/30`
-minutes. The clock advances a simulated minute per real second while enabled and
-visible, or one/five minutes per manual step. It does not catch up real-world time.
+Creature Works now explores an assistant you raise: adopt → equip → mission →
+review → grow. Adopt up to six original companions (sprout, finch, or moth) and
+choose a curious, cozy, or bold dialogue style. Say hello changes its response;
+there is no XP reward or penalty for attention. New companions start at level 1
+with 12 buttons and recurring routines turned off.
 
-Every worker has a dashboard (runs started, successes, failed runs, last duration,
-next occurrence), an augmentation view, and the latest 30 log events. Editing a
-schedule recalculates the next UTC boundary. Run now leaves that schedule intact.
-Pause disables future scheduled starts while active work finishes. Overlapping
-occurrences are skipped and recorded rather than duplicated.
+### The playable progression loop
 
-Swift wings reduce an attempt from three simulated minutes to one. A retry charm
-retries a failed attempt once after one minute. Both visibly augment the creature.
-Equipment and job edits lock during an active run. A deliberate failure control
-simulates one service timeout; attempt failures and terminal failed runs remain
-distinct. The completion goal is two workers, an augmentation, and three successful
-jobs. Play can continue afterward.
+- Rescue my morning: sort six sample inbox items; 4 village minutes; 30 XP and
+  18 buttons after acceptance.
+- Find my next rabbit hole: curate an authored practice shelf; level 2 and an
+  equipped Research lens; 6 minutes; 45 XP and 24 buttons.
+- Make room for a good day: create a three-hour sample itinerary; level 3 and an
+  equipped Planner pin; 8 minutes; 60 XP and 30 buttons.
 
-Worker state and logs save to a bounded, versioned localStorage record. Returning
-restores progress with the clock stopped. Invalid saves reset safely; unavailable
-storage falls back to an unsaved session. Reset requires confirmation.
+The focus control (work, everyday life, or a balance) changes the computed result.
+The brief is preserved as user intent; no model interprets it. Returned results
+must be opened and accepted before rewards are granted. Rejecting or recalling
+work grants no XP or buttons. Accepting twice cannot duplicate a reward. Accepted
+results remain in a bounded journal (latest 12), alongside the latest 30 run events.
+
+Levels begin at 0, 30, 75, 135, and 210 XP, with the visible level capped at 5.
+Level 2 unlocks the Research lens shop item; level 3 unlocks the Planner pin and
+adds a small star badge. Higher levels add titles. The demo does not claim that
+XP makes an underlying model smarter or grants external permissions.
+
+### Equipment
+
+Each companion has two functional tool slots and a cosmetic slot. Buttons are
+local game rewards, never purchased. Gear must be owned, equipped, and meet its
+level requirement; owning an item alone does not unlock a mission.
+
+| Item          | Cost | Level | Effect                                                        |
+| ------------- | ---: | ----: | ------------------------------------------------------------- |
+| Swift wings   |    6 |     1 | Routine attempts take 1 minute; missions take 2 fewer minutes |
+| Retry charm   |    6 |     1 | One automatic retry after a timeout                           |
+| Research lens |   18 |     2 | Unlocks scouting missions                                     |
+| Planner pin   |   24 |     3 | Unlocks planning missions                                     |
+| Sunset scarf  |    6 |     1 | Appearance only; no tool slot used                            |
+
+Equipment is reflected on the original SVG creature. Active missions and results
+awaiting review lock equipment changes. Purchases, affordability, slot limits,
+mission prerequisites, cancellations, and reward claims are enforced by the model.
+
+### Routines and saves
+
+The earlier scheduled-worker controls remain under Journal → Scheduled routines
+& run log. Jobs deliver digests, index notes, or check uptime using `*/5`, `*/15`,
+or `*/30` simulated UTC schedules. Missions take priority; overlapping occurrences
+are skipped and logged. Pausing a schedule lets active work finish. Routine work
+does not award mission XP. A deliberate timeout control demonstrates recovery.
+
+Time advances one simulated minute per second during an adventure, only while
+the page is visible and no dialog/menu is open. Manual clock controls remain
+available. Returning restores progress with time stopped; no real-world catch-up
+or background execution occurs. Browser saves use schema v2 and migrate v1 workers
+without losing names, schedules, equipment, statistics, or logs. New progress,
+owned/equipped items, and journals persist. Reset requires confirmation.
+
+These are local simulations with sample catalogs and readable outputs. No model,
+email, calendar, payments, tokens, or external actions are connected.
 
 ## Relay Guild
 
@@ -67,7 +106,7 @@ This mission resets when its page is left. Restart requires confirmation.
 manual runs, overlap, pause/edit, duration/retry upgrades, independent workers,
 save validation, role/target guards, cancellation, dependency waiting, handoffs,
 review failure, and full mission completion. Browser interaction checks cover the
-creator, dashboards, menus, persistence, and the full relay. Targeted TypeScript
+creator, mission progression, equipment, rewards, journals, menus, persistence, and the full relay. Targeted TypeScript
 and ESLint checks plus `npm run build` are the release gates. Existing unrelated
 repository-wide type errors are not claimed as passing.
 

@@ -1,14 +1,19 @@
 import React from "react";
 import type { CreatureKind, Upgrade } from "./creatureEngine";
+import type { GearId } from "./companions";
 
 export function Creature({
   kind = "sprout",
   upgrades = [],
   active = false,
+  equipment = [],
+  level = 1,
 }: {
   kind?: CreatureKind;
   upgrades?: Upgrade[];
   active?: boolean;
+  equipment?: GearId[];
+  level?: number;
 }): React.JSX.Element {
   const body =
     kind === "sprout" ? "#90aa7f" : kind === "finch" ? "#cf9470" : "#a8b4cc";
@@ -73,6 +78,49 @@ export function Creature({
             <circle cx="44" cy="106" r="7" fill="#edcf7d" />
             <path d="m46 103-5 3 4 3" fill="none" strokeWidth="1.5" />
           </>
+        )}
+        {equipment.includes("scarf") && (
+          <>
+            <path d="M29 76Q59 89 93 76L91 87Q60 98 28 86Z" fill="#bd6d4e" />
+            <path d="m36 89-5 24 12-3 7-18" fill="#d29168" />
+          </>
+        )}
+        {equipment.includes("lens") && (
+          <>
+            <circle
+              cx="75"
+              cy="61"
+              r="11"
+              fill="#bcd6d04d"
+              stroke="#c4a36c"
+              strokeWidth="4"
+            />
+            <path
+              d="M86 64q16 10 6 29"
+              fill="none"
+              stroke="#c4a36c"
+              strokeWidth="2"
+            />
+            <path d="m71 55 7 2" stroke="#eef4d8" strokeWidth="2" />
+          </>
+        )}
+        {equipment.includes("planner") && (
+          <>
+            <rect x="32" y="91" width="22" height="18" rx="3" fill="#eed29b" />
+            <path
+              d="M37 95h12m-12 5h4m4 0h4m-12 5h4m4 0h4"
+              stroke="#506c66"
+              strokeWidth="1.5"
+            />
+          </>
+        )}
+        {level >= 3 && (
+          <path
+            d="m59 83 2-5 2 5 5 1-4 4 1 5-4-3-4 3 1-5-4-4Z"
+            fill="#f0cb72"
+            stroke="#907047"
+            strokeWidth="1"
+          />
         )}
       </g>
     </svg>
