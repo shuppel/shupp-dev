@@ -1,11 +1,11 @@
 ---
+import DesignHead from '../../components/SEO/DesignHead.astro';
 // PRISM — design-system showcase (standalone document).
 // Self-contained: own <html> with data-mode, own day/night cascade. It does NOT
 // use the site Layout because PRISM owns the whole viewport + its own mode model.
 // Authoritative tokens: /prism/prism.tokens.json. Drop-in layer: /prism/prism.css.
-const title = 'PRISM — Prismatic Design System';
-const description =
-  'PRISM: a light-mode-first, prism/glass design system in OKLCH. One anchor hue drives the whole palette; day and redshift (night) modes. Built by Erikk Shupp.';
+const title = 'Prismatic — An OKLCH Color & UI Design System';
+const description = 'Explore Prismatic: one hue becomes an OKLCH palette, glass-like UI components, and day-to-night color schemes. Interactive design principles, math, and tokens.';
 
 // 8×8 one-bit sprites for the pixel displays ('#' = lit). Rendered at build
 // time — the DOM is static; only the reference-beam CSS vars animate them.
@@ -61,20 +61,10 @@ const paintSeed: string[] = [
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
+    <DesignHead title={title} description={description} path="/design/prismatic/" image="/images/social/prismatic-card.png" imageAlt="Prismatic: one hue, a whole spectrum. Four color bands and a glass-like component on a pale ground." />
+
     <meta name="color-scheme" content="light dark" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="canonical" href="https://shupp.dev/design/prismatic" />
-
-    <!-- OpenGraph -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:url" content="https://shupp.dev/design/prismatic" />
-    <meta property="og:image" content="https://shupp.dev/images/projects/prismatic.png" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:image" content="https://shupp.dev/images/projects/prismatic.png" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

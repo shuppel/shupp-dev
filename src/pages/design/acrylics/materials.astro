@@ -1,24 +1,22 @@
 ---
+import DesignHead from '../../../components/SEO/DesignHead.astro';
 // Like VOID and PRISM, this study owns its document and material model.
 // No Layout import, shared theme changes, persistent preferences, or API calls.
-const title = 'Acrylics — Material Workshop';
-const description = 'A playful design language made of loaded brushstrokes, broken edges, pooled blots, pigment mixing, and tall billboard typography.';
+const title = 'Acrylics Material Workshop — Pigment, Pressure & Paint';
+const description = 'Experiment with pigment mixing, brush pressure, irregular strokes, and layered paint. The interactive material workshop behind the Acrylics design system.';
 ---
 <!doctype html>
 <html lang="en" class="acrylics">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content={description} />
+
     <meta name="theme-color" content="#FFF9ED" />
     <meta name="color-scheme" content="light" />
-    <title>{title}</title>
-    <link rel="canonical" href="https://shupp.dev/design/acrylics/materials" />
+    <DesignHead title={title} description={description} path="/design/acrylics/materials/" image="/images/social/acrylics-card.png" imageAlt="Layered Acrylics brushstrokes with irregular bristle tracks, overlapping red and green pigment, and a yellow blot." />
+
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://shupp.dev/design/acrylics/materials" />
+
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
