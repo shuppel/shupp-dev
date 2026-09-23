@@ -2,7 +2,7 @@
 import { getCollection } from 'astro:content';
 
 interface Props {
-  blogSlugs: string[] | null;
+  blogSlugs?: string[] | null;
 }
 
 const { blogSlugs } = Astro.props;
