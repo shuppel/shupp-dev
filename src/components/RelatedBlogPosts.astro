@@ -2,29 +2,24 @@
 import { getCollection } from 'astro:content';
 
 interface Props {
-  blogSlugs: string[] | null;
+  blogSlugs?: string[] | null;
 }
 
 const { blogSlugs } = Astro.props;
 
-// If blogSlugs is null or empty, don't show anything
 if (!blogSlugs || blogSlugs.length === 0) {
-  // Return early - nothing to render
   return;
 }
 
-// Get all blog posts
-const allPosts = await getCollection('blog');
-
-// Filter to only get the related posts
-const relatedPosts = allPosts.filter(post =>
-  blogSlugs.includes(post.slug)
-);
-
-// Sort by date
-relatedPosts.sort((a, b) =>
-  new Date(b.data.pubDate).getTime() - new Date(a.data.pubDate).getTime()
-);
+// Authored articles now live in Galaxy. Keep the legacy project field name
+// (relatedBlogPosts) as the input contract, but resolve those IDs from Galaxy.
+const allPosts = await getCollection('galaxy');
+const relatedPosts = allPosts
+  .filter(post => blogSlugs.includes(post.id) && post.data.visible && post.data.pubDate)
+  .sort((a, b) =>
+    new Date(b.data.pubDate ?? b.data.formed).getTime() -
+    new Date(a.data.pubDate ?? a.data.formed).getTime()
+  );
 ---
 
 {relatedPosts.length > 0 && (
@@ -32,10 +27,16 @@ relatedPosts.sort((a, b) =>
     <h2 class="related-title">Related Articles</h2>
     <div class="related-grid">
       {relatedPosts.map(post => (
-        <a href={`/blog/${post.slug}`} class="related-post">
+        <a href={"/galaxy/" + post.id} class="related-post">
           <div class="post-image">
-            {post.data.featuredImage && (
-              <div class="placeholder-image">{post.data.featuredImage}</div>
+            {post.data.ogImage ? (
+              <img
+                src={post.data.ogImage}
+                alt={post.data.ogImageAlt || post.data.title}
+                loading="lazy"
+              />
+            ) : (
+              <div class="placeholder-image">{post.data.title}</div>
             )}
           </div>
           <div class="post-content">
@@ -43,15 +44,12 @@ relatedPosts.sort((a, b) =>
             <p class="post-excerpt">{post.data.description}</p>
             <div class="post-meta">
               <span class="post-date">
-                {new Date(post.data.pubDate).toLocaleDateString('en-US', {
+                {new Date(post.data.pubDate ?? post.data.formed).toLocaleDateString('en-US', {
                   year: 'numeric',
                   month: 'long',
                   day: 'numeric'
                 })}
               </span>
-              {post.data.readTime && (
-                <span class="post-read-time">{post.data.readTime}</span>
-              )}
             </div>
           </div>
         </a>
@@ -66,14 +64,14 @@ relatedPosts.sort((a, b) =>
     padding-top: 2rem;
     border-top: 1px solid var(--border-color);
   }
-  
+
   .related-title {
     font-size: 1.75rem;
     margin-bottom: 1.5rem;
     position: relative;
     padding-bottom: 0.5rem;
   }
-  
+
   .related-title::after {
     content: "";
     position: absolute;
@@ -84,13 +82,13 @@ relatedPosts.sort((a, b) =>
     background: var(--primary-color);
     border-radius: 3px;
   }
-  
+
   .related-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1.5rem;
   }
-  
+
   .related-post {
     display: flex;
     flex-direction: column;
@@ -103,50 +101,58 @@ relatedPosts.sort((a, b) =>
     color: inherit;
     height: 100%;
   }
-  
+
   .related-post:hover {
     transform: translateY(-5px);
     box-shadow: 0 12px 20px rgba(0, 0, 0, 0.1);
   }
-  
+
   .post-image {
-    height: 0;
-    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    aspect-ratio: 16 / 9;
     position: relative;
     overflow: hidden;
   }
-  
+
+  .post-image img,
   .placeholder-image {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
+  }
+
+  .post-image img {
+    object-fit: cover;
+  }
+
+  .placeholder-image {
     background: linear-gradient(45deg, var(--primary-color), var(--primary-dark));
     display: flex;
     align-items: center;
     justify-content: center;
     color: white;
     font-weight: bold;
+    padding: 1rem;
+    text-align: center;
   }
-  
+
   .post-content {
     padding: 1.25rem;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
   }
-  
+
   .post-title {
     font-size: 1.2rem;
     margin-bottom: 0.75rem;
     transition: color 0.2s ease;
   }
-  
+
   .related-post:hover .post-title {
     color: var(--primary-color);
   }
-  
+
   .post-excerpt {
     color: var(--text-light);
     font-size: 0.9rem;
@@ -158,24 +164,23 @@ relatedPosts.sort((a, b) =>
     -webkit-box-orient: vertical;
     overflow: hidden;
   }
-  
+
   .post-meta {
     display: flex;
     justify-content: space-between;
     color: var(--text-light);
     font-size: 0.8rem;
   }
-  
-  /* Dark mode adjustments */
+
   html.dark .related-post {
     background: var(--background-alt);
   }
-  
+
   @media (max-width: 768px) {
     .related-grid {
       grid-template-columns: 1fr;
     }
-    
+
     .related-post:hover {
       transform: none;
     }
