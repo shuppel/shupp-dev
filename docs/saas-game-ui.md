@@ -263,3 +263,30 @@ entry remains available. Review the temporary flag after 2026-10-20.
 
 The MR stays open for review. Behavior and art quality should be judged separately:
 a completed input test proves the mechanic, not approval of the visual direction.
+
+## Search and social sharing
+
+The main share URL is `https://shupp.dev/design/saas-game-ui/`. The direct
+companion demo is `https://shupp.dev/design/saas-game-ui/creature-works/`.
+All four study routes render titles, descriptions, canonical URLs, Open Graph,
+X large-image cards, and JSON-LD in the initial HTML. They share the configured
+site author and X handle. Canonical URLs match the trailing-slash sitemap URLs.
+
+The hub uses CollectionPage, linked study pages, and breadcrumbs. The demos use
+WebPage and VideoGame data describing free browser simulations. No rating,
+review, price, or live-agent claim is added. The portfolio links to the study
+and uses its current share image. The study navigation offers a Share on X link
+that opens an editable post; it does not publish automatically.
+
+The 1200×630 PNG cards are `/saas-game-ui/social/saas-game-ui-share-v1.png` and
+`/saas-game-ui/social/creature-works-share-v1.png`. They use Inter, the existing
+Fernhaven palette, and browser captures of the actual game models/world. They
+are static public assets, so social crawlers do not need JavaScript or WebGL.
+Change the versioned filenames when replacing the art to avoid stale card caches.
+
+Production allows indexing and large image previews. Netlify deploy previews
+and branch deploys use `noindex`, keep production canonicals, and serve share
+images from `DEPLOY_PRIME_URL` so a proposed card can be inspected before merging.
+Merge and deploy the SEO follow-up before sharing the updated production card.
+Metadata and HTTP checks establish readiness; an actual X-rendered card and
+search indexing are external outcomes, not claimed by the build checks.
