@@ -286,6 +286,12 @@ const galaxyCollection = defineCollection({
     title: z.string(),
     description: z.string(),
     
+    // Optional publication metadata for authored articles in Galaxy.
+    pubDate: z.date().optional(),
+    author: z.string().optional(),
+    ogImage: z.string().optional(),
+    ogImageAlt: z.string().optional(),
+
     // Cosmic growth stages: nebula (raw idea) → protostar (developing) → star (mature) → galaxy (hub)
     stage: z.enum(['nebula', 'protostar', 'star', 'galaxy']),
     
