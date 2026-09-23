@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import CreatureTown, { type TownControl } from "./CreatureTown";
 import DinoPortrait from "./DinoPortrait";
+import Hatchery from "./Hatchery";
+import { phenotype } from "./creatureGenetics";
 import { species } from "./dinoScene";
 import { places, type PlaceId } from "./townModel";
 import {
@@ -13,7 +15,6 @@ import {
   jobs,
   restoreNursery,
   type CompanionAction,
-  type CreatureKind,
   type Job,
   type WorkerAction,
 } from "./creatureEngine";
@@ -28,7 +29,6 @@ import {
   type Focus,
   type GearId,
   type MissionId,
-  type Temperament,
 } from "./companions";
 
 type Panel =
@@ -156,10 +156,7 @@ export default function CreatureWorks(): React.JSX.Element {
     [near, setNear] = useState<PlaceId | null>(null),
     [playing, setPlaying] = useState(false),
     [moved, setMoved] = useState(false);
-  const [name, setName] = useState("Pip"),
-    [kind, setKind] = useState<CreatureKind>("sprout"),
-    [temperament, setTemperament] = useState<Temperament>("curious"),
-    [missionId, setMissionId] = useState<MissionId>("morning"),
+  const [missionId, setMissionId] = useState<MissionId>("morning"),
     [brief, setBrief] = useState(missions.morning.prompt),
     [focus, setFocus] = useState<Focus>("balanced"),
     [job, setJob] = useState<Job>("deliver"),
@@ -177,6 +174,7 @@ export default function CreatureWorks(): React.JSX.Element {
     town = useRef<TownControl>(null),
     lastPanel = useRef<Panel>(null);
   const worker = state.workers.find((w) => w.id === selected),
+    appearance = worker === undefined ? null : phenotype(worker.genome),
     pet = worker?.companion,
     assignment = pet?.assignment ?? null,
     level = levelFor(pet?.xp ?? 0),
@@ -285,10 +283,6 @@ export default function CreatureWorks(): React.JSX.Element {
   function interact(id: PlaceId): void {
     if (id !== near) return;
     if (id === "hatchery") {
-      setName(
-        ["Pip", "Momo", "Taro", "Nori", "Fenn", "Kiki"][state.workers.length] ??
-          "Pip",
-      );
       open("hatchery");
     } else if (id === "gate") {
       open("character");
@@ -402,8 +396,8 @@ export default function CreatureWorks(): React.JSX.Element {
       <span className="ct-empty-icon">◌</span>
       <h3>Your company starts with one friend.</h3>
       <p>
-        Visit Fern & Fossil to meet the dinosaurs. Choose a form, a name, and a
-        little personality.
+        Visit Fern & Fossil to meet the dinosaurs. Hatch an egg, discover your
+        companion, and give them a name.
       </p>
       <button className="ct-primary" onClick={() => navigate("hatchery")}>
         Walk to the hatchery ↗
@@ -515,7 +509,14 @@ export default function CreatureWorks(): React.JSX.Element {
           onClick={() => open("character")}
           aria-label="Open character and companions"
         >
-          <span className={`ct-species-dot ${worker?.kind ?? "empty"}`}>
+          <span
+            className="ct-species-dot"
+            style={
+              appearance === null
+                ? undefined
+                : { background: appearance.palette.hide, color: "#fffbed" }
+            }
+          >
             {worker === undefined
               ? "◌"
               : worker.kind === "sprout"
@@ -630,82 +631,32 @@ export default function CreatureWorks(): React.JSX.Element {
                 </div>
               )}
             {panel === "hatchery" && (
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
+              <Hatchery
+                count={state.workers.length}
+                initialName={
+                  ["Pip", "Momo", "Taro", "Nori", "Fenn", "Kiki"][
+                    state.workers.length
+                  ] ?? "Pip"
+                }
+                onAdopt={(name, hatchling) => {
                   if (state.workers.length >= 6) return;
                   const id = state.nextId;
-                  setState((s) => adoptCompanion(s, name, kind, temperament));
+                  setState((s) =>
+                    adoptCompanion(
+                      s,
+                      name,
+                      hatchling.kind,
+                      hatchling.temperament,
+                      hatchling.genome,
+                    ),
+                  );
                   setSelected(id);
                   close();
                   setNotice(
-                    `${name.trim() || "Your companion"} joined your company. Walk to the adventure board together.`,
+                    `${name} joined your company. Walk to the adventure board together.`,
                   );
                 }}
-              >
-                <p className="ct-intro">
-                  Three small dinosaurs. A thousand things to discover together.
-                </p>
-                <div className="ct-adoption-lineup">
-                  {(Object.keys(species) as CreatureKind[]).map((k) => (
-                    <label key={k} data-selected={kind === k}>
-                      <input
-                        type="radio"
-                        name="species"
-                        value={k}
-                        checked={kind === k}
-                        onChange={() => setKind(k)}
-                      />
-                      <DinoPortrait kind={k} />
-                      <span>
-                        <b>{species[k].name}</b>
-                        <small>{species[k].family}</small>
-                      </span>
-                      <p>{species[k].description}</p>
-                    </label>
-                  ))}
-                </div>
-                <div className="ct-form-row">
-                  <label>
-                    Their name
-                    <input
-                      aria-label="Companion name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      maxLength={24}
-                      required
-                    />
-                  </label>
-                  <label>
-                    Personality
-                    <select
-                      aria-label="Companion personality"
-                      value={temperament}
-                      onChange={(e) =>
-                        setTemperament(e.target.value as Temperament)
-                      }
-                    >
-                      <option value="curious">
-                        Curious · one more question
-                      </option>
-                      <option value="cozy">Cozy · one gentle step</option>
-                      <option value="bold">Bold · big little plans</option>
-                    </select>
-                  </label>
-                </div>
-                <div className="ct-panel-foot">
-                  <span>12 starter buttons · A place in your company</span>
-                  <button
-                    type="submit"
-                    className="ct-primary"
-                    disabled={state.workers.length >= 6}
-                  >
-                    {state.workers.length >= 6
-                      ? "Your company is full"
-                      : `Adopt ${name.trim() || "your companion"}`}
-                  </button>
-                </div>
-              </form>
+              />
             )}
             {panel === "shop" &&
               (worker === undefined || pet === undefined ? (
@@ -833,6 +784,7 @@ export default function CreatureWorks(): React.JSX.Element {
                   <section className="ct-paperdoll">
                     <DinoPortrait
                       kind={worker.kind}
+                      genome={worker.genome}
                       equipment={pet.equipped}
                       level={level}
                     />
@@ -906,7 +858,11 @@ export default function CreatureWorks(): React.JSX.Element {
                           aria-pressed={selected === w.id}
                           onClick={() => setSelected(w.id)}
                         >
-                          <i className={w.kind}>●</i>
+                          <i
+                            style={{ color: phenotype(w.genome).palette.hide }}
+                          >
+                            ●
+                          </i>
                           {w.name}
                           <small>Lv. {levelFor(w.companion.xp)}</small>
                         </button>
@@ -916,6 +872,7 @@ export default function CreatureWorks(): React.JSX.Element {
                       <div className="ct-character-art">
                         <DinoPortrait
                           kind={worker.kind}
+                          genome={worker.genome}
                           equipment={pet.equipped}
                           level={level}
                         />
@@ -923,6 +880,13 @@ export default function CreatureWorks(): React.JSX.Element {
                           {species[worker.kind].name} ·{" "}
                           {species[worker.kind].family}
                         </span>
+                        {appearance !== null && (
+                          <p className="ct-individual-notes">
+                            {appearance.palette.name}
+                            <br />
+                            {appearance.marking} · {appearance.build}
+                          </p>
+                        )}
                       </div>
                       <section>
                         <span className="ct-eyebrow">
@@ -1182,6 +1146,7 @@ export default function CreatureWorks(): React.JSX.Element {
                 <div className="ct-reward">
                   <DinoPortrait
                     kind={worker.kind}
+                    genome={worker.genome}
                     equipment={pet.equipped}
                     level={level}
                   />

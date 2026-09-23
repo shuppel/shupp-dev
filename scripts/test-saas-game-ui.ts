@@ -11,6 +11,14 @@ import {
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import {
+  legacyGenome,
+  palettes,
+  phenotype,
+  rollHatch,
+  validGenome,
+  type Genome,
+} from "../src/components/design/SaasGameUI/creatureGenetics";
+import {
   advanceNursery,
   actOnCompanion,
   adoptCompanion,
@@ -31,6 +39,112 @@ import {
   validTarget,
   type Guild,
 } from "../src/components/design/SaasGameUI/relayEngine";
+
+void test("hatching varies all families, coats, markings, builds and personalities without changing starting power", () => {
+  const families = new Set(),
+    coats = new Set(),
+    markings = new Set(),
+    builds = new Set(),
+    personalities = new Set();
+  for (let seed = 0; seed < 240; seed++) {
+    const hatchling = rollHatch(seed),
+      traits = phenotype(hatchling.genome);
+    assert.deepEqual(rollHatch(seed), hatchling);
+    assert.deepEqual(phenotype(hatchling.genome), traits);
+    families.add(hatchling.kind);
+    coats.add(traits.palette.name);
+    markings.add(traits.marking);
+    builds.add(traits.build);
+    personalities.add(hatchling.temperament);
+    for (const kind of ["sprout", "finch", "moth"] as const)
+      assert.equal(rollHatch(seed, kind).kind, kind);
+    assert.ok(traits.width > 0.85 && traits.width < 1.18);
+    assert.ok(traits.height > 0.88 && traits.height < 1.16);
+    assert.ok(traits.tail >= 0.86 && traits.tail <= 1.16);
+    assert.ok(traits.crest >= 0.75 && traits.crest <= 1.2);
+    const w = adoptCompanion(
+      freshNursery(),
+      "Fern",
+      hatchling.kind,
+      hatchling.temperament,
+      hatchling.genome,
+    ).workers[0];
+    assert.equal(w.companion.xp, 0);
+    assert.equal(w.companion.buttons, 12);
+    assert.equal(w.enabled, false);
+  }
+  assert.equal(families.size, 3);
+  assert.equal(coats.size, palettes.length);
+  assert.equal(markings.size, 3);
+  assert.equal(builds.size, 3);
+  assert.equal(personalities.size, 3);
+});
+void test("an individual keeps its appearance through naming, equipment, progression and save restore", () => {
+  const h = rollHatch(4294967295, "finch");
+  let s = adoptCompanion(
+    freshNursery(),
+    "Pip",
+    h.kind,
+    h.temperament,
+    h.genome,
+  );
+  s = changeWorker(s, 1, {
+    type: "edit",
+    name: "Juniper",
+    interval: 15,
+    job: "index",
+  });
+  s = actOnCompanion(s, 1, { type: "buy", item: "scarf" });
+  s = actOnCompanion(s, 1, { type: "equip", item: "scarf" });
+  s = actOnCompanion(s, 1, {
+    type: "mission",
+    mission: "morning",
+    brief: "Help",
+    focus: "balanced",
+  });
+  s = actOnCompanion(advanceNursery(s, 4), 1, { type: "accept" });
+  const restored = restoreNursery(JSON.stringify(s));
+  assert.deepEqual(restored, s);
+  assert.deepEqual(restored.workers[0].genome, h.genome);
+  assert.equal(restored.workers[0].companion.xp, 30);
+  assert.deepEqual(phenotype(restored.workers[0].genome), phenotype(h.genome));
+});
+void test("pre-genome v1 and v2 saves receive a stable appearance while malformed genomes are rejected", () => {
+  const original = adoptCompanion(freshNursery(), "Old friend", "moth", "cozy");
+  for (const version of [1, 2]) {
+    const old = JSON.parse(JSON.stringify(original));
+    old.version = version;
+    delete old.workers[0].genome;
+    if (version === 1) delete old.workers[0].companion;
+    const raw = JSON.stringify(old),
+      restored = restoreNursery(raw),
+      w = restored.workers[0];
+    assert.equal(w.name, "Old friend");
+    assert.equal(w.id, 1);
+    assert.equal(w.interval, original.workers[0].interval);
+    assert.deepEqual(w.genome, legacyGenome(1, "Old friend", "moth"));
+    assert.deepEqual(restoreNursery(raw), restored);
+    assert.deepEqual(restoreNursery(JSON.stringify(restored)), restored);
+  }
+  for (const genome of [
+    null,
+    {},
+    { version: 2, seed: 1 },
+    { version: 1, seed: -1 },
+    { version: 1, seed: 2 ** 32 },
+    { version: 1, seed: 1.5 },
+    { version: 1, seed: "4" },
+  ]) {
+    assert.equal(validGenome(genome), false);
+    const bad = { ...original, workers: [{ ...original.workers[0], genome }] };
+    assert.deepEqual(restoreNursery(JSON.stringify(bad)), freshNursery());
+    assert.deepEqual(
+      adoptCompanion(original, "Bad", "moth", "cozy", genome as Genome),
+      original,
+    );
+  }
+  assert.ok(validGenome({ version: 1, seed: 0 }));
+});
 
 void test("cron starts at UTC boundaries; manual runs do not change the schedule", () => {
   let state = hatch(freshNursery(), "Pip", "sprout", "deliver", 5);

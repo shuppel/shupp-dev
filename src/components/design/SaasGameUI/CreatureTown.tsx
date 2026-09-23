@@ -85,7 +85,7 @@ const CreatureTown = forwardRef<TownControl, Props>(
         setFailed(true);
         return;
       }
-      renderer.setPixelRatio(Math.min(devicePixelRatio, 1.6));
+      renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
       renderer.shadowMap.enabled = true;
       renderer.shadowMap.type = THREE.PCFSoftShadowMap;
       renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -274,7 +274,7 @@ const CreatureTown = forwardRef<TownControl, Props>(
         last = now;
         const current = callbacks.current,
           paused = current.paused || document.hidden;
-        const signature = `${current.selected}:${current.workers.map((w) => `${w.id}:${w.remaining}:${w.companion.xp}:${w.companion.equipped.join(",")}`).join("|")}`;
+        const signature = `${current.selected}:${current.workers.map((w) => `${w.id}:${w.genome.seed}:${w.remaining}:${w.companion.xp}:${w.companion.equipped.join(",")}`).join("|")}`;
         if (
           paused &&
           wasPaused &&
@@ -342,6 +342,7 @@ const CreatureTown = forwardRef<TownControl, Props>(
         for (const w of current.workers) {
           const signature = [
             w.kind,
+            w.genome.seed,
             w.companion.equipped.join(","),
             levelFor(w.companion.xp),
           ].join(":");
@@ -355,8 +356,9 @@ const CreatureTown = forwardRef<TownControl, Props>(
               w.kind,
               w.companion.equipped,
               levelFor(w.companion.xp),
+              w.genome,
             );
-            rig.group.scale.setScalar(0.63);
+            rig.group.scale.multiplyScalar(0.63);
             actor = {
               rig,
               position:

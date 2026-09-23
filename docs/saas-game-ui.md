@@ -19,7 +19,7 @@ no longer exposes every activity. Each place has a purpose and an entrance:
 
 | Place               | Interaction                       | Result                                   |
 | ------------------- | --------------------------------- | ---------------------------------------- |
-| Fern & Fossil       | Approach the hatchery and press E | Adopt and name a companion               |
+| Fern & Fossil       | Approach the hatchery and press E | Hatch, discover, and name a companion               |
 | The Amber Outfitter | Walk to the shop and press E      | Buy tools and accessories                |
 | Adventure board     | Read the board in the square      | Prepare and dispatch a mission           |
 | Keeper’s camp       | Visit the tent                    | Configure, enable, or run recurring jobs |
@@ -45,14 +45,35 @@ result and accepting it awards XP and buttons; rejection and recall award none.
 
 ### Dinosaur direction and rendering
 
-Mossback is a triceratops, Embertail a raptor, and Tidecrest a sauropod. These are
-original procedural models rendered in an orthographic Three.js scene. Surface
-maps provide scale pigment and bump detail; a custom material shader shades the
-dorsal/underside color. Hemisphere, sunlight, rim light, and shadow maps give
-forms volume. The same models and equipped accessories appear in portraits.
+Frill grazers, feathered reed runners, and long-necked canopy browsers use
+original procedural dinosaur anatomy. Horizontal torsos, tapered tails, small
+lateral eyes, subdued hides, and field equipment replace the fixed bright starter
+trio and upright mascot proportions. Color is not tied to family.
+
+The orthographic Three.js world uses smooth 48×32 creature surfaces; portraits
+use 64×48 surfaces, denser curved tails, and antialiased higher-density rendering.
+A seeded 1024×512 pigment map supplies freckles, bands, or marbling. Separate
+scale relief and a custom dorsal/underside shader add depth without turning dark
+markings into dents. Hemisphere, sunlight, rim light, and shadow maps give forms
+volume. Portraits and town actors share the same saved appearance and equipment.
 No image is used as the playable world. WebGL is required; an explicit fallback
-message handles unavailable graphics support. No new package dependency was
-added: Three.js was already present in the repository.
+handles unavailable graphics support. Three.js was already in the repository.
+
+### Hatching and individual appearances
+
+Choose a surprise egg or a preferred anatomical family at Fern & Fossil. Hatching
+reveals one individual before naming and adoption; trying another egg is free.
+A browser-random 32-bit seed chooses one of six shared earth palettes, three
+marking patterns, three builds, bounded head/tail/crest/neck proportions, and a
+curious, cozy, or bold personality. These variations do not change starting
+power or rewards. There are no rarity tiers or paid rerolls.
+
+Only adoption saves the hatchling. Closing the reveal does not silently add a
+companion. A versioned genome retains the same individual through equipment,
+level-ups, and reloads. Older v1/v2 saves receive a deterministic appearance from
+the existing companion identity, retaining progress. Malformed explicit genomes
+are rejected through the existing save validation. Reduced motion skips the
+brief shell animation; hatching and adoption remain keyboard/touch accessible.
 
 The current art is stylized procedural geometry, not a claim of photorealism or
 finished production character art. Reduced motion removes decorative bobbing
@@ -65,7 +86,7 @@ adopted. The new visual system uses warm parchment `#f7f2e5`, fern `#486c54`, am
 
 ### Missions, inventory, and progression
 
-Adopt up to six companions with curious, cozy, or bold dialogue. New companions
+Hatch and adopt up to six companions with curious, cozy, or bold dialogue. New companions
 begin with 12 buttons, level 1, and routines disabled. Saying hello changes
 dialogue without a reward or penalty.
 
@@ -139,7 +160,7 @@ This mission resets when its page is left. Restart requires confirmation.
 
 `npm run test:saas-game-ui` runs deterministic model tests for scheduling boundaries,
 manual runs, overlap, pause/edit, duration/retry upgrades, independent workers,
-save validation, role/target guards, cancellation, dependency waiting, handoffs,
+save validation, deterministic hatch variety, appearance persistence and migration, role/target guards, cancellation, dependency waiting, handoffs,
 review failure, and full mission completion. Browser interaction checks cover the
 town movement, entrance proximity, inventory/character shortcuts, mission progression, equipment, rewards, journals, menus, persistence, and the full relay. Targeted TypeScript
 and ESLint checks plus `npm run build` are the release gates. Existing unrelated

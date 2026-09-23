@@ -1,3 +1,4 @@
+import { legacyGenome, validGenome, type Genome } from "./creatureGenetics";
 import {
   freshCompanion,
   gear,
@@ -22,6 +23,7 @@ export interface Entry {
   tone: "info" | "good" | "bad";
 }
 export interface Worker {
+  genome: Genome;
   companion: Companion;
   id: number;
   name: string;
@@ -92,6 +94,7 @@ export function hatch(
   if (state.workers.length >= 6 || ![5, 15, 30].includes(interval))
     return state;
   const worker: Worker = {
+    genome: legacyGenome(state.nextId, name.trim().slice(0, 24), kind),
     companion: freshCompanion(),
     id: state.nextId,
     name: name.trim().slice(0, 24) || `Worker ${state.nextId}`,
@@ -205,10 +208,13 @@ export function adoptCompanion(
   name: string,
   kind: CreatureKind,
   temperament: Temperament,
+  genome?: Genome,
 ): Nursery {
+  if (genome !== undefined && !validGenome(genome)) return state;
   const next = hatch(state, name, kind, "deliver", 15);
   if (next === state) return state;
   const w = next.workers[next.workers.length - 1];
+  if (genome !== undefined) w.genome = { ...genome };
   w.enabled = false;
   w.companion.temperament = temperament;
   w.log = [
@@ -431,6 +437,12 @@ export function restoreNursery(raw: string | null): Nursery {
       }));
       s.version = 2;
     }
+    s.workers = s.workers.map((w) => ({
+      ...w,
+      genome: Object.hasOwn(w, "genome")
+        ? w.genome
+        : legacyGenome(w.id, w.name, w.kind),
+    }));
     const valid = s.workers.every(
       (w) =>
         Number.isSafeInteger(w.id) &&
@@ -455,6 +467,7 @@ export function restoreNursery(raw: string | null): Nursery {
           w.started,
         ].every((n) => Number.isSafeInteger(n) && n >= 0) &&
         w.remaining <= 8 &&
+        validGenome(w.genome) &&
         validCompanion(w.companion) &&
         w.upgrades.length ===
           w.companion.equipped.filter((g) => g === "wings" || g === "retry")

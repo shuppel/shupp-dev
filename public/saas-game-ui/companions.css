@@ -428,14 +428,6 @@ body:has(.ct-game) {
   background: #dfe5cd;
   color: #6d895a;
 }
-.ct-species-dot.finch {
-  background: #efd1ad;
-  color: #b97947;
-}
-.ct-species-dot.moth {
-  background: #c7dfe0;
-  color: #578c98;
-}
 .ct-hotbar {
   display: flex;
   gap: 6px;
@@ -674,64 +666,7 @@ body:has(.ct-game) {
   height: 100%;
   display: block;
 }
-.ct-adoption-lineup {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 16px;
-  margin-bottom: 25px;
-}
-.ct-adoption-lineup > label {
-  position: relative;
-  background: #e9edda;
-  border: 1px solid #dde2d0;
-  border-radius: 12px;
-  text-align: center;
-  padding: 10px 14px 20px;
-  cursor: pointer;
-}
-.ct-adoption-lineup > label:nth-child(2) {
-  background: #f0e3d1;
-}
-.ct-adoption-lineup > label:nth-child(3) {
-  background: #dfe9e5;
-}
-.ct-adoption-lineup > label[data-selected="true"] {
-  outline: 2px solid #769b75;
-  outline-offset: 3px;
-}
-.ct-adoption-lineup input {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  width: 15px;
-  height: 15px;
-  min-height: 0;
-  accent-color: #607f54;
-  padding: 0;
-}
-.ct-adoption-lineup b {
-  font-size: 19px;
-  font-weight: 550;
-  display: block;
-  color: #485b40;
-  letter-spacing: -0.03em;
-}
-.ct-adoption-lineup small {
-  display: block;
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
-  margin-top: 6px;
-}
-.ct-adoption-lineup p {
-  font-size: 10px;
-  line-height: 1.6;
-  margin-top: 13px;
-  color: #8a8c75;
-}
-.ct-adoption-lineup .ct-dino-portrait {
-  height: 225px;
-}
+
 .ct-empty {
   max-width: 480px;
   padding: 40px 10px 50px;
@@ -987,12 +922,6 @@ body:has(.ct-game) {
 .ct-party-strip i {
   font-style: normal;
   color: #93a56f;
-}
-.ct-party-strip i.finch {
-  color: #ca9865;
-}
-.ct-party-strip i.moth {
-  color: #84a9b2;
 }
 .ct-party-strip small {
   font-size: 8px;
@@ -1555,9 +1484,6 @@ body:has(.ct-game) {
   .ct-character-art > .ct-dino-portrait {
     height: 300px;
   }
-  .ct-adoption-lineup .ct-dino-portrait {
-    height: 190px;
-  }
 }
 @media (max-width: 700px) {
   .ct-game {
@@ -1827,33 +1753,7 @@ body:has(.ct-game) {
     max-width: none;
     font-size: 10px;
   }
-  .ct-adoption-lineup {
-    gap: 7px;
-  }
-  .ct-adoption-lineup > label {
-    padding: 5px 4px 12px;
-    border-radius: 8px;
-  }
-  .ct-adoption-lineup .ct-dino-portrait {
-    height: 133px;
-  }
-  .ct-adoption-lineup input {
-    top: 7px;
-    left: 7px;
-    width: 12px;
-    height: 12px;
-  }
-  .ct-adoption-lineup b {
-    font-size: 12px;
-    letter-spacing: -0.025em;
-  }
-  .ct-adoption-lineup small {
-    font-size: 6px;
-    letter-spacing: 0.02em;
-  }
-  .ct-adoption-lineup p {
-    display: none;
-  }
+
   .ct-form-row {
     grid-template-columns: 1fr;
     gap: 16px;
@@ -2059,12 +1959,6 @@ body:has(.ct-game) {
   }
 }
 @media (max-width: 360px) {
-  .ct-adoption-lineup .ct-dino-portrait {
-    height: 112px;
-  }
-  .ct-adoption-lineup b {
-    font-size: 11px;
-  }
   .ct-top-actions > button {
     padding: 8px;
   }
@@ -2112,12 +2006,179 @@ body:has(.ct-game) {
 .ct-dino-portrait {
   pointer-events: none;
 }
-.ct-adoption-lineup input {
-  z-index: 2;
-}
+
 .ct-dialog p,
 .ct-dialog label,
 .ct-dialog .ct-caption,
 .ct-dialog blockquote {
   color: #69755f;
+}
+
+/* The nursery reveals one individual at a time, then offers adoption. */
+.ct-egg-stage {
+  max-width: 440px;
+  margin: 0 auto;
+  text-align: center;
+  padding-bottom: 6px;
+}
+.ct-nest-art {
+  width: min(340px, 100%);
+  margin: -10px auto 0;
+}
+.ct-nest-art svg {
+  display: block;
+  width: 100%;
+}
+.ct-egg-shell {
+  transform-origin: 180px 207px;
+}
+.ct-egg-crack {
+  opacity: 0;
+}
+.ct-hatch-phase-hatching .ct-egg-shell {
+  animation: ct-shell-wobble 0.28s ease-in-out 4;
+}
+.ct-hatch-phase-hatching .ct-egg-crack {
+  animation: ct-shell-crack 1s ease-in forwards;
+}
+@keyframes ct-shell-wobble {
+  0%,
+  100% {
+    transform: rotate(0);
+  }
+  30% {
+    transform: rotate(-4deg);
+  }
+  65% {
+    transform: rotate(5deg);
+  }
+}
+@keyframes ct-shell-crack {
+  0%,
+  25% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0.8;
+  }
+}
+.ct-egg-stage h3,
+.ct-hatch-record h3 {
+  margin: 12px 0;
+  font-size: clamp(24px, 3vw, 32px);
+  font-weight: 500;
+  letter-spacing: -0.045em;
+}
+.ct-egg-stage > p,
+.ct-hatch-record > p {
+  font-size: 12px;
+  line-height: 1.8;
+  margin: 10px 0 22px;
+}
+.ct-nest-choice {
+  display: block;
+  text-align: left;
+  margin: 0 auto 14px;
+  max-width: 310px;
+}
+.ct-nest-choice select {
+  margin-top: 8px;
+}
+.ct-egg-stage > .ct-primary {
+  width: min(310px, 100%);
+}
+.ct-hatch-note {
+  display: block;
+  font-size: 10px;
+  line-height: 1.7;
+  color: #69755f;
+  margin-top: 15px;
+}
+.ct-hatch-reveal {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
+  align-items: center;
+}
+.ct-hatch-portrait {
+  background: radial-gradient(ellipse at 50% 65%, #e0e5d3, #ecebdf);
+  border: 1px solid #dce0cf;
+  border-radius: 12px;
+  text-align: center;
+  padding: 10px 0 26px;
+}
+.ct-hatch-portrait .ct-dino-portrait {
+  height: 365px;
+}
+.ct-hatch-portrait > span {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #69755f;
+}
+.ct-hatch-record label {
+  display: block;
+  margin-top: 23px;
+}
+.ct-hatch-record input {
+  margin-top: 8px;
+}
+.ct-hatch-record > button {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+}
+.ct-game .ct-hatch-again {
+  background: transparent;
+  border-color: transparent;
+  margin-top: 3px;
+  font-weight: 400;
+}
+.ct-hatch-record .ct-hatch-note {
+  text-align: center;
+}
+.ct-field-notes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 12px;
+  margin: 24px 0 0;
+}
+.ct-field-notes dt {
+  font-size: 10px;
+  color: #69755f;
+  margin-bottom: 5px;
+}
+.ct-field-notes dd {
+  margin: 0;
+  font-size: 12px;
+  text-transform: capitalize;
+}
+.ct-individual-notes {
+  font-size: 11px;
+  line-height: 1.7;
+  margin: 12px 12px 0;
+}
+@media (max-width: 700px) {
+  .ct-hatch-reveal {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+  .ct-hatch-portrait .ct-dino-portrait {
+    height: 235px;
+  }
+  .ct-hatch-portrait {
+    padding-bottom: 18px;
+  }
+  .ct-nest-art {
+    width: min(265px, 100%);
+  }
+  .ct-field-notes {
+    margin-top: 20px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ct-hatch-phase-hatching .ct-egg-shell,
+  .ct-hatch-phase-hatching .ct-egg-crack {
+    animation: none;
+  }
 }
