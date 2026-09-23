@@ -4,11 +4,15 @@ import SideNav from '../components/Header/SideNav.astro';
 import VoidSprite from '../components/VoidSprite.astro';
 import Footer from '../components/Footer/Footer.astro';
 import JsonLd from '../components/SEO/JsonLd.astro';
+import { siteConfig } from '../config/site';
 
 export interface Props {
   title: string;
   description?: string;
   image?: string;
+  imageAlt?: string;
+  publishedTime?: string;
+  modifiedTime?: string;
   type?: 'website' | 'article';
   author?: string;
   keywords?: string;
@@ -21,6 +25,9 @@ const {
   title,
   description = "Professional Portfolio and Blog for a Fractional Founder",
   image = "/og-default.png",
+  imageAlt = `${title} - shupp.dev`,
+  publishedTime,
+  modifiedTime,
   type = "website",
   author = "Erikk Shupp",
   keywords = "fractional founder, product, design, software engineering, marketing, writing, thoughtful app company, TACo, apps, Arlington VA, local-first, human-first, human-centered design",
@@ -31,6 +38,7 @@ const {
 
 const canonicalURL = canonicalUrl ?? new URL(Astro.url.pathname, Astro.site).toString();
 const imageURL = new URL(image, Astro.site);
+const twitterHandle = `@${new URL(siteConfig.social.twitter).pathname.split('/').filter(Boolean).at(-1)}`;
 ---
 
 <!DOCTYPE html>
@@ -139,11 +147,14 @@ const imageURL = new URL(image, Astro.site);
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={imageURL.toString()} />
-    <meta property="og:image:alt" content={`${title} - shupp.dev`} />
+    <meta property="og:image:alt" content={imageAlt} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta property="og:site_name" content="shupp.dev" />
     <meta property="og:locale" content="en_US" />
+
+    {type === 'article' && publishedTime && <meta property="article:published_time" content={publishedTime} />}
+    {type === 'article' && modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
@@ -151,8 +162,9 @@ const imageURL = new URL(image, Astro.site);
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={imageURL.toString()} />
-    <meta name="twitter:creator" content="@erikkshupp" />
-    <meta name="twitter:site" content="@erikkshupp" />
+    <meta name="twitter:image:alt" content={imageAlt} />
+    <meta name="twitter:creator" content={twitterHandle} />
+    <meta name="twitter:site" content={twitterHandle} />
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

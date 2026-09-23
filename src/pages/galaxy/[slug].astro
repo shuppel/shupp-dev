@@ -6,7 +6,7 @@ import Breadcrumbs from '../../components/Breadcrumbs.astro';
 import CosmicStage from '../../components/Garden/CosmicStage.astro';
 import Backlinks from '../../components/Garden/Backlinks.astro';
 import Icon from '../../components/Icon/Icon.astro';
-import { generateBacklinks, renderWikiLinks } from '../../lib/garden/links';
+import { generateBacklinks } from '../../lib/garden/links';
 import '../../styles/prose.css';
 
 export async function getStaticPaths() {
@@ -23,6 +23,28 @@ interface Props {
 
 const { entry } = Astro.props;
 const { Content } = await render(entry);
+const articleURL = new URL(`/galaxy/${entry.id}/`, Astro.site).href;
+const articleImage = new URL(entry.data.ogImage || '/og-default.png', Astro.site).href;
+const articleAuthor = entry.data.author || 'Erikk Shupp';
+const articleData = entry.data.pubDate ? {
+  article: {
+    title: entry.data.title,
+    description: entry.data.description,
+    image: articleImage,
+    url: articleURL,
+    pubDate: entry.data.pubDate.toISOString(),
+    updatedDate: entry.data.lastObserved.toISOString(),
+    author: articleAuthor,
+    categories: [entry.data.constellation],
+    readTime: `PT${Math.max(1, Math.ceil((entry.body || '').split(/\s+/).length / 200))}M`,
+  },
+  breadcrumbs: [
+    { name: 'Home', url: 'https://shupp.dev/' },
+    { name: 'Galaxy', url: 'https://shupp.dev/galaxy/' },
+    { name: entry.data.title, url: articleURL },
+  ],
+} : {};
+
 
 // Get all galaxy notes for backlinks
 const allNotes = await getCollection('galaxy');
@@ -34,13 +56,15 @@ const connectedNotes = entry.data.connections
   .filter(note => note !== undefined) as CollectionEntry<'galaxy'>[];
 
 // Format dates
-const formedDate = new Date(entry.data.formed).toLocaleDateString('en-US', {
+const formedDate = new Date(entry.data.pubDate || entry.data.formed).toLocaleDateString('en-US', {
+  timeZone: 'UTC',
   year: 'numeric',
   month: 'long',
   day: 'numeric',
 });
 
 const tendedDate = new Date(entry.data.lastObserved).toLocaleDateString('en-US', {
+  timeZone: 'UTC',
   year: 'numeric',
   month: 'long',
   day: 'numeric',
@@ -56,6 +80,15 @@ const breadcrumbs = [
 <Layout 
   title={entry.data.title} 
   description={entry.data.description}
+  image={entry.data.ogImage}
+  imageAlt={entry.data.ogImageAlt}
+  type={entry.data.pubDate ? 'article' : 'website'}
+  author={articleAuthor}
+  canonicalUrl={entry.data.pubDate ? articleURL : undefined}
+  publishedTime={entry.data.pubDate?.toISOString()}
+  modifiedTime={entry.data.pubDate ? entry.data.lastObserved.toISOString() : undefined}
+  jsonLdType={entry.data.pubDate ? 'article' : 'website'}
+  jsonLdData={articleData}
 >
   <div class="galaxy-note-page">
     <Breadcrumbs items={breadcrumbs} />
@@ -67,14 +100,15 @@ const breadcrumbs = [
           <span class="constellation-badge">{entry.data.constellation}</span>
         </div>
         
+        {entry.data.pubDate && <p class="note-author">By <a href="/about/">{articleAuthor}</a></p>}
         <h1 class="note-title">{entry.data.title}</h1>
         <p class="note-description">{entry.data.description}</p>
         
         <div class="note-dates">
           <span class="date-item">
             <Icon name="Planet" size={16} weight="duotone" />
-            <span class="date-label">Formed:</span>
-            <time datetime={entry.data.formed.toISOString()}>{formedDate}</time>
+            <span class="date-label">{entry.data.pubDate ? 'Published:' : 'Formed:'}</span>
+            <time datetime={(entry.data.pubDate || entry.data.formed).toISOString()}>{formedDate}</time>
           </span>
           <span class="date-item">
             <Icon name="Crosshair" size={16} weight="duotone" />
@@ -185,6 +219,11 @@ const breadcrumbs = [
   html.dark .constellation-badge {
     background: rgba(255, 255, 255, 0.05);
     border-color: rgba(255, 255, 255, 0.1);
+  }
+
+  .note-author {
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
   }
 
   .note-title {

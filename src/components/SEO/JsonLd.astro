@@ -92,7 +92,7 @@ const articleSchema = data.article ? {
   publisher: organizationSchema,
   mainEntityOfPage: {
     "@type": "WebPage",
-    "@id": currentUrl.href
+    "@id": data.article.url || currentUrl.href
   },
   keywords: data.article.tags?.join(', ') || '',
   articleSection: data.article.categories?.[0] || 'General',

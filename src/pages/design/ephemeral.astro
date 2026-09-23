@@ -1,6 +1,10 @@
 ---
-const title = 'Ephemeral — a system for the moment';
-const description = 'A schedule-led workday, familiar components, and visible rules for composing them. A flat interface system in black, white, and neon canary.';
+const title = 'Ephemeral UI — Adaptive Design System | shupp.dev';
+const description = 'Explore Ephemeral UI: a black, white and canary design system that adapts to meeting prep, calls and reflection, with interactive components and visible scoring.';
+const pageURL = 'https://shupp.dev/design/ephemeral/';
+const imageURL = 'https://shupp.dev/ephemeral/ephemeral-social.png';
+const imageAlt = 'Ephemeral UI: your day changes, your tools follow. Cards for preparation, calls and reflection.';
+
 const icons: Record<string, string> = {
   arrow: 'M5 12h14m-6-6 6 6-6 6',
   calendar: 'M5 3v4m14-4v4M3 9h18M3 5h18v16H3V5Zm4 8h3m4 0h3m-10 4h3',
@@ -31,6 +35,17 @@ const icons: Record<string, string> = {
     <link rel="canonical" href="https://shupp.dev/design/ephemeral/" />
     <meta property="og:title" content={title} /><meta property="og:description" content={description} /><meta property="og:type" content="website" />
     <meta property="og:url" content="https://shupp.dev/design/ephemeral/" />
+    <meta name="author" content="Erikk Shupp" />
+    <meta property="og:site_name" content="shupp.dev" /><meta property="og:locale" content="en_US" />
+    <meta property="og:image" content={imageURL} /><meta property="og:image:alt" content={imageAlt} />
+    <meta property="og:image:width" content="1200" /><meta property="og:image:height" content="630" />
+    <meta property="og:image:type" content="image/png" />
+    <meta name="twitter:card" content="summary_large_image" /><meta name="twitter:url" content={pageURL} />
+    <meta name="twitter:title" content="Ephemeral UI — Your day changes. Your tools follow." />
+    <meta name="twitter:description" content={description} /><meta name="twitter:image" content={imageURL} />
+    <meta name="twitter:image:alt" content={imageAlt} /><meta name="twitter:creator" content="@KimJungUzi" />
+    <link rel="sitemap" href="/sitemap-index.xml" /><link rel="alternate" type="application/rss+xml" title="shupp.dev — Galaxy" href="/rss.xml" />
+    <script is:inline type="application/ld+json">{"@context": "https://schema.org", "@type": "WebPage", "name": "Ephemeral UI — Adaptive Design System", "description": "Explore Ephemeral UI: a black, white and canary design system that adapts to meeting prep, calls and reflection, with interactive components and visible scoring.", "url": "https://shupp.dev/design/ephemeral/", "image": "https://shupp.dev/ephemeral/ephemeral-social.png", "inLanguage": "en", "isAccessibleForFree": true, "author": {"@type": "Person", "name": "Erikk Shupp", "url": "https://shupp.dev/about/"}, "about": {"@type": "Thing", "name": "Ephemeral user interfaces and adaptive design systems"}, "relatedLink": "https://shupp.dev/galaxy/ephemeral-ui-adaptive-workday/"}</script>
     <link rel="icon" href="/favicon.svg" /><link rel="preload" href="/ephemeral/fonts/martel-regular.woff" as="font" type="font/woff" crossorigin />
     <link rel="stylesheet" href="/ephemeral/ephemeral.css" />
   </head>
@@ -94,6 +109,7 @@ const icons: Record<string, string> = {
           <p id="workday-status" class="sr-only" role="status" aria-live="polite"></p>
           <noscript><p class="no-script">Enable JavaScript to explore the sample workday and its scoring rules.</p></noscript>
         </div>
+        <p class="study-note">Ephemeral UI composes familiar tools around the current task. <a href="/galaxy/ephemeral-ui-adaptive-workday/">Read the design story ↗</a></p>
       </section>
       <section class="reasoning wrap" id="system-one" aria-labelledby="reasoning-title">
         <div class="section-heading"><div><p class="eyebrow">04 / Under the surface</p><h2 id="reasoning-title">System One makes a guess.<br />You keep the last word.</h2></div><p>Sample signals → weighted scores → tools.<br /><span class="micro">Illustrative shares, not calibrated probabilities.</span></p></div>
