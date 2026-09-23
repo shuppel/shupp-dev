@@ -1,6 +1,67 @@
 ---
-interface Props { title: string; description: string; path?: string; stylePath?: string }
-const { title, description, path = '', stylePath } = Astro.props;
+import { siteConfig } from '../config/site';
+
+interface Props {
+  title: string;
+  description: string;
+  path?: string;
+  stylePath?: string;
+  image?: string;
+  imageAlt?: string;
+}
+const {
+  title, description, path = '', stylePath,
+  image = '/saas-game-ui/social/saas-game-ui-share-v1.png',
+  imageAlt = 'SaaS Game UI: design software like a game, with a dinosaur companion from the playable Fernhaven demo.',
+} = Astro.props;
+const origin = Astro.site?.origin ?? siteConfig.siteUrl;
+const studyURL = new URL('/design/saas-game-ui/', origin).href;
+const canonicalURL = new URL(`/design/saas-game-ui${path}/`, origin).href;
+const isPreview = ['deploy-preview', 'branch-deploy'].includes(import.meta.env.CONTEXT ?? '');
+// Preview cards must be fetchable before their assets reach production.
+const imageURL = new URL(image, isPreview ? (import.meta.env.DEPLOY_PRIME_URL || origin) : origin).href;
+const twitterHandle = `@${new URL(siteConfig.social.twitter).pathname.split('/').filter(Boolean)[0]}`;
+const breadcrumb = [
+  { name: 'Home', item: `${origin}/` },
+  { name: 'Portfolio', item: `${origin}/portfolio/` },
+  { name: 'SaaS Game UI', item: studyURL },
+  ...(path ? [{ name: title.split(' — ')[0], item: canonicalURL }] : []),
+];
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    { '@type': 'Person', '@id': `${origin}/#person`, name: siteConfig.author.name, url: `${origin}/`, sameAs: [siteConfig.social.twitter, siteConfig.social.github] },
+    { '@type': 'WebSite', '@id': `${origin}/#website`, name: siteConfig.siteName, url: `${origin}/` },
+    { '@type': 'ImageObject', '@id': `${canonicalURL}#image`, url: imageURL, width: 1200, height: 630, caption: imageAlt },
+    {
+      '@type': 'BreadcrumbList', '@id': `${canonicalURL}#breadcrumb`,
+      itemListElement: breadcrumb.map((item, i) => ({ '@type': 'ListItem', position: i + 1, ...item })),
+    },
+    {
+      '@type': path ? 'WebPage' : 'CollectionPage', '@id': canonicalURL,
+      url: canonicalURL, name: title, description, inLanguage: 'en-US',
+      author: { '@id': `${origin}/#person` },
+      isPartOf: { '@id': `${origin}/#website` },
+      breadcrumb: { '@id': `${canonicalURL}#breadcrumb` },
+      primaryImageOfPage: { '@id': `${canonicalURL}#image` },
+      ...(path ? {
+        mainEntity: {
+          '@type': 'VideoGame', name: title.split(' — ')[0], description, url: canonicalURL,
+          image: imageURL, author: { '@id': `${origin}/#person` },
+          gamePlatform: 'Web browser', genre: 'Simulation',
+          playMode: 'https://schema.org/SinglePlayer', isAccessibleForFree: true,
+        },
+      } : {
+        about: ['Game UI design', 'SaaS design systems', 'AI agent interfaces', 'Workflow automation'].map(name => ({ '@type': 'Thing', name })),
+        hasPart: [
+          { name: 'Fieldwork', slug: 'fieldwork' },
+          { name: 'Creature Works', slug: 'creature-works' },
+          { name: 'Relay Guild', slug: 'relay-guild' },
+        ].map(({ name, slug }) => ({ '@type': 'WebPage', name, url: `${studyURL}${slug}/` })),
+      }),
+    },
+  ],
+};
 ---
 <!doctype html>
 <html lang="en">
@@ -8,17 +69,38 @@ const { title, description, path = '', stylePath } = Astro.props;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content={description} />
+    <meta name="author" content={siteConfig.author.name} />
+    <meta name="robots" content={`${isPreview ? 'noindex' : 'index'}, follow, max-image-preview:large`} />
     <meta name="color-scheme" content="dark" />
     <title>{title} | shupp.dev</title>
-    <link rel="canonical" href={`https://shupp.dev/design/saas-game-ui${path}`} />
+    <link rel="canonical" href={canonicalURL} />
+    <link rel="sitemap" href={`${origin}/sitemap-index.xml`} />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="preload" href="/saas-game-ui/fonts/inter-latin-variable.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="/saas-game-ui/saas-game-ui.css" />
     <link rel="stylesheet" href="/saas-game-ui/game-system.css" />
     {stylePath !== undefined && <link rel="stylesheet" href={stylePath} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
+    <meta property="og:site_name" content={siteConfig.siteName} />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content="https://shupp.dev/images/projects/saas-game-ui.png" />
+    <meta property="og:image" content={imageURL} />
+    <meta property="og:image:secure_url" content={imageURL} />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content={imageAlt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content={twitterHandle} />
+    <meta name="twitter:creator" content={twitterHandle} />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageURL} />
+    <meta name="twitter:image:alt" content={imageAlt} />
+    {/* eslint-disable-next-line astro/no-set-html-directive -- JSON is serialized and opening angle brackets are escaped to prevent script termination. */}
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData).replace(/</g, '\\u003c')} />
   </head>
   <body class="sg-document"><slot /></body>
 </html>

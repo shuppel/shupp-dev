@@ -1,15 +1,19 @@
 ---
 import GameStudy from '../../layouts/GameStudy.astro';
+import { siteConfig } from '../../config/site';
 import { isFeatureEnabled } from '../../config/features';
 import { Person } from '../../components/design/SaasGameUI/WorldArtwork';
 import { Creature } from '../../components/design/SaasGameUI/CreatureArt';
 import DinoPortrait from '../../components/design/SaasGameUI/DinoPortrait';
 if (!isFeatureEnabled('enableSaasGameUI')) return Astro.redirect('/portfolio');
+const shareURL = new URL('https://twitter.com/intent/tweet');
+shareURL.searchParams.set('text', 'What if your SaaS played like a game? Agents become characters, tools become equipment, and workflows happen in the world. Explore three playable demos:');
+shareURL.searchParams.set('url', new URL('/design/saas-game-ui/', siteConfig.siteUrl).href);
 ---
-<GameStudy title="SaaS Game UI — a small design system" description="A rudimentary design system for operating software through game interactions. Three playable studies explore AI harnesses, scheduled workers, and agent coordination.">
+<GameStudy title="SaaS Game UI — Design Software Like a Game" description="A JRPG-inspired design system for SaaS and AI agents. Play three browser demos with dinosaur assistants, equipped tools, missions, and workflow automation.">
   <main class="ds-page">
-    <nav class="ds-nav" aria-label="Design study"><a href="/portfolio">← shupp.dev</a><span>Design studies / SaaS Game UI</span><a href="https://github.com/shuppel/shupp-dev/pull/55">MR 55 ↗</a></nav>
-    <header class="ds-hero"><div><span class="g-eyebrow">SaaS Game UI · Rudimentary system / 01</span><h1>Make the interface<br/>a place.</h1></div><p>A character can be an agent. Equipment can be a capability. A creature can be your personal assistant. Borrow the clarity of a 2D JRPG to make software’s actions, dependencies, and consequences visible.</p></header>
+    <nav class="ds-nav" aria-label="Design study"><a href="/portfolio">← shupp.dev</a><span>Design studies / SaaS Game UI</span><a href={shareURL.href} target="_blank" rel="noopener noreferrer">Share on X ↗</a></nav>
+    <header class="ds-hero"><div><span class="g-eyebrow">SaaS Game UI · A playable design system</span><h1>Make the interface<br/>a place.</h1></div><p>A JRPG-inspired design system for SaaS, AI agents, and automations. Characters become assistants. Equipment becomes tools. Actions, dependencies, and results become things you can see and operate in a world.</p></header>
     <section aria-labelledby="play-studies"><div class="ds-section-label" id="play-studies">01 / Play the idea</div><div class="ds-games">
       <a class="ds-game" href="/design/saas-game-ui/fieldwork"><div class="ds-game-art"><div class="ds-mini-person"><Person kind="operator"/></div><span class="ds-mini-object" aria-hidden="true">▤</span></div><div class="ds-game-copy"><span class="g-eyebrow">01 · Embodied interaction</span><h2>Fieldwork</h2><p>Walk, collect context, equip your party, and recover a patch. Operate an AI harness through a character.</p><strong>Enter the field <span>↗</span></strong></div></a>
       <a class="ds-game" href="/design/saas-game-ui/creature-works"><div class="ds-game-art ds-art-dinosaur"><DinoPortrait kind="sprout" genome={{version:1,seed:73472}} equipment={['scarf']} level={3} client:visible/></div><div class="ds-game-copy"><span class="g-eyebrow">02 · A world you operate</span><h2>Creature Works</h2><p>Walk through Fernhaven with a dinosaur assistant. Hatch an individual companion, buy gear at the outfitter, and take a mission from the town board.</p><strong>Enter the town <span>↗</span></strong></div></a>

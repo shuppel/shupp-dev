@@ -4,7 +4,7 @@ import SaasGameUI from '../../../components/design/SaasGameUI/SaasGameUI';
 import { isFeatureEnabled } from '../../../config/features';
 if (!isFeatureEnabled('enableSaasGameUI')) return Astro.redirect('/portfolio');
 ---
-<GameStudy title="Fieldwork — playable AI harness" description="Walk, collect context, equip agents, target commands, and verify a patch in a playable 2D RPG encounter." path="/fieldwork">
+<GameStudy title="Fieldwork — Playable AI Coding Harness" description="Walk, collect context, equip agents, target commands, and verify a patch in a playable 2D RPG encounter." path="/fieldwork">
   <SaasGameUI client:load/>
   <noscript><p class="sg-noscript">Enable JavaScript to play Fieldwork. <a href="/design/saas-game-ui">Explore the design system</a>.</p></noscript>
 </GameStudy>
