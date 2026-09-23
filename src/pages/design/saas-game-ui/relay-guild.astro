@@ -1,0 +1,10 @@
+---
+import GameStudy from '../../../layouts/GameStudy.astro';
+import RelayGuild from '../../../components/design/SaasGameUI/RelayGuild';
+import { isFeatureEnabled } from '../../../config/features';
+if (!isFeatureEnabled('enableSaasGameUI')) return Astro.redirect('/portfolio');
+---
+<GameStudy title="Relay Guild — agent coordination" description="Coordinate a party of agents. Queue orders, hand off evidence, and deliver a reviewed brief through a playable tactical workflow." path="/relay-guild">
+  <RelayGuild client:load/>
+  <noscript><p class="sg-noscript">Enable JavaScript to play Relay Guild. <a href="/design/saas-game-ui">Explore the design system</a>.</p></noscript>
+</GameStudy>

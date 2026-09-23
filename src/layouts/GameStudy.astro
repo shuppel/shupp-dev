@@ -1,0 +1,24 @@
+---
+interface Props { title: string; description: string; path?: string; stylePath?: string }
+const { title, description, path = '', stylePath } = Astro.props;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <meta name="color-scheme" content="dark" />
+    <title>{title} | shupp.dev</title>
+    <link rel="canonical" href={`https://shupp.dev/design/saas-game-ui${path}`} />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="/saas-game-ui/fonts/inter-latin-variable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="/saas-game-ui/saas-game-ui.css" />
+    <link rel="stylesheet" href="/saas-game-ui/game-system.css" />
+    {stylePath !== undefined && <link rel="stylesheet" href={stylePath} />}
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content="https://shupp.dev/images/projects/saas-game-ui.png" />
+  </head>
+  <body class="sg-document"><slot /></body>
+</html>

@@ -1,0 +1,10 @@
+---
+import GameStudy from '../../../layouts/GameStudy.astro';
+import CreatureWorks from '../../../components/design/SaasGameUI/CreatureWorks';
+import { isFeatureEnabled } from '../../../config/features';
+if (!isFeatureEnabled('enableSaasGameUI')) return Astro.redirect('/portfolio');
+---
+<GameStudy title="Creature Works — Fernhaven" description="A walkable town for dinosaur assistants. Move your keeper, visit the hatchery and outfitter, equip tools, and send companions on missions." path="/creature-works" stylePath="/saas-game-ui/companions.css">
+  <CreatureWorks client:load/>
+  <noscript><p class="sg-noscript">Enable JavaScript to play Creature Works. <a href="/design/saas-game-ui">Explore the design system</a>.</p></noscript>
+</GameStudy>
