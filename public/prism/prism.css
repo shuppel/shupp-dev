@@ -24,7 +24,7 @@
 :root {
   /* --- parametric hue --- */
   --h: 185;   /* anchor hue, the one decision */
-  --hr: 136;  /* redshift hue, computed by prismRedshift(); see JS below */
+  --hr: 129;  /* redshift(185) = round(185 - (185 - 45) * .4) */
 
   /* --- holography (the reference beam; a pointer driver MAY write these) ---
      --la  cast angle in CSS-gradient degrees (135 = light from upper-left)

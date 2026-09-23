@@ -11,7 +11,7 @@
 
   "param": {
     "anchorHue": { "$type": "number", "$value": 185, "$description": "The single source hue (OKLCH degrees, 0-360). Every brand color derives from this. Swapping it re-derives the whole system." },
-    "redshiftHue": { "$type": "number", "$value": 136, "$description": "Computed: redshift(anchorHue). Used by redshift mode only. See algorithm in prism.spec.md §REDSHIFT." }
+    "redshiftHue": { "$type": "number", "$value": 129, "$description": "Computed: redshift(anchorHue). Used by redshift mode only. See the piecewise hue map in /design/prismatic#model." }
   },
 
   "holography": {
@@ -35,7 +35,7 @@
   },
 
   "display": {
-    "$description": "Pixel displays (after Ink & Switch's Tenfold). Icons live on coarse one-bit grids; displays EMIT rather than print, so the screen glass stays dark in BOTH modes and only the emission wavelength changes. Lit pixels take a dispersion band via --px and glow with a small same-color halo.",
+    "$description": "Pixel displays (after Ink & Switch's Tenfold). Icons live on coarse one-bit grids; displays EMIT rather than print, so the screen glass stays dark in BOTH modes and the emission color follows its band. Lit pixels take a dispersion band via --px and glow with a small same-color halo.",
     "iconGrid": { "cols": 8, "rows": 8 },
     "screenDay":   { "$type": "color", "$value": "oklch(0.21 0.035 {param.anchorHue})" },
     "screenNight": { "$type": "color", "$value": "oklch(0.17 0.04 {param.redshiftHue})" },
@@ -44,7 +44,7 @@
   },
 
   "dispersion": {
-    "$description": "Brand bands sit at FIXED angular offsets from the anchor. All share L 0.70-0.78 / C 0.11-0.14 so contrast survives any rotation.",
+    "$description": "Brand bands sit at FIXED angular offsets from the anchor. Day values use L 0.70-0.78 / C 0.11-0.14. Verify contrast for each foreground and ground; hue rotation alone does not guarantee it.",
     "anchor":  { "$type": "color", "$value": "oklch(0.74 0.125 {param.anchorHue})", "offsetDeg": 0 },
     "near":    { "$type": "color", "$value": "oklch(0.76 0.14 calc({param.anchorHue} - 35))", "offsetDeg": -35 },
     "far":     { "$type": "color", "$value": "oklch(0.70 0.11 calc({param.anchorHue} + 75))", "offsetDeg": 75 },
@@ -63,7 +63,7 @@
       "onDense":   { "$type": "color", "$value": "#ffffff", "role": "immovable-text" }
     },
     "redshift": {
-      "$description": "NIGHT = figure/ground swap + wavelength shift. No new colors minted. dense->field, field->surface.",
+      "$description": "NIGHT = figure/ground reinterpretation plus an art-directed hue map. Existing roles receive mode-specific lightness, chroma, and hue offsets.",
       "field":     { "$type": "color", "$value": "oklch(0.235 0.052 {param.redshiftHue})", "role": "ground", "swappedFrom": "day.dense" },
       "surface":   { "$type": "color", "$value": "oklch(0.875 0.045 calc({param.redshiftHue} - 60))", "role": "raised", "swappedFrom": "day.field" },
       "ink":       { "$type": "color", "$value": "oklch(0.26 0.05 {param.redshiftHue})", "role": "text-on-surface" },
@@ -84,7 +84,7 @@
   },
 
   "semantic": {
-    "$description": "FIXED wavelengths. Never rotate with brand. Adapt only in SHADE between modes. Collision rule: if anchor lands within +/-25 deg of a semantic hue, semantic keeps its hue and brand expresses via other bands.",
+    "$description": "FIXED semantic hue angles. Never rotate with brand. Lightness and chroma adapt between modes. When brand and state hues are similar, distinguish state with an explicit label or symbol.",
     "success": {
       "hueDeg": 152,
       "day":      { "$type": "color", "$value": "oklch(0.70 0.16 152)" },
@@ -139,7 +139,7 @@
   },
 
   "motion": {
-    "$description": "QUANTIZED. q = 40ms. Every duration is an integer multiple. Two easings only; springs/bounces forbidden system-wide.",
+    "$description": "QUANTIZED. q = 40ms. Durations are integer multiples except the 1.5q press-in. Three easing roles: light, mass, and refraction; no springs or bounces.",
     "quantumMs": { "$type": "number", "$value": 40 },
     "duration": {
       "flash":    { "$type": "duration", "$value": "120ms", "quanta": 3,  "use": "hover, state flips, press-out" },

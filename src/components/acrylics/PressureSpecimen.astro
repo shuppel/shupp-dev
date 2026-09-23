@@ -1,0 +1,26 @@
+---
+import { PRESSURE_PROFILES, strokeSvg } from '../../../public/acrylics/pressure.mjs';
+const fixed = { ...PRESSURE_PROFILES.swell, min: 80, max: 80 };
+---
+<article id="pressure" class="pressure-example" aria-labelledby="pressure-title">
+  <div class="pressure-heading">
+    <div><p class="eyebrow">BRUSH GEOMETRY / PRESSURE → WIDTH</p><h3 id="pressure-title">PRESS. DRAG. LIFT.</h3></div>
+    <p>A brush spreads as the hand presses, then narrows as it lifts. Shape that gesture first. Add broken coverage and bristle tracks afterward.</p>
+  </div>
+  <div class="pressure-layout">
+    <div class="pressure-comparison">
+      <figure><figcaption><strong>01 / Fixed width</strong><span>Texture alone</span></figcaption><div class="pressure-stroke pressure-stroke--fixed" set:html={strokeSvg(fixed)}></div></figure>
+      <figure><figcaption><strong>02 / Pressure-shaped width</strong><span>Touch → press → lift</span></figcaption><div id="pressure-stroke" class="pressure-stroke" set:html={strokeSvg()}></div></figure>
+      <p class="small-note">Same pigment and texture seed. Only the width profile changes.</p>
+    </div>
+    <div class="pressure-settings">
+      <p class="pressure-equation"><code>w(t) = w₀ + (w₁ − w₀) · e<sup>−(t − μ)² / (2σ²)</sup></code></p>
+      <p class="small-note"><strong>t</strong>: distance along the stroke · <strong>μ</strong>: where pressure peaks · <strong>σ</strong>: how broadly it spreads.</p>
+      <div class="pressure-control"><label for="pressure-width">Peak width <span aria-hidden="true">w₁</span></label><output id="pressure-width-value" for="pressure-width">132 units</output><input id="pressure-width" type="range" min="40" max="132" step="1" value="132" disabled /></div>
+      <div class="pressure-control"><label for="pressure-peak">Peak position <span aria-hidden="true">μ</span></label><output id="pressure-peak-value" for="pressure-peak">44%</output><input id="pressure-peak" type="range" min="15" max="85" step="1" value="44" disabled /></div>
+      <div class="pressure-control"><label for="pressure-spread">Pressure spread <span aria-hidden="true">σ</span></label><output id="pressure-spread-value" for="pressure-spread">0.20</output><input id="pressure-spread" type="range" min="12" max="38" step="1" value="20" disabled /></div>
+      <p class="small-note">Width uses the 640 × 160 SVG coordinate space; w₀ = 8. A Gaussian is a useful gesture approximation. A live pen supplies its own pressure.</p>
+    </div>
+  </div>
+  <div class="pressure-footnote"><code>&lt;PaintMark pressure="swell" /&gt;</code><p><strong>Swell</strong> presses through the middle. <strong>Drag</strong> presses early and trails off. Use a broad <strong>loaded</strong> coat over an opaque ground when a label needs a steady reading area.</p></div>
+</article>

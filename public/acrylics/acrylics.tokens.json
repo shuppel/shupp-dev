@@ -1,0 +1,93 @@
+{
+  "name": "Acrylics",
+  "version": "0.6.0",
+  "scope": ".ac-site",
+  "defaultScheme": "market",
+  "schemes": {
+    "market": {
+      "label": "Market",
+      "description": "Warm paper, vermilion, and forest. The original street-poster palette.",
+      "colorScheme": "light",
+      "roles": {
+        "field": "#F3EEDF",
+        "surface": "#FFFAF0",
+        "ink": "#202820",
+        "muted": "#565E50",
+        "line": "#B8B6A6",
+        "accent": "#B92820",
+        "on-accent": "#FFFAF0",
+        "secondary": "#174C3C",
+        "highlight": "#E2B72D",
+        "on-highlight": "#202820",
+        "focus": "#285799",
+        "success": "#174C3C",
+        "danger": "#B92820",
+        "pigment": "#D63228",
+        "pigment-2": "#174C3C"
+      }
+    },
+    "cobalt": {
+      "label": "Cobalt",
+      "description": "Cool ground, ultramarine, and ochre. A quieter editorial register.",
+      "colorScheme": "light",
+      "roles": {
+        "field": "#E9EFF0",
+        "surface": "#F9FCFA",
+        "ink": "#142D37",
+        "muted": "#435D65",
+        "line": "#ADBDC1",
+        "accent": "#245194",
+        "on-accent": "#FFFFFF",
+        "secondary": "#9C531F",
+        "highlight": "#E7B94E",
+        "on-highlight": "#142D37",
+        "focus": "#245194",
+        "success": "#1C6145",
+        "danger": "#A72B24",
+        "pigment": "#285799",
+        "pigment-2": "#E2B72D"
+      }
+    },
+    "after-hours": {
+      "label": "After hours",
+      "description": "Dark green ground, warm ink, and ochre. Same material, lights down.",
+      "colorScheme": "dark",
+      "roles": {
+        "field": "#1B2522",
+        "surface": "#27352E",
+        "ink": "#F6F0DF",
+        "muted": "#C3CABC",
+        "line": "#798F80",
+        "accent": "#E5B84E",
+        "on-accent": "#1B2522",
+        "secondary": "#A5C4AB",
+        "highlight": "#A5C4AB",
+        "on-highlight": "#1B2522",
+        "focus": "#9EBEF5",
+        "success": "#A9D4AC",
+        "danger": "#F6A495",
+        "pigment": "#E2B72D",
+        "pigment-2": "#D63228"
+      }
+    }
+  },
+  "typography": {
+    "display": "Anton",
+    "body": "Hind Madurai",
+    "mono": "IBM Plex Mono"
+  },
+  "spacing": [4, 8, 12, 16, 24, 32, 48, 64],
+  "radius": { "surface": 4, "control": 8, "corner": 22 },
+  "motion": {
+    "pressMs": 120,
+    "settleMs": 180,
+    "hoverLiftPx": 2,
+    "pressedDepthPx": 3
+  },
+  "material": {
+    "strokeSeed": 17,
+    "blotSeed": 9,
+    "mixing": "Spectral.js pigment approximation",
+    "decorativeOnly": true
+  }
+}

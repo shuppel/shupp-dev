@@ -1,0 +1,5 @@
+---
+interface Props { value: string; label: string; active?: boolean; controls?: string; disabled?: boolean; }
+const { value, label, active = false, controls, disabled = false } = Astro.props;
+---
+<button class="ac-choice" type="button" data-value={value} aria-pressed={active} aria-controls={controls} disabled={disabled}><span>{label}</span></button>

@@ -1,0 +1,152 @@
+---
+import Button from '../../components/acrylics/Button.astro';
+import PaintMark from '../../components/acrylics/PaintMark.astro';
+import ChoiceChip from '../../components/acrylics/ChoiceChip.astro';
+import SurfaceCard from '../../components/acrylics/SurfaceCard.astro';
+import Dialog from '../../components/acrylics/Dialog.astro';
+import PressureSpecimen from '../../components/acrylics/PressureSpecimen.astro';
+import tokens from '../../../public/acrylics/acrylics.tokens.json';
+const title = 'Acrylics — A Design System in Layers';
+const description = 'Acrylics: a paint-inspired design system. Color schemes, semantic tokens, brush and blot materials, reusable components, typography, and interaction rules.';
+const roles = [
+  { name: 'field', label: 'Ground', use: 'The page canvas. Leave room between marks.' },
+  { name: 'surface', label: 'Surface', use: 'An opaque, readable ground for content.' },
+  { name: 'ink', label: 'Ink', use: 'Headings, body copy, labels, and boundaries.' },
+  { name: 'accent', label: 'Action', use: 'A dense coat for the primary action.' },
+  { name: 'secondary', label: 'Counterpoint', use: 'Secondary emphasis and supporting color.' },
+  { name: 'highlight', label: 'Highlight', use: 'An underline, small signal, or annotation.' },
+];
+const market = tokens.schemes.market.roles;
+const componentCode = `<SurfaceCard title="A dry ground" layered>\n  <p>Let the paint frame the content.</p>\n  <Button variant="paint">Apply color</Button>\n</SurfaceCard>`;
+const rules = [
+  ['Paint has a job.', 'Use a stroke for selection, a blot for a discrete mark, and a dry surface for reading. Decoration follows hierarchy.'],
+  ['Let colors meet.', 'Overlaps can produce a third color. Keep critical text on an opaque ground or a tested action color.'],
+  ['Keep the accident stable.', 'A mark may look irregular. It must hold its position and texture between renders; interaction must not cause visual noise.'],
+  ['Give every state a name.', 'Color supports a label, icon, or pressed state. A red blot alone is not an error message.'],
+];
+---
+<!doctype html>
+<html lang="en" class="ac-site" data-scheme="market">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content={description} />
+  <meta name="theme-color" content={market.field} />
+  <meta name="color-scheme" content="light dark" />
+  <title>{title}</title>
+  <link rel="canonical" href="https://shupp.dev/design/acrylics" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <meta property="og:title" content={title} />
+  <meta property="og:description" content={description} />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://shupp.dev/design/acrylics" />
+  <meta property="og:image" content="https://shupp.dev/images/projects/acrylics-paint.webp" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Hind+Madurai:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/acrylics/site.css" />
+  <link rel="stylesheet" href="/acrylics/guide.css" />
+  <script type="module" src="/acrylics/site.mjs" is:inline></script>
+</head>
+<body>
+  <a class="skip-link" href="#concepts">Skip to the design system</a>
+  <div class="site-wrap">
+    <header class="site-header">
+      <a class="wordmark" href="/design/acrylics" aria-label="Acrylics design system"><span class="brand-blot" aria-hidden="true">a</span><span>ACRYLICS<small>A design system by Erikk Shupp</small></span></a>
+      <nav class="main-nav" aria-label="Design system sections"><a href="#concepts" class="nav-current" aria-current="location">Concepts</a><a href="#style-guide">Style guide</a><a href="#components">Components</a></nav>
+      <a class="header-back" href="/portfolio">All design work ↗</a>
+    </header>
+    <main>
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="eyebrow"><span aria-hidden="true">✳</span> ACRYLICS / DESIGN SYSTEM 0.6</p>
+          <h1 id="hero-title"><span class="visually-hidden">Acrylics: </span>COLOR<br>WITH A<br><span class="hero-painted">HISTORY.<PaintMark color="var(--ac-accent)" pressure="loaded" /></span></h1>
+          <p class="hero-intro">Billboard type. Loaded brushstrokes. Tactile controls.<br>A visual language built one coat at a time.</p>
+          <div class="hero-actions"><Button href="#concepts">Understand the system <span aria-hidden="true">↘</span></Button><a class="text-link" href="#use">Use the system ↗</a></div>
+        </div>
+        <div class="hero-composition" aria-label="Layered surface specimen">
+          <PaintMark color="var(--ac-pigment)" class="hero-red" />
+          <PaintMark color="var(--ac-pigment-2)" pressure="drag" class="hero-green" />
+          <PaintMark color="var(--ac-highlight)" shape="blot" class="hero-yellow" />
+          <span class="hero-scribble" aria-hidden="true">↙</span>
+          <div class="hero-feature"><div class="feature-top"><span class="status-pill">MATERIAL / 01</span><span aria-hidden="true">↗</span></div><div class="feature-type">ONE<br>MORE<br>COAT.<i aria-hidden="true">*</i></div><div class="feature-bottom"><span>Paint carries the expression.<br>Structure carries the meaning.</span><span>BRUSH + BLOT + GROUND</span></div></div>
+          <div class="hero-stamp"><span>IMPERFECT MARKS.</span><strong>PRECISE<br>INTENT.</strong><span>ACRYLICS / 0.6</span></div>
+        </div>
+      </section>
+      <div class="discipline-strip"><span>PAINT HAS A MEMORY</span><b aria-hidden="true">✳</b><span>PRESSURE HAS A SHAPE</span><b aria-hidden="true">✳</b><span>READING HAS A GROUND</span></div>
+
+      <nav class="guide-index" aria-label="Acrylics chapters"><p class="eyebrow">READ THE SYSTEM / FROM IDEA TO INTERFACE</p><ol>
+<li><a href="#concepts"><span>01</span><strong>Core concepts</strong><small>What makes this Acrylics?</small></a></li>
+<li><a href="#material"><span>02</span><strong>Objects &amp; mathematics</strong><small>Give the material a definition.</small></a></li>
+<li><a href="#style-guide"><span>03</span><strong>Style guide</strong><small>Color, type, geometry, restraint.</small></a></li>
+<li><a href="#components"><span>04</span><strong>Components</strong><small>Turn rules into controls.</small></a></li>
+<li><a href="#information"><span>05</span><strong>Information patterns</strong><small>Compose a readable interface.</small></a></li>
+<li><a href="#use"><span>06</span><strong>Build with it</strong><small>Tokens, recipes, and source.</small></a></li>
+</ol></nav>
+<section id="concepts" class="ds-section" aria-labelledby="concepts-title">
+<div class="section-heading"><div><p class="eyebrow">01 / CORE CONCEPTS</p><h2 id="concepts-title">THE MARK<br>REMEMBERS.</h2></div><p>Acrylics treats an interface as a sequence of material decisions. Pressure gives a mark its silhouette. Coverage lets the ground show through. A new coat changes what came before.</p></div>
+<div class="guide-principles">
+<article class="guide-principle"><p class="eyebrow">I1 / A GESTURE, HELD STILL</p><h3>Imperfection has a cause.</h3><p>A broad middle suggests a press. Fine tracks suggest separated bristles. Broken ends suggest a lift. Use a stable seed so those marks belong to the object and survive every redraw.</p></article>
+<article class="guide-principle"><p class="eyebrow">I2 / COLOR HAS A HISTORY</p><h3>A coat meets a coat.</h3><p>Wet pigments can mute one another; a dry ground remains beneath a new layer. Pigment mixing and transparent overlays are distinct operations with different results.</p></article>
+<article class="guide-principle"><p class="eyebrow">I3 / EXPRESSION HAS A BOUNDARY</p><h3>Keep a place to read.</h3><p>Billboard type establishes the idea. Paint establishes emphasis. Opaque surfaces, aligned labels, and predictable controls carry the information.</p></article>
+</div>
+<div class="guide-invariant"><strong>THE IDENTITY TEST</strong><p>Change the palette and it should still feel like Acrylics: directional strokes, overlapping coats, a quiet reading surface, and tactile controls. Color alone cannot carry the system.</p></div>
+</section>
+<section id="material" class="ds-section material-section" aria-labelledby="material-title">
+        <div class="section-heading"><div><p class="eyebrow">02 / OBJECTS & MATHEMATICS</p><h2 id="material-title">A STROKE.<br>A BLOT. A <span class="underline-paint">LAYER.</span></h2></div><p>Start with a finite vocabulary, then define the variables within each object. These are reproducible visual models; the examples below expose the choices that shape them.</p></div>
+        <div class="guide-definition"><h3>Four objects. Different responsibilities.</h3><div class="guide-table-wrap"><table class="guide-table"><caption>Material vocabulary / what each object is allowed to do</caption><thead><tr><th scope="col">Object</th><th scope="col">Definition</th><th scope="col">Constraint</th></tr></thead><tbody>
+<tr><th scope="row">Stroke</th><td>A centerline plus a width profile, pigment, and bristle coverage.</td><td>Directional emphasis. Pressure changes its silhouette; coverage changes its transparency.</td></tr>
+<tr><th scope="row">Blot</th><td>A compact, irregular deposit with a pooled edge.</td><td>A small signal. Pair it with a label or symbol.</td></tr>
+<tr><th scope="row">Ground</th><td>An opaque surface paired with an ink token.</td><td>Supports reading and controls. Its contrast cannot depend on the paint behind it.</td></tr>
+<tr><th scope="row">Layer</th><td>An ordered composition of marks around a ground.</td><td>Groups related content. Ordering and blend operation are explicit decisions.</td></tr>
+</tbody></table></div><p><code>{'PaintMark = { shape, pressure, color }'}</code> · <code>{'shape ∈ { stroke, blot }'}</code> · <code>{'pressure ∈ { swell, drag, loaded }'}</code>. The pressure preset applies to strokes. The component always remains decorative.</p></div>
+<div class="material-grid">
+          <article class="material-specimen"><div class="specimen-stage specimen-stroke"><PaintMark color="var(--ac-pigment)" /><span>Selection</span></div><p class="eyebrow">01 / THE STROKE</p><h3>A direction, with an edge.</h3><p>Underlines, selected navigation, and section emphasis. Let the ends break up; keep the label on a legible ground.</p><code>&lt;PaintMark shape="stroke" /&gt;</code></article>
+          <article class="material-specimen"><div class="specimen-stage specimen-blot"><PaintMark color="var(--ac-pigment-2)" shape="blot" /></div><p class="eyebrow">02 / THE BLOT</p><h3>A mark, with a little weight.</h3><p>Small signals and selected controls. Pair the mark with a word or icon so color never has to explain the state alone.</p><code>&lt;PaintMark shape="blot" /&gt;</code></article>
+          <article class="material-specimen"><div class="specimen-stage specimen-layers"><PaintMark color="var(--ac-pigment)" /><PaintMark color="var(--ac-pigment-2)" /><span>Dry ground</span></div><p class="eyebrow">03 / THE LAYER</p><h3>An overlap, with a purpose.</h3><p>Group related content. Let coats meet around the perimeter while the content sits on an opaque surface.</p><code>&lt;SurfaceCard layered /&gt;</code></article>
+        </div>
+        <PressureSpecimen />
+        <div class="mix-example"><div><p class="eyebrow">COLOR BEHAVIOR / PIGMENT MIXING</p><h3>Let the color get complicated.</h3><p>Vermilion and forest green mute toward brown. Ultramarine and ochre move toward green. A pigment-inspired mix behaves differently from a digital overlay.</p><label for="mix-ratio">Pigment B in the mix <output id="mix-percent" for="mix-ratio">50%</output></label><input id="mix-ratio" type="range" min="0" max="100" step="1" value="50" disabled /><p class="small-note">The slider compares the current scheme’s two pigments. It changes these examples; semantic UI colors stay legible.</p></div><div class="mix-results"><div class="mix-scale" id="mix-scale" aria-label="Pigment mix progression"></div><div class="mix-pair"><div><span class="mix-color" id="pigment-result" style="background:#4B3E34"></span><strong>Pigment mix</strong><code id="pigment-value">#4B3E34</code></div><div><span class="mix-color" id="digital-result" style="background:#752019"></span><strong>Digital multiply</strong><code id="digital-value">#752019</code></div></div><p class="small-note">Spectral approximation versus a translucent multiply coat in sRGB. Neither predicts a particular brand of physical paint.</p></div></div>
+        <div class="guide-formulas"><article><h3>Width is one variable.</h3><code>w(t) = w₀ + (w₁ − w₀) · exp(−(t − μ)² / 2σ²)</code><p>The default swell spans 8–132 SVG units, with μ = 0.44 and σ = 0.20. The live comparison above keeps the pigment and seed fixed so the silhouette is the variable you see.</p></article><article><h3>Coverage is another.</h3><code>α(m) = 1 − exp(−2.8m)</code><p>In the workshop, m is accumulated paint deposit. More deposit hides more ground. Brush load falls with distance; bristle tracks and canvas grain decide where paint lands.</p></article></div>
+<div class="coverage-note"><code>coverage(x, y) = load × bristle mask × grain</code><p>Coverage varies across a mark. Use a stable seed and keep its texture still; change the coat in response to a deliberate action.</p><a class="text-link" href="/design/acrylics/materials">Explore the brush & geometry workshop ↗</a></div>
+      </section>
+<section id="style-guide" class="guide-chapter" aria-labelledby="style-guide-title"><div class="section-heading"><div><p class="eyebrow">03 / STYLE GUIDE</p><h2 id="style-guide-title">GIVE THE<br>MATERIAL RULES.</h2></div><p>The material model describes what paint can do. The style guide chooses where to use it: paired colors, a type hierarchy, measured spacing, and limits on ornament.</p></div><section id="colors" class="ds-section" aria-labelledby="color-title">
+        <div class="section-heading"><div><p class="eyebrow">03.1 / COLOR & SEMANTIC ROLES</p><h3 id="color-title">LAY THE GROUND.<br>MIX THE <span class="underline-paint">REST.</span></h3></div><p>A scheme changes the whole vocabulary: ground, ink, action, focus, and supporting pigments. Components keep their structure.</p></div>
+        <div class="scheme-layout">
+          <div class="scheme-controls"><div id="scheme-options" class="choice-group" role="group" aria-label="Color scheme">{Object.entries(tokens.schemes).map(([key, scheme]) => <ChoiceChip value={key} label={scheme.label} active={key === tokens.defaultScheme} controls="role-swatches" disabled />)}</div><p id="scheme-description">{tokens.schemes.market.description}</p><p class="small-note">Choose a scheme to see it applied to this entire page.</p><p id="scheme-status" class="visually-hidden" role="status"></p></div>
+          <div class="pigment-tray" aria-label="Raw pigments in the current scheme"><div><PaintMark color="var(--ac-pigment)" shape="blot" /><code data-pigment="pigment">{market.pigment}</code><span>Raw pigment A</span></div><span aria-hidden="true">+</span><div><PaintMark color="var(--ac-pigment-2)" shape="blot" /><code data-pigment="pigment-2">{market['pigment-2']}</code><span>Raw pigment B</span></div></div>
+        </div>
+        <div id="role-swatches" class="swatch-grid">{roles.map(role => <article class="role-swatch"><div class="swatch-color" style={`background:var(--ac-${role.name})`} aria-hidden="true"></div><div><h4>{role.label}</h4><code>--ac-{role.name}</code><strong data-token={role.name}>{market[role.name as keyof typeof market]}</strong><p>{role.use}</p></div></article>)}</div>
+        <div class="section-note"><strong>Raw pigment ≠ action color.</strong><p>The action coat is adjusted for its label contrast. Its paired <code>--ac-on-accent</code> token changes with the scheme. Keep decorative mixtures out of text and focus roles.</p></div>
+      </section><section id="type" class="ds-section type-section" aria-labelledby="type-title">
+        <div class="section-heading"><div><p class="eyebrow">03.2 / TYPOGRAPHY, GEOMETRY & MOTION</p><h3 id="type-title">LOUD HEADLINES.<br>ROOM TO <span class="underline-paint">READ.</span></h3></div><p>Tall market billboards for display. A human body face for reading. Monospaced captions for the system’s measurements.</p></div>
+        <div class="type-grid"><article><p class="eyebrow">DISPLAY / ANTON</p><div class="type-display">Aa<br>LEAVE A MARK.</div><p>Short statements. Tight leading. Let the headline take up space, then give the next element a pause.</p><code>--ac-display · 0.99–1.08 line-height</code></article><article><p class="eyebrow">BODY / HIND MADURAI</p><div class="type-body">The paint can be messy.<br>The reading should feel easy.</div><p>Use a 16–18px reading size and a generous line height. Avoid putting body copy across changing pigments.</p><code>--ac-body · 1.5–1.65 line-height</code></article><article><p class="eyebrow">METADATA / IBM PLEX MONO</p><div class="type-mono">COAT 02<br>LOAD: 80%<br>SEED: 17</div><p>Use for token values and small labels. Essential instructions stay in the body face, at a readable size.</p><code>--ac-mono · labels & values</code></article></div>
+        <div class="geometry-grid"><div><h4>A spacing rhythm, not random placement.</h4><div class="spacing-scale" aria-label="Spacing tokens in pixels">{tokens.spacing.map(value => <div><span style={`height:${value}px`}></span><code>{value}</code></div>)}</div><p>Use the 4px base unit. Let 24–32px separate component groups; 48–64px give sections breathing room.</p></div><div><h4>Precise boxes. Irregular paint.</h4><div class="radius-scale">{Object.entries(tokens.radius).map(([role, value]) => <div style={`border-radius:${value}px`}><strong>{value}px</strong><span>{role}</span></div>)}</div><p>Keep hit areas rectangular and controls at least 44px high. Roughness belongs to the painted mask, not the target.</p></div></div>
+        <div class="section-note"><strong>Motion follows the hand.</strong><p>Use a 120ms press and a 180ms settle. A control lifts 2px on hover and sinks 3px on press. Keep texture still. Reduced-motion preferences remove these transitions.</p></div>
+      </section><section id="rules" class="ds-section rules-section" aria-labelledby="rules-title"><div class="section-heading"><div><p class="eyebrow">03.3 / USAGE RULES</p><h3 id="rules-title">MAKE A MESS.<br>KEEP THE <span class="underline-paint">MEANING.</span></h3></div><p>Acrylics is a system of material roles. Consistency comes from what a mark means and how a component behaves.</p></div><div class="rules-grid">{rules.map(([heading, body], index) => <article><span class="rule-number">0{index + 1}</span><h4>{heading}</h4><p>{body}</p></article>)}</div></section></section>
+<section id="components" class="ds-section" aria-labelledby="components-title">
+        <div class="section-heading"><div><p class="eyebrow">04 / COMPONENTS & INTERACTION STATES</p><h2 id="components-title">SAME PAINT.<br>DIFFERENT <span class="underline-paint">JOBS.</span></h2></div><p>Try the controls. These are working components with labels, focus, pressed states, and feedback—not images of an interface.</p></div>
+        <div class="component-grid">
+          <article class="component-panel"><div class="panel-head"><h3>Actions</h3><code>Button</code></div><p>One primary action. A quieter secondary. A clear disabled state.</p><div class="button-rack"><Button variant="paint" type="button" id="apply-example" disabled>Apply color ↗</Button><Button variant="cream" type="button" data-open="surface-dialog" disabled>Inspect surface</Button><Button type="button" disabled>Unavailable</Button></div><div class="state-row"><span>Rest</span><span>Hover: lift 2px</span><span>Press: sink 3px</span><span>Focus: ring</span></div><p id="action-status" class="component-status" role="status">Apply color previews a local confirmation.</p></article>
+          <article class="component-panel"><div class="panel-head"><h3>Selection</h3><code>ChoiceChip + blot</code></div><p>A stroke marks the active choice. A blot gives a toggle a clear, named state.</p><div id="material-options" class="choice-group" role="group" aria-label="Material specimen"><ChoiceChip value="stroke" label="Stroke" active controls="selected-material" disabled /><ChoiceChip value="blot" label="Blot" controls="selected-material" disabled /><ChoiceChip value="layer" label="Layer" controls="selected-material" disabled /></div><div class="selection-row"><p id="selected-material">Stroke: directional emphasis and selection.</p><button type="button" class="blot-toggle" id="pin-example" aria-pressed="false" disabled><PaintMark shape="blot" color="var(--ac-highlight)" /><span>+ Pin</span></button></div><p id="pin-status" class="component-status" role="status">The toggle is unselected.</p></article>
+          <article class="component-panel"><div class="panel-head"><h3>Input & validation</h3><code>Field</code></div><p>Inset controls sit on a dry surface. Errors explain how to recover.</p><form id="example-form" class="example-form" novalidate><label for="example-email">Email example<input id="example-email" name="email" type="email" required placeholder="name@example.com" autocomplete="off" aria-describedby="field-help field-feedback" /></label><p class="small-note" id="field-help">A component demo. This value is never sent or stored.</p><Button variant="cream" type="submit" id="validate-example" disabled>Validate example</Button><p id="field-feedback" class="component-status" aria-live="polite">Try an incomplete address, then a valid one.</p></form></article>
+          <article class="component-panel"><div class="panel-head"><h3>Feedback</h3><code>Status + disclosure</code></div><p>State is a color, a symbol, and a sentence. It remains understandable in grayscale.</p><div class="status-example status-example--success"><span aria-hidden="true">✓</span><span><strong>Ready to use</strong> Label contrast and focus are part of the component.</span></div><div class="status-example status-example--error"><span aria-hidden="true">!</span><span><strong>Needs attention</strong> Explain the issue and the next action.</span></div><details class="ac-disclosure"><summary>When should paint stay quiet?</summary><p>In long text, dense tables, and error recovery. Keep ornament at the edges and let spacing and labels do the work.</p></details></article>
+        </div>
+        <div class="surface-grid"><SurfaceCard title="Give content a dry ground." eyebrow="SURFACE / DEFAULT"><p>An opaque fill makes a card readable across every scheme. The body copy gets space; the component boundary stays crisp.</p><span class="component-badge">Surface / 4px corner</span></SurfaceCard><SurfaceCard title="Build depth around the edges." eyebrow="SURFACE / LAYERED" layered><p>Brushwork groups and emphasizes. Layers live behind the card, leaving its reading surface and interactive controls clear.</p><Button variant="cream" type="button" data-open="surface-dialog" disabled>Inspect the anatomy ↗</Button></SurfaceCard></div>
+        <div class="component-caption"><p>Five reusable Astro primitives:</p><code>Button · ChoiceChip · PaintMark · SurfaceCard · Dialog</code><p>Fields, status rows, badges, and disclosures use native HTML plus the same tokens.</p></div>
+      </section>
+<section id="information" class="ds-section" aria-labelledby="information-title">
+<div class="section-heading"><div><p class="eyebrow">05 / INFORMATION PATTERNS</p><h2 id="information-title">COMPOSE<br>THE MEANING.</h2></div><p>A component is a part. A pattern gives those parts a reading order. Use a bold statement to frame a decision; use aligned rows when people need to compare.</p></div>
+<div class="guide-compositions"><div><article class="guide-editorial"><PaintMark color="var(--ac-highlight)" pressure="drag" /><p class="eyebrow">PATTERN / EDITORIAL SUMMARY</p><h3>THREE SCHEMES.<br>ONE SYSTEM.</h3><p>Market, Cobalt, and After hours share the same material vocabulary and component behavior. Choose a ground before adding a mark.</p><a class="text-link" href="#colors">Compare the schemes ↗</a></article><p class="guide-pattern-note"><strong>Read in sequence:</strong> context → headline → explanation → one next action. One painted accent is enough to establish emphasis.</p></div>
+<div><div class="guide-table-wrap guide-records"><table class="guide-table"><caption>Pattern / the same information as a comparison</caption><thead><tr><th scope="col">Scheme</th><th scope="col">Ground</th><th scope="col">Shared rules</th></tr></thead><tbody>
+<tr><th scope="row">Market</th><td>Warm paper</td><td>✓ Same components</td></tr><tr><th scope="row">Cobalt</th><td>Cool paper</td><td>✓ Same components</td></tr><tr><th scope="row">After hours</th><td>Dark green</td><td>✓ Same components</td></tr>
+</tbody></table><details><summary>Why is the paint quieter here?</summary><p>Rows need stable alignment and clear boundaries. Keep paint at the group level; do not give every cell a competing brushstroke.</p></details></div><p class="guide-pattern-note"><strong>Compare across columns:</strong> identity → relevant difference → common rule. Labels carry the meaning in every color scheme.</p></div></div>
+<div class="section-note"><strong>Density changes the treatment.</strong><p>In a hero, let one mark take space. In a card, keep it at the perimeter. In a table, keep the reading surface still. Information density governs how much expression the layout can hold.</p></div>
+</section>
+<section id="use" class="ds-section use-section" aria-labelledby="use-title"><div class="section-heading"><div><p class="eyebrow">06 / BUILD WITH IT</p><h2 id="use-title">PUT IT<br>TO <span class="underline-paint">WORK.</span></h2></div><p>Use the role tokens first. Add a component. Place the paint where it helps establish emphasis or state.</p></div><div class="implementation-grid"><div><h3>Start with a scheme.</h3><p>Wrap your interface in <code>.ac-site</code>, load the stylesheet and the three typefaces, then apply the selected scheme’s custom properties. The stylesheet supplies Market as its default.</p><pre id="scheme-css" tabindex="0" aria-label="CSS tokens for the current scheme"><code>{`.ac-site {\n  --ac-field: ${market.field};\n  --ac-surface: ${market.surface};\n  --ac-ink: ${market.ink};\n  --ac-accent: ${market.accent};\n  --ac-on-accent: ${market['on-accent']};\n}`}</code></pre><div class="implementation-actions"><Button variant="cream" type="button" id="copy-tokens" disabled>Copy scheme CSS</Button><a class="text-link" href="/acrylics/acrylics.tokens.json" download>Tokens JSON ↓</a><a class="text-link" href="/acrylics/site.css" download>Stylesheet ↓</a></div><p id="copy-status" class="component-status" role="status"></p></div><div><h3>Compose a surface.</h3><p>The example uses the same components shown above. Keep paint decorative with <code>aria-hidden</code>; expose labels and state on the real control.</p><pre tabindex="0" aria-label="Astro component example"><code>{componentCode}</code></pre><p class="small-note">Astro components live in <code>src/components/acrylics/</code>. The workshop is an optional material reference; the component page does not load its canvas engine.</p><p class="small-note">Scheme and component examples reset when you reload. No account, collection, contact form, or visitor storage is involved.</p></div></div><noscript><p>The default scheme, component reference, and downloads work without JavaScript. Enable JavaScript to switch schemes and try state transitions.</p></noscript><p id="system-status" class="small-note" role="status"></p></section>
+    </main>
+    <footer class="site-footer"><a class="footer-wordmark" href="/design/acrylics">ACRYLICS<span aria-hidden="true">✳</span></a><div class="footer-bottom"><span>Design system 0.6 · Erikk Shupp</span><nav aria-label="Other design systems"><a href="/design/void">VOID ↗</a><a href="/design/prismatic">PRISM ↗</a><a href="/design/acrylics/materials">Material workshop ↗</a></nav><span>ONE COAT AT A TIME.</span></div></footer>
+  </div>
+  <Dialog id="surface-dialog" title="Surface anatomy"><p class="dialog-lead">Three layers. One clear reading surface.</p><ol class="anatomy-list"><li><strong>01 / Pigment</strong><p>Decorative strokes sit behind the card. Stable masks keep their edges and bristle tracks consistent.</p><code>--ac-pigment / --ac-pigment-2</code></li><li><strong>02 / Dry ground</strong><p>An opaque surface separates the text from any changing color beneath it.</p><code>--ac-surface / --ac-ink</code></li><li><strong>03 / Action</strong><p>A paired action and label color, a 44px minimum target, and a visible focus ring make the control usable.</p><code>--ac-accent / --ac-on-accent / --ac-focus</code></li></ol><p class="small-note">This is a native dialog: Tab stays inside, Escape closes it, and focus returns to the trigger.</p></Dialog>
+</body>
+</html>

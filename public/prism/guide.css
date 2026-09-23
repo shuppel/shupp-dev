@@ -1,0 +1,294 @@
+/* Chapter structure for the Prismatic reference, using its existing material. */
+.prism-guide .guide-index {
+  padding: 1rem 0 3rem;
+}
+.prism-guide .guide-index > p {
+  margin-bottom: 1rem;
+}
+.prism-guide .guide-index ol {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0 1.5rem;
+  list-style: none;
+}
+.prism-guide .guide-index a {
+  display: grid;
+  grid-template-columns: 1.5rem 1fr;
+  gap: 0.2rem 0.6rem;
+  padding: 1.1rem 0;
+  border-top: 1px solid var(--hairline);
+  color: inherit;
+  text-decoration: none;
+  min-height: 92px;
+}
+.prism-guide .guide-index a > span {
+  font: 11px/1.7 var(--mono);
+}
+.prism-guide .guide-index a strong {
+  font-size: 16px;
+  font-weight: 600;
+}
+.prism-guide .guide-index a small {
+  grid-column: 2;
+  font-size: 13px;
+}
+.prism-guide .guide-index a:hover strong {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.prism-guide .guide-chapter {
+  padding: 3rem 0;
+  border-top: 1px solid var(--hairline);
+  scroll-margin-top: 110px;
+}
+.prism-guide .guide-chapter > header {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+  align-items: end;
+}
+.prism-guide .guide-chapter > header h2 {
+  font: 600 clamp(26px, 3.4vw, 38px)/1.15 var(--sans);
+  letter-spacing: -0.035em;
+  margin-top: 0.6rem;
+}
+.prism-guide .guide-chapter > header > p {
+  max-width: 52ch;
+}
+.prism-guide .guide-chapter > .ds-section {
+  padding-bottom: 1rem;
+}
+.prism-guide .guide-chapter > .ds-section > header h3 {
+  font: 600 24px/1.3 var(--sans);
+  letter-spacing: -0.02em;
+  margin-top: 0.35rem;
+}
+.prism-guide .guide-chapter > .ds-section > header p {
+  opacity: 1;
+}
+.prism-guide .ds-law,
+.prism-guide .ds-caption,
+.prism-guide .ds-type-meta {
+  opacity: 0.8;
+}
+.prism-guide .guide-concepts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+.prism-guide .guide-concepts h3 {
+  font-size: 21px;
+  line-height: 1.25;
+  margin: 1rem 0 0.7rem;
+}
+.prism-guide .guide-concepts p:last-child {
+  font-size: 15px;
+  line-height: 1.6;
+}
+.prism-guide .guide-concepts .prism-holo {
+  min-height: 104px;
+  padding: 16px;
+  margin-bottom: 1rem;
+}
+.prism-guide .guide-bands {
+  display: flex;
+  gap: 4px;
+  height: 60px;
+  align-items: center;
+  margin: 1rem 0;
+}
+.prism-guide .guide-bands i {
+  flex: 1;
+  height: 60px;
+  background: var(--anchor);
+  border-radius: 7px;
+}
+.prism-guide .guide-bands i:nth-child(2) {
+  background: var(--near);
+  height: 48px;
+}
+.prism-guide .guide-bands i:nth-child(3) {
+  background: var(--far);
+  height: 36px;
+}
+.prism-guide .guide-bands i:nth-child(4) {
+  background: var(--counter);
+  height: 24px;
+}
+.prism-guide .guide-invariant {
+  margin-top: 1.5rem;
+  padding: 1.25rem 1.5rem;
+  border-left: 2px solid var(--anchor);
+  max-width: 82ch;
+}
+.prism-guide .guide-invariant strong {
+  display: block;
+  font: 12px/1.6 var(--mono);
+  margin-bottom: 0.5rem;
+}
+.prism-guide .guide-table-wrap {
+  overflow-x: auto;
+  background: var(--surface);
+  color: var(--ink);
+  border-radius: var(--r-md);
+  box-shadow: var(--elev-dense);
+  margin: 1.2rem 0;
+}
+.prism-guide .guide-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  text-align: left;
+}
+.prism-guide .guide-table caption {
+  text-align: left;
+  padding: 1.2rem;
+  font: 12px/1.5 var(--mono);
+}
+.prism-guide .guide-table th,
+.prism-guide .guide-table td {
+  padding: 1rem 1.2rem;
+  vertical-align: top;
+  border-top: 1px solid color-mix(in oklch, var(--ink) 18%, transparent);
+}
+.prism-guide .guide-table thead th {
+  font: 11px/1.5 var(--mono);
+  text-transform: uppercase;
+}
+.prism-guide .guide-equations {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin: 1.5rem 0;
+}
+.prism-guide .guide-equations .prism-card {
+  box-shadow: var(--elev-dense);
+}
+.prism-guide .guide-equations h3 {
+  font-size: 18px;
+  margin-bottom: 0.8rem;
+}
+.prism-guide .guide-equations code {
+  display: block;
+  font: 12px/1.7 var(--mono);
+  overflow-wrap: anywhere;
+  margin-bottom: 0.8rem;
+}
+.prism-guide .guide-equations p {
+  font-size: 14px;
+}
+.prism-guide .guide-contract {
+  margin-top: 1rem;
+  font: 12px/1.7 var(--mono);
+  overflow-wrap: anywhere;
+}
+.prism-guide .guide-code {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+  font: 12px/1.8 var(--mono);
+}
+.prism-guide .guide-composition {
+  display: grid;
+  grid-template-columns: 0.8fr 1.2fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+  align-items: start;
+}
+.prism-guide .guide-composition h3 {
+  font-size: 24px;
+  line-height: 1.25;
+  margin: 0.8rem 0;
+}
+.prism-guide .guide-composition .guide-table-wrap {
+  margin: 0;
+}
+.prism-guide .guide-composition .guide-table {
+  min-width: 340px;
+}
+.prism-guide .guide-record[data-current="true"] {
+  background: var(--standing-tint);
+  box-shadow: inset 2px 0 var(--anchor);
+}
+.prism-guide .guide-record small {
+  display: block;
+  font-size: 12px;
+}
+.prism-guide .guide-composition details {
+  padding: 1rem 1.2rem;
+  border-top: 1px solid var(--hairline);
+}
+.prism-guide .guide-composition summary {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+.prism-guide .guide-composition details p {
+  font-size: 14px;
+  margin-top: 0.7rem;
+}
+.prism-guide .guide-avoid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin: 1.5rem 0;
+  list-style: none;
+}
+.prism-guide .guide-avoid li {
+  border-top: 1px solid var(--hairline);
+  padding-top: 1rem;
+}
+.prism-guide .guide-avoid strong {
+  display: block;
+  margin-bottom: 0.4rem;
+}
+.prism-guide .guide-avoid p {
+  font-size: 14px;
+}
+.prism-guide
+  :is(.guide-index a, .guide-chapter a, .guide-chapter summary):focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 4px;
+}
+.prism-guide .guide-chapter a {
+  color: inherit;
+  text-underline-offset: 4px;
+}
+.prism-guide .ds-paint {
+  max-width: 100%;
+  --px-size: clamp(10px, 2.8vw, 16px) !important;
+}
+.prism-guide .ds-mx-cell {
+  min-width: max-content;
+}
+@media (max-width: 760px) {
+  .prism-guide .guide-index ol {
+    grid-template-columns: 1fr 1fr;
+    gap: 0 1rem;
+  }
+  .prism-guide .guide-chapter > header,
+  .prism-guide .guide-concepts,
+  .prism-guide .guide-equations,
+  .prism-guide .guide-composition {
+    grid-template-columns: 1fr;
+  }
+  .prism-guide .guide-chapter > header {
+    gap: 1rem;
+  }
+  .prism-guide .guide-chapter {
+    scroll-margin-top: 165px;
+  }
+  .prism-guide .guide-table th,
+  .prism-guide .guide-table td {
+    padding: 0.8rem;
+  }
+  .prism-guide .guide-avoid {
+    grid-template-columns: 1fr;
+  }
+}
