@@ -15,6 +15,7 @@ technologies:
 featured: false
 image: "/saas-game-ui/social/saas-game-ui-share-v1.png"
 customUrl: "/design/saas-game-ui"
+relatedBlogPosts: ["saas-game-ui-ai-agents-missions"]
 ---
 
 ## SaaS Game UI
