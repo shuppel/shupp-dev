@@ -1,0 +1,61 @@
+---
+import { siteConfig } from '../../config/site';
+
+interface Props {
+  title: string;
+  description: string;
+  path: string;
+  image: string;
+  imageAlt: string;
+}
+
+const { title, description, path, image, imageAlt } = Astro.props;
+// Standalone design pages own their document; share metadata without importing
+// the site layout, theme scripts, or client-side navigation.
+const canonicalURL = new URL(path, Astro.site ?? siteConfig.siteUrl).href;
+const imageURL = new URL(image, Astro.site ?? siteConfig.siteUrl).href;
+const twitterHandle = `@${new URL(siteConfig.social.twitter).pathname.split('/').filter(Boolean)[0]}`;
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  '@id': `${canonicalURL}#webpage`,
+  url: canonicalURL,
+  name: title,
+  description,
+  inLanguage: 'en',
+  author: { '@type': 'Person', name: siteConfig.author.name, url: siteConfig.siteUrl },
+  isPartOf: { '@type': 'WebSite', name: siteConfig.siteName, url: siteConfig.siteUrl },
+  primaryImageOfPage: {
+    '@type': 'ImageObject',
+    url: imageURL,
+    width: 1200,
+    height: 630,
+    caption: imageAlt,
+  },
+};
+---
+<title>{title} | shupp.dev</title>
+<meta name="description" content={description} />
+<meta name="author" content={siteConfig.author.name} />
+<meta name="robots" content="index, follow, max-image-preview:large" />
+<link rel="canonical" href={canonicalURL} />
+<link rel="sitemap" href="/sitemap-index.xml" />
+<meta property="og:type" content="website" />
+<meta property="og:site_name" content={siteConfig.siteName} />
+<meta property="og:locale" content="en_US" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:url" content={canonicalURL} />
+<meta property="og:image" content={imageURL} />
+<meta property="og:image:type" content="image/png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content={imageAlt} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:site" content={twitterHandle} />
+<meta name="twitter:creator" content={twitterHandle} />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={imageURL} />
+<meta name="twitter:image:alt" content={imageAlt} />
+<script type="application/ld+json" set:html={JSON.stringify(structuredData).replace(/</g, '\\u003c')} />
