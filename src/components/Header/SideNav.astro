@@ -2,6 +2,9 @@
 import Icon from '../Icon/Icon.astro';
 import SkinMenu from './SkinMenu.astro';
 import { siteConfig } from '../../config/site.ts';
+import { isFeatureEnabled } from '../../config/features.ts';
+
+const showArt = isFeatureEnabled('enableArtShop');
 
 const socials = [
   { href: `mailto:${siteConfig.email}`, label: 'Email', icon: 'Envelope', external: false },
@@ -56,6 +59,17 @@ const socials = [
             <span class="side-nav-text">Portfolio</span>
           </a>
         </li>
+        {showArt && (
+          <li class="side-nav-item">
+            <a href="/art" class="side-nav-link">
+              <span class="side-nav-icon">
+                <Icon name="PaintBrush" size={20} weight="duotone" liquid={true} />
+                <svg class="icon void-swap" aria-hidden="true"><use href="#i-frame" /></svg>
+              </span>
+              <span class="side-nav-text">Art</span>
+            </a>
+          </li>
+        )}
         <li class="side-nav-item">
           <a href="/galaxy" class="side-nav-link">
             <span class="side-nav-icon">

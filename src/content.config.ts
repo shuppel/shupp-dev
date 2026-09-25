@@ -279,6 +279,60 @@ const pressCollection = defineCollection({
 //   }),
 // });
 
+// Define a schema for original artwork offered for sale.
+//
+// Selling is deliberately split in two: this repo owns the gallery (images,
+// story, provenance, SEO) and a hosted checkout owns the money. `checkoutUrl`
+// points at a Stripe Payment Link created per piece — for a one-of-one, set
+// that link's payment limit to 1 in Stripe so it closes itself on sale.
+// See /docs/ART-SHOP.md.
+const artCollection = defineCollection({
+  loader: glob({ pattern: '**/[^_]*.md', base: './src/content/art' }),
+  schema: ({ image }) => z.object({
+    title: z.string(),
+    description: z.string(),           // One or two lines, used for cards and meta tags
+
+    // The work itself
+    year: z.number().int(),
+    medium: z.string(),                // "Oil on linen", "Archival pigment print", ...
+    dimensions: z.string(),            // "24 x 36 in" - free text, sizes vary too much to model
+    series: z.string().optional(),     // Groups pieces in the gallery
+
+    // Editioning. An original is one-of-one; a limited edition has a run size.
+    edition: z.object({
+      type: z.enum(['original', 'limited']),
+      size: z.number().int().positive().optional(),   // Run size for a limited edition
+      number: z.number().int().positive().optional(), // This impression, e.g. 3 of 25
+    }).default({ type: 'original' }),
+
+    // Commerce. `price` is in whole currency units and is display-only: the
+    // amount actually charged is whatever the Payment Link is configured for.
+    // Keep the two in sync, and treat Stripe as the source of truth.
+    status: z.enum(['available', 'reserved', 'sold', 'nfs']).default('available'),
+    price: z.number().nonnegative().optional(),
+    currency: z.string().length(3).default('USD'),
+    checkoutUrl: z.string().url().optional(),  // Stripe Payment Link for this piece
+    framed: z.boolean().default(false),
+    shippingNote: z.string().optional(),       // "Ships rolled in a tube, insured"
+
+    // Imagery. Optional so a piece can be listed before it has been shot;
+    // the gallery falls back to a placeholder the same way the portfolio does.
+    cover: image().optional(),
+    gallery: z.array(z.object({
+      src: image(),
+      alt: z.string(),
+      caption: z.string().optional(),
+    })).default([]),
+    coverAlt: z.string().optional(),   // Falls back to the title
+
+    // Presentation
+    featured: z.boolean().default(false),
+    visible: z.boolean().default(true),
+    order: z.number().default(0),      // Ties broken by year, newest first
+    tags: z.array(z.string()).optional(),
+  }),
+});
+
 // Define a schema for Galaxy notes (formerly Garden)
 const galaxyCollection = defineCollection({
   loader: glob({ pattern: '**/[^_]*.md', base: './src/content/galaxy' }),
@@ -324,4 +378,5 @@ export const collections = {
   // 'tools': toolsCollection, // ARCHIVED
   'galaxy': galaxyCollection,
   'press': pressCollection,
+  'art': artCollection,
 };

@@ -1,0 +1,317 @@
+---
+import { getCollection } from 'astro:content';
+import { Image } from 'astro:assets';
+import Layout from '../layouts/Layout.astro';
+import Icon from '../components/Icon/Icon.astro';
+import { isFeatureEnabled } from '../config/features.ts';
+import { siteConfig } from '../config/site.ts';
+import {
+  STATUS_META,
+  editionLabel,
+  enquiryHref,
+  formatPrice,
+  sortArt,
+  visibleArt,
+} from '../lib/art.ts';
+
+const shopEnabled = isFeatureEnabled('enableArtShop');
+
+// With the flag off the gallery still builds, so the route never 404s
+// mid-rollout, but it shows nothing that is for sale.
+const pieces = shopEnabled ? sortArt(visibleArt(await getCollection('art'))) : [];
+
+const availableCount = pieces.filter((piece) => piece.data.status === 'available').length;
+---
+
+<Layout
+  title="Art"
+  description="Original paintings and limited editions by Erikk Shupp, available directly from the studio."
+  keywords="original art, limited edition prints, painting, Arlington VA artist, buy art online"
+>
+  <div class="art-page">
+    <section class="art-hero">
+      <div class="art-header">
+        <Icon name="PaintBrush" size={48} weight="duotone" liquid={true} inkEffect="medium" />
+        <h1>Art</h1>
+      </div>
+      <p class="lead">
+        Originals and limited editions, sold directly from the studio.
+      </p>
+      {shopEnabled && availableCount > 0 && (
+        <p class="art-availability">
+          {availableCount} {availableCount === 1 ? 'piece' : 'pieces'} currently available
+        </p>
+      )}
+    </section>
+
+    {pieces.length === 0 ? (
+      <section class="art-empty">
+        <p>Nothing is listed just yet. New work goes up here first.</p>
+        <a class="art-button art-button--ghost" href={`mailto:${siteConfig.email}`}>
+          Ask what's in the studio
+        </a>
+      </section>
+    ) : (
+      <section class="art-grid">
+        {pieces.map((piece) => {
+          const status = STATUS_META[piece.data.status];
+          const isSold = piece.data.status === 'sold';
+          return (
+            <a href={`/art/${piece.id}`} class:list={['art-item', { 'is-sold': isSold }]}>
+              <div class="art-frame">
+                {piece.data.cover !== undefined ? (
+                  <Image
+                    src={piece.data.cover}
+                    alt={piece.data.coverAlt ?? piece.data.title}
+                    widths={[400, 800, 1200]}
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    loading="lazy"
+                    class="art-image"
+                  />
+                ) : (
+                  <div class="art-placeholder" aria-hidden="true">
+                    <span>{piece.data.title}</span>
+                  </div>
+                )}
+                {piece.data.status !== 'available' && (
+                  <span class:list={['art-badge', `is-${status.tone}`]}>{status.label}</span>
+                )}
+              </div>
+              <div class="art-info">
+                <h2 class="art-title">
+                  {piece.data.title}
+                  <span class="art-year">{piece.data.year}</span>
+                </h2>
+                <p class="art-meta">{piece.data.medium} &middot; {piece.data.dimensions}</p>
+                <p class="art-meta art-meta--edition">{editionLabel(piece.data.edition)}</p>
+                {piece.data.price !== undefined && piece.data.status !== 'nfs' && (
+                  <p class:list={['art-price', { 'is-struck': isSold }]}>
+                    {formatPrice(piece.data.price, piece.data.currency)}
+                  </p>
+                )}
+              </div>
+            </a>
+          );
+        })}
+      </section>
+    )}
+
+    {pieces.length > 0 && (
+      <section class="art-footnote">
+        <p>
+          Every piece ships insured and signed. Commissions and studio visits by
+          arrangement &mdash; <a href={enquiryHref(siteConfig.email, 'Commission')}>get in touch</a>.
+        </p>
+      </section>
+    )}
+  </div>
+</Layout>
+
+<style>
+  .art-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 4rem 1.5rem;
+  }
+
+  .art-hero {
+    margin-bottom: 3rem;
+  }
+
+  .art-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .art-hero h1 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--text-color);
+  }
+
+  .lead {
+    font-size: 1.25rem;
+    color: var(--text-light);
+    line-height: 1.6;
+    margin: 0;
+  }
+
+  .art-availability {
+    margin: 0.75rem 0 0;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+
+  /* Art is not a screenshot: pieces keep their own proportions rather than
+     being cropped to a shared frame, so the grid is a masonry of columns
+     instead of a row-aligned grid. */
+  .art-grid {
+    columns: 3 320px;
+    column-gap: 2rem;
+  }
+
+  .art-item {
+    display: block;
+    break-inside: avoid;
+    margin-bottom: 2.5rem;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.3s ease;
+  }
+
+  .art-item:hover {
+    transform: translateY(-4px);
+  }
+
+  .art-frame {
+    position: relative;
+    overflow: hidden;
+    border-radius: 6px;
+    background: var(--surface-muted);
+    box-shadow: var(--card-shadow);
+  }
+
+  .art-image {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+
+  .art-item.is-sold .art-image {
+    opacity: 0.72;
+  }
+
+  .art-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 4 / 5;
+    padding: 1.5rem;
+    text-align: center;
+    font-family: var(--font-main-header);
+    font-size: 1.1rem;
+    color: var(--text-muted);
+    background: linear-gradient(135deg, var(--background-alt) 0%, var(--surface-muted) 100%);
+  }
+
+  .art-badge {
+    position: absolute;
+    top: 0.75rem;
+    right: 0.75rem;
+    padding: 0.25rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    backdrop-filter: blur(6px);
+    background: rgba(20, 8, 14, 0.72);
+    color: #f3f4f6;
+  }
+
+  .art-badge.is-reserved {
+    background: rgba(172, 193, 150, 0.9);
+    color: var(--color-dark);
+  }
+
+  .art-badge.is-nfs {
+    background: rgba(73, 71, 91, 0.85);
+    color: #f3f4f6;
+  }
+
+  .art-info {
+    padding: 0.9rem 0.1rem 0;
+  }
+
+  .art-title {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin: 0 0 0.3rem;
+    font-family: var(--font-secondary-header);
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: var(--text-strong);
+  }
+
+  .art-year {
+    flex-shrink: 0;
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+
+  .art-meta {
+    margin: 0 0 0.2rem;
+    font-size: 0.9rem;
+    color: var(--text-light);
+  }
+
+  .art-meta--edition {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+  }
+
+  .art-price {
+    margin: 0.5rem 0 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-strong);
+  }
+
+  .art-price.is-struck {
+    text-decoration: line-through;
+    color: var(--text-muted);
+    font-weight: 400;
+  }
+
+  .art-empty {
+    padding: 3rem 0;
+    color: var(--text-light);
+  }
+
+  .art-button {
+    display: inline-block;
+    margin-top: 1rem;
+    padding: 0.7rem 1.4rem;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: background 0.2s ease, border-color 0.2s ease;
+  }
+
+  .art-button--ghost {
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+  }
+
+  .art-button--ghost:hover {
+    background: var(--hover-tint);
+  }
+
+  .art-footnote {
+    margin-top: 1rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border-subtle);
+    font-size: 0.95rem;
+    color: var(--text-muted);
+  }
+
+  .art-footnote a {
+    color: var(--primary-color);
+  }
+
+  @media (max-width: 640px) {
+    .art-page {
+      padding: 2.5rem 1rem;
+    }
+
+    .art-grid {
+      columns: 1;
+    }
+  }
+</style>

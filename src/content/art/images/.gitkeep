@@ -1,0 +1,2 @@
+Artwork images live here. Referenced from a piece's frontmatter as
+"./images/<file>.jpg" so Astro can optimise and generate responsive srcsets.

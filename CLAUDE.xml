@@ -44,6 +44,7 @@
       <feature>Dark mode toggle</feature>
       <feature>SEO optimized</feature>
       <feature>Interactive calculator tools (Buy vs Rent, Rent vs Sell)</feature>
+      <feature>Art shop - gallery of originals and limited editions, hosted Stripe checkout (flag: enableArtShop)</feature>
     </features>
     
     <tools>
@@ -73,6 +74,7 @@
     </tools>
     
     <contentCollections>
+      <collection name="art" schema="strict" />
       <collection name="authors" schema="strict" />
       <collection name="blog" schema="strict" />
       <collection name="credentials" schema="strict" />
@@ -108,6 +110,7 @@
     
     <environmentVariables>
       <variable name="ENABLE_TLDRAW" default="false" description="Feature flag for TLDraw integration" />
+      <variable name="ENABLE_ART_SHOP" default="false" description="Publishes the /art gallery, its detail pages and the Art nav link. See /docs/ART-SHOP.md" />
       <!-- Additional feature flags should be added here and in /src/config/features.ts -->
       <!-- See FEATURE-FLAGS-CODEX.md for implementation guidelines -->
     </environmentVariables>
@@ -160,6 +163,7 @@
   </skills>
   
    <recentUpdates>
+     <update date="2026-09-25">Added the art shop: `art` collection, /art gallery and /art/[slug] pages, hosted Stripe Payment Link checkout, behind enableArtShop</update>
      <update date="2025-09-20">Fixed Phosphor icon rendering - use 'client:load' directive instead of complex server+client mounting</update>
      <update date="2025-09-20">Replaced all custom SVG icons with standard Phosphor icons (Brain, Wrench, etc.)</update>
      <update date="2025-09-20">Fixed Astro + React integration issues - must use Astro's client directives, not dynamic imports</update>

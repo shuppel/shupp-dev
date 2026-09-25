@@ -5,6 +5,19 @@ export const features = {
   // Can be overridden by ENABLE_TLDRAW environment variable
   enableTLDraw: import.meta.env.ENABLE_TLDRAW === 'true' || false,
   
+  /**
+   * Enables the art shop: the /art gallery, the /art/[slug] detail pages and
+   * the Art entry in the side navigation.
+   *
+   * Checkout itself is hosted (Stripe Payment Links), so this flag only
+   * controls whether the storefront is published. Whether an individual piece
+   * can actually be bought is content, not configuration: see the `status` and
+   * `checkoutUrl` fields on the `art` collection.
+   *
+   * @deprecated Remove once the shop is live and stable (target 2026-12-31).
+   */
+  enableArtShop: import.meta.env.ENABLE_ART_SHOP === 'true' || false,
+
   // Enable fullscreen mode for calculators on larger viewports
   // When false, fullscreen button is hidden on mobile/tablet
   enableCalculatorFullscreen: {

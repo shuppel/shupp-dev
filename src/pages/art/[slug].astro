@@ -1,0 +1,362 @@
+---
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { Image } from 'astro:assets';
+import Layout from '../../layouts/Layout.astro';
+import Breadcrumbs from '../../components/Breadcrumbs.astro';
+import { isFeatureEnabled } from '../../config/features.ts';
+import { siteConfig } from '../../config/site.ts';
+import {
+  STATUS_META,
+  editionLabel,
+  enquiryHref,
+  formatPrice,
+  isPurchasable,
+  visibleArt,
+} from '../../lib/art.ts';
+import '../../styles/prose.css';
+
+export async function getStaticPaths() {
+  // With the flag off no detail pages are emitted at all, so an unfinished
+  // shop cannot be reached by guessing a URL.
+  if (!isFeatureEnabled('enableArtShop')) {
+    return [];
+  }
+
+  const entries = visibleArt(await getCollection('art'));
+  return entries.map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<'art'>;
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const piece = entry.data;
+
+const status = STATUS_META[piece.status];
+const canBuy = isPurchasable(piece);
+const enquiry = enquiryHref(siteConfig.email, piece.title);
+
+// The OpenGraph image has to be a URL string, and `cover` is a processed
+// asset, so fall back to the site default when a piece has no photograph yet.
+const ogImage = piece.cover?.src ?? '/og-default.png';
+---
+
+<Layout
+  title={piece.title}
+  description={piece.description}
+  image={ogImage}
+  type="article"
+>
+  <div class="piece-page">
+    <Breadcrumbs items={[{ name: 'Art', url: '/art' }, { name: piece.title }]} />
+
+    <article class="piece">
+      <div class="piece-media">
+        {piece.cover !== undefined ? (
+          <Image
+            src={piece.cover}
+            alt={piece.coverAlt ?? piece.title}
+            widths={[600, 1000, 1600]}
+            sizes="(max-width: 900px) 100vw, 60vw"
+            loading="eager"
+            class="piece-image"
+          />
+        ) : (
+          <div class="piece-placeholder" aria-hidden="true">
+            <span>{piece.title}</span>
+          </div>
+        )}
+
+        {piece.gallery.length > 0 && (
+          <div class="piece-gallery">
+            {piece.gallery.map((shot) => (
+              <figure class="piece-shot">
+                <Image
+                  src={shot.src}
+                  alt={shot.alt}
+                  widths={[400, 800]}
+                  sizes="(max-width: 900px) 50vw, 30vw"
+                  loading="lazy"
+                  class="piece-image"
+                />
+                {shot.caption !== undefined && <figcaption>{shot.caption}</figcaption>}
+              </figure>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <aside class="piece-details">
+        <header class="piece-header">
+          <h1 class="piece-title">{piece.title}</h1>
+          <p class="piece-subtitle">{piece.year}{piece.series !== undefined && <> &middot; {piece.series}</>}</p>
+        </header>
+
+        <dl class="piece-specs">
+          <div class="spec">
+            <dt>Medium</dt>
+            <dd>{piece.medium}</dd>
+          </div>
+          <div class="spec">
+            <dt>Dimensions</dt>
+            <dd>{piece.dimensions}</dd>
+          </div>
+          <div class="spec">
+            <dt>Edition</dt>
+            <dd>{editionLabel(piece.edition)}</dd>
+          </div>
+          <div class="spec">
+            <dt>Framing</dt>
+            <dd>{piece.framed ? 'Framed' : 'Unframed'}</dd>
+          </div>
+          <div class="spec">
+            <dt>Status</dt>
+            <dd><span class:list={['piece-status', `is-${status.tone}`]}>{status.label}</span></dd>
+          </div>
+        </dl>
+
+        <div class="piece-buy">
+          {piece.price !== undefined && piece.status !== 'nfs' && (
+            <p class:list={['piece-price', { 'is-struck': piece.status === 'sold' }]}>
+              {formatPrice(piece.price, piece.currency)}
+            </p>
+          )}
+
+          {canBuy ? (
+            <>
+              {/* Checkout is hosted by Stripe: no card details ever touch this
+                  site, and a one-of-one link closes itself once it sells. */}
+              <a
+                class="piece-button piece-button--primary"
+                href={piece.checkoutUrl}
+                rel="noopener noreferrer"
+              >
+                Buy this piece
+              </a>
+              <p class="piece-note">
+                Secure checkout via Stripe. Tax and shipping are calculated at checkout.
+              </p>
+            </>
+          ) : (
+            <>
+              <a class="piece-button piece-button--ghost" href={enquiry}>
+                {piece.status === 'sold' ? 'Enquire about similar work' : 'Enquire about this piece'}
+              </a>
+              {piece.status === 'reserved' && (
+                <p class="piece-note">On hold for a collector. Ask to join the waitlist.</p>
+              )}
+            </>
+          )}
+
+          {piece.shippingNote !== undefined && (
+            <p class="piece-note">{piece.shippingNote}</p>
+          )}
+        </div>
+
+        <div class="piece-story prose">
+          <Content />
+        </div>
+      </aside>
+    </article>
+
+    <nav class="piece-back">
+      <a href="/art">&larr; All work</a>
+    </nav>
+  </div>
+</Layout>
+
+<style>
+  .piece-page {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem 4rem;
+  }
+
+  .piece {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(300px, 1fr);
+    gap: 3rem;
+    margin-top: 2rem;
+    align-items: start;
+  }
+
+  .piece-image {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: 6px;
+    box-shadow: var(--card-shadow);
+  }
+
+  .piece-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 4 / 5;
+    border-radius: 6px;
+    font-family: var(--font-main-header);
+    color: var(--text-muted);
+    background: linear-gradient(135deg, var(--background-alt) 0%, var(--surface-muted) 100%);
+  }
+
+  .piece-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .piece-shot {
+    margin: 0;
+  }
+
+  .piece-shot figcaption {
+    margin-top: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+  }
+
+  /* The details column follows the image on a tall piece rather than
+     stranding the buy button below the fold. */
+  .piece-details {
+    position: sticky;
+    top: 2rem;
+  }
+
+  .piece-title {
+    margin: 0 0 0.25rem;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text-strong);
+  }
+
+  .piece-subtitle {
+    margin: 0 0 1.5rem;
+    color: var(--text-muted);
+  }
+
+  .piece-specs {
+    margin: 0 0 1.75rem;
+    padding: 0;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .spec {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--border-subtle);
+  }
+
+  .spec dt {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
+  .spec dd {
+    margin: 0;
+    text-align: right;
+    color: var(--text-color);
+    font-size: 0.9rem;
+  }
+
+  .piece-status {
+    font-weight: 600;
+  }
+
+  .piece-status.is-available {
+    color: var(--color-tertiary);
+  }
+
+  .piece-status.is-sold,
+  .piece-status.is-nfs {
+    color: var(--text-muted);
+  }
+
+  .piece-price {
+    margin: 0 0 1rem;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text-strong);
+  }
+
+  .piece-price.is-struck {
+    text-decoration: line-through;
+    font-weight: 400;
+    color: var(--text-muted);
+  }
+
+  .piece-button {
+    display: block;
+    width: 100%;
+    padding: 0.85rem 1.4rem;
+    border-radius: 6px;
+    text-align: center;
+    font-weight: 600;
+    text-decoration: none;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+
+  .piece-button:hover {
+    transform: translateY(-2px);
+  }
+
+  .piece-button--primary {
+    background: var(--primary-color);
+    color: var(--color-dark);
+  }
+
+  .piece-button--ghost {
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+  }
+
+  .piece-button--ghost:hover {
+    background: var(--hover-tint);
+  }
+
+  .piece-note {
+    margin: 0.75rem 0 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--text-muted);
+  }
+
+  .piece-story {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-subtle);
+  }
+
+  .piece-back {
+    margin-top: 3rem;
+  }
+
+  .piece-back a {
+    color: var(--primary-color);
+    text-decoration: none;
+  }
+
+  @media (max-width: 900px) {
+    .piece {
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    .piece-details {
+      position: static;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .piece-page {
+      padding: 1.5rem 1rem 3rem;
+    }
+  }
+</style>
