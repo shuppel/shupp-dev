@@ -7,6 +7,7 @@ technologies: ["Design Systems", "Design Tokens", "UI Components", "Pigment Mixi
 featured: false
 image: "/images/projects/acrylics-paint.webp"
 customUrl: "/design/acrylics"
+relatedBlogPosts: ["acrylics-paint-mixing-design-system"]
 ---
 
 ## A design system in layers
