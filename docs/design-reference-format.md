@@ -36,9 +36,12 @@ API. Audit text should describe exactly which pairs and states were checked.
 - Acrylics: gesture, pigment history, and readable ground; stroke/blot/ground/layer
   vocabulary; Gaussian width and deposited coverage; color schemes and style
   rules; components; an editorial summary and a comparison of the same schemes.
-- Prismatic: derived brand color, permanence, and shared light; finite object axes;
-  hue offsets, the night hue map, quantized light and timing; style choices;
-  component families; a release summary and a quiet record comparison.
+- Prismatic: derived brand color, permanence as optical depth, and one passive light;
+  finite object axes plus material and light-event lookup tables; radiance cascades,
+  hue offsets, the night hue map, quantized light and timing; style choices; component
+  families, a light rig and a playground; a release summary and a quiet record
+  comparison. A light lab (/design/prismatic/lab) holds the variants still being
+  decided, and /prism/PRISM.md gives agents the same rules as tables.
 
 The structure is editorial. Each page retains its own material, typography,
 spacing character, and interactive examples. It does not require a shared

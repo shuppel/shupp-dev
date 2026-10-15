@@ -3,7 +3,7 @@
   "$description": "PRISM design system tokens. Light-mode-first, prism/glass material model. Two modes: day, redshift. All color in OKLCH. Hue is parametric: one anchor hue --h drives the entire palette.",
   "meta": {
     "name": "PRISM",
-    "version": "0.7.0",
+    "version": "0.9.0",
     "colorSpace": "oklch",
     "anchorHueDefault": 185,
     "modes": ["day", "redshift"]
@@ -15,7 +15,7 @@
   },
 
   "holography": {
-    "$description": "The holographic reference beam. Six registered (@property) custom properties on :root are the ONLY runtime light API; every dichroic edge angle, chromatic cast vector, glint and tilt derives from them via var()/calc() cascade. A pointer driver writes them rAF-batched, at most once per frame, and only when a value crosses its quantum — the typed properties then refract between quanta over duration.flash. Without a driver the initial values reproduce the static 135° axis exactly.",
+    "$description": "The holographic reference beam. Six registered (@property) custom properties on :root are the ONLY runtime light API; every dichroic edge angle, chromatic cast vector, glint and tilt derives from them via var()/calc() cascade. /prism/light.js writes them rAF-batched, at most once per frame, and only when a value crosses its quantum — the typed properties then refract between quanta over duration.flash. Without a driver the initial values reproduce the static 135° axis exactly.",
     "ref": {
       "castAngle":  { "$type": "number", "prop": "--la",  "initial": 135,    "$description": "Cast angle in CSS-gradient degrees. Driver keeps it UNWOUND (may exceed 0-360) so 359→1 never spins the page." },
       "castVectorX": { "$type": "number", "prop": "--lvx", "initial": 0.7071, "$description": "Cast unit vector x. Shadows fall along (+lvx, +lvy); entrances arrive from (-lvx, -lvy)." },
@@ -32,6 +32,25 @@
       "positionPct": 2
     },
     "night": { "$description": "Redshift conserves the physics: casts are already axis-free halos, so only the glint, foil and screen sheen answer the light at night." }
+  },
+
+  "radiance": {
+    "$description": "v0.8. The light on the field is solved, not drawn: /prism/light.js runs 2D radiance cascades (A. Sannikov; https://radiance.wiki/) on a low-res field behind all content. The pointer emits four band-colored sources dispersed across the cast vector; every card is thin glass whose transmittance is its density tier. Without WebGL2 the field is absent and the holography refs still run.",
+    "transmittance": { "transient": 0.6, "standing": 0.3, "immovable": 0.05, "$description": "Per crossing. Set with data-light; tables default to standing, screens to immovable, data-light=\"none\" opts out. A card within 48px of the pointer eases to T = 1: it never shadows the light it holds." },
+    "cascades": { "probeSpacingTexels": "2^n", "raysPerProbe": "4^(n+1)", "interval": "L0 · [(4^n − 1)/3, (4^(n+1) − 1)/3)", "l0Texels": 1, "count": "smallest N whose top interval covers the viewport diagonal", "merge": "L(a→c) = L(a→b) + T(a→b) · L(b→c); four child rays averaged, bilinear across the four nearest upper probes" },
+    "field": { "longSideTexels": 320, "minTexelPx": 2, "adaptive": "coarsens 20% when solves run under 30fps for a sustained drag (floor 160 texels)" },
+    "sources": { "order": ["counter", "near", "anchor", "far"], "radiusPx": 9, "spreadPx": 15, "emission": 55 },
+    "shading": { "visibility": "v = f / f_open, from two solves (with and without objects)", "day": "b = 1 − e^(−f0(1 − v)); g = min(b); max(0.8, 1 − 0.16(g·w + 1.6(b − g))), w = far-band channel weights (mean 1); play light tinges; mix-blend-mode multiply", "night": "min(0.22, 0.22(1 − e^(−(0.6·f0·v + play)))); mix-blend-mode screen" },
+    "quantum": "Re-solve only when the rig, a light event, the scroll or the hue/mode changes. The loop sleeps at rest."
+  },
+
+  "light": {
+    "$description": "v0.9. The light is passive: it rests where the rig puts it and moves only for a story beat (sunrise, scroll light) or an action (a light event). Two channels: KEY light casts shadows; PLAY light (spots, prism bands, emitters, pipes) colors the field. The decision tables (materials, light events, rig) are generated from src/data/prism.ts into /prism/rules.js for the engine and /prism/PRISM.md for agents; that is the source of truth.",
+    "rules": "/prism/PRISM.md",
+    "tables": "/prism/rules.js",
+    "densityMaterial": { "transient": "glass", "standing": "frosted", "immovable": "pigment" },
+    "dayFloor": { "$type": "number", "$value": 0.8, "$description": "No channel of the day field drops below 80% under light. Audited: ink on field ≥ 8.1:1." },
+    "nightGlow": { "$type": "number", "$value": 0.22, "$description": "Night light lifts the field at most 0.22. Audited: on-ground text ≥ 5.6:1." }
   },
 
   "display": {

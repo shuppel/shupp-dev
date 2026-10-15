@@ -1,0 +1,401 @@
+---
+import DesignHead from '../../../components/SEO/DesignHead.astro';
+import { EVENTS, MATERIALS } from '../../../data/prism';
+// PRISM light lab — variant boards for visual validation. Like the reference
+// page it owns its document; every stage shares the page's one WebGL context.
+const title = 'Prismatic Light Lab — Materials, Events & Variants';
+const description = 'The light lab behind Prismatic: fourteen light materials, sixteen light events, spotlights in fog, and side-by-side variants for surfaces, legibility, depth and night.';
+
+interface Src { c?: string; x: number; y: number; cone?: number; axis?: number; power?: number; id?: string; off?: boolean; play?: boolean }
+interface Obj { m: string; x: number; y: number; w: number; h: number; tint?: string; label?: string; id?: string; z?: number }
+interface Stage { key: string; sources: Src[]; objects: Obj[]; fog?: number; extra?: string }
+
+const lamp: Src = { x: 12, y: 26 };
+const pane = (m: string, tint?: string): Obj => ({ m, x: 42, y: 26, w: 20, h: 44, tint });
+const materials: Stage[] = [
+  { key: 'glass', sources: [lamp], objects: [pane('glass')] },
+  { key: 'prism', sources: [{ x: 5, y: 50, cone: 30, axis: 0 }], objects: [{ m: 'prism', x: 34, y: 38, w: 14, h: 24 }] },
+  { key: 'dichroic', sources: [lamp], objects: [pane('dichroic', 'far')] },
+  { key: 'frosted', sources: [lamp], objects: [pane('frosted')] },
+  { key: 'filter', sources: [lamp], objects: [pane('filter', 'counter')] },
+  { key: 'pigment', sources: [lamp], objects: [pane('pigment')] },
+  { key: 'mirror', sources: [{ x: 14, y: 14, cone: 26, axis: 50 }], objects: [{ m: 'mirror', x: 34, y: 80, w: 34, h: 4 }] },
+  { key: 'emitter', sources: [{ ...lamp, power: 0.25 }], objects: [pane('emitter', 'anchor')] },
+  { key: 'phosphor', sources: [{ ...lamp, id: 'lab-phos-src', off: true }], objects: [pane('phosphor')], extra: 'flash' },
+  { key: 'fog', sources: [{ x: 5, y: 48, cone: 24, axis: 0 }], objects: [{ m: 'fog', x: 30, y: 14, w: 44, h: 72 }] },
+  { key: 'void', sources: [lamp], objects: [pane('void')] },
+  { key: 'pipe', sources: [{ x: 8, y: 22, cone: 30, axis: 40 }], objects: [{ m: 'pipe', x: 24, y: 62, w: 62, h: 7, tint: 'anchor' }] },
+  { key: 'film', sources: [{ ...lamp, id: 'lab-film-src' }], objects: [pane('film')], extra: 'move' },
+  { key: 'lens', sources: [{ x: 5, y: 50, cone: 44, axis: 0 }], objects: [{ m: 'lens', x: 32, y: 34, w: 15, h: 32 }] },
+];
+
+const variantCards: Obj[] = [
+  { m: '', x: 38, y: 18, w: 26, h: 30, label: 'Transient' },
+  { m: '', x: 62, y: 56, w: 26, h: 30, label: 'Standing' },
+];
+---
+
+<!doctype html>
+<html lang="en" data-mode="day">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <DesignHead title={title} description={description} path="/design/prismatic/lab/" image="/images/social/prismatic-card.png" imageAlt="Prismatic: one hue, a whole spectrum. Four color bands and a glass-like component on a pale ground." />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="text/markdown" title="PRISM rules for agents" href="/prism/PRISM.md" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="/prism/prism.css" />
+    <link rel="stylesheet" href="/prism/guide.css" />
+    <style is:global>
+      .lab-grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); }
+      .lab-grid--3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .lab-grid--2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      @media (max-width: 760px) { .lab-grid--3, .lab-grid--2 { grid-template-columns: 1fr; } }
+      .lab-cell { margin: 0; display: flex; flex-direction: column; gap: 0.55rem; }
+      .lab-stage { height: 200px; }
+      .lab-stage--tall { height: 240px; }
+      .lab-stage--big { height: clamp(320px, 46vw, 440px); }
+      .lab-cell figcaption { display: grid; gap: 0.15rem; font-size: 13.5px; line-height: 1.45; }
+      .lab-cell figcaption b { font-family: var(--mono); font-size: 12px; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; }
+      .lab-cell figcaption span { opacity: 0.72; }
+      .lab-tag { font-family: var(--mono); font-size: 11px; opacity: 0.6; }
+      .lab-center { position: absolute; inset: 0; display: grid; place-items: center; gap: 0.6rem; align-content: center; }
+      .lab-stage .ds-replay { position: absolute; left: 10px; bottom: 10px; z-index: 3; }
+      .prism-stage .prism-card { padding: 12px 14px; border-radius: var(--r-md); font-size: 13px; }
+      .lab-pos { position: absolute; }
+      .lab-note { max-width: 64ch; }
+      .lab-tools { display: flex; flex-wrap: wrap; gap: 0.75rem 1.25rem; align-items: center; margin-top: 0.8rem; }
+      .lab-tools label { display: inline-flex; align-items: center; gap: 0.6rem; font-family: var(--mono); font-size: 12px; }
+      .lab-tools input[type="range"] { accent-color: var(--anchor); width: 160px; }
+      .lab-text { position: absolute; left: 8%; right: 8%; top: 34%; z-index: 1; }
+      .lab-text h4 { font: 600 20px/1.2 var(--sans); letter-spacing: -0.02em; margin: 0 0 0.35rem; }
+      .lab-text p { font-size: 13.5px; margin: 0; max-width: 34ch; }
+      .lab-chip { display: inline-block; font-family: var(--mono); font-size: 12px; padding: 6px 10px; border-radius: 99px; background: var(--surface); color: var(--ink); }
+      .lab-field input { font: 13px var(--sans); padding: 8px 10px; border-radius: 8px; border: 1px solid var(--hairline); background: var(--surface); color: var(--ink); width: 150px; }
+      .prism-stage button[data-source] { border: none; padding: 0; cursor: grab; }
+      .prism-stage [data-held] { cursor: grabbing; }
+      [data-playground] [data-material] { cursor: grab; }
+    </style>
+  </head>
+
+  <body class="prism-guide">
+    <a class="ds-skip" href="#ds-main">Skip to content</a>
+
+    <div class="ds-controls" role="region" aria-label="PRISM controls">
+      <a class="ds-brand" href="/design/prismatic">&larr; Prismatic / light lab</a>
+      <div class="ds-hue">
+        <label for="ds-hue-slider">Anchor hue</label>
+        <input id="ds-hue-slider" type="range" min="0" max="360" step="1" value="185" aria-label="Anchor hue in OKLCH degrees" />
+      </div>
+      <p class="ds-readout" aria-live="polite">day H <b id="ds-day-h">185°</b> &rarr; redshift H <b id="ds-night-h">129°</b></p>
+      <button id="ds-mode-toggle" class="ds-mode" type="button" aria-pressed="false">
+        <span class="ds-dot" aria-hidden="true"></span><span id="ds-mode-label">Day</span>
+      </button>
+    </div>
+
+    <main id="ds-main" class="ds-page">
+      <header class="ds-hero">
+        <p class="prism-eyebrow">PRISM · v0.9 · Light lab</p>
+        <h1 class="prism-display">Light lab</h1>
+        <span class="prism-aside">Look first, then decide.</span>
+        <p class="prism-body ds-intro prism-muted">
+          Variants for the decisions that need to be seen: how each material treats light, what each
+          action does to it, how beams meet in fog, and where light may land. Nothing here moves until
+          you act, except the light you drag in the spotlight stage. Toggle the mode to judge night.
+        </p>
+      </header>
+
+      <!-- ========================= MATERIALS ========================= -->
+      <section id="materials" class="guide-chapter" aria-labelledby="materials-title">
+        <header>
+          <div><p class="prism-eyebrow">A / Materials</p><h2 id="materials-title">Fourteen ways to treat light.</h2></div>
+          <p>One lamp, one object. Shadows lean toward the far band; light passing a tinted object takes its color; a prism, lens or mirror throws a new beam.</p>
+        </header>
+        <div class="lab-grid">
+          {materials.map((st) => (
+            <figure class="lab-cell">
+              <div class="prism-stage lab-stage" data-stage data-fog={st.fog}>
+                {st.sources.map((s) => (
+                  <i data-source id={s.id} data-color={s.c ?? 'white'} data-cone={s.cone} data-axis={s.axis} data-power={s.power}
+                    data-off={s.off ? '' : undefined} style={`left:${s.x}%;top:${s.y}%`}></i>
+                ))}
+                {st.objects.map((o) => (
+                  <div data-material={o.m} data-tint={o.tint} style={`left:${o.x}%;top:${o.y}%;width:${o.w}%;height:${o.h}%`}>{o.label ?? o.m}</div>
+                ))}
+                {st.extra === 'flash' && <button class="ds-replay" type="button" data-flash="lab-phos-src">Flash</button>}
+                {st.extra === 'move' && <button class="ds-replay" type="button" data-move-light="lab-film-src">Move light</button>}
+              </div>
+              <figcaption>
+                <b>{st.key} · T {MATERIALS[st.key].T}</b>
+                <span>{MATERIALS[st.key].does[0].toUpperCase() + MATERIALS[st.key].does.slice(1)}. For {MATERIALS[st.key].use}.</span>
+              </figcaption>
+            </figure>
+          ))}
+        </div>
+      </section>
+
+      <!-- ========================== EVENTS =========================== -->
+      <section id="events" class="guide-chapter" aria-labelledby="events-title">
+        <header>
+          <div><p class="prism-eyebrow">B / Light events</p><h2 id="events-title">What actions do to light.</h2></div>
+          <p>Each specimen is a real control. Act on it to see its event. Every event settles within its listed duration (1q = 40ms); held states end when their state does.</p>
+        </header>
+        <div class="lab-grid">
+          <figure class="lab-cell">
+            <div class="prism-stage lab-stage" data-stage><i data-source style="left:12%;top:20%"></i>
+              <div class="lab-center"><button class="prism-btn" type="button" data-light-event="emit">Hover or focus me</button></div></div>
+            <figcaption><b>emit · {EVENTS.emit.on}</b><span>{EVENTS.emit.does}. Held.</span></figcaption>
+          </figure>
+          <figure class="lab-cell">
+            <div class="prism-stage lab-stage" data-stage><i data-source style="left:12%;top:20%"></i>
+              <div class="lab-center"><button class="prism-btn prism-btn--dense" type="button" data-light-event="absorb">Press</button></div></div>
+            <figcaption><b>absorb · {EVENTS.absorb.on}</b><span>{EVENTS.absorb.does}. {EVENTS.absorb.q}q.</span></figcaption>
+          </figure>
+          <figure class="lab-cell">
+            <div class="prism-stage lab-stage" data-stage><i data-source style="left:12%;top:20%"></i>
+              <div class="lab-center"><button class="prism-btn prism-btn--primary prism-edge" type="button" data-light-event="pulse">Save</button></div></div>
+            <figcaption><b>pulse · {EVENTS.pulse.on}</b><span>{EVENTS.pulse.does}. {EVENTS.pulse.q}q.</span></figcaption>
+          </figure>
+          <figure class="lab-cell">
+            <div class="prism-stage lab-stage" data-stage><i data-source style="left:12%;top:20%"></i>
+              <div class="lab-center"><button class="prism-btn" type="button">Tab to me</button><span class="lab-tag">keyboard focus</span></div></div>
+            <figcaption><b>pipe · {EVENTS.pipe.on}</b><span>{EVENTS.pipe.does}. {EVENTS.pipe.q}q, then holds.</span></figcaption>
+          </figure>
+          <figure class="lab-cell">
+            <div class="prism-stage lab-stage" data-stage><i data-source data-cone="36" data-axis="0" style="left:5%;top:50%"></i>
+              <div class="lab-center"><button class="prism-btn prism-btn--primary prism-edge" type="button" data-material="prism">Deploy</button></div></div>
+            <figcaption><b>prism · {EVENTS.prism.on}</b><span>{EVENTS.prism.does}. Passive.</span></figcaption>
+          </figure>
+          <figure class="lab-cell">
+            <div class="prism-stage lab-stage" data-stage><i data-source style="left:12%;top:20%"></i>
+              <div class="lab-center"><button class="prism-btn prism-btn--dense prism-btn--danger" type="button" data-light-event="void">Delete</button></div></div>
+            <figcaption><b>void · {EVENTS.void.on}</b><span>{EVENTS.void.does}. {EVENTS.void.q}q.</span></figcaption>
+          </figure>
+          <figure class="lab-cell">
+            <div class="prism-stage lab-stage" data-stage><i data-source style="left:12%;top:20%"></i>
+              <div class="lab-center"><button class="prism-btn" type="button" disabled>Unavailable</button></div></div>
+            <figcaption><b>frost · {EVENTS.frost.on}</b><span>{EVENTS.frost.does}. Passive.</span></figcaption>
+          </figure>
+          <figure class="lab-cell">
+            <div class="prism-stage lab-stage" data-stage><i data-source style="left:12%;top:16%" data-power="0.5"></i>
+              <div class="lab-center"><div class="prism-seg" role="group" aria-label="View" data-lens>
+                <button type="button" aria-pressed="true" data-light-state="lens">Day</button><button type="button" aria-pressed="false">Week</button><button type="button" aria-pressed="false">Month</button>
+              </div></div></div>
+            <figcaption><b>lens · {EVENTS.lens.on}</b><span>{EVENTS.lens.does}. Held.</span></figcaption>
+          </figure>
+          <figure class="lab-cell">
+            <div class="prism-stage lab-stage" data-stage><i data-source style="left:10%;top:14%"></i>
+              <div class="prism-table lab-pos" role="listbox" aria-label="Runs" data-seam style="left:12%;right:12%;top:22%;--cols:1fr 1fr">
+                <div class="prism-row" role="option" tabindex="0" aria-selected="false"><span>0xA1</span><span>ok</span></div>
+                <div class="prism-row" role="option" tabindex="0" aria-selected="false"><span>0xA2</span><span>ok</span></div>
+                <div class="prism-row" role="option" tabindex="0" aria-selected="false"><span>0xA3</span><span>fail</span></div>
+              </div></div>
+            <figcaption><b>seam · {EVENTS.seam.on}</b><span>{EVENTS.seam.does}. Held.</span></figcaption>
+          </figure>
+          <figure class="lab-cell">
+            <div class="prism-stage lab-stage" data-stage id="lab-sunrise"><i data-source style="left:24%;top:22%"></i>
+              <div data-material="glass" style="left:40%;top:30%;width:22%;height:36%">card</div>
+              <button class="ds-replay" type="button" data-sunrise="lab-sunrise">Replay</button></div>
+            <figcaption><b>sunrise · {EVENTS.sunrise.on}</b><span>{EVENTS.sunrise.does}. {EVENTS.sunrise.q}q.</span></figcaption>
+          </figure>
+          <figure class="lab-cell">
+            <div class="prism-stage lab-stage" data-stage><i data-source style="left:10%;top:16%"></i>
+              <div class="prism-card lab-pos" id="lab-busy" style="left:14%;right:14%;top:16%">
+                <div class="ds-stack"><div class="prism-ghost" style="height:1rem"></div><div class="prism-ghost" style="height:1rem;width:70%"></div></div>
+              </div>
+              <button class="ds-replay" type="button" data-busy="lab-busy">Load</button></div>
+            <figcaption><b>busy · {EVENTS.busy.on}</b><span>{EVENTS.busy.does}. Loops while busy, never at rest.</span></figcaption>
+          </figure>
+          <figure class="lab-cell">
+            <div class="prism-stage lab-stage" data-stage data-depth="z"><i data-source style="left:12%;top:18%"></i>
+              <div class="lab-center"><div class="prism-card" data-light-event="lift" data-z="1" style="cursor:grab">Hold me</div></div></div>
+            <figcaption><b>lift · {EVENTS.lift.on}</b><span>{EVENTS.lift.does}. Held.</span></figcaption>
+          </figure>
+          <figure class="lab-cell">
+            <div class="prism-stage lab-stage" data-stage><i data-source style="left:12%;top:18%"></i>
+              <div class="lab-center lab-field"><div class="prism-card" id="lab-reject-field" data-material="glass" style="padding:8px"><input aria-label="Email" value="erikk@" /></div>
+                <button class="prism-btn prism-btn--sm" type="button" data-reject="lab-reject-field">Submit</button></div></div>
+            <figcaption><b>reject · {EVENTS.reject.on}</b><span>{EVENTS.reject.does}. {EVENTS.reject.q}q.</span></figcaption>
+          </figure>
+          <figure class="lab-cell">
+            <div class="prism-stage lab-stage" data-stage><i data-source style="left:10%;top:14%" data-power="0.6"></i>
+              <div class="prism-card lab-pos" id="lab-note" data-material="phosphor" style="left:34%;right:10%;top:20%">1 new review</div>
+              <button class="ds-replay" type="button" data-light-event="afterglow" data-light-for="lab-note">Notify</button></div>
+            <figcaption><b>afterglow · {EVENTS.afterglow.on}</b><span>{EVENTS.afterglow.does}. {EVENTS.afterglow.q}q.</span></figcaption>
+          </figure>
+          <figure class="lab-cell">
+            <div class="prism-stage lab-stage" data-stage><i data-source style="left:10%;top:14%" data-power="0.6"></i>
+              <button class="prism-btn prism-btn--sm lab-pos" type="button" data-light-event="carry" data-carry-to="lab-clip" style="left:10%;top:62%">Copy link</button>
+              <span class="lab-chip lab-pos" id="lab-clip" data-material="glass" style="right:10%;top:22%">clipboard</span></div>
+            <figcaption><b>carry · {EVENTS.carry.on}</b><span>{EVENTS.carry.does}. {EVENTS.carry.q}q.</span></figcaption>
+          </figure>
+          <figure class="lab-cell">
+            <div class="prism-stage lab-stage" data-stage id="lab-eclipse"><i data-source style="left:50%;top:26%"></i>
+              <div data-material="glass" style="left:36%;top:52%;width:28%;height:30%">card</div>
+              <button class="ds-replay" type="button" data-eclipse="lab-eclipse">Switch mode</button></div>
+            <figcaption><b>eclipse · {EVENTS.eclipse.on}</b><span>{EVENTS.eclipse.does}. {EVENTS.eclipse.q}q.</span></figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <!-- ======================= SPOTLIGHTS IN FOG ===================== -->
+      <section id="fog" class="guide-chapter" aria-labelledby="fog-title">
+        <header>
+          <div><p class="prism-eyebrow">C / Spotlights in fog</p><h2 id="fog-title">Red meets blue in the air.</h2></div>
+          <p>Fog scatters light so beams show, and dims them with distance. Where the beams cross they add. Drag the lights and the panes; arrow keys nudge the focused one.</p>
+        </header>
+        <div class="prism-stage lab-stage--big" id="lab-fog" data-stage data-playground data-fog="0.45" data-mode="night" data-night="light">
+          <button type="button" data-source data-color="red" data-cone="40" aria-label="Red spotlight" style="left:10%;top:22%"></button>
+          <button type="button" data-source data-color="blue" data-cone="40" aria-label="Blue spotlight" style="left:90%;top:22%"></button>
+          <button type="button" data-source aria-label="White key light" data-power="0.35" style="left:50%;top:8%"></button>
+          <div data-material="filter" data-tint="near" tabindex="0" style="left:22%;top:62%;width:14%;height:20%">filter</div>
+          <div data-material="prism" tabindex="0" style="left:46%;top:58%;width:9%;height:22%">prism</div>
+          <div data-material="pigment" tabindex="0" style="left:70%;top:60%;width:12%;height:20%">pigment</div>
+        </div>
+        <div class="lab-tools">
+          <label>Fog <input type="range" min="0" max="1" step="0.05" value="0.45" data-fog-for="lab-fog" /></label>
+          <button class="ds-replay" type="button" data-mode-for="lab-fog" aria-pressed="true">Night stage</button>
+        </div>
+      </section>
+
+      <!-- ===================== PAGE-LEVEL VARIANTS ===================== -->
+      <section id="variants" class="guide-chapter" aria-labelledby="variants-title">
+        <header>
+          <div><p class="prism-eyebrow">D / Variants</p><h2 id="variants-title">Where may light land?</h2></div>
+          <p>The same scene under each option. The light rig on the reference page applies any of these to the whole page.</p>
+        </header>
+
+        <section class="ds-section" aria-labelledby="var-surfaces">
+          <header><span class="ds-law">SURFACES</span><h3 id="var-surfaces">Field only, lit surfaces, or lit edges</h3></header>
+          <div class="lab-grid lab-grid--3">
+            {['field', 'lit', 'edges'].map((v) => (
+              <figure class="lab-cell">
+                <div class="prism-stage lab-stage--tall" data-stage data-light-surfaces={v}>
+                  <i data-source style="left:14%;top:16%"></i>
+                  {variantCards.map((o) => <div class="prism-card lab-pos" style={`left:${o.x}%;top:${o.y}%;width:${o.w}%;height:${o.h}%`}>{o.label}</div>)}
+                </div>
+                <figcaption><b>{v}</b><span>{v === 'field' ? 'Light lands between objects only (v0.8).' : v === 'lit' ? 'Surfaces catch a wash of the arriving light.' : 'Only the edge facing the light catches it.'}</span></figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+
+        <section class="ds-section" aria-labelledby="var-legibility">
+          <header><span class="ds-law">LEGIBILITY</span><h3 id="var-legibility">Clamp, halo, or mask</h3></header>
+          <div class="lab-grid lab-grid--3">
+            {['clamp', 'halo', 'mask'].map((v) => (
+              <figure class="lab-cell">
+                <div class="prism-stage lab-stage--tall" data-stage data-mode="night" data-night="light" data-fog="0.5" data-light-legibility={v}>
+                  <i data-source data-color="red" data-cone="38" style="left:8%;top:18%"></i>
+                  <i data-source data-color="blue" data-cone="38" style="left:92%;top:18%"></i>
+                  <div class="lab-text"><h4>Release 4.2 ships Friday</h4><p>Two checks are ready. One needs a decision before noon.</p></div>
+                </div>
+                <figcaption><b>{v}</b><span>{v === 'clamp' ? 'Light stays within the audited bound; text sits in it.' : v === 'halo' ? 'Text keeps a halo of its ground.' : 'Light is held off the text blocks.'}</span></figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+
+        <section class="ds-section" aria-labelledby="var-depth">
+          <header><span class="ds-law">DEPTH</span><h3 id="var-depth">Flat, or z-layered</h3></header>
+          <div class="lab-grid lab-grid--2">
+            {['flat', 'z'].map((v) => (
+              <figure class="lab-cell">
+                <div class="prism-stage lab-stage--tall" data-stage data-depth={v}>
+                  <i data-source style="left:12%;top:14%"></i>
+                  <div class="prism-card lab-pos" data-z="1" style="left:30%;top:24%;width:18%;height:30%">z 1</div>
+                  <div class="prism-card lab-pos" data-z="2" style="left:54%;top:40%;width:18%;height:30%">z 2</div>
+                  <div class="prism-card lab-pos" data-z="3" style="left:76%;top:16%;width:16%;height:30%">z 3</div>
+                </div>
+                <figcaption><b>{v}</b><span>{v === 'flat' ? 'Every object sits on the field.' : 'Higher layers throw their shadow farther from themselves.'}</span></figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+
+        <section class="ds-section" aria-labelledby="var-night">
+          <header><span class="ds-law">NIGHT</span><h3 id="var-night">Occlusion, or light play</h3></header>
+          <div class="lab-grid lab-grid--2">
+            {['occlusion', 'light'].map((v) => (
+              <figure class="lab-cell">
+                <div class="prism-stage lab-stage--tall" data-stage data-mode="night" data-night={v}>
+                  <i data-source style="left:14%;top:14%"></i>
+                  <i data-source data-color="blue" data-cone="34" data-power="0.7" style="left:92%;top:12%"></i>
+                  <div class="prism-card lab-pos" style="left:30%;top:26%;width:22%;height:32%">card</div>
+                  <div data-material="emitter" data-tint="anchor" style="left:62%;top:58%;width:16%;height:22%">screen</div>
+                </div>
+                <figcaption><b>{v}</b><span>{v === 'occlusion' ? 'Light is scarce and objects grow opaque; only emitters glow.' : 'Light plays: beams show in a low fog and pools glow.'}</span></figcaption>
+              </figure>
+            ))}
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="ds-footer">
+      <p>
+        PRISM v0.9 light lab · back to <a href="/design/prismatic">the reference</a> · rules for agents:
+        <a href="/prism/PRISM.md">PRISM.md</a> · engine: <a href="/prism/light.js">light.js</a>
+      </p>
+    </footer>
+
+    <script type="module" is:inline>
+      import { light, refresh } from '/prism/light.js';
+      import '/prism/guide.js';
+
+      const $ = (id) => document.getElementById(id);
+      const on = (sel, fn) => document.querySelectorAll(sel).forEach((el) => el.addEventListener('click', () => fn(el)));
+      const Q = 40;
+
+      // Phosphor: the lamp flashes for 6q, then the phosphor glows on alone.
+      on('[data-flash]', (btn) => {
+        const src = $(btn.dataset.flash);
+        delete src.dataset.off; refresh(src);
+        setTimeout(() => { src.dataset.off = ''; refresh(src); }, 6 * Q);
+      });
+      // Film: move the lamp to see the color shift with angle.
+      const spots = [[12, 26], [50, 8], [86, 30], [50, 90]];
+      on('[data-move-light]', (btn) => {
+        const src = $(btn.dataset.moveLight);
+        const i = (Number(src.dataset.spot ?? 0) + 1) % spots.length;
+        src.dataset.spot = String(i);
+        [src.style.left, src.style.top] = spots[i].map((v) => v + '%');
+        refresh(src);
+      });
+      // Lens: a segmented toggle focuses a beam on the chosen option.
+      document.querySelectorAll('[data-lens] button').forEach((btn) => btn.addEventListener('click', () => {
+        btn.parentElement.querySelectorAll('button').forEach((b) => { b.setAttribute('aria-pressed', 'false'); light.clear(b); });
+        btn.setAttribute('aria-pressed', 'true');
+        light.event(btn, 'lens');
+      }));
+      // Seam: selecting a row lights its seam as a pipe.
+      document.querySelectorAll('[data-seam] .prism-row').forEach((row) => {
+        const select = () => {
+          row.parentElement.querySelectorAll('.prism-row').forEach((r) => { r.setAttribute('aria-selected', 'false'); light.clear(r); });
+          row.setAttribute('aria-selected', 'true');
+          light.event(row, 'seam');
+        };
+        row.addEventListener('click', select);
+        row.addEventListener('keydown', (e) => { if (e.key === 'Enter' || e.key === ' ') { select(); e.preventDefault(); } });
+      });
+      // Sunrise: the key light rises once.
+      on('[data-sunrise]', (btn) => { const st = $(btn.dataset.sunrise); st.dataset.intro = String(performance.now()); refresh(st); });
+      // Busy: ghosts and light move only while aria-busy holds.
+      on('[data-busy]', (btn) => {
+        const card = $(btn.dataset.busy);
+        card.setAttribute('aria-busy', 'true'); light.event(card, 'busy');
+        setTimeout(() => { card.setAttribute('aria-busy', 'false'); light.clear(card); }, 65 * Q);
+      });
+      // Reject: the field becomes a danger filter, then clears.
+      on('[data-reject]', (btn) => light.event($(btn.dataset.reject), 'reject'));
+      // Eclipse: an occluder crosses the key light as the stage turns to night.
+      on('[data-eclipse]', (btn) => {
+        const st = $(btn.dataset.eclipse);
+        light.event(btn, 'eclipse');
+        setTimeout(() => { st.dataset.mode = st.dataset.mode === 'night' ? 'day' : 'night'; refresh(st); }, 12 * Q);
+      });
+    </script>
+  </body>
+</html>
