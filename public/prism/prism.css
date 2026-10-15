@@ -1,14 +1,18 @@
 /* ============================================================
-   PRISM v0.7 — design system CSS layer
+   PRISM v0.8 — design system CSS layer
    Drop-in. Set data-mode="day" | "night" on <html>.
    Set --h (anchor hue, OKLCH deg) on :root to rotate the palette.
-   Set --hr (redshift hue) via the JS helper at the bottom.
+   Set --hr (redshift hue) alongside it: hr = redshift(h).
 
    v0.7 — HOLOGRAPHY: a single light reference beam (six registered
    custom properties on :root) drives every edge angle, cast vector,
    glint and tilt by var()/calc() cascade. A driver writes the refs
    at most once per frame, quantized; without a driver the statics
    below reproduce the v0.6 look exactly (cast axis 135°).
+
+   v0.8 — RADIANCE: /prism/light.js (optional) is that driver, and it
+   also solves the light on the field with radiance cascades. Cards
+   are glass; density is their transmittance. See .prism-light-field.
    ============================================================ */
 
 @import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@1&family=Spline+Sans+Mono:wght@400;500&family=Tilt+Prism&display=swap");
@@ -307,6 +311,16 @@ body {
 .prism-screen[data-band="near"]    { --px: var(--near); }
 .prism-screen[data-band="far"]     { --px: var(--far); }
 .prism-screen[data-band="counter"] { --px: var(--counter); }
+
+/* RADIANCE FIELD (v0.8) — light.js prepends one low-res canvas: the
+   solved light falling on the field, upscaled bilinearly. It sits behind
+   all content. Day multiplies (tinted shadows); night screens (glow). */
+.prism-light-field {
+  position: fixed; left: 0; top: 0; z-index: -1; pointer-events: none;
+  mix-blend-mode: multiply;
+  transition: opacity calc(var(--t-sunset) / 2) var(--e-refract);
+}
+.prism-light-field[data-blend="screen"] { mix-blend-mode: screen; }
 
 /* ----- motion keyframes ----- */
 @keyframes prism-arrive {

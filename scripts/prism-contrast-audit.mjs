@@ -2,7 +2,9 @@
  * PRISM contrast audit.
  *
  * Verifies WCAG AA (4.5:1) for the body-ink-on-field and ink-soft-on-surface
- * combinations across the wheel, in both day and night modes. Reports any hue
+ * combinations across the wheel, in both day and night modes, and for text on
+ * the field at the radiance field's worst case (/prism/light.js): a full-depth
+ * day shadow, and a full night glow. Reports any hue
  * band that needs the sanctioned fix: darken --ink L by up to 0.04 (never change
  * hue). Run: `node scripts/prism-contrast-audit.mjs`
  *
@@ -42,9 +44,32 @@ function relLuminance(L, C, h) {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b;
 }
 
+function srgbToLinear(c) {
+  return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+}
+
+// The radiance canvas blends in encoded sRGB, so apply it there.
+function blendLuminance([L, C, h], blend) {
+  const enc = oklchToLinearSrgb(L, C, h).map(linearToSrgb).map(blend);
+  const [r, g, b] = enc.map((c) => srgbToLinear(Math.min(Math.max(c, 0), 1)));
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+}
+
+// Mirrors light.js: SHADOW_DEPTH 0.16, weighted per channel toward the far band
+// (mean weight 1); GLOW 0.22, screened. Worst case = full depth / full glow.
+const SHADOW_DEPTH = 0.16;
+const GLOW = 0.22;
+function shadowed(h) {
+  const far = oklchToLinearSrgb(0.7, 0.11, h + 75).map((c) => 1 - Math.min(Math.max(c, 0), 1) ** (1 / 2.2));
+  const mean = (far[0] + far[1] + far[2]) / 3;
+  const w = far.map((c) => c / mean);
+  return (c, i) => c * (1 - SHADOW_DEPTH * w[i]);
+}
+const glowing = (c) => 1 - (1 - c) * (1 - GLOW);
+
 function contrast(fg, bg) {
-  const L1 = relLuminance(...fg);
-  const L2 = relLuminance(...bg);
+  const L1 = Array.isArray(fg) ? relLuminance(...fg) : fg;
+  const L2 = Array.isArray(bg) ? relLuminance(...bg) : bg;
   const [hi, lo] = L1 >= L2 ? [L1, L2] : [L2, L1];
   return (hi + 0.05) / (lo + 0.05);
 }
@@ -93,10 +118,12 @@ for (const mode of ['day', 'night']) {
         ? [
             ['ink/field', t.ink, t.field],
             ['inkSoft/surface', t.inkSoft, t.surface],
+            ['ink/field+shadow', t.ink, blendLuminance(t.field, shadowed(h))],
           ]
         : [
             ['ink/surface', t.ink, t.surface],
             ['onGround/field', t.onGround, t.field],
+            ['onGround/field+glow', t.onGround, blendLuminance(t.field, glowing)],
           ];
     const out = pairs
       .map(([label, fg, bg]) => {

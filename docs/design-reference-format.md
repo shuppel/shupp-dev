@@ -36,9 +36,10 @@ API. Audit text should describe exactly which pairs and states were checked.
 - Acrylics: gesture, pigment history, and readable ground; stroke/blot/ground/layer
   vocabulary; Gaussian width and deposited coverage; color schemes and style
   rules; components; an editorial summary and a comparison of the same schemes.
-- Prismatic: derived brand color, permanence, and shared light; finite object axes;
-  hue offsets, the night hue map, quantized light and timing; style choices;
-  component families; a release summary and a quiet record comparison.
+- Prismatic: derived brand color, permanence as optical depth, and one solved light;
+  finite object axes; radiance cascades, hue offsets, the night hue map, quantized
+  light and timing; style choices; component families; a release summary and a quiet
+  record comparison.
 
 The structure is editorial. Each page retains its own material, typography,
 spacing character, and interactive examples. It does not require a shared
