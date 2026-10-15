@@ -1,11 +1,14 @@
 ---
 import DesignHead from '../../components/SEO/DesignHead.astro';
+import { ACCEPTANCE, ANTI_PATTERNS, EVENTS, MATERIALS, RIG } from '../../data/prism';
 // PRISM — design-system showcase (standalone document).
 // Self-contained: own <html> with data-mode, own day/night cascade. It does NOT
 // use the site Layout because PRISM owns the whole viewport + its own mode model.
 // Tokens: /prism/prism.tokens.json · material: /prism/prism.css · light: /prism/light.js
+// Light rules (materials, events, rig) live in src/data/prism.ts → /prism/PRISM.md.
 const title = 'Prismatic — An OKLCH Color & UI Design System';
-const description = 'Explore Prismatic: one hue becomes an OKLCH palette, glass-like UI, and a live radiance-cascades light field. Interactive principles, math, and tokens.';
+const description = 'Explore Prismatic: one hue becomes an OKLCH palette, glass-like UI, and a passive radiance-cascades light with materials, light events and a light rig.';
+const sentence = (t: string) => t[0].toUpperCase() + t.slice(1) + '.';
 
 // 8×8 one-bit sprites for the pixel displays ('#' = lit). Rendered at build
 // time — the DOM is static; only the reference-beam CSS vars animate them.
@@ -63,6 +66,7 @@ const cascades = cascadeRows(1440, 900);
 
     <meta name="color-scheme" content="light dark" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="text/markdown" title="PRISM rules for agents" href="/prism/PRISM.md" />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -70,215 +74,6 @@ const cascades = cascadeRows(1440, 900);
     <!-- PRISM drop-in layer (self-imports its own fonts) -->
     <link rel="stylesheet" href="/prism/prism.css" />
 
-    <style is:global>
-      /* Showcase-only supplement. Reads PRISM role tokens; mints no brand hex. */
-
-      /* Info inherits the anchor; --standing-tint is the one sanctioned wash. */
-      [data-mode="day"] {
-        --standing-tint: oklch(0.74 0.125 var(--h) / 0.08);
-        --info: var(--anchor);
-        --info-dense: oklch(0.44 0.10 var(--h));
-        --on-info: #fff;
-      }
-      [data-mode="night"] {
-        --standing-tint: oklch(0.72 0.115 var(--hr) / 0.14);
-        --info: var(--anchor);
-        --info-dense: var(--anchor);
-        --on-info: var(--field);
-      }
-
-      html, body { min-height: 100%; }
-      body { padding-bottom: 6rem; }
-
-      /* Type roles. Secondary text dims via opacity, not color-mix(currentColor…),
-         which Chromium resolves one mode/hue stale after a toggle or hue drag. */
-      .prism-headline { font-family: var(--sans); font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
-      .prism-body { font-size: 15.5px; line-height: 1.55; }
-      .prism-ui { font-size: 13.5px; font-weight: 500; }
-      .prism-data { font-family: var(--mono); font-size: 13px; }
-      .prism-eyebrow { font-family: var(--mono); font-size: 12px; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.62; }
-      .prism-aside { font-family: var(--serif); font-style: italic; font-size: 16px; opacity: 0.72; }
-      .prism-muted { opacity: 0.68; }
-
-      /* Card hover — day lifts toward the light; night glows brighter (no lift). */
-      .prism-card {
-        transition: background var(--t-sunset) var(--e-refract),
-                    box-shadow var(--t-flash) var(--t-lag) var(--e-light),
-                    transform var(--t-arrive) var(--e-light),
-                    color var(--t-sunset) var(--e-refract);
-      }
-      .prism-card.ds-lift:hover { box-shadow: var(--elev-hi); transform: translate(-2px, -3px); }
-      [data-mode="night"] .prism-card.ds-lift:hover { transform: none; }
-      .prism-btn--primary.prism-edge:hover::before { background-position: 100% 100%; }
-
-      .prism-swatch {
-        border-radius: var(--r-sm); min-height: 64px; display: flex; align-items: flex-end;
-        padding: 0.5rem 0.6rem; font-family: var(--mono); font-size: 12px;
-        color: var(--ink); box-shadow: var(--elev-dense);
-      }
-      .prism-swatch small { opacity: 0.7; }
-      .ds-swatch-label { display: flex; flex-direction: column; gap: 0.1rem; }
-
-      .prism-badge--warn { background: var(--warning-dense); color: var(--on-warning-dense); }
-      .prism-badge--info { background: var(--info-dense); color: var(--on-info); }
-      .prism-btn--danger { background: var(--danger-dense); color: var(--on-danger-dense); box-shadow: var(--elev-dense); }
-
-      /* Data surface as a block grid */
-      .prism-table {
-        background: var(--surface); color: var(--ink); border-radius: var(--r-md);
-        overflow: hidden; box-shadow: var(--elev-dense); font-family: var(--mono); font-size: 13px;
-      }
-      .prism-table .prism-row, .ds-thead { display: grid; grid-template-columns: var(--cols, 1fr 1fr 1fr); gap: 1rem; align-items: center; }
-      .ds-thead {
-        padding: 10px; border-bottom: 1px solid var(--hairline);
-        font-size: 11.5px; letter-spacing: 0.1em; text-transform: uppercase;
-        color: color-mix(in oklch, var(--ink) 60%, transparent);
-      }
-      .prism-table .prism-row:last-child { border-bottom: none; }
-      .prism-row.lit::before { opacity: 1; }
-      .prism-row.lit { background: var(--standing-tint); }
-      .prism-row:focus-visible { outline: 2px solid var(--anchor); outline-offset: -2px; }
-
-      /* Entanglement dot */
-      .prism-dot {
-        width: 14px; height: 14px; border-radius: 50%; background: var(--anchor); box-shadow: var(--elev-dense);
-        transition: box-shadow var(--t-flash) var(--e-light), transform var(--t-flash) var(--e-light);
-      }
-      .prism-dot.lit { box-shadow: 0 0 0 4px var(--standing-tint); transform: scale(1.15); }
-
-      /* Superposition collapse (5q) */
-      .prism-ghost.collapsed { background: transparent; }
-      .prism-ghost.collapsed::before, .prism-ghost.collapsed::after {
-        animation: none; opacity: 0; transition: opacity calc(var(--q) * 5) var(--e-light);
-      }
-
-      /* Strings vibrate in color, not space. */
-      @keyframes prism-string { 0%, 100% { opacity: 0.37; } 50% { opacity: 0.62; } }
-      .prism-string { animation: prism-string var(--t-string) var(--e-refract) infinite; }
-
-      /* Radiance monitor */
-      .ds-mono { margin: 0.35rem 0 0; }
-      .ds-mono b, .ds-range output { color: var(--anchor); font-weight: 500; }
-      .ds-range { display: flex; align-items: center; gap: 0.75rem; margin: 1.1rem 0 0.9rem; }
-      .ds-range input { flex: 1; accent-color: var(--anchor); }
-      .ds-range output { font-family: var(--mono); font-size: 13px; min-width: 1.5ch; }
-      .ds-cascades td, .ds-cascades th { font-family: var(--mono); font-size: 12.5px; padding: 0.55rem 1rem; }
-      .ds-cascades tr[data-off] { opacity: 0.35; }
-
-      /* Icons & displays */
-      .ds-icon-row { display: flex; flex-wrap: wrap; gap: 1.1rem; }
-      .ds-icon-tile {
-        background: none; border: none; cursor: pointer; padding: 0.35rem;
-        display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
-        border-radius: var(--r-sm); color: inherit;
-      }
-      .ds-icon-tile .prism-data { opacity: 0.65; }
-      .ds-icon-tile:hover .prism-data { opacity: 1; }
-      .ds-icon-tile:focus-visible { outline: 2px solid var(--anchor); outline-offset: 3px; }
-      .ds-paint { touch-action: none; cursor: crosshair; }
-      .ds-paint:focus-visible { outline: 2px solid var(--anchor); outline-offset: 4px; }
-      .ds-paint b.cursor { outline: 2px solid var(--counter); outline-offset: 1px; }
-
-      /* Page chrome (ds-*) */
-      .ds-skip {
-        position: absolute; left: -999px; top: 0; background: var(--surface); color: var(--ink);
-        padding: 0.5rem 1rem; border-radius: var(--r-sm); z-index: 50;
-      }
-      .ds-skip:focus { left: 0.5rem; top: 0.5rem; }
-
-      .ds-controls {
-        position: sticky; top: 0; z-index: 40;
-        display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem;
-        padding: 0.85rem clamp(1rem, 4vw, 3rem);
-        background: color-mix(in oklch, var(--field) 86%, transparent);
-        backdrop-filter: blur(10px) saturate(140%); -webkit-backdrop-filter: blur(10px) saturate(140%);
-        border-bottom: 1px solid var(--hairline);
-        transition: background var(--t-sunset) var(--e-refract), border-color var(--t-sunset) var(--e-refract);
-      }
-      .ds-brand {
-        font-family: var(--mono); font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase;
-        color: inherit; opacity: 0.6; text-decoration: none; margin-right: auto;
-      }
-      .ds-brand:hover { opacity: 1; }
-      .ds-hue { display: flex; align-items: center; gap: 0.6rem; }
-      .ds-hue label { font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.6; }
-      .ds-hue input[type='range'] {
-        -webkit-appearance: none; appearance: none; width: clamp(120px, 22vw, 240px); height: 8px;
-        border-radius: 999px; outline-offset: 4px;
-        background: linear-gradient(to right,
-          oklch(0.72 0.16 0), oklch(0.72 0.16 60), oklch(0.72 0.16 120),
-          oklch(0.72 0.16 180), oklch(0.72 0.16 240), oklch(0.72 0.16 300), oklch(0.72 0.16 360));
-      }
-      .ds-hue input[type='range']::-webkit-slider-thumb {
-        -webkit-appearance: none; appearance: none; width: 20px; height: 20px; border-radius: 50%;
-        background: var(--anchor); border: 2px solid var(--surface); box-shadow: var(--elev-dense); cursor: pointer;
-      }
-      .ds-hue input[type='range']::-moz-range-thumb {
-        width: 20px; height: 20px; border-radius: 50%; background: var(--anchor);
-        border: 2px solid var(--surface); cursor: pointer;
-      }
-      .ds-readout { font-family: var(--mono); font-size: 13px; white-space: nowrap; }
-      .ds-readout b { color: var(--anchor); font-weight: 500; }
-      .ds-mode {
-        font-family: var(--mono); font-size: 13px; letter-spacing: 0.04em;
-        padding: 0.5rem 0.9rem; border-radius: var(--r-sm); border: 1px solid var(--hairline);
-        background: var(--surface); color: var(--ink); cursor: pointer;
-        display: inline-flex; align-items: center; gap: 0.5ch;
-        transition: background var(--t-sunset) var(--e-refract), color var(--t-sunset) var(--e-refract);
-      }
-      .ds-mode .ds-dot { width: 9px; height: 9px; border-radius: 50%; background: var(--anchor); }
-
-      .ds-page { max-width: 1080px; margin: 0 auto; padding: 0 clamp(1rem, 4vw, 3rem); }
-      .ds-hero { padding: clamp(2.5rem, 7vw, 5rem) 0 2rem; }
-      .ds-hero .prism-aside { display: block; margin-top: 0.75rem; }
-      .ds-hero .ds-intro { max-width: 56ch; margin-top: 1.25rem; }
-
-      .ds-section { padding: 2.5rem 0; border-top: 1px solid var(--hairline); }
-      .ds-section > header { margin-bottom: 1.5rem; }
-      .ds-section header p { max-width: 64ch; margin: 0.5rem 0 0; }
-      .ds-section header a { color: var(--anchor); }
-      .ds-law { font-family: var(--mono); font-size: 12px; }
-
-      .ds-grid { display: grid; gap: 1rem; }
-      .ds-grid--4 { grid-template-columns: repeat(4, 1fr); }
-      .ds-grid--3 { grid-template-columns: repeat(3, 1fr); }
-      .ds-grid--2 { grid-template-columns: repeat(2, 1fr); }
-      @media (max-width: 760px) {
-        .ds-grid--4 { grid-template-columns: repeat(2, 1fr); }
-        .ds-grid--3, .ds-grid--2 { grid-template-columns: 1fr; }
-      }
-      .ds-row-actions { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
-      .ds-stack { display: flex; flex-direction: column; gap: 0.6rem; }
-
-      /* sizes × styles sheet */
-      .ds-matrix {
-        display: grid; grid-template-columns: 76px repeat(5, minmax(0, 1fr));
-        gap: 0.9rem 0.75rem; align-items: center; overflow-x: auto;
-      }
-      .ds-mx-cell { display: flex; align-items: center; }
-      .ds-mx-label { font-family: var(--mono); font-size: 11.5px; opacity: 0.6; white-space: nowrap; }
-
-      .ds-replay {
-        font-family: var(--mono); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
-        padding: 0.35rem 0.7rem; border-radius: var(--r-sm); border: 1px solid var(--hairline);
-        background: transparent; color: inherit; opacity: 0.7; cursor: pointer;
-      }
-      .ds-replay:hover { opacity: 1; border-color: var(--anchor); }
-      .ds-caption { font-family: var(--mono); font-size: 12px; margin-top: 0.6rem; }
-
-      .ds-type-stack { display: flex; flex-direction: column; gap: 1.1rem; }
-      .ds-type-stack > * { margin: 0; }
-      .ds-type-meta { font-family: var(--mono); font-size: 12px; }
-
-      .ds-footer {
-        max-width: 1080px; margin: 3rem auto 0; padding: 2rem clamp(1rem, 4vw, 3rem) 0;
-        border-top: 1px solid var(--hairline); font-family: var(--mono); font-size: 13px;
-        color: color-mix(in oklch, var(--on-ground) 70%, transparent);
-      }
-      .ds-footer a { color: var(--anchor); }
-      .ds-footer p + p { margin-top: 1rem; line-height: 1.7; }
-      .ds-footer code { color: currentColor; }
-    </style>
     <link rel="stylesheet" href="/prism/guide.css" />
   </head>
 
@@ -302,13 +97,14 @@ const cascades = cascadeRows(1440, 900);
     <main id="ds-main" class="ds-page">
       <!-- =========================== HERO =============================== -->
       <header class="ds-hero">
-        <p class="prism-eyebrow prism-string">PRISM · v0.8 · OKLCH · Radiance cascades</p>
+        <p class="prism-eyebrow">PRISM · v0.9 · OKLCH · Passive light</p>
         <h1 class="prism-display">Prismatic</h1>
         <span class="prism-aside">Light splits at the edges; shadows carry color, not gray.</span>
         <p class="prism-body ds-intro prism-muted">
-          A light-mode-first design system. One hue derives the palette, density sets how much light
-          an object stops, and a single light falls across every object. That light is solved live
-          with radiance cascades. Move the pointer to move it.
+          A light-mode-first design system. One hue derives the palette, density chooses a material,
+          and one light falls across every object. The light rests where the rig puts it and moves
+          only when something happens. Set it in the <a href="#ds-rig">light rig</a>, play with it in
+          the <a href="#ds-play">playground</a>, or compare variants in the <a href="/design/prismatic/lab">lab</a>.
         </p>
       </header>
 
@@ -316,9 +112,9 @@ const cascades = cascadeRows(1440, 900);
         <p class="prism-eyebrow">Read the system / from idea to interface</p>
         <ol>
           <li><a href="#concepts"><span>01</span><strong>Core concepts</strong><small>Hue, density, light.</small></a></li>
-          <li><a href="#model"><span>02</span><strong>Objects &amp; mathematics</strong><small>The light is solved.</small></a></li>
+          <li><a href="#model"><span>02</span><strong>Objects &amp; mathematics</strong><small>Materials, events, the solve.</small></a></li>
           <li><a href="#style-guide"><span>03</span><strong>Style guide</strong><small>Color, type, motion, geometry.</small></a></li>
-          <li><a href="#components"><span>04</span><strong>Components</strong><small>Density, then role, then size.</small></a></li>
+          <li><a href="#components"><span>04</span><strong>Components</strong><small>Density, rig, playground.</small></a></li>
           <li><a href="#information"><span>05</span><strong>Information patterns</strong><small>A reading order for light.</small></a></li>
           <li><a href="#use"><span>06</span><strong>Build with it</strong><small>Recipe, limits, source.</small></a></li>
         </ol>
@@ -346,8 +142,8 @@ const cascades = cascadeRows(1440, 900);
           <article class="prism-card">
             <p class="prism-eyebrow">I3 / Share the light</p>
             <div class="prism-holo" aria-hidden="true"></div>
-            <h3>One light, solved.</h3>
-            <p>The pointer emits four band-colored sources. Field shadows are computed from them, and edges and foil read the same reference.</p>
+            <h3>One light, at rest.</h3>
+            <p>The light rests where the rig puts it and moves for a story beat or an action, never for the pointer. Shadows are solved from it; edges and foil read the same reference.</p>
           </article>
         </div>
       </section>
@@ -356,21 +152,45 @@ const cascades = cascadeRows(1440, 900);
       <section id="model" class="guide-chapter" aria-labelledby="model-title">
         <header>
           <div><p class="prism-eyebrow">02 / Objects &amp; mathematics</p><h2 id="model-title">The light is solved, not drawn.</h2></div>
-          <p>Objects take finite values. Hue, light, and time vary continuously within them. Each formula below is the code that runs on this page.</p>
+          <p>Objects take finite values. Materials and events are lookup tables, not taste. Each formula below is the code that runs on this page.</p>
         </header>
 
         <div class="guide-table-wrap">
           <table class="guide-table">
-            <caption>Object = (mode, density, role, size), lit by one radiance field</caption>
+            <caption>Object = (mode, density → material, role, size) + events, lit by one radiance field</caption>
             <thead><tr><th scope="col">Axis</th><th scope="col">Values</th><th scope="col">Controls</th></tr></thead>
             <tbody>
-              <tr><th scope="row">Mode</th><td>day | night</td><td>Figure and ground, shadow or glow, filled or outlined display type.</td></tr>
-              <tr><th scope="row">Density</th><td>transient | standing | immovable</td><td>Edge, wash, fill, and transmittance T = 0.6 | 0.3 | 0.05.</td></tr>
+              <tr><th scope="row">Mode</th><td>day | night</td><td>Figure and ground, shadow or glow, filled or outlined display type. Night is occlusion first.</td></tr>
+              <tr><th scope="row">Density</th><td>transient | standing | immovable</td><td>Chooses the material: glass, frosted, pigment (T = 0.6 | 0.3 | 0.05).</td></tr>
+              <tr><th scope="row">Material</th><td>{Object.keys(MATERIALS).length} kinds · <code class="prism-data">data-material</code></td><td>How the object treats light, when density is not enough to say it.</td></tr>
+              <tr><th scope="row">Event</th><td>{Object.keys(EVENTS).length} kinds · <code class="prism-data">data-light-event</code></td><td>What an action does to light. Each settles within its listed q.</td></tr>
               <tr><th scope="row">Role</th><td>brand | info | success | warning | danger</td><td>Brand and info follow the anchor. The others are fixed hues.</td></tr>
               <tr><th scope="row">Size</th><td>button xs–xl · badge, chip sm–lg</td><td>Padding and type scale. The 1.5px edge stays fixed.</td></tr>
             </tbody>
           </table>
         </div>
+
+        <div class="ds-grid ds-grid--2" style="align-items: start; margin-top: 1rem;">
+          <div class="guide-table-wrap" style="margin: 0;">
+            <table class="guide-table ds-lookup">
+              <caption>LAW 22 · Materials: how an object treats light</caption>
+              <thead><tr><th scope="col">Material</th><th scope="col">T</th><th scope="col">Does</th></tr></thead>
+              <tbody>
+                {Object.entries(MATERIALS).map(([k, m]) => <tr><th scope="row">{k}</th><td>{m.T}</td><td>{sentence(m.does)}<small>{m.use}</small></td></tr>)}
+              </tbody>
+            </table>
+          </div>
+          <div class="guide-table-wrap" style="margin: 0;">
+            <table class="guide-table ds-lookup">
+              <caption>LAW 23 · Light events: what actions do to light</caption>
+              <thead><tr><th scope="col">Event</th><th scope="col">On</th><th scope="col">Does</th></tr></thead>
+              <tbody>
+                {Object.entries(EVENTS).map(([k, e]) => <tr><th scope="row">{k}</th><td>{e.on}</td><td>{sentence(e.does)}<small>{e.held ? 'held' : e.q ? e.q + 'q' : 'passive'}</small></td></tr>)}
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <p class="ds-caption">See every material and event live in the <a href="/design/prismatic/lab">light lab</a>.</p>
 
         <section class="ds-section" aria-labelledby="ds-radiance">
           <header>
@@ -404,8 +224,8 @@ const cascades = cascadeRows(1440, 900);
                 <output id="ds-cascades-out" for="ds-cascades">{cascades.length}</output>
               </label>
               <p class="prism-body prism-muted">
-                Remove cascades and the light stops at the top interval. The field is re-solved only when a
-                source crosses a probe, the page scrolls, or the hue changes. At rest it costs nothing.
+                Remove cascades and the light stops at the top interval. The field is re-solved only when the
+                rig, a light event, the scroll, or the hue changes. At rest the loop sleeps: the frame count stops.
               </p>
               <p class="ds-caption" id="ds-f-status">Needs WebGL2. Without it, the six light refs still drive edges, casts, and foil.</p>
             </div>
@@ -420,8 +240,8 @@ const cascades = cascadeRows(1440, 900);
           </article>
           <article class="prism-card">
             <h3>Intervals merge front to back.</h3>
-            <code>L(a→c) = L(a→b) + T(a→b) · L(b→c) · T(card) = 0.6 | 0.3 | 0.05<br />v = f / f_open · day = 1 − 0.16·(1 − e^(−f₀(1 − v))) · night = 0.22·(1 − e^(−f₀v))</code>
-            <p>A parent ray averages its four children, sampled bilinearly from the nearest upper probes. The field is solved twice, with and without cards, so visibility v cancels the merge's ringing. f₀ is the exact open-field fluence of the sources, and day shadows lean toward the far band.</p>
+            <code>L(a→c) = L(a→b) + T(a→b) · L(b→c) · v = f / f_open<br />b = 1 − e^(−f₀(1 − v)) · g = min(b) · day = max(0.8, 1 − 0.16(g·w + 1.6(b − g)))<br />night = min(0.22, 0.22(1 − e^(−(0.6·f₀v + play))))</code>
+            <p>A parent ray averages its four children, bilinearly from the nearest upper probes. Solving with and without objects gives visibility v, which cancels the merge's ringing. The neutral part of a shadow leans to the far band (w); light a filter lets through keeps its hue. Play light (spots, bands, emitters) tinges by day and glows by night.</p>
           </article>
           <article class="prism-card">
             <h3>Color is a derived coordinate.</h3>
@@ -431,7 +251,7 @@ const cascades = cascadeRows(1440, 900);
           <article class="prism-card">
             <h3>Light and time are quantized.</h3>
             <code>Δsource = 1 probe · Δangle = 3° · Δvector = 0.02<br />q = 40ms · flash 3q · arrive 6q · settle 10q · mode 25q</code>
-            <p>CSS light refs are written at most once per frame. Press-in is the one exception at 1.5q. Reduced motion holds the light at rest and removes transitions.</p>
+            <p>Every light event lists its duration in q; held states last as long as their state. Press-in is the one exception at 1.5q. Reduced motion resolves timed events at once and keeps held states.</p>
           </article>
         </div>
       </section>
@@ -494,7 +314,7 @@ const cascades = cascadeRows(1440, 900);
           <header>
             <span class="ds-law">LAW 8–15 · MOTION</span>
             <h3 id="ds-motion">Quantized, massless, causal</h3>
-            <p>Brightness leads, form follows, and the shadow trails by 2q. Objects enter from the light. Unknown state is superposed, not gray.</p>
+            <p>Brightness leads, form follows, and the shadow trails by 2q. Objects enter from the light. Unknown state is superposed, and moves only while busy.</p>
           </header>
           <div class="ds-grid ds-grid--3">
             <div class="prism-card" style="box-shadow: var(--elev-dense);">
@@ -513,10 +333,10 @@ const cascades = cascadeRows(1440, 900);
             </div>
             <div class="prism-card" style="box-shadow: var(--elev-dense);">
               <div class="ds-row-actions" style="justify-content: space-between;">
-                <p class="prism-eyebrow">Superposition · 5q</p>
-                <button class="ds-replay" data-replay="collapse" type="button">Observe</button>
+                <p class="prism-eyebrow">Superposition · while busy</p>
+                <button class="ds-replay" data-replay="busy" type="button">Load</button>
               </div>
-              <div class="ds-stack" style="margin-top: 1rem;">
+              <div class="ds-stack" id="ds-ghosts" aria-busy="false" style="margin-top: 1rem;">
                 <div class="prism-ghost" data-ghost style="height: 1.4rem;"></div>
                 <div class="prism-ghost" data-ghost style="height: 1.4rem; width: 80%;"></div>
                 <div class="prism-ghost" data-ghost style="height: 1.4rem; width: 60%;"></div>
@@ -554,34 +374,88 @@ const cascades = cascadeRows(1440, 900);
       <section id="components" class="guide-chapter" aria-labelledby="components-title">
         <header>
           <div><p class="prism-eyebrow">04 / Components</p><h2 id="components-title">The rules become a family.</h2></div>
-          <p>Choose density, then role, then size. Every specimen shares one edge, one cast, and one light.</p>
+          <p>Choose density, then role, then size. Every specimen shares one edge and one light, and every action on it is a light event.</p>
         </header>
 
         <section class="ds-section" aria-labelledby="ds-density">
           <header>
             <span class="ds-law">LAW 5 · DENSITY</span>
             <h3 id="ds-density">Permanence condenses light into pigment</h3>
-            <p>Move the light behind each card and compare the shadows. Destructive actions belong to the immovable tier.</p>
+            <p>Density chooses the material: glass, frosted, pigment. Compare the shadows, then act on the buttons; each one is a light event.</p>
           </header>
           <div class="ds-grid ds-grid--3">
             <div class="prism-card ds-lift" data-light="transient">
-              <p class="prism-eyebrow">Transient · T 0.6</p>
+              <p class="prism-eyebrow">Transient · glass · T 0.6</p>
               <p class="prism-body" style="color: var(--ink-soft); margin: 0.4rem 0 1rem;">Seconds. Edge and glow; most light passes.</p>
-              <button class="prism-btn prism-btn--primary prism-edge" type="button">Primary action</button>
+              <button class="prism-btn prism-btn--primary prism-edge" type="button" data-light-event="emit pulse">Primary action</button>
             </div>
             <div class="prism-card" data-light="standing" style="border: 1px solid var(--hairline); background: var(--standing-tint); color: var(--on-ground); box-shadow: var(--elev-dense);">
-              <p class="prism-eyebrow">Standing · T 0.3</p>
+              <p class="prism-eyebrow">Standing · frosted · T 0.3</p>
               <p class="prism-body" style="margin: 0.4rem 0 1rem;">Session. Tinted wash, 1px border, short shadow.</p>
-              <button class="prism-btn" type="button" style="box-shadow: var(--elev-dense);">Secondary</button>
+              <button class="prism-btn" type="button" style="box-shadow: var(--elev-dense);" data-light-event="emit absorb">Secondary</button>
             </div>
             <div class="prism-card" data-light="immovable" style="background: var(--dense); color: var(--on-dense); box-shadow: var(--elev-dense);">
-              <p class="prism-eyebrow">Immovable · T 0.05</p>
+              <p class="prism-eyebrow">Immovable · pigment · T 0.05</p>
               <p class="prism-body" style="opacity: 0.85; margin: 0.4rem 0 1rem;">Structure. Opaque pigment, no spectra.</p>
               <div class="ds-row-actions">
-                <button class="prism-btn prism-btn--dense" type="button">Save</button>
-                <button class="prism-btn prism-btn--dense prism-btn--danger" type="button">Delete</button>
+                <button class="prism-btn prism-btn--dense" type="button" data-light-event="absorb">Save</button>
+                <button class="prism-btn prism-btn--dense prism-btn--danger" type="button" data-light-event="void">Delete</button>
               </div>
             </div>
+          </div>
+        </section>
+
+        <section class="ds-section" aria-labelledby="ds-rig">
+          <header>
+            <span class="ds-law">LAW 24 · THE RIG</span>
+            <h3 id="ds-rig">Parameters, not pointers</h3>
+            <p>The rig is this page's light. Each control is a parameter: change one and the page re-solves once, and nothing else moves. Its variants are the open decisions; the <a href="/design/prismatic/lab#variants">lab</a> shows them side by side.</p>
+          </header>
+          <div class="prism-card" style="box-shadow: var(--elev-dense);">
+            <div class="prism-rig" id="ds-rig-panel">
+              {Object.entries(RIG).map(([k, p]) => (
+                <fieldset>
+                  <legend>{k}</legend>
+                  {typeof p.default === 'boolean' ? (
+                    <button class="prism-switch" type="button" role="switch" aria-checked={String(p.default)} data-rig={k}><i></i><span>{p.does}</span></button>
+                  ) : typeof p.default === 'number' ? (
+                    <input type="range" min="0" max="1" step="0.05" value={String(p.default)} data-rig={k} aria-label={k} />
+                  ) : (
+                    <div class="prism-seg" role="group" aria-label={k}>
+                      {p.values.split(' | ').map((v) => <button type="button" data-rig={k} data-value={v} aria-pressed={String(v === p.default)}>{v}</button>)}
+                    </div>
+                  )}
+                  {typeof p.default !== 'boolean' && <span class="ds-caption" style="margin: 0;">{p.does}</span>}
+                </fieldset>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section class="ds-section" aria-labelledby="ds-play">
+          <header>
+            <span class="ds-law">LAW 25 · PLAYGROUND</span>
+            <h3 id="ds-play">The one place the pointer holds the light</h3>
+            <p>Drag the lights and the objects; arrow keys nudge the focused one. Pick a material for each object and add fog to see the beams.</p>
+          </header>
+          <div class="prism-stage ds-playground" id="ds-playground" data-stage data-playground data-fog="0.2">
+            <button type="button" data-source aria-label="White light" style="left:14%;top:24%"></button>
+            <button type="button" data-source data-color="red" data-cone="40" aria-label="Red spotlight" style="left:86%;top:16%"></button>
+            <button type="button" data-source data-color="blue" data-cone="40" aria-label="Blue spotlight" style="left:60%;top:88%"></button>
+            <div id="ds-play-a" data-material="prism" tabindex="0" style="left:32%;top:36%;width:12%;height:26%">prism</div>
+            <div id="ds-play-b" data-material="filter" data-tint="near" tabindex="0" style="left:54%;top:30%;width:14%;height:30%">filter</div>
+            <div id="ds-play-c" data-material="pigment" tabindex="0" style="left:74%;top:52%;width:12%;height:24%">pigment</div>
+          </div>
+          <div class="ds-row-actions" style="margin-top: 0.8rem;">
+            {['a', 'b', 'c'].map((id, i) => (
+              <label class="ds-caption" style="margin: 0;">Object {i + 1}
+                <select data-material-for={`ds-play-${id}`}>
+                  {Object.keys(MATERIALS).map((m) => <option selected={m === ['prism', 'filter', 'pigment'][i]}>{m}</option>)}
+                </select>
+              </label>
+            ))}
+            <label class="ds-caption" style="margin: 0;">Fog <input type="range" min="0" max="1" step="0.05" value="0.2" data-fog-for="ds-playground" /></label>
+            <button class="ds-replay" type="button" data-mode-for="ds-playground" aria-pressed="false">Night stage</button>
           </div>
         </section>
 
@@ -702,8 +576,8 @@ const cascades = cascadeRows(1440, 900);
             <span class="ds-law">LAW 6–7 · ELEVATION</span>
             <h3 id="ds-elevation">Casts float; hairlines ground</h3>
             <p>
-              Day casts fall away from the pointer; night casts become halos. Data rows never cast.
-              Selection enters as a 2px seam, and a shared datum lights everywhere at once (Δt = 0).
+              Day casts fall away from the light; night casts become halos. Data rows never cast.
+              Selection is a 2px seam lit as a pipe, and a shared datum lights everywhere at once (Δt = 0).
             </p>
           </header>
           <div class="ds-grid ds-grid--2" style="align-items: start;">
@@ -711,16 +585,16 @@ const cascades = cascadeRows(1440, 900);
               <p class="prism-eyebrow">Floating card · entangled</p>
               <p class="prism-body" style="margin: 0.5rem 0 1rem; color: var(--ink-soft);">Hover a dot or a row. Both light at once; their neighbors stay put.</p>
               <div class="ds-row-actions" style="gap: 1.25rem;">
-                <span class="prism-dot" data-pair="r1" tabindex="0" aria-label="datum 0xA1"></span>
-                <span class="prism-dot" data-pair="r2" tabindex="0" aria-label="datum 0xA2"></span>
-                <span class="prism-dot" data-pair="r3" tabindex="0" aria-label="datum 0xA3"></span>
+                <span class="prism-dot" data-pair="r1" title="0xA1"></span>
+                <span class="prism-dot" data-pair="r2" title="0xA2"></span>
+                <span class="prism-dot" data-pair="r3" title="0xA3"></span>
               </div>
             </div>
             <div class="prism-table" role="table" aria-label="Dense data (hairline elevation)" style="--cols: 1fr 1fr 1fr;">
               <div class="ds-thead" role="row"><span role="columnheader">Run</span><span role="columnheader">Hue</span><span role="columnheader">State</span></div>
-              <div class="prism-row" role="row" tabindex="0" data-pair="r1"><span>0xA1</span><span>185°</span><span>ok</span></div>
-              <div class="prism-row" role="row" tabindex="0" data-pair="r2" aria-selected="true"><span>0xA2</span><span>150°</span><span>ok</span></div>
-              <div class="prism-row" role="row" tabindex="0" data-pair="r3"><span>0xA3</span><span>027°</span><span>fail</span></div>
+              <div class="prism-row" role="row" data-pair="r1"><span>0xA1</span><span>185°</span><span>ok</span></div>
+              <div class="prism-row" role="row" data-pair="r2" aria-selected="true" data-light-state="seam"><span>0xA2</span><span>150°</span><span>ok</span></div>
+              <div class="prism-row" role="row" data-pair="r3"><span>0xA3</span><span>027°</span><span>fail</span></div>
             </div>
           </div>
         </section>
@@ -739,26 +613,30 @@ const cascades = cascadeRows(1440, 900);
 <link rel="stylesheet" href="/prism/prism.css">
 <script type="module" src="/prism/light.js"></script>
 
-<article class="prism-card prism-edge">
+<article class="prism-card prism-edge" data-light="transient">
   <h2>Review the release</h2>
-  <button class="prism-btn prism-btn--dense">
+  <button class="prism-btn prism-btn--dense"
+          data-light-event="emit absorb">
     Inspect release
   </button>
 </article>
 </html>`}</code></pre>
-            <p>prism.css is the resting material. light.js is optional. It solves the field and writes the light refs, and it reads density from <code class="prism-data">data-light</code>. A hue control must also set <code class="prism-data">--hr</code>.</p>
+            <p>prism.css is the resting material. light.js is optional: it solves the field, reads density (<code class="prism-data">data-light</code>), materials (<code class="prism-data">data-material</code>) and events (<code class="prism-data">data-light-event</code>), and exposes <code class="prism-data">light.setRig()</code>. Agents read the same rules as <a href="/prism/PRISM.md">PRISM.md</a>.</p>
           </div>
           <div>
             <h3>Know what to avoid.</h3>
             <ul class="guide-avoid">
-              <li><strong>Independent colors</strong><p>Derive brand bands from the anchor and keep semantic hues fixed.</p></li>
-              <li><strong>Glow on every row</strong><p>Dense data needs hairlines and a narrow seam.</p></li>
-              <li><strong>Every object floats</strong><p>Density separates the temporary from the structural.</p></li>
-              <li><strong>Color as the only message</strong><p>Keep labels, visible focus, and a reduced-motion path.</p></li>
+              {ANTI_PATTERNS.slice(0, 6).map(([dont, why]) => <li><strong>{dont}</strong><p>{why}</p></li>)}
             </ul>
           </div>
         </div>
+        <div class="guide-invariant">
+          <strong>ACCEPTANCE</strong>
+          <ul class="ds-accept">{ACCEPTANCE.map((a) => <li>{a}</li>)}</ul>
+        </div>
         <div class="ds-row-actions" style="margin-top: 1.5rem;">
+          <a href="/prism/PRISM.md">Rules for agents ↗</a>
+          <a href="/design/prismatic/lab">Light lab ↗</a>
           <a href="/prism/prism.tokens.json" download>Tokens ↓</a>
           <a href="/prism/prism.css" download>Material ↓</a>
           <a href="/prism/light.js" download>Light ↓</a>
@@ -770,78 +648,46 @@ const cascades = cascadeRows(1440, 900);
 
     <footer class="ds-footer">
       <p>
-        PRISM v0.8 · all color OKLCH · light by radiance cascades (<a href="https://radiance.wiki/">radiance.wiki</a>) ·
-        <a href="/prism/prism.tokens.json">tokens</a> · <a href="/prism/prism.css">prism.css</a> · <a href="/prism/light.js">light.js</a>
+        PRISM v0.9 · all color OKLCH · passive light by radiance cascades (<a href="https://radiance.wiki/">radiance.wiki</a>) ·
+        <a href="/prism/PRISM.md">PRISM.md</a> · <a href="/prism/prism.tokens.json">tokens</a> · <a href="/prism/prism.css">prism.css</a> · <a href="/prism/light.js">light.js</a>
       </p>
       <p>
         Contrast audit (WCAG AA): <code>scripts/prism-contrast-audit.mjs</code> checks the body-text pairs at hues
         <code>{`{20, 60, 90, 150, 185, 260, 310}`}</code> in both modes. It also checks text on the field under the
-        light at its worst: a full-depth day shadow (≥ 8.1:1) and a full night glow (≥ 5.6:1). The 60–90° band is the
-        known risk zone, and it passes.
+        light at its worst: every day channel at its 0.8 floor (≥ 8.1:1) and a full night glow (≥ 5.6:1). The 60–90° band
+        is the known risk zone, and it passes.
       </p>
     </footer>
 
     <script is:inline>
       (function () {
-        const root = document.documentElement;
-        const slider = document.getElementById('ds-hue-slider');
-        const modeBtn = document.getElementById('ds-mode-toggle');
-
-        // Redshift: an art-directed hue map. Spectral hues (45–300) slide toward
-        // red; non-spectral pinks (300–360) wrap forward.
-        function prismRedshift(h, k = 0.4) {
-          if (h <= 45) return h;
-          if (h > 300) return Math.round((h + (385 - h) * k) % 360);
-          return Math.round(h - (h - 45) * k);
-        }
-
-        function applyHue(h) {
-          const hr = prismRedshift(h);
-          root.style.setProperty('--h', h);
-          root.style.setProperty('--hr', hr);
-          document.getElementById('ds-day-h').textContent = h + '°';
-          document.getElementById('ds-night-h').textContent = hr + '°';
-          const night = root.dataset.mode === 'night';
-          const offsets = night ? [0, -25, 55, -95] : [0, -35, 75, -140];
-          const base = night ? hr : h;
-          const bands = offsets.map((o) => ((base + o) % 360 + 360) % 360);
-          document.getElementById('guide-hue-equation').textContent =
-            (night ? 'Night' : 'Day') + ': H = ' + base + '° → bands ' + bands.map((b) => b + '°').join(', ');
-          document.querySelectorAll('[data-band-offset]').forEach((label) => {
-            const o = offsets[Number(label.dataset.bandOffset)];
-            label.textContent = (o >= 0 ? '+' : '−') + Math.abs(o) + '°';
-          });
-        }
-        slider.addEventListener('input', (e) => applyHue(parseInt(e.target.value, 10)));
-        applyHue(parseInt(slider.value, 10));
-
-        // Mode toggle — refracts over 25q; never snaps.
-        modeBtn.addEventListener('click', () => {
-          const next = root.dataset.mode === 'night' ? 'day' : 'night';
-          root.dataset.mode = next;
-          document.getElementById('ds-mode-label').textContent = next === 'night' ? 'Redshift' : 'Day';
-          modeBtn.setAttribute('aria-pressed', String(next === 'night'));
-          applyHue(parseInt(slider.value, 10));
-        });
-
         // Replays: re-trigger an entrance by reflow.
         function restart(el, cls) {
           el.classList.remove(cls);
           void el.offsetWidth;
           el.classList.add(cls);
         }
+        // Superposition: ghosts move only while aria-busy holds (65q), then collapse.
         const ghosts = document.querySelectorAll('[data-ghost]');
-        let collapsed = false;
+        const busy = document.getElementById('ds-ghosts');
+        let collapsed = false, timer = 0;
         document.querySelectorAll('[data-replay]').forEach((btn) => {
           btn.addEventListener('click', () => {
             const kind = btn.dataset.replay;
             if (kind === 'stagger') restart(document.getElementById('ds-stagger'), 'prism-stagger');
             if (kind === 'enter') restart(document.getElementById('ds-enter').firstElementChild, 'prism-enter');
-            if (kind === 'collapse') {
-              collapsed = !collapsed;
-              ghosts.forEach((g) => g.classList.toggle('collapsed', collapsed));
-              document.getElementById('ds-collapsed').hidden = !collapsed;
-              btn.textContent = collapsed ? 'Superpose' : 'Observe';
+            if (kind === 'busy') {
+              clearTimeout(timer);
+              collapsed = false;
+              ghosts.forEach((g) => g.classList.remove('collapsed'));
+              document.getElementById('ds-collapsed').hidden = true;
+              busy.setAttribute('aria-busy', 'true');
+              timer = setTimeout(() => {
+                busy.setAttribute('aria-busy', 'false');
+                collapsed = true;
+                ghosts.forEach((g) => g.classList.add('collapsed'));
+                document.getElementById('ds-collapsed').hidden = false;
+              }, 65 * 40);
             }
           });
         });
@@ -852,8 +698,6 @@ const cascades = cascadeRows(1440, 900);
             .forEach((n) => n.classList.toggle('lit', on));
           el.addEventListener('mouseenter', () => lit(true));
           el.addEventListener('mouseleave', () => lit(false));
-          el.addEventListener('focus', () => lit(true));
-          el.addEventListener('blur', () => lit(false));
         });
 
         // Icons: click to re-tune a display's emission band.
@@ -913,12 +757,28 @@ const cascades = cascadeRows(1440, 900);
     <!-- The light: radiance field + reference beam, and its live monitor. -->
     <script type="module" is:inline>
       import { light } from '/prism/light.js';
+      import '/prism/guide.js';
 
       const $ = (id) => document.getElementById(id);
       const input = $('ds-cascades');
       let shape = '';
 
       input.addEventListener('input', () => light.setCascades(Number(input.value)));
+
+      // The rig: every control is one parameter of the page's light.
+      for (const el of document.querySelectorAll('#ds-rig-panel [data-rig]')) {
+        const key = el.dataset.rig;
+        if (el.type === 'range') el.addEventListener('input', () => light.setRig({ [key]: Number(el.value) }));
+        else if (el.getAttribute('role') === 'switch') el.addEventListener('click', () => {
+          const on = el.getAttribute('aria-checked') !== 'true';
+          el.setAttribute('aria-checked', String(on));
+          light.setRig({ [key]: on });
+        });
+        else el.addEventListener('click', () => {
+          el.parentElement.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b === el)));
+          light.setRig({ [key]: el.dataset.value });
+        });
+      }
 
       light.subscribe((l) => {
         $('ds-f-solves').textContent = l.solves;
@@ -930,7 +790,7 @@ const cascades = cascadeRows(1440, 900);
         shape = next;
         $('ds-f-field').textContent = l.field.join(' × ');
         $('ds-f-texel').textContent = l.scale.toFixed(1);
-        $('ds-f-status').textContent = 'WebGL2 · RGBA16F · direction-first layout · two solves per update.';
+        $('ds-f-status').textContent = 'WebGL2 · RGBA16F · direction-first layout · two solves per update · one context for page and stages.';
         $('ds-cascade-caption').textContent = 'Cascades at ' + innerWidth + ' × ' + innerHeight;
         input.disabled = false;
         input.max = String(l.maxCascades);

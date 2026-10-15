@@ -3,7 +3,7 @@
   "$description": "PRISM design system tokens. Light-mode-first, prism/glass material model. Two modes: day, redshift. All color in OKLCH. Hue is parametric: one anchor hue --h drives the entire palette.",
   "meta": {
     "name": "PRISM",
-    "version": "0.8.0",
+    "version": "0.9.0",
     "colorSpace": "oklch",
     "anchorHueDefault": 185,
     "modes": ["day", "redshift"]
@@ -40,8 +40,17 @@
     "cascades": { "probeSpacingTexels": "2^n", "raysPerProbe": "4^(n+1)", "interval": "L0 · [(4^n − 1)/3, (4^(n+1) − 1)/3)", "l0Texels": 1, "count": "smallest N whose top interval covers the viewport diagonal", "merge": "L(a→c) = L(a→b) + T(a→b) · L(b→c); four child rays averaged, bilinear across the four nearest upper probes" },
     "field": { "longSideTexels": 320, "minTexelPx": 2, "adaptive": "coarsens 20% when solves run under 30fps for a sustained drag (floor 160 texels)" },
     "sources": { "order": ["counter", "near", "anchor", "far"], "radiusPx": 9, "spreadPx": 15, "emission": 55 },
-    "shading": { "visibility": "v = f / f_open, from two solves (with and without cards)", "day": "1 − 0.16 · w · (1 − e^(−f0·(1 − v))), w = far-band channel weights (mean 1); mix-blend-mode multiply", "night": "0.22 · (1 − e^(−f0·v)); mix-blend-mode screen" },
-    "quantum": "Re-solve only when a source crosses a c0 probe, a card moves, or the hue/mode changes."
+    "shading": { "visibility": "v = f / f_open, from two solves (with and without objects)", "day": "b = 1 − e^(−f0(1 − v)); g = min(b); max(0.8, 1 − 0.16(g·w + 1.6(b − g))), w = far-band channel weights (mean 1); play light tinges; mix-blend-mode multiply", "night": "min(0.22, 0.22(1 − e^(−(0.6·f0·v + play)))); mix-blend-mode screen" },
+    "quantum": "Re-solve only when the rig, a light event, the scroll or the hue/mode changes. The loop sleeps at rest."
+  },
+
+  "light": {
+    "$description": "v0.9. The light is passive: it rests where the rig puts it and moves only for a story beat (sunrise, scroll light) or an action (a light event). Two channels: KEY light casts shadows; PLAY light (spots, prism bands, emitters, pipes) colors the field. The decision tables (materials, light events, rig) are generated from src/data/prism.ts into /prism/rules.js for the engine and /prism/PRISM.md for agents; that is the source of truth.",
+    "rules": "/prism/PRISM.md",
+    "tables": "/prism/rules.js",
+    "densityMaterial": { "transient": "glass", "standing": "frosted", "immovable": "pigment" },
+    "dayFloor": { "$type": "number", "$value": 0.8, "$description": "No channel of the day field drops below 80% under light. Audited: ink on field ≥ 8.1:1." },
+    "nightGlow": { "$type": "number", "$value": 0.22, "$description": "Night light lifts the field at most 0.22. Audited: on-ground text ≥ 5.6:1." }
   },
 
   "display": {

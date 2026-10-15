@@ -1,5 +1,5 @@
 /* ============================================================
-   PRISM v0.8 — design system CSS layer
+   PRISM v0.9 — design system CSS layer
    Drop-in. Set data-mode="day" | "night" on <html>.
    Set --h (anchor hue, OKLCH deg) on :root to rotate the palette.
    Set --hr (redshift hue) alongside it: hr = redshift(h).
@@ -13,6 +13,12 @@
    v0.8 — RADIANCE: /prism/light.js (optional) is that driver, and it
    also solves the light on the field with radiance cascades. Cards
    are glass; density is their transmittance. See .prism-light-field.
+
+   v0.9 — PASSIVE LIGHT: the light rests where the rig puts it and moves
+   only for a story beat or an action. Nothing tracks the pointer and
+   nothing loops at rest. Materials (data-material) say how an object
+   treats light; light events (data-light-event) say what actions do
+   to it. Rig variants arrive as data-light-* on <html>.
    ============================================================ */
 
 @import url("https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&family=Instrument+Serif:ital@1&family=Spline+Sans+Mono:wght@400;500&family=Tilt+Prism&display=swap");
@@ -254,15 +260,15 @@ body {
 
 /* DATA SURFACE — hairline law: no casts, light enters as a 2px seam */
 .prism-table { border-top: 1px solid var(--ink); }
-.prism-row { position: relative; cursor: pointer; padding: 14px 10px;
+.prism-row { position: relative; cursor: default; padding: 14px 10px;
   border-bottom: 1px solid var(--hairline); transition: background var(--t-flash) var(--e-light); }
 .prism-row::before { content: ""; position: absolute; left: 0; top: 12%; bottom: 12%; width: 2px;
   border-radius: 2px; background: var(--edge); opacity: 0; transition: opacity var(--t-flash) var(--e-light); }
 .prism-row:hover::before, .prism-row[aria-selected="true"]::before { opacity: 1; }
 
-/* HOLO FOIL — a chip whose spectrum, glint and tilt all derive from the
-   reference beam. No JS touches these elements, ever: angle = --la,
-   glint = --lxp/--lyp, tilt = cast vector. */
+/* HOLO FOIL — a chip whose spectrum and glint derive from the reference
+   beam: angle = --la, glint = --lxp/--lyp. It does not tilt: the light
+   rests, so the foil does too (v0.9). */
 .prism-holo {
   position: relative; border-radius: var(--r-md); padding: 20px;
   color: oklch(0.24 0.05 var(--h));
@@ -271,9 +277,6 @@ body {
       oklch(0.99 0.02 var(--h) / calc(var(--li) * 0.9)), transparent 55%),
     linear-gradient(calc(var(--la) * 1deg), var(--anchor), var(--near) 30%, var(--far) 65%, var(--counter));
   box-shadow: var(--elev);
-  transform: perspective(700px)
-    rotateX(calc((var(--lyp) - 50) * -0.06deg))
-    rotateY(calc((var(--lxp) - 50) * 0.06deg));
 }
 [data-mode="night"] .prism-holo { color: oklch(0.22 0.05 var(--hr)); box-shadow: var(--elev); }
 
@@ -322,6 +325,126 @@ body {
 }
 .prism-light-field[data-blend="screen"] { mix-blend-mode: screen; }
 
+/* ================= v0.9 · LIGHT VOCABULARY ================= */
+
+/* Rig variants. light.js writes --lit (0–1), --lit-c and --lit-a (the
+   gradient angle toward the light) on every object it lights.
+   surfaces="field": light lands on the field only (v0.8).
+   surfaces="lit":   surfaces catch a wash of the arriving light.
+   surfaces="edges": only the edge facing the light catches it. */
+[data-light-surfaces="lit"] :is(.prism-card, .prism-swatch, .prism-btn:not(.prism-btn--primary)) {
+  background-image: linear-gradient(var(--lit-a, 135deg),
+    color-mix(in oklch, color-mix(in oklch, var(--lit-c, #fff) 55%, var(--anchor)) calc(var(--lit, 0) * 30%), transparent),
+    transparent 48%,
+    color-mix(in oklch, var(--far) calc(var(--lit, 0) * 16%), transparent));
+}
+[data-light-surfaces="edges"] .prism-card::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none;
+  background: linear-gradient(var(--lit-a, 135deg), var(--anchor), var(--near) 22%, var(--far) 40%, transparent 62%);
+  opacity: calc(0.25 + var(--lit, 0));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+}
+/* legibility="halo": text on the field keeps a halo of its ground */
+[data-light-legibility="halo"] :is(h1, h2, h3, h4, p, li, small):not(.prism-card *, .guide-table-wrap *, .ds-controls *, [data-material] *) {
+  text-shadow: 0 0 2px var(--field), 0 0 8px var(--field), 0 0 16px var(--field);
+}
+
+/* Focus is a light pipe: it walks the edge once (10q), then holds. */
+@property --pipe { syntax: "<angle>"; inherits: false; initial-value: 360deg; }
+@keyframes prism-pipe { from { --pipe: 0deg; } to { --pipe: 360deg; } }
+:is(.prism-btn, .prism-chip, .prism-seg button, .prism-switch):focus-visible { outline: none; }
+:is(.prism-btn, .prism-chip, .prism-seg button, .prism-switch):focus-visible::after {
+  content: ""; position: absolute; inset: -4px; border-radius: calc(var(--r-sm) + 4px); padding: 2px; pointer-events: none;
+  background: conic-gradient(from 0deg, var(--anchor) var(--pipe), transparent 0);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor; mask-composite: exclude;
+  animation: prism-pipe calc(var(--q) * 10) var(--e-light) both;
+}
+
+/* Disabled controls are frosted: light passes, scattered, no edge. */
+.prism-btn:disabled, .prism-btn[aria-disabled="true"] {
+  cursor: not-allowed; color: var(--ink-faint); background: color-mix(in oklch, var(--surface) 70%, transparent);
+  box-shadow: none; backdrop-filter: blur(3px);
+}
+.prism-btn:disabled::before { opacity: 0; }
+
+/* Event states (light.js sets data-light-state; CSS answers in the object). */
+[data-light-state="emit"] { --glow-k: 1; }
+.prism-btn[data-light-state="emit"] { box-shadow: var(--elev), 0 0 0 1px color-mix(in oklch, var(--anchor) 55%, transparent), 0 0 22px -4px var(--anchor); }
+.prism-btn[data-light-state="absorb"] { filter: saturate(0.4) brightness(0.92); transition-duration: var(--t-press); }
+.prism-btn--danger[data-light-state="void"] { box-shadow: 0 0 0 6px color-mix(in oklch, var(--ink) 18%, transparent); }
+[data-light-state="reject"] { animation: prism-reject calc(var(--q) * 8) var(--e-refract) both; }
+@keyframes prism-reject { 0% { box-shadow: 0 0 0 2px var(--danger); } 100% { box-shadow: 0 0 0 0 transparent; } }
+[data-light-state="afterglow"] { animation: prism-afterglow calc(var(--q) * 35) var(--e-refract) both; }
+@keyframes prism-afterglow { 0% { box-shadow: 0 0 0 1px var(--near), 0 0 28px -2px var(--near); } 100% { box-shadow: var(--elev-dense); } }
+.prism-row[data-light-state="seam"]::before { opacity: 1; width: 3px; box-shadow: 0 0 10px var(--anchor); }
+
+/* ================= STAGES · MATERIALS ================= */
+/* A stage is a small world with its own field: light.js solves it in the
+   page's one WebGL context. Objects declare data-material; sources are
+   <i data-source>. The stage paints its own ground, so night stages can
+   sit on a day page (set data-mode on the stage). */
+.prism-stage {
+  position: relative; isolation: isolate; overflow: hidden; min-height: 200px;
+  background: var(--field); color: var(--on-ground);
+  border-radius: var(--r-md); border: 1px solid var(--hairline);
+}
+.prism-stage-field { position: absolute; left: 0; top: 0; z-index: 0; pointer-events: none; mix-blend-mode: multiply; }
+.prism-stage-field[data-blend="screen"] { mix-blend-mode: screen; }
+.prism-stage > :where(:not(canvas)) { position: relative; z-index: 1; }
+.prism-stage [data-source] {
+  position: absolute; z-index: 2; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%;
+  background: radial-gradient(circle, #fff 0 35%, oklch(0.97 0.03 80) 60%);
+  box-shadow: 0 0 0 2px color-mix(in oklch, var(--on-ground) 25%, transparent), 0 0 18px 4px oklch(0.97 0.05 80 / 0.7);
+}
+.prism-stage [data-source][data-color="red"]  { background: oklch(0.68 0.22 27);  box-shadow: 0 0 18px 4px oklch(0.68 0.22 27 / 0.6); }
+.prism-stage [data-source][data-color="blue"] { background: oklch(0.62 0.2 262); box-shadow: 0 0 18px 4px oklch(0.62 0.2 262 / 0.6); }
+.prism-stage > [data-material] {
+  position: absolute; z-index: 1; border-radius: 10px; display: grid; place-items: end start;
+  padding: 6px 8px; font-family: var(--mono); font-size: 10.5px; letter-spacing: 0.06em; color: var(--ink);
+}
+.prism-stage > [data-material="glass"]    { background: color-mix(in oklch, var(--surface) 55%, transparent); border: 1px solid var(--hairline); }
+.prism-stage > [data-material="prism"]    { background: linear-gradient(calc(var(--la) * 1deg), color-mix(in oklch, var(--anchor) 45%, transparent), color-mix(in oklch, var(--near) 45%, transparent), color-mix(in oklch, var(--far) 45%, transparent), color-mix(in oklch, var(--counter) 45%, transparent)); border: 1px solid color-mix(in oklch, var(--ink) 20%, transparent); }
+.prism-stage > [data-material="dichroic"] { background: color-mix(in oklch, var(--tint-c, var(--far)) 40%, transparent); border: 1.5px solid; border-image: var(--edge) 1; }
+.prism-stage > [data-material="frosted"]  { background: color-mix(in oklch, var(--surface) 78%, transparent); backdrop-filter: blur(6px); border: 1px solid var(--hairline); }
+.prism-stage > [data-material="filter"]   { background: color-mix(in oklch, var(--tint-c, var(--far)) 48%, transparent); border: 1px solid color-mix(in oklch, var(--tint-c, var(--far)) 70%, transparent); }
+.prism-stage > [data-material="pigment"]  { background: var(--tint-c, var(--dense)); color: var(--on-dense); }
+.prism-stage > [data-material="mirror"]   { background: linear-gradient(90deg, oklch(0.82 0.01 250), oklch(0.97 0.005 250), oklch(0.8 0.01 250)); border-radius: 3px; }
+.prism-stage > [data-material="emitter"]  { background: var(--tint-c, var(--anchor)); color: var(--on-dense); box-shadow: 0 0 22px -2px var(--tint-c, var(--anchor)); }
+.prism-stage > [data-material="phosphor"] { background: color-mix(in oklch, var(--near) calc(20% + var(--lit, 0) * 50%), transparent); border: 1px solid color-mix(in oklch, var(--near) 60%, transparent); }
+.prism-stage > [data-material="fog"]      { background: radial-gradient(closest-side, color-mix(in oklch, var(--on-ground) 10%, transparent), transparent); border: 1px dashed color-mix(in oklch, var(--on-ground) 25%, transparent); }
+.prism-stage > [data-material="void"]     { background: oklch(0.14 0.01 var(--h)); color: oklch(0.8 0.01 var(--h)); }
+.prism-stage > [data-material="pipe"]     { background: color-mix(in oklch, var(--tint-c, var(--anchor)) calc(35% + var(--lit, 0) * 50%), transparent); border-radius: 99px; box-shadow: 0 0 calc(var(--lit, 0) * 18px) var(--tint-c, var(--anchor)); }
+.prism-stage > [data-material="film"]     { background: conic-gradient(from calc(var(--la) * 1deg), oklch(0.85 0.1 0 / 0.5), oklch(0.85 0.1 120 / 0.5), oklch(0.85 0.1 240 / 0.5), oklch(0.85 0.1 360 / 0.5)); border: 1px solid var(--hairline); }
+.prism-stage > [data-material="lens"]     { background: radial-gradient(circle at 35% 35%, oklch(1 0 0 / 0.8), color-mix(in oklch, var(--surface) 30%, transparent) 60%); border: 1.5px solid color-mix(in oklch, var(--ink) 25%, transparent); border-radius: 50%; }
+[data-tint="anchor"] { --tint-c: var(--anchor); } [data-tint="near"] { --tint-c: var(--near); }
+[data-tint="far"] { --tint-c: var(--far); } [data-tint="counter"] { --tint-c: var(--counter); }
+[data-tint="danger"] { --tint-c: var(--danger); } [data-tint="success"] { --tint-c: var(--success); }
+
+/* ================= THE RIG ================= */
+/* The rig is a parameter component: it changes the page's light. */
+.prism-rig { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 1rem 1.5rem; }
+.prism-rig fieldset { border: none; display: grid; gap: 0.45rem; min-width: 0; }
+.prism-rig legend { font-family: var(--mono); font-size: 11.5px; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.7; margin-bottom: 0.45rem; }
+.prism-seg { display: inline-flex; flex-wrap: wrap; gap: 4px; padding: 3px; border-radius: 12px; background: color-mix(in oklch, var(--ink) 6%, transparent); }
+.prism-seg button {
+  position: relative; font: 500 12.5px var(--sans); padding: 6px 10px; border: none; border-radius: 9px;
+  background: transparent; color: inherit; cursor: pointer;
+}
+.prism-seg button[aria-pressed="true"] { background: var(--surface); color: var(--ink); box-shadow: var(--elev-dense); }
+.prism-switch {
+  position: relative; display: inline-flex; align-items: center; gap: 0.6rem; border: none; background: none;
+  color: inherit; font: 500 13px var(--sans); cursor: pointer; padding: 2px; text-align: left;
+}
+.prism-switch i { width: 34px; height: 20px; border-radius: 99px; background: color-mix(in oklch, var(--ink) 18%, transparent); position: relative; transition: background var(--t-flash) var(--e-light); }
+.prism-switch i::after { content: ""; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--surface); box-shadow: var(--elev-dense); transition: transform var(--t-flash) var(--e-light); }
+.prism-switch[aria-checked="true"] i { background: var(--anchor); }
+.prism-switch[aria-checked="true"] i::after { transform: translateX(14px); }
+.prism-rig input[type="range"] { width: 100%; accent-color: var(--anchor); }
+
 /* ----- motion keyframes ----- */
 @keyframes prism-arrive {
   0%   { opacity: 0; transform: var(--enter-from) scale(0.97); filter: brightness(1.8) saturate(1.6); }
@@ -340,11 +463,14 @@ body {
 }
 .prism-exit { animation: prism-dissolve var(--t-dissolve) var(--e-refract) both; }
 
-/* superposed loading block (replaces gray skeletons) */
+/* superposed loading block (replaces gray skeletons). It moves only while
+   an ancestor is aria-busy="true": motion is evidence of work. */
 .prism-ghost { position: relative; border-radius: 6px; background: oklch(0.93 0.008 var(--h)); }
 .prism-ghost::before, .prism-ghost::after { content: ""; position: absolute; inset: 0; border-radius: inherit; }
-.prism-ghost::before { background: oklch(0.74 0.16 195 / 0.5); animation: prism-ghost-a calc(var(--q)*22) var(--e-refract) infinite; }
-.prism-ghost::after  { background: oklch(0.66 0.18 25 / 0.4); animation: prism-ghost-b calc(var(--q)*22) var(--e-refract) infinite; animation-delay: calc(var(--q)*-11); }
+.prism-ghost::before { background: oklch(0.74 0.16 195 / 0.5); transform: translate(-3px, -2px); opacity: 0.5; }
+.prism-ghost::after  { background: oklch(0.66 0.18 25 / 0.4); transform: translate(3px, 2px); opacity: 0.4; }
+[aria-busy="true"] .prism-ghost::before { animation: prism-ghost-a calc(var(--q)*22) var(--e-refract) infinite; }
+[aria-busy="true"] .prism-ghost::after  { animation: prism-ghost-b calc(var(--q)*22) var(--e-refract) infinite; animation-delay: calc(var(--q)*-11); }
 
 /* ----- group stagger: 1q per child, cap at 6 ----- */
 .prism-stagger > * { animation: prism-arrive var(--t-arrive) var(--e-light) both; }

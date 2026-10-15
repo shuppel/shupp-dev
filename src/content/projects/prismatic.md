@@ -1,6 +1,6 @@
 ---
 title: "Prismatic"
-description: "A light-mode-first, prism/glass design system in OKLCH. One anchor hue drives the palette; one light, solved live with radiance cascades, falls across every object."
+description: "A light-mode-first, prism/glass design system in OKLCH. One anchor hue drives the palette; one passive light, solved with radiance cascades, falls on fourteen light materials."
 projectDate: 2026-06-21
 completed: true
 technologies: ["Design Systems", "OKLCH", "CSS", "WebGL2", "Radiance Cascades", "Design Tokens", "Astro", "Accessibility"]
@@ -18,12 +18,12 @@ near-white field does the work.
 One **anchor hue** (`--h`, OKLCH degrees) derives every brand color. Rotate it and
 the palette re-derives. Night is a redshift, `--hr = redshift(--h)`, not a dimmer.
 
-As of v0.8 the light is solved, not drawn. The pointer emits four band-colored
-sources, every card is glass whose transmittance is its density tier, and the field
-is lit live with [radiance cascades](https://radiance.wiki/) in WebGL2. Shadows soften
-with distance, split into spectra at their edges, and stay inside WCAG AA in both
-modes. The field re-solves only when the light crosses a probe, so at rest it costs
-nothing.
+The light is solved with [radiance cascades](https://radiance.wiki/) in WebGL2, and
+as of v0.9 it is passive: it rests where a light rig puts it and moves only for a
+story beat or an action. Density chooses a material (glass, frosted, pigment, and
+eleven more: prism, filter, mirror, lens, fog…), and every action is a documented
+light event. The same decision tables drive the engine and a rules file for agents
+([`/prism/PRISM.md`](/prism/PRISM.md)), and everything stays inside WCAG AA.
 
-Explore it at [`/design/prismatic`](/design/prismatic): drag the hue, toggle the mode,
-and move the light.
+Explore it at [`/design/prismatic`](/design/prismatic), and compare the variants in
+the [light lab](/design/prismatic/lab).
