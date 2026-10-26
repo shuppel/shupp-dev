@@ -62,7 +62,7 @@
       "gradient": {
         "brandWash":   { "$value": "linear-gradient(135deg, rgba(121,148,150,0.1), rgba(172,193,150,0.1))", "use": "Card hover wash" },
         "headingInk":  { "light": "linear-gradient(45deg, {color.brand.dark}, {color.brand.secondary})", "dark": "linear-gradient(45deg, #f3f4f6, {color.brand.accent})", "use": "Hero h1 as clipped text" },
-        "quantum":     { "$value": "conic-gradient(from var(--angle), transparent 0%, sage 18%, olive 30%, citron 42%, transparent 60%)", "use": "Animated outline on the one featured card" },
+        "quantum":     { "$value": "conic-gradient(from var(--angle), transparent 0%, color-mix(in srgb, {color.brand.tertiary} 70%, transparent) 18%, color-mix(in srgb, {color.brand.accent} 85%, transparent) 30%, color-mix(in srgb, {color.brand.light} 70%, transparent) 42%, transparent 60%)", "use": "Animated outline on the one featured card" },
         "badge": {
           "sage":  "linear-gradient(135deg, {color.brand.tertiary}, {color.brand.accent})",
           "slate": "linear-gradient(135deg, {color.brand.secondary}, {color.brand.tertiary})",
