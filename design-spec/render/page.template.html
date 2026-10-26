@@ -1,10 +1,8 @@
-<title>shupp.dev Design Spec</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&family=Hind:wght@300;400;500;600&family=Maitree:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-@font-face { font-family: 'Shupp'; src: url(data:font/otf;base64,__FONT__) format('opentype'); font-display: swap; }
+@font-face { font-family: 'Shupp'; src: url('/fonts/Shupp.otf') format('opentype'); font-display: swap; }
 @property --angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
 
 /* Layout: the spec's own appShell pattern. A frosted 240px index on the left,
@@ -344,7 +342,7 @@ pre.json { margin: 0; padding: 1rem 1.1rem; max-height: 520px; overflow: auto; f
 
 <div class="shell">
   <aside class="side" aria-label="Spec layers">
-    <a class="brand" href="#top">
+    <a class="brand" href="/">
       <span class="avatar" aria-hidden="true">s</span>
       <span><span class="brand-name">shupp.dev</span><span class="brand-sub">Design spec</span></span>
     </a>
@@ -590,6 +588,7 @@ pre.json { margin: 0; padding: 1rem 1.1rem; max-height: 520px; overflow: auto; f
 
   // 10. the file
   app.append($(`<section id="file">${head('file', 'design-spec/', 'The template, and this site filled in', 'Copy the template for a new site and fill every <span class="j-todo">TODO</span> top to bottom. Hand an agent the filled file with one instruction: build with this spec, use only role tokens, and run every rule and acceptance check before returning.')}
+    <div class="facts"><a class="chip" href="/design-spec/template.spec.json">${icon('globe', 14)} <b>/design-spec/template.spec.json</b></a><a class="chip" href="/design-spec/shupp.spec.json">${icon('globe', 14)} <b>/design-spec/shupp.spec.json</b></a></div>
     <div class="file">
       <div class="file-bar">
         <div class="seg" role="group" aria-label="File" id="which"><button type="button" data-f="template" aria-pressed="true">template.spec.json</button><button type="button" data-f="spec" aria-pressed="false">shupp.spec.json</button></div>
@@ -631,6 +630,8 @@ pre.json { margin: 0; padding: 1rem 1.1rem; max-height: 520px; overflow: auto; f
   }
   seg.addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) setMode(b.dataset.mode); });
   try { const saved = localStorage.getItem('spec-mode'); if (saved && saved !== 'system') setMode(saved); } catch (_) {}
+  const preset = root.getAttribute('data-theme');
+  if (preset) seg.querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.mode === preset)));
 
   // ---- active nav
   const links = [...document.querySelectorAll('#nav .nav-link')];

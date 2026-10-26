@@ -7,6 +7,9 @@ what a color is for.
 
 - `template.spec.json` is the blank template. Copy it for a new site.
 - `shupp.spec.json` is shupp.dev's default skin, extracted from this repo.
+- `render/page.template.html` is the reference page. `/design/spec` renders
+  `shupp.spec.json` through it, and `/design-spec/*.spec.json` serves the raw
+  files for agents.
 
 ## The layers
 

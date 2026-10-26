@@ -1,0 +1,58 @@
+---
+import spec from '../../../design-spec/shupp.spec.json';
+import specRaw from '../../../design-spec/shupp.spec.json?raw';
+import templateRaw from '../../../design-spec/template.spec.json?raw';
+import page from '../../../design-spec/render/page.template.html?raw';
+import { rootCss } from '../../lib/design-spec/render';
+
+// Design spec — the site's design language as a machine-readable file.
+// Standalone document like /design/void: the reference page is rendered in the
+// browser from the spec JSON embedded below, so the page cannot drift from the
+// file. Raw files for agents: /design-spec/{template,shupp}.spec.json.
+const title = 'Design Spec — shupp.dev';
+const description =
+  'shupp.dev’s design language as a machine-readable spec: a reusable template plus the site’s tokens, components, layout patterns, voice and agent checks, rendered from the JSON itself.';
+const url = 'https://shupp.dev/design/spec';
+
+const embed = (raw: string): string => raw.replace(/<\//g, '<\\/');
+const html = page
+  .replace('__ROOTCSS__', rootCss(spec))
+  .replace('__SPEC__', embed(specRaw))
+  .replace('__TEMPLATE__', embed(templateRaw));
+---
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#799496" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="canonical" href={url} />
+    <link rel="alternate" type="application/json" title="Design spec template" href="/design-spec/template.spec.json" />
+    <link rel="alternate" type="application/json" title="shupp.dev design spec" href="/design-spec/shupp.spec.json" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:url" content={url} />
+    <meta property="og:image" content="https://shupp.dev/og-default.png" />
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <!-- Follow the site's own light/dark choice unless the page's toggle was used. -->
+    <script is:inline>
+      (function () {
+        try {
+          var m = localStorage.getItem('spec-mode');
+          if (!m || m === 'system') m = localStorage.getItem('theme') === 'light' ? 'light' : 'dark';
+          document.documentElement.setAttribute('data-theme', m);
+        } catch (_) {}
+      })();
+    </script>
+  </head>
+  <body>
+    {/* eslint-disable-next-line astro/no-set-html-directive -- the page markup is a checked-in file, not user input */}
+    <Fragment set:html={html} />
+  </body>
+</html>
