@@ -1,0 +1,150 @@
+---
+courseCode: "CS 103"
+school: "Stanford"
+schoolFull: "Stanford University"
+title: "Mathematical Foundations of Computing"
+description: "The discrete math and theory that underpins computer science: set theory and proofs, propositional and first-order logic, relations and functions, cardinality and graph theory, induction, and an introduction to computability — finite automata, regular expressions, context-free grammars, and Turing machines."
+term: "Autumn 2020"
+discipline: "Computer Science"
+status: "live"
+heroIcon: "MathOperations"
+source:
+  author: "Aditya Saligrama"
+  authorUrl: "https://saligrama.io"
+  repoUrl: "https://github.com/saligrama/notes"
+  siteUrl: "https://saligrama.io/notes"
+  license: "No open license — these lectures are handwritten and linked here as scanned PDFs, never reproduced. All credit to the original author."
+books:
+  - title: "Mathematics for Computer Science"
+    authors: "Eric Lehman, F. Thomson Leighton & Albert R. Meyer (MIT)"
+    url: "https://ocw.mit.edu/courses/6-042j-mathematics-for-computer-science-fall-2010/pages/readings/"
+    free: true
+    note: "MIT's free 900-page discrete-math text — covers proofs, logic, relations, graphs, and induction in depth."
+  - title: "Book of Proof"
+    authors: "Richard Hammack"
+    url: "https://www.people.vcu.edu/~rhammack/BookOfProof/"
+    free: true
+    note: "A free, gentle introduction to proof technique — ideal for the first weeks of this course."
+links:
+  - title: "Original CS 103 notes (GitHub)"
+    url: "https://github.com/saligrama/notes/tree/main/CS103"
+    type: "notes"
+    note: "The source this compilation links into. These lectures are handwritten scans (PDF), one per lecture."
+  - title: "Rendered notes at saligrama.io"
+    url: "https://saligrama.io/notes"
+    type: "notes"
+    note: "The author's preferred reading experience."
+  - title: "Stanford CS 103 course site"
+    url: "https://web.stanford.edu/class/cs103/"
+    type: "course"
+    note: "Keith Schwarz's course — famous for its extensive public lecture notes and problem sets."
+units:
+  - title: "Proofs & Logic"
+    icon: "ListChecks"
+    summary: "The grammar of mathematical argument: set theory, direct and indirect proofs, and the propositional and first-order logic that makes 'for all' and 'there exists' precise. Handwritten lecture scans — open each PDF from the source links."
+    lectures:
+      - title: "Set Theory"
+        date: "Week 1 · Lecture 1"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week1-lecture1-set-theory.pdf"
+      - title: "Mathematical Proofs"
+        date: "Week 1 · Lecture 2"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week1-lecture2-mathematical-proofs.pdf"
+      - title: "Indirect Proofs"
+        date: "Week 1 · Lecture 3"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week1-lecture3-indirect-proofs.pdf"
+      - title: "Propositional Logic"
+        date: "Week 2 · Lecture 1"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week2-lecture1-propositional-logic.pdf"
+      - title: "First-Order Logic"
+        date: "Week 2 · Lecture 2"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week2-lecture2-first-order-logic.pdf"
+      - title: "First-Order Logic, continued"
+        date: "Week 2 · Lecture 3"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week2-lecture3-fol-continued.pdf"
+  - title: "Relations, Functions & Counting"
+    icon: "ArrowsLeftRight"
+    summary: "Structures on sets: binary relations and their properties, functions, the cardinality of infinite sets, graph theory, and the pigeonhole principle. Handwritten lecture scans."
+    lectures:
+      - title: "Binary Relations"
+        date: "Week 3 · Lecture 1"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week3-lecture1-binary-relations.pdf"
+      - title: "Binary Relations, continued"
+        date: "Week 3 · Lecture 2"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week3-lecture2-binary-relations-continued.pdf"
+      - title: "Functions"
+        date: "Week 3 · Lecture 3"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week3-lecture3-functions.pdf"
+      - title: "Cardinality"
+        date: "Week 4 · Lecture 1"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week4-lecture1-cardinality.pdf"
+      - title: "Graph Theory"
+        date: "Week 4 · Lecture 2"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week4-lecture2-graph-theory.pdf"
+      - title: "The Pigeonhole Principle"
+        date: "Week 4 · Lecture 3"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week4-lecture3-pigeonhole-principle.pdf"
+  - title: "Induction"
+    icon: "Stairs"
+    summary: "Proof by induction and its variants, and the bridge from pure math into the theory of computation — formal languages and computability. Handwritten lecture scans."
+    lectures:
+      - title: "Induction"
+        date: "Week 5 · Lecture 1"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week5-lecture1-induction.pdf"
+      - title: "Induction Variants"
+        date: "Week 5 · Lecture 2"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week5-lecture2-induction-variants.pdf"
+      - title: "Computability & Formal Languages"
+        date: "Week 5 · Lecture 3"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week5-lecture3-computability-formal-languages.pdf"
+  - title: "Computability Theory"
+    icon: "Graph"
+    summary: "A first pass through the theory of computation: finite automata and their equivalence, regular expressions and the limits of regularity, context-free grammars, Turing machines, universality, and the existence of unsolvable problems. Handwritten lecture scans."
+    lectures:
+      - title: "Nondeterministic Finite Automata"
+        date: "Week 6 · Lecture 1"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week6-lecture1-nfas.pdf"
+      - title: "NFA–DFA Equivalence"
+        date: "Week 6 · Lecture 2"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week6-lecture2-nfa-dfa-equivalence.pdf"
+      - title: "Regular Expressions"
+        date: "Week 6 · Lecture 3"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week6-lecture3-regular-expressions.pdf"
+      - title: "Nonregular Languages"
+        date: "Week 7 · Lecture 1"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week7-lecture1-nonregular-languages.pdf"
+      - title: "Context-Free Grammars"
+        date: "Week 7 · Lecture 2"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week7-lecture2-context-free-grammars.pdf"
+      - title: "Turing Machines"
+        date: "Week 7 · Lecture 3"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week7-lecture3-turing-machines.pdf"
+      - title: "Turing Machine Subroutines"
+        date: "Week 8 · Lecture 1"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week8-lecture1-tm-subroutines.pdf"
+      - title: "The Universal Turing Machine"
+        date: "Week 8 · Lecture 2"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week8-lecture2-universal-tm.pdf"
+      - title: "Unsolvable Problems"
+        date: "Week 8 · Lecture 3"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week8-lecture3-unsolvable-problems.pdf"
+      - title: "Unsolvable Problems, continued"
+        date: "Week 9 · Lecture 1"
+        sourceUrl: "https://github.com/saligrama/notes/blob/main/CS103/week9-lecture1-unsolvable-problems-continued.pdf"
+lastUpdated: 2026-07-30
+visible: true
+---
+
+## Why this course
+
+CS 103 is the mathematical bedrock of a computer science degree: before you can
+reason about algorithms or prove a program correct, you need proofs, logic, sets,
+and the first ideas of what a computer can and cannot do. It ends where the
+theory of computation begins — automata, grammars, and the unsolvable.
+
+These lectures in
+[Aditya Saligrama's notes repo](https://github.com/saligrama/notes/tree/main/CS103)
+are **handwritten scans** (one PDF per lecture), so this compilation is a
+structured index into them rather than a summary: the units and lecture titles
+map the course, and each entry links straight to the original PDF. For readable
+prose companions, the free books below cover the same ground — and Stanford's
+[CS 103 site](https://web.stanford.edu/class/cs103/) publishes extensive notes.
