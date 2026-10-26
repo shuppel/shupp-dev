@@ -1,0 +1,148 @@
+{
+  "$format": "design-spec@0.1",
+  "$description": "Blank design spec. Copy this file to <slug>.spec.json and fill every TODO. Keys starting with $ are guidance for the person or agent filling it; delete them once a value is in place. Order matters: fill top to bottom, because later layers reference earlier ones with {path.to.token}.",
+
+  "meta": {
+    "name": "TODO: product or site name",
+    "slug": "TODO: kebab-case id, also the file name",
+    "version": "0.1.0",
+    "updated": "YYYY-MM-DD",
+    "source": {
+      "repo": "TODO: URL or null for a net-new site",
+      "tokensFile": "TODO: where the CSS variables live, or null",
+      "prose": "TODO: any human-written style guide this was drawn from"
+    },
+    "modes": ["light", "dark"],
+    "defaultMode": "TODO: light | dark",
+    "modeSwitch": "TODO: how a page enters each mode (class, attribute, media query)",
+    "skins": {
+      "contract": "Optional. How another system can restyle this one by remapping the role layer.",
+      "available": []
+    }
+  },
+
+  "identity": {
+    "$description": "Why this system looks the way it does. An agent reads this before choosing anything the tokens don't cover.",
+    "thesis": "TODO: one or two sentences. What it is, who it serves, what it feels like.",
+    "invariants": [
+      "TODO: 3–6 statements that stay true on every page (type pairing, where the accent may appear, how things move)."
+    ],
+    "identityTest": "TODO: the check that tells you a page still belongs to this system after the palette changes."
+  },
+
+  "tokens": {
+    "$description": "DTCG-style values. Brand tokens are raw values; role tokens are what components use, with one value per mode. Reference another token as {color.brand.name}.",
+    "color": {
+      "brand": {
+        "$description": "3–7 raw colors. Give each a human name and a one-line use. Nothing else in the system is a raw color.",
+        "TODO-key": { "$type": "color", "$value": "#000000", "css": "--color-TODO", "name": "TODO", "use": "TODO" }
+      },
+      "role": {
+        "$description": "Required roles. Add more, never fewer. Each role has a value per mode in meta.modes.",
+        "background":    { "css": "--bg",            "light": "TODO", "dark": "TODO", "use": "Page canvas" },
+        "surface":       { "css": "--surface",       "light": "TODO", "dark": "TODO", "use": "Cards and panels" },
+        "surfaceMuted":  { "css": "--surface-muted", "light": "TODO", "dark": "TODO", "use": "Insets and wells" },
+        "text":          { "css": "--text",          "light": "TODO", "dark": "TODO", "use": "Running text" },
+        "textStrong":    { "css": "--text-strong",   "light": "TODO", "dark": "TODO", "use": "Headings" },
+        "textMuted":     { "css": "--text-muted",    "light": "TODO", "dark": "TODO", "use": "Metadata" },
+        "primary":       { "css": "--primary",       "light": "TODO", "dark": "TODO", "use": "Links and primary actions" },
+        "primaryStrong": { "css": "--primary-strong","light": "TODO", "dark": "TODO", "use": "Hover and pressed" },
+        "borderSubtle":  { "css": "--border-subtle", "light": "TODO", "dark": "TODO", "use": "Outlines and dividers" },
+        "hoverTint":     { "css": "--hover-tint",    "light": "TODO", "dark": "TODO", "use": "Hover wash" },
+        "eyebrow":       { "css": "--eyebrow",       "light": "TODO", "dark": "TODO", "use": "Section labels" }
+      },
+      "gradient": {
+        "$description": "Optional. Named gradients built only from brand tokens."
+      }
+    },
+
+    "font": {
+      "family": {
+        "$description": "Three to four roles. Name the source so an agent can load it.",
+        "display": { "css": "--font-display", "$value": "TODO, fallback", "source": "TODO", "use": "Wordmark and top headings" },
+        "heading": { "css": "--font-heading", "$value": "TODO, fallback", "source": "TODO", "use": "Sub-headings, labels, buttons" },
+        "body":    { "css": "--font-body",    "$value": "TODO, fallback", "source": "TODO", "use": "Running text" },
+        "mono":    { "css": "--font-mono",    "$value": "ui-monospace, monospace", "use": "Code and data" }
+      },
+      "scale": {
+        "$description": "Every size the system uses, by name. Each step says family, weight and, for labels, case and tracking.",
+        "eyebrow": { "$value": "TODO rem", "family": "heading", "weight": 700, "tracking": "TODO em", "case": "upper" },
+        "small":   { "$value": "TODO rem", "family": "body", "weight": 400 },
+        "body":    { "$value": "1rem",     "family": "body", "weight": 400, "leading": 1.6 },
+        "lead":    { "$value": "TODO rem", "family": "body", "weight": 400 },
+        "h3":      { "$value": "TODO rem", "mobile": "TODO rem", "family": "heading", "weight": 500 },
+        "h2":      { "$value": "TODO rem", "mobile": "TODO rem", "family": "display", "weight": 600 },
+        "h1":      { "$value": "TODO rem", "mobile": "TODO rem", "family": "display", "weight": 600 }
+      }
+    },
+
+    "space":  { "$description": "A base unit and its steps, in rem, each with a use.", "1": { "$value": "TODO", "use": "TODO" } },
+    "radius": { "$description": "Named radii, each with what gets it.", "md": { "$value": "TODO", "use": "TODO" } },
+    "shadow": { "$description": "Elevation steps plus the focus ring. Per-mode where they differ.", "focusRing": { "light": "TODO", "dark": "TODO" } },
+    "motion": {
+      "easing":   { "TODO-name": { "$value": "cubic-bezier(…)", "use": "TODO" } },
+      "duration": { "TODO-name": { "$value": "TODO ms", "use": "TODO" } },
+      "hover":    { "$description": "The transform each kind of element gets on hover." },
+      "reducedMotion": "TODO: what stops under prefers-reduced-motion"
+    },
+    "layout": {
+      "breakpoints": { "TODO-name": { "$value": "TODO px", "means": "What changes at this width" } },
+      "width":       { "page": { "$value": "TODO px" }, "reading": { "$value": "TODO px" } },
+      "pagePadding": { "desktop": "TODO", "mobile": "TODO" }
+    },
+    "icon": { "library": "TODO", "weight": "TODO", "sizes": {}, "minimum": "TODO" }
+  },
+
+  "components": {
+    "$description": "One entry per reusable element. Values reference tokens. `wireframe` tells a low-fi tool how to draw it without any styling.",
+    "TODO-component": {
+      "purpose": "TODO: the job it does, in one sentence",
+      "anatomy": ["TODO: named parts, in reading order; suffix ? if optional"],
+      "base": { "TODO-property": "{token.path}" },
+      "variants": {},
+      "states": ["rest", "hover", "focus-visible", "active", "disabled"],
+      "a11y": ["TODO"],
+      "do": ["TODO"],
+      "dont": ["TODO"],
+      "wireframe": { "shape": "box | pill | chip | row | square | line-short | dashed-border", "label": "TODO" }
+    }
+  },
+
+  "patterns": {
+    "$description": "Page-level layouts as named grid areas. A wireframe tool draws `grid.areas` directly; a developer turns them into grid-template-areas.",
+    "TODO-pattern": {
+      "purpose": "TODO",
+      "grid": { "columns": "TODO", "areas": ["TODO TODO"] },
+      "regions": { "TODO": { "component": "TODO" } },
+      "responsive": { "below": "{layout.breakpoints.TODO}", "areas": ["TODO"] }
+    }
+  },
+
+  "voice": {
+    "personality": ["TODO: 3–5 adjectives"],
+    "summary": "TODO: how the product talks, in two sentences",
+    "principles": ["TODO"],
+    "vocabulary": { "use": [], "avoid": [] },
+    "examples": [ { "context": "TODO", "do": "TODO", "dont": "TODO" } ],
+    "mechanics": { "case": "TODO", "punctuation": "TODO", "emoji": "TODO" }
+  },
+
+  "rules": [
+    { "id": "tokens-only",    "level": "must", "rule": "Components take every color, font and shadow from a token.", "check": "No literal colors outside the token block" },
+    { "id": "focus-visible",  "level": "must", "rule": "Every interactive element shows the focus ring.", "check": "Tab through in every mode" },
+    { "id": "contrast-body",  "level": "must", "rule": "Body text ≥ 4.5:1, large text ≥ 3:1, in every mode.", "check": "contrast table" },
+    { "id": "reduced-motion", "level": "must", "rule": "Honor prefers-reduced-motion.", "check": "Emulate reduced motion" }
+  ],
+
+  "contrast": [
+    { "$description": "Every text/background pair the system actually uses, measured, per mode.", "fg": "{color.role.text}", "bg": "{color.role.background}", "mode": "light", "ratio": 0, "pass": "TODO" }
+  ],
+
+  "knownIssues": [
+    { "$description": "When extracting from an existing site, record drift here instead of silently fixing it in the spec.", "id": "TODO", "severity": "high | medium | low", "where": "TODO", "issue": "TODO", "fix": "TODO" }
+  ],
+
+  "acceptance": [
+    "TODO: the checks an agent runs on its own output before handing it back"
+  ]
+}
