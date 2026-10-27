@@ -1,0 +1,352 @@
+{
+  "$format": "design-spec@0.1",
+  "$description": "shupp.dev's default skin, written as a design spec. Extracted from src/layouts/Layout.astro, src/components/Header/SideNav.astro, src/pages/index.astro and docs/design-specs.md. Values are what ships today; drift is listed under knownIssues instead of being silently corrected.",
+
+  "meta": {
+    "name": "shupp.dev",
+    "slug": "shupp",
+    "version": "0.1.0",
+    "updated": "2026-10-26",
+    "source": {
+      "repo": "https://github.com/shuppel/shupp-dev",
+      "tokensFile": "src/layouts/Layout.astro",
+      "prose": "docs/design-specs.md"
+    },
+    "modes": ["light", "dark"],
+    "defaultMode": "dark",
+    "modeSwitch": "Class `dark` on <html>. Dark unless localStorage.theme === 'light'.",
+    "skins": {
+      "contract": "A skin is a stylesheet that remaps the role tokens below onto another system's values. Components never change; only the role layer does.",
+      "available": ["site", "prism", "void"]
+    }
+  },
+
+  "identity": {
+    "thesis": "A calm, botanical workspace for a person who builds apps for hoomans: sage, olive and citron on a plum-black ground, a handwritten wordmark, and surfaces that move like liquid when touched.",
+    "invariants": [
+      "One handwritten display face (Shupp) appears only in the wordmark and page-level headings.",
+      "Every accent comes from the five brand colors; there is no blue, red or purple in the chrome.",
+      "Surfaces lift on hover with the liquid easing curve; nothing snaps.",
+      "Labels are small, uppercase Cairo with wide tracking; body copy is Hind at a relaxed 1.6–1.75 leading.",
+      "A single animated conic outline marks the most important card on a page, and only one."
+    ],
+    "identityTest": "Swap the palette for greys. If the handwritten wordmark, the tracked uppercase labels, the pill buttons and the liquid lift still read as this site, the identity holds."
+  },
+
+  "tokens": {
+    "color": {
+      "brand": {
+        "dark":      { "$type": "color", "$value": "#14080E", "css": "--color-dark",      "name": "Plum black",  "use": "Body text on light. Canvas in dark mode." },
+        "secondary": { "$type": "color", "$value": "#49475B", "css": "--color-secondary", "name": "Cool slate",  "use": "Secondary text, primary button fill (light), gradient partner." },
+        "tertiary":  { "$type": "color", "$value": "#799496", "css": "--color-tertiary",  "name": "Sage teal",   "use": "Links, borders, focus ring, eyebrow labels. Not for body text on white." },
+        "accent":    { "$type": "color", "$value": "#ACC196", "css": "--color-accent",    "name": "Olive",       "use": "Headshot ring, dark-mode accent text and active states." },
+        "light":     { "$type": "color", "$value": "#E9EB9E", "css": "--color-light",     "name": "Pale citron", "use": "Dark-mode highlight, primary button text (light), gradient terminus." }
+      },
+      "role": {
+        "background":      { "css": "--background-color", "light": "#f9fafb",           "dark": "{color.brand.dark}",      "use": "Page canvas" },
+        "backgroundAlt":   { "css": "--background-alt",   "light": "#f1f5f9",           "dark": "{color.brand.secondary}", "use": "Subtle sectioning, inline code" },
+        "surface":         { "css": "--surface",          "light": "#ffffff",           "dark": "#23232b",                 "use": "Cards, hero, previews" },
+        "surfaceElevated": { "css": "--surface-elevated", "light": "#ffffff",           "dark": "#2a2a33",                 "use": "Reserved for stacked surfaces" },
+        "surfaceMuted":    { "css": "--surface-muted",    "light": "#f8f8f6",           "dark": "#1a1a22",                 "use": "Inset and preview wells" },
+        "text":            { "css": "--text-color",       "light": "{color.brand.dark}", "dark": "#f3f4f6",                "use": "Running text" },
+        "textStrong":      { "css": "--text-strong",      "light": "{color.brand.dark}", "dark": "#f3f4f6",                "use": "Headings, emphasis" },
+        "textLight":       { "css": "--text-light",       "light": "{color.brand.secondary}", "dark": "{color.brand.light}", "use": "Secondary text" },
+        "textMuted":       { "css": "--text-muted",       "light": "#6b7280",           "dark": "#a5a5b5",                 "use": "Dates, metadata" },
+        "primary":         { "css": "--primary-color",    "light": "{color.brand.tertiary}", "dark": "{color.brand.tertiary}", "use": "Links at rest" },
+        "primaryStrong":   { "css": "--primary-dark",     "light": "{color.brand.dark}", "dark": "{color.brand.accent}",   "use": "Links on hover" },
+        "border":          { "css": "--border-color",     "light": "{color.brand.tertiary}", "dark": "{color.brand.tertiary}", "use": "Defined borders" },
+        "borderSubtle":    { "css": "--border-subtle",    "light": "rgba(121,148,150,0.15)", "dark": "rgba(233,235,158,0.10)", "use": "Card outlines, dividers" },
+        "hoverTint":       { "css": "--hover-tint",       "light": "rgba(121,148,150,0.08)", "dark": "rgba(233,235,158,0.08)", "use": "Background wash on hover" },
+        "eyebrow":         { "css": null,                 "light": "{color.brand.tertiary}", "dark": "{color.brand.accent}", "use": "Uppercase section labels (de facto role, no token yet)" }
+      },
+      "gradient": {
+        "brandWash":   { "$value": "linear-gradient(135deg, rgba(121,148,150,0.1), rgba(172,193,150,0.1))", "use": "Card hover wash" },
+        "headingInk":  { "light": "linear-gradient(45deg, {color.brand.dark}, {color.brand.secondary})", "dark": "linear-gradient(45deg, #f3f4f6, {color.brand.accent})", "use": "Hero h1 as clipped text" },
+        "quantum":     { "$value": "conic-gradient(from var(--angle), transparent 0%, color-mix(in srgb, {color.brand.tertiary} 70%, transparent) 18%, color-mix(in srgb, {color.brand.accent} 85%, transparent) 30%, color-mix(in srgb, {color.brand.light} 70%, transparent) 42%, transparent 60%)", "use": "Animated outline on the one featured card" },
+        "badge": {
+          "sage":  "linear-gradient(135deg, {color.brand.tertiary}, {color.brand.accent})",
+          "slate": "linear-gradient(135deg, {color.brand.secondary}, {color.brand.tertiary})",
+          "plum":  "linear-gradient(135deg, {color.brand.dark}, {color.brand.secondary})"
+        }
+      }
+    },
+
+    "font": {
+      "family": {
+        "display": { "css": "--font-main-header",      "$value": "'Shupp', 'Maitree', serif",  "source": "/fonts/Shupp.otf (handwritten, one weight); Maitree from Google Fonts", "use": "Wordmark, h1, h2" },
+        "heading": { "css": "--font-secondary-header", "$value": "'Cairo', sans-serif",        "source": "Google Fonts 300–700", "use": "h3–h6, labels, buttons, nav" },
+        "body":    { "css": "--font-body",             "$value": "'Hind', sans-serif",         "source": "Google Fonts 300–700", "use": "Body, descriptions, meta" },
+        "mono":    { "css": null,                      "$value": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace", "use": "Inline code" }
+      },
+      "scale": {
+        "eyebrow": { "$value": "0.68rem", "px": 11, "family": "heading", "weight": 700, "tracking": "0.14em", "case": "upper", "use": "Section labels" },
+        "label":   { "$value": "0.75rem", "px": 12, "family": "body",    "weight": 500, "tracking": "0.08em", "case": "upper", "use": "Type chips, card kickers" },
+        "meta":    { "$value": "0.8rem",  "px": 13, "family": "body",    "weight": 500, "use": "Dates, link chips" },
+        "small":   { "$value": "0.9rem",  "px": 14, "family": "body",    "weight": 400, "leading": 1.5, "use": "Card descriptions" },
+        "nav":     { "$value": "0.95rem", "px": 15, "family": "heading", "weight": 500, "tracking": "0.01em", "use": "Navigation" },
+        "body":    { "$value": "1rem",    "px": 16, "family": "body",    "weight": 400, "leading": 1.6, "use": "Default" },
+        "lead":    { "$value": "1.05rem", "px": 17, "family": "body",    "weight": 400, "leading": 1.75, "use": "Bio, intro paragraphs" },
+        "title":   { "$value": "1.1rem",  "px": 18, "family": "heading", "weight": 600, "use": "Card titles" },
+        "h3":      { "$value": "1.5rem",  "mobile": "1.25rem", "px": 24, "family": "heading", "weight": 500, "leading": 1.2 },
+        "h2":      { "$value": "2rem",    "mobile": "1.75rem", "px": 32, "family": "display", "weight": 600, "leading": 1.2 },
+        "h1":      { "$value": "2.5rem",  "mobile": "2rem",    "px": 40, "family": "display", "weight": 600, "leading": 1.2 },
+        "hero":    { "$value": "2.4rem",  "mobile": "1.9rem",  "px": 38, "family": "display", "weight": 700, "leading": 1.1, "use": "Hero name, gradient ink" }
+      }
+    },
+
+    "space": {
+      "$description": "8px base, in rem so it follows the reader's font size.",
+      "0.5": { "$value": "0.25rem", "px": 4,  "use": "Tight inline gaps" },
+      "1":   { "$value": "0.5rem",  "px": 8,  "use": "Inside components" },
+      "1.5": { "$value": "0.75rem", "px": 12, "use": "Card content gaps" },
+      "2":   { "$value": "1rem",    "px": 16, "use": "Card padding, grid gap" },
+      "3":   { "$value": "1.5rem",  "px": 24, "use": "Section side padding, title-to-content" },
+      "4":   { "$value": "2rem",    "px": 32, "use": "Hero padding, page padding" },
+      "6":   { "$value": "3rem",    "px": 48, "use": "Layout gap" },
+      "7":   { "$value": "3.5rem",  "px": 56, "use": "Between reading sections" },
+      "8":   { "$value": "4rem",    "px": 64, "use": "Between major sections" }
+    },
+
+    "radius": {
+      "xs":     { "$value": "3px",   "use": "Inline code" },
+      "sm":     { "$value": "6px",   "use": "Link chips" },
+      "md":     { "$value": "10px",  "use": "Nav items, icon badges" },
+      "lg":     { "$value": "12px",  "use": "Cards" },
+      "xl":     { "$value": "18px",  "use": "Hero card" },
+      "pill":   { "$value": "30px",  "use": "Buttons, tags" },
+      "circle": { "$value": "50%",   "use": "Headshot, avatar, theme toggle" }
+    },
+
+    "shadow": {
+      "card":      { "css": "--card-shadow", "light": "0 4px 6px -1px rgba(20,8,14,0.1), 0 2px 4px -1px rgba(20,8,14,0.06)", "dark": "0 4px 16px -1px rgba(0,0,0,0.5), 0 2px 4px -1px rgba(0,0,0,0.3)" },
+      "rest":      { "$value": "0 2px 8px rgba(20,8,14,0.04)" },
+      "hover":     { "$value": "0 4px 16px rgba(20,8,14,0.08)" },
+      "hero":      { "$value": "0 6px 28px rgba(20,8,14,0.06)" },
+      "lift":      { "$value": "0 7px 14px rgba(20,8,14,0.2), 0 3px 6px rgba(20,8,14,0.1)", "use": "Button hover" },
+      "focusRing": { "css": "--focus-ring", "light": "0 0 0 3px rgba(121,148,150,0.45)", "dark": "0 0 0 3px rgba(233,235,158,0.55)" }
+    },
+
+    "motion": {
+      "easing": {
+        "liquid":   { "$value": "cubic-bezier(0.25, 0.8, 0.25, 1)", "use": "Every lift, entrance and nav transition" },
+        "standard": { "$value": "ease", "use": "Color and opacity micro-changes" },
+        "snappy":   { "$value": "cubic-bezier(0.4, 0, 0.2, 1)", "use": "Page transitions on mobile" }
+      },
+      "duration": {
+        "press":   { "$value": "100ms", "use": "Button :active" },
+        "micro":   { "$value": "200ms", "use": "Hover color, chip lift" },
+        "base":    { "$value": "300ms", "use": "Card and button lift, view transition" },
+        "entry":   { "$value": "700ms", "use": "Hero fade-up" },
+        "page":    { "$value": "800ms", "use": "<main> fluid entry" },
+        "ambient": { "$value": "14s",   "use": "Quantum outline rotation, linear, infinite" }
+      },
+      "keyframes": {
+        "fluidEntry": "from { opacity: 0; transform: translateY(10px) scale(0.98) }",
+        "liquidFadeIn": "from { opacity: 0; transform: translateY(20px) scale(0.95) }"
+      },
+      "hover": {
+        "card":   "translateY(-2px)",
+        "button": "translateY(-2px) scale(1.03)",
+        "press":  "translateY(1px) scale(0.98)",
+        "chip":   "translateY(-1px)"
+      },
+      "reducedMotion": "Under prefers-reduced-motion: reduce, all durations collapse to 0.01ms, hover transforms are removed and the quantum outline stops."
+    },
+
+    "layout": {
+      "breakpoints": {
+        "mobile": { "$value": "768px",  "means": "Side nav collapses to a top bar; main gets 4.5rem top padding; type steps down." },
+        "narrow": { "$value": "1100px", "means": "Main drops its max-width and fills the space right of the nav." }
+      },
+      "width": {
+        "page":    { "$value": "1200px", "use": "Outer content limit" },
+        "sideNav": { "$value": "240px",  "use": "Fixed left navigation" },
+        "reading": { "$value": "860px",  "use": "Press-kit sections and hero" }
+      },
+      "pagePadding": { "desktop": "2rem", "mobile": "1rem" },
+      "zIndex": { "sideNav": 100, "skipLink": 9999 }
+    },
+
+    "icon": {
+      "library": "Phosphor (@phosphor-icons/react)",
+      "weight": "duotone",
+      "sizes": { "chip": 14, "inline": 16, "badge": 20 },
+      "component": "src/components/Icon/Icon.astro",
+      "minimum": "14px on screen; 12px only for decoration"
+    }
+  },
+
+  "components": {
+    "button": {
+      "purpose": "The single call to action in a region.",
+      "anatomy": ["label"],
+      "base": { "font": "heading 500", "padding": "0.5rem 1.5rem", "radius": "{radius.pill}", "transition": "all {motion.duration.base} {motion.easing.liquid}" },
+      "variants": {
+        "primary":   { "light": { "bg": "{color.brand.secondary}", "fg": "{color.brand.light}" }, "dark": { "bg": "{color.brand.accent}", "fg": "{color.brand.dark}" }, "hover": "bg → {color.brand.dark} (light)" },
+        "secondary": { "light": { "bg": "transparent", "fg": "{color.brand.dark}", "border": "2px {color.brand.tertiary}" }, "dark": { "bg": "rgba(233,235,158,0.1)", "fg": "#f3f4f6", "border": "2px {color.brand.accent}" }, "hover": "fills with the border color" }
+      },
+      "states": ["rest", "hover: lift + scale 1.03 + {shadow.lift}", "active: press transform, 100ms", "focus-visible: {shadow.focusRing}"],
+      "a11y": ["Real <a> or <button>; never a div.", "Visible focus ring in both modes."],
+      "do": ["One primary per view.", "Verb-first labels: 'Read the case study'."],
+      "dont": ["Stack two primaries side by side.", "Use sage teal text on a white button."],
+      "wireframe": { "shape": "pill", "label": "Button" }
+    },
+    "card": {
+      "purpose": "A self-contained item in a grid: a venture, a project, a post.",
+      "anatomy": ["iconBadge?", "title", "kicker", "description", "linkChips?"],
+      "base": { "bg": "{color.role.surface}", "border": "1px {color.role.borderSubtle}", "radius": "{radius.lg}", "padding": "{space.2} → 1.25rem" },
+      "states": ["rest", "hover: translateY(-2px) + {shadow.hover}, {motion.duration.micro}", "focus-within: {shadow.focusRing}"],
+      "a11y": ["If the whole card is a link, the title is the link and the rest is not nested inside another link."],
+      "do": ["Let content set the height.", "Keep kicker, title and description in the same order on every card in a grid."],
+      "dont": ["Give every block on the page a card; cards mark separate objects."],
+      "wireframe": { "shape": "box", "rows": ["badge + title/kicker", "text ×2", "chips"] }
+    },
+    "heroCard": {
+      "purpose": "The identity block at the top of a person or project page.",
+      "anatomy": ["portrait", "name (h1, gradient ink)", "title", "location dot", "tagline (italic)"],
+      "base": { "layout": "grid: auto 1fr, gap {space.4}", "padding": "1.75rem 2rem", "radius": "{radius.xl}", "bg": "{color.role.surface}", "shadow": "{shadow.hero}", "outline": "quantumOutline" },
+      "portrait": { "size": "120px", "radius": "{radius.circle}", "ring": "3px {color.brand.accent}" },
+      "responsive": "Below {layout.breakpoints.mobile} the grid stacks and centers.",
+      "wireframe": { "shape": "box", "areas": ["portrait text"] }
+    },
+    "quantumOutline": {
+      "purpose": "Marks the one featured element on a page.",
+      "base": { "width": "1.5px", "fill": "{color.gradient.quantum}", "animation": "rotate {motion.duration.ambient} linear infinite", "technique": "@property --angle + mask-composite: exclude" },
+      "rules": ["At most one per page.", "Static under reduced motion."],
+      "wireframe": { "shape": "dashed-border" }
+    },
+    "eyebrow": {
+      "purpose": "Names a section in small uppercase above its content.",
+      "base": { "font": "{font.scale.eyebrow} or 1.1rem section variant", "case": "upper", "tracking": "0.12–0.14em", "color": "{color.role.eyebrow}" },
+      "do": ["Two to three words: 'Companies & Ventures'."],
+      "dont": ["Number eyebrows unless the sections are a real sequence."],
+      "wireframe": { "shape": "line-short" }
+    },
+    "iconBadge": {
+      "purpose": "Identifies a card's subject with a duotone icon on a brand gradient tile.",
+      "base": { "size": "40px", "radius": "{radius.md}", "icon": "20px duotone, white" },
+      "variants": { "sage": "{color.gradient.badge.sage}", "slate": "{color.gradient.badge.slate}", "plum": "{color.gradient.badge.plum}" },
+      "wireframe": { "shape": "square" }
+    },
+    "linkChip": {
+      "purpose": "A compact outbound link inside a card.",
+      "anatomy": ["icon 14px", "label"],
+      "base": { "bg": "{color.role.hoverTint}", "radius": "{radius.sm}", "padding": "0.35rem 0.75rem", "font": "{font.scale.meta}" },
+      "states": ["hover: tint deepens, text → textStrong, translateY(-1px)", "focus-visible: {shadow.focusRing}"],
+      "wireframe": { "shape": "chip" }
+    },
+    "navItem": {
+      "purpose": "One destination in the side navigation.",
+      "anatomy": ["icon 18px duotone", "label"],
+      "base": { "font": "{font.scale.nav}", "padding": "0.65rem 0.85rem", "radius": "{radius.md}", "color": "{color.brand.secondary} (light) / {color.role.textMuted} (dark)" },
+      "states": ["hover: {color.role.hoverTint} wash, text → textStrong", "active (aria-current=page): sage→olive wash, 1px inset outline, a short bar in the gutter", "focus-visible: {shadow.focusRing}"],
+      "wireframe": { "shape": "row", "label": "Nav item" }
+    },
+    "wordmark": {
+      "purpose": "The site's signature in the side nav.",
+      "anatomy": ["avatar 40px with 2px olive ring", "name: Shupp face, lowercase, 0.12em tracking", "sub: Cairo 0.7rem uppercase 0.14em"],
+      "wireframe": { "shape": "row", "label": "Logo" }
+    }
+  },
+
+  "patterns": {
+    "appShell": {
+      "purpose": "Every page: fixed frosted side nav on the left, content to its right, footer under the content.",
+      "grid": { "columns": "240px 1fr", "areas": ["nav main", "nav footer"] },
+      "regions": {
+        "nav":    { "component": "sideNav", "notes": "Frosted: 92% surface, blur(14px) saturate(140%), 1px subtle border on the right." },
+        "main":   { "notes": "max-width 960px beside the nav, padding {layout.pagePadding.desktop}, fluidEntry on load." },
+        "footer": { "notes": "Offset by the nav width." }
+      },
+      "responsive": { "below": "{layout.breakpoints.mobile}", "areas": ["nav", "main", "footer"], "notes": "Nav becomes a top bar; main pads 4.5rem on top." }
+    },
+    "profileHero": {
+      "purpose": "Open a person or project page with identity, not a banner.",
+      "grid": { "columns": "120px 1fr", "areas": ["portrait name", "portrait title", "portrait tagline"] },
+      "regions": { "portrait": { "component": "heroCard.portrait" }, "name": { "component": "h1 hero" }, "title": {}, "tagline": {} },
+      "width": "{layout.width.reading}",
+      "responsive": { "below": "{layout.breakpoints.mobile}", "areas": ["portrait", "name", "title", "tagline"] }
+    },
+    "readingSection": {
+      "purpose": "A titled block of prose or items in the reading column.",
+      "grid": { "columns": "1fr", "areas": ["eyebrow", "body"] },
+      "regions": { "eyebrow": { "component": "eyebrow" }, "body": {} },
+      "width": "{layout.width.reading}",
+      "spacing": "{space.7} between sections, {space.3} from eyebrow to body"
+    },
+    "cardGrid": {
+      "purpose": "Two-up comparison of peer items.",
+      "grid": { "columns": "1fr 1fr", "gap": "{space.2}", "areas": ["a b", "c d"] },
+      "regions": { "a": { "component": "card" }, "b": { "component": "card" }, "c": { "component": "card" }, "d": { "component": "card" } },
+      "responsive": { "below": "{layout.breakpoints.mobile}", "columns": "1fr", "areas": ["a", "b", "c", "d"] }
+    }
+  },
+
+  "voice": {
+    "personality": ["Warm", "Plain-spoken", "Quietly playful", "Human-first"],
+    "summary": "Write like a founder talking to a friend who builds things: first person, concrete, a little wry. The playfulness lives in a word or two ('hoomans'), never in the structure.",
+    "principles": [
+      "Lead with people and the problem, then the technology.",
+      "Use first person for the site's own voice; name ventures by their full name the first time.",
+      "Prefer specific nouns (Arlington, VA; federal agencies; podcast) over adjectives.",
+      "One playful word per surface at most."
+    ],
+    "vocabulary": {
+      "use": ["hoomans", "human-first", "local-first", "thoughtful", "fractional founder", "build", "ship"],
+      "avoid": ["synergy", "leverage", "revolutionary", "cutting-edge", "solutions (as a noun on its own)"]
+    },
+    "examples": [
+      { "context": "Tagline",          "do": "building apps for hoomans",                                    "dont": "Delivering innovative digital solutions" },
+      { "context": "Venture blurb",    "do": "Exploring how emerging technology can better serve humanity.", "dont": "A revolutionary podcast at the cutting edge of AI." },
+      { "context": "Section label",    "do": "Companies & Ventures",                                         "dont": "01 — What I Do" }
+    ],
+    "mechanics": {
+      "case": "Sentence case for headings and buttons; lowercase only in the wordmark and tagline.",
+      "punctuation": "No exclamation marks in UI. Italic is reserved for the tagline.",
+      "emoji": "None in UI surfaces; use Phosphor icons instead."
+    }
+  },
+
+  "rules": [
+    { "id": "tokens-only",     "level": "must",   "rule": "Components take every color, font and shadow from a token. A literal hex in a component file means a token is missing.", "check": "grep component styles for #[0-9a-f]{3,8} outside the token block" },
+    { "id": "focus-visible",   "level": "must",   "rule": "Every interactive element shows {shadow.focusRing} on :focus-visible.", "check": "Tab through the page in both modes" },
+    { "id": "contrast-body",   "level": "must",   "rule": "Body text ≥ 4.5:1, large text (≥24px, or ≥18.66px bold) ≥ 3:1, in both modes.", "check": "See the contrast table" },
+    { "id": "tertiary-text",   "level": "must",   "rule": "Sage teal (#799496) is 3.24:1 on white. Use it for borders, icons and large bold text only in light mode.", "check": "No --color-tertiary on body or small labels in light mode" },
+    { "id": "reduced-motion",  "level": "must",   "rule": "Honor prefers-reduced-motion: no transforms, no ambient animation.", "check": "Emulate reduced motion" },
+    { "id": "one-outline",     "level": "should", "rule": "At most one quantum outline per page.", "check": "count .quantum-outline ≤ 1" },
+    { "id": "one-primary",     "level": "should", "rule": "One primary button per view.", "check": "count .btn-primary per section ≤ 1" },
+    { "id": "display-sparing", "level": "should", "rule": "The Shupp face appears only in the wordmark, h1 and h2.", "check": "font-family display used on ≤ 3 selectors" },
+    { "id": "icons",           "level": "must",   "rule": "Phosphor duotone only; icon-only controls carry aria-label.", "check": "No emoji in UI, no second icon set" },
+    { "id": "skin-safe",       "level": "should", "rule": "Use role tokens, not brand tokens, wherever a skin should be able to restyle the element.", "check": "Brand tokens only inside gradients and the role layer" }
+  ],
+
+  "contrast": [
+    { "fg": "{color.brand.dark}",      "bg": "#ffffff",          "mode": "light", "ratio": 19.61, "pass": "AAA" },
+    { "fg": "{color.brand.secondary}", "bg": "#ffffff",          "mode": "light", "ratio": 8.99,  "pass": "AAA" },
+    { "fg": "#6b7280",                 "bg": "#ffffff",          "mode": "light", "ratio": 4.83,  "pass": "AA" },
+    { "fg": "{color.brand.tertiary}",  "bg": "#ffffff",          "mode": "light", "ratio": 3.24,  "pass": "Large only" },
+    { "fg": "{color.brand.light}",     "bg": "{color.brand.secondary}", "mode": "light", "ratio": 7.21, "pass": "AAA" },
+    { "fg": "#f3f4f6",                 "bg": "{color.brand.dark}", "mode": "dark", "ratio": 17.82, "pass": "AAA" },
+    { "fg": "#a5a5b5",                 "bg": "#23232b",          "mode": "dark",  "ratio": 6.42,  "pass": "AA" },
+    { "fg": "{color.brand.accent}",    "bg": "#23232b",          "mode": "dark",  "ratio": 8.04,  "pass": "AAA" },
+    { "fg": "{color.brand.tertiary}",  "bg": "{color.brand.dark}", "mode": "dark", "ratio": 6.06, "pass": "AA" },
+    { "fg": "#f3f4f6",                 "bg": "{color.brand.accent}", "mode": "dark", "ratio": 1.76, "pass": "Fail" }
+  ],
+
+  "knownIssues": [
+    { "id": "dark-primary-button", "severity": "high",   "where": "Layout.astro, html.dark .btn-primary", "issue": "Off-white text on the olive fill is 1.76:1.", "fix": "Use {color.brand.dark} text on olive (10.11:1). The spec's button.primary.dark already says this." },
+    { "id": "tertiary-labels",     "severity": "medium", "where": "index.astro .pk-section-title, .pk-company-type, .pk-location", "issue": "Sage teal at 0.75–1.1rem on white is 3.24:1.", "fix": "Use {color.brand.secondary} for small labels in light mode, or add an eyebrow role token that does." },
+    { "id": "duplicate-secondary", "severity": "low",    "where": "Layout.astro .btn-secondary", "issue": "Declared twice. The first sets dark text with !important and the second sets a sage border, so light mode ships a mix of both.", "fix": "Keep one declaration, matching button.secondary in this spec." },
+    { "id": "docs-ratio",          "severity": "low",    "where": "docs/design-specs.md", "issue": "States sage teal on white as ~4.0:1; measured 3.24:1.", "fix": "Update the doc from this table." },
+    { "id": "untokened-roles",     "severity": "low",    "where": "SideNav.astro, index.astro", "issue": "Eyebrow color, nav frost and active-nav gradients are literal rgba values.", "fix": "Promote to role tokens so skins can restyle them." }
+  ],
+
+  "acceptance": [
+    "Renders in light and dark with no literal colors outside the token block.",
+    "Every pair in the contrast table that the page uses passes its requirement.",
+    "Keyboard focus is visible on every link, button and nav item.",
+    "Reduced motion stops the quantum outline and all hover transforms.",
+    "At 400px wide nothing scrolls horizontally and grids stack to one column.",
+    "Copy passes the voice examples: no exclamation marks, no emoji, sentence case."
+  ]
+}
