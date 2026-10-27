@@ -14,6 +14,7 @@ rests, and moves only for a story beat or an action.
 - Reference: https://shupp.dev/design/prismatic
 - Variants lab: https://shupp.dev/design/prismatic/lab
 - Tokens: /prism/prism.tokens.json · Material CSS: /prism/prism.css
+- Solid icons: /prism/icons.js + /prism/icons.css (Three.js; shared WebGL2 renderer with software projection fallback)
 - Light engine (optional, WebGL2): /prism/light.js, with tables in /prism/rules.js
 
 ## Setup
@@ -26,6 +27,18 @@ rests, and moves only for a story beat or an action.
 
 Set \`--hr\` = R(\`--h\`): h if h ≤ 45; round(h − 0.4(h − 45)) if h ≤ 300; else
 round((h + 0.4(385 − h)) mod 360).
+
+## Solid navigation icons
+
+Load /prism/icons.css and /prism/icons.js as a module. Place a decorative
+<prism-icon name="accounts"></prism-icon> inside an already labeled button or link.
+Names: mark, accounts, marketplace, send, activity. Size comes from
+--prism-icon-size (default 32px). Do not make the icon itself focusable.
+It shares one renderer, stays static at rest, turns for 24q while its parent
+is hovered or keyboard focused, and settles over 10q on exit or blur.
+Reduced motion keeps it still. The hue and day/night mode tint every solid.
+Three.js software projection preserves geometry and interaction without WebGL2.
+Do not independently animate the CSS fallback or apply pointer parallax.
 
 ## Rules
 
