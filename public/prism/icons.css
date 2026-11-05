@@ -1,0 +1,15 @@
+/* PRISM Solid icons — the shared material and interaction contract. */
+:root{--prism-icon-size:32px;--prism-icon-turn:960ms;--prism-icon-settle:400ms}
+prism-icon.prism-solid-icon{display:inline-block;position:relative;inline-size:var(--prism-icon-size);block-size:var(--prism-icon-size);flex:0 0 var(--prism-icon-size);vertical-align:middle;pointer-events:none;isolation:isolate}
+.prism-icon-layer{position:fixed;inset:0;inline-size:100vw;block-size:100vh;pointer-events:none;z-index:11;contain:strict}
+prism-icon[data-rendered=three]>.prism-solid-fallback{visibility:hidden}
+.prism-solid-fallback{position:absolute;inset:15%;filter:drop-shadow(1px 2px 2px oklch(.6 .06 var(--h,185) / .2))}
+.prism-solid-fallback i{position:absolute;inset:0;display:block;clip-path:polygon(50% 0,100% 50%,50% 100%,0 50%);background:conic-gradient(from 40deg,oklch(.87 .08 var(--h,185)),oklch(.89 .07 calc(var(--h,185) + 75)),oklch(.92 .06 calc(var(--h,185) - 140)),oklch(.84 .09 calc(var(--h,185) - 35)),oklch(.87 .08 var(--h,185)))}
+.prism-solid-fallback i:not(:first-child){display:none}
+.prism-solid-fallback[data-shape=accounts] i{display:block;width:46%;height:46%;inset:auto}.prism-solid-fallback[data-shape=accounts] i:nth-child(1){top:0;left:0}.prism-solid-fallback[data-shape=accounts] i:nth-child(2){top:0;right:0}.prism-solid-fallback[data-shape=accounts] i:nth-child(3){bottom:0;left:0}.prism-solid-fallback[data-shape=accounts] i:nth-child(4){bottom:0;right:0}
+.prism-solid-fallback[data-shape=marketplace] i:first-child{clip-path:polygon(50% 0,100% 35%,85% 35%,85% 85%,100% 85%,100% 100%,0 100%,0 85%,15% 85%,15% 35%,0 35%)}
+.prism-solid-fallback[data-shape=send] i:first-child{clip-path:polygon(0 0,100% 50%,0 100%,24% 50%)}
+.prism-solid-fallback[data-shape=activity] i{display:block;width:24%;inset:auto;bottom:0;clip-path:polygon(50% 0,100% 10%,100% 90%,50% 100%,0 90%,0 10%)}.prism-solid-fallback[data-shape=activity] i:nth-child(1){height:42%;left:0}.prism-solid-fallback[data-shape=activity] i:nth-child(2){height:69%;left:36%}.prism-solid-fallback[data-shape=activity] i:nth-child(3){height:100%;right:0}.prism-solid-fallback[data-shape=activity] i:nth-child(4){display:none}
+button:focus-visible prism-icon,a:focus-visible prism-icon{filter:drop-shadow(0 0 3px #8bd7ce99)}
+@media(prefers-reduced-motion:reduce){prism-icon{transition:none;animation:none}}
+.prism-icon-projected{position:absolute;inset:0;width:100%;height:100%;overflow:visible;filter:drop-shadow(1px 2px 1px #377c771c)}prism-icon[data-rendered=three-software]>.prism-solid-fallback{visibility:hidden}

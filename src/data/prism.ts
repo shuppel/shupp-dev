@@ -86,19 +86,20 @@ export const RULES: [string, string][] = [
   ['Night is a redshift', 'Night maps the hue with R(h) and swaps figure and ground. It is occlusion first: objects grow more opaque and light is scarce.'],
   ['Density chooses the material', 'Transient is glass, standing is frosted, immovable is pigment. Declare data-material only to say something more.'],
   ['The light rests', 'The key light sits where the rig puts it. It never tracks the pointer.'],
-  ['Motion is evidence', 'Light moves for a story beat (sunrise, scroll light) or an action (a light event), then sleeps. Only aria-busy may loop.'],
+  ['Motion is evidence', 'Light moves for a story beat (sunrise, scroll light) or an action (a light event), then sleeps. Only aria-busy and actively hovered or focused solid icons may loop.'],
   ['Key light shadows; play light colors', 'Shadows lean toward the far band. Dense absorbs; light on light tinges; a prism splits.'],
   ['Legibility is a hard bound', 'Day shadows darken the field at most 16%; night glow lifts it at most 0.22. Text on the field may take a halo or a mask, never less than AA.'],
   ['Data never casts', 'Rows hold hairlines. Selection is a 2px seam, lit as a pipe.'],
   ['State is never color alone', 'A word or symbol travels with every status.'],
   ['The playground holds the pointer', 'Only the playground lets the pointer move light.'],
   ['Display type is large', 'Tilt Prism only at 40px or more; Instrument Sans below.'],
-  ['One context per page', 'Every stage shares the page’s single WebGL2 context.'],
+  ['Shared rendering pipelines', 'The light field shares one WebGL2 context across its stages. Solid icons share one additional Three.js renderer; never create a context per icon.'],
+  ['Solid navigation icons', 'Use <prism-icon> from /prism/icons.js with /prism/icons.css: mark, accounts, marketplace, send, activity. Facets derive from the anchor palette. Static at rest; rotate only while an actionable parent is hovered or focused; settle on exit. Prefer reduced motion and keep the action label visible.'],
 ];
 
 export const ANTI_PATTERNS: [string, string][] = [
   ['Track the cursor with the light', 'Ambient motion while reading. The light rests (§4).'],
-  ['Loop an animation at rest', 'Only aria-busy loops (§5).'],
+  ['Loop an animation at rest', 'Only aria-busy or a solid icon under active hover/focus may loop (§5).'],
   ['Tilt or parallax objects with the pointer', 'Nothing was selected, so nothing should move.'],
   ['Show a pointer cursor on an inert row', 'The cursor promises an action that is not there.'],
   ['Make inert things focusable', 'Focus promises an action too.'],
@@ -106,11 +107,12 @@ export const ANTI_PATTERNS: [string, string][] = [
   ['Cast gray shadows', 'Shadows lean toward the far band (§6).'],
   ['Let light cross body text unchecked', 'Clamp, halo or mask it (§7).'],
   ['Glow every row', 'Data never casts (§8).'],
-  ['Mount a WebGL context per component', 'One per page; stages share it (§12).'],
+  ['Mount a WebGL context per component', 'Use a shared renderer per pipeline: one light context and at most one solid-icon context, never one per icon (§12).'],
 ];
 
 export const ACCEPTANCE: string[] = [
-  'Moving the pointer across the page without clicking changes nothing outside the playground.',
+  'Moving the pointer does not move ambient light. Hovering an actionable solid icon rotates that icon only.',
+  'Solid icons stop rendering frames after exit/blur and the 10q settle; offscreen or hidden icons do not animate.',
   'At rest the frame counter stops: the loop sleeps.',
   'Every light event settles within its listed q; held states end with their state.',
   'Under prefers-reduced-motion nothing moves, and held states still show.',

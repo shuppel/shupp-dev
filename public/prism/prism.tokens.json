@@ -3,7 +3,7 @@
   "$description": "PRISM design system tokens. Light-mode-first, prism/glass material model. Two modes: day, redshift. All color in OKLCH. Hue is parametric: one anchor hue --h drives the entire palette.",
   "meta": {
     "name": "PRISM",
-    "version": "0.9.0",
+    "version": "0.10.0",
     "colorSpace": "oklch",
     "anchorHueDefault": 185,
     "modes": ["day", "redshift"]
@@ -213,5 +213,35 @@
       "eyebrow":  { "family": "mono", "size": "12px", "weight": 400, "tracking": "0.14em", "transform": "uppercase" },
       "aside":    { "family": "serif", "style": "italic", "size": "16px" }
     }
+  },
+
+  "solidIcons": {
+    "$description": "Three.js faceted navigation family. /prism/icons.js + /prism/icons.css. One shared renderer with software projection fallback; no animation at rest.",
+    "names": [
+      "mark",
+      "accounts",
+      "marketplace",
+      "send",
+      "activity"
+    ],
+    "size": {
+      "$type": "dimension",
+      "$value": "32px",
+      "property": "--prism-icon-size"
+    },
+    "turn": {
+      "$type": "duration",
+      "$value": "960ms"
+    },
+    "settle": {
+      "$type": "duration",
+      "$value": "400ms"
+    },
+    "triggers": [
+      "action parent hover",
+      "action parent keyboard focus"
+    ],
+    "reducedMotion": "static",
+    "maxDevicePixelRatio": 2
   }
 }
