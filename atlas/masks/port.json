@@ -1,0 +1,28 @@
+{
+  "coordinates": "top-left pixels; foot point; white=walkable",
+  "background": "scenes/port.png",
+  "walk_mask": "maps/port_walkable.png",
+  "spawn": [
+    323,
+    283
+  ],
+  "interactions": {
+    "workbench": [
+      320,
+      153
+    ],
+    "technician": [
+      421,
+      176
+    ],
+    "berth": [
+      169,
+      212
+    ]
+  },
+  "radius_px": 22,
+  "foreground": {
+    "file": "maps/port_foreground.png",
+    "draw_after_actor_if_foot_y_less_than": 335
+  }
+}

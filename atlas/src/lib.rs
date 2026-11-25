@@ -1,210 +1,499 @@
-//! The Scattered Atlas: the walkable ship that sits behind shupp.dev's atlas.
+//! The Scattered Atlas: shupp.dev as a sprite game.
 //!
-//! The HTML shell owns every piece of content (destination list, panels,
-//! character sheet). This crate only renders the ship deck, lets the player
-//! walk to a station, and tells the shell which station they used. The shell
-//! talks back through `travel` and `set_input_enabled`.
+//! Three walkable scenes from the art pack (Bridge, Dockyard, Archive), an
+//! atlas map for travel, NPC dialogue with talking portraits, in-game
+//! terminals that open the real site pages, and a character sheet.
+//!
+//! Coordinates: every scene is a 640 × 360 painting. Game logic works in
+//! "scene pixels" (top-left origin, y down, as in the art pack's JSON) and
+//! converts to world space only when placing sprites.
 
+use bevy::asset::AssetMetaCheck;
 use bevy::camera::ScalingMode;
+use bevy::image::{CompressedImageFormats, ImageSampler, ImageType};
+use bevy::asset::RenderAssetUsages;
 use bevy::prelude::*;
+use bevy::sprite::Anchor;
 use bevy::window::PrimaryWindow;
 
 mod bridge;
+mod content;
+mod ui;
+
 pub use bridge::*;
+pub use content::Registry;
 
-// Brand palette from design-spec/shupp.spec.json.
-const PLUM: Color = Color::srgb(0.078, 0.031, 0.055); // #14080E
-const SLATE: Color = Color::srgb(0.286, 0.278, 0.357); // #49475B
-const SAGE: Color = Color::srgb(0.475, 0.580, 0.588); // #799496
-const OLIVE: Color = Color::srgb(0.675, 0.757, 0.588); // #ACC196
-const CITRON: Color = Color::srgb(0.914, 0.922, 0.620); // #E9EB9E
+pub const VW: f32 = 640.0;
+pub const VH: f32 = 360.0;
 
-const DECK_W: f32 = 880.0;
-const DECK_H: f32 = 500.0;
-const PLAYER_SPEED: f32 = 260.0;
-const PLAYER_RADIUS: f32 = 16.0;
-const REACH: f32 = 78.0;
+const SPEED: f32 = 96.0; // scene px per second
+const REACH: f32 = 26.0; // interaction radius, a little over the art pack's 22 for touch
 
-/// A place on the deck the player can use. `id` is what the shell receives.
-#[derive(Component, Clone, Copy)]
-struct Station {
-    id: &'static str,
-    label: &'static str,
+pub fn to_world(p: Vec2) -> Vec2 {
+    Vec2::new(p.x - VW / 2.0, VH / 2.0 - p.y)
 }
 
-const STATIONS: [(Station, Vec2); 4] = [
-    (Station { id: "chart", label: "Star Chart" }, Vec2::new(0.0, 165.0)),
-    (Station { id: "sheet", label: "Mirror" }, Vec2::new(-310.0, -40.0)),
-    (Station { id: "comms", label: "Comms" }, Vec2::new(310.0, -40.0)),
-    (Station { id: "hatch", label: "Dockyard Hatch" }, Vec2::new(0.0, -195.0)),
-];
+// ---------------------------------------------------------------------------
+// Scenes
+// ---------------------------------------------------------------------------
 
-#[derive(Component)]
-struct Player {
-    target: Option<Vec2>,
-    facing: Vec2,
-    /// Set when the visitor tapped a station: use it on arrival.
-    use_on_arrival: Option<&'static str>,
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum SceneId {
+    Bridge,
+    Port,
+    Archive,
 }
 
-#[derive(Component)]
-struct Facing;
-
-#[derive(Component)]
-struct Prompt;
-
-#[derive(Component)]
-struct Star {
-    speed: f32,
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Npc {
+    Technician,
+    Archivist,
 }
 
-#[derive(Resource, Default)]
-struct Nearby(Option<Station>);
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Action {
+    OpenAtlas,
+    Goto(SceneId),
+    Talk(Npc),
+    Terminal(&'static str),
+}
+
+#[derive(Clone, Copy)]
+pub struct Point {
+    pub pos: Vec2,
+    pub label: &'static str,
+    pub action: Action,
+}
+
+pub struct SceneDef {
+    pub name: &'static str,
+    pub label: &'static str,
+    pub bg: &'static str,
+    pub fg: &'static str,
+    pub fg_threshold: f32,
+    pub spawn: Vec2,
+    pub points: &'static [Point],
+    pub npc: Option<(Npc, Vec2)>,
+    mask: &'static [u8],
+}
+
+const fn p(x: f32, y: f32) -> Vec2 {
+    Vec2::new(x, y)
+}
+
+pub fn scene_def(id: SceneId) -> &'static SceneDef {
+    static BRIDGE: SceneDef = SceneDef {
+        name: "The Crescent",
+        label: "Bridge",
+        bg: "scenes/bridge.png",
+        fg: "maps/bridge_foreground.png",
+        fg_threshold: 265.0,
+        spawn: p(310.0, 298.0),
+        points: &[
+            Point { pos: p(470.0, 180.0), label: "Star console", action: Action::OpenAtlas },
+            Point { pos: p(250.0, 330.0), label: "Gangway to the Dockyard", action: Action::Goto(SceneId::Port) },
+        ],
+        npc: None,
+        mask: include_bytes!("../masks/bridge_walkable.png"),
+    };
+    static PORT: SceneDef = SceneDef {
+        name: "The Dockyard",
+        label: "Work",
+        bg: "scenes/port.png",
+        fg: "maps/port_foreground.png",
+        fg_threshold: 335.0,
+        spawn: p(323.0, 283.0),
+        points: &[
+            Point { pos: p(320.0, 153.0), label: "Workbench", action: Action::Terminal("work") },
+            Point { pos: p(421.0, 176.0), label: "Talk to the technician", action: Action::Talk(Npc::Technician) },
+            Point { pos: p(169.0, 212.0), label: "Board the Crescent", action: Action::Goto(SceneId::Bridge) },
+        ],
+        npc: Some((Npc::Technician, p(421.0, 176.0))),
+        mask: include_bytes!("../masks/port_walkable.png"),
+    };
+    static ARCHIVE: SceneDef = SceneDef {
+        name: "The Archive",
+        label: "Writing",
+        bg: "scenes/archive.png",
+        fg: "maps/archive_foreground.png",
+        fg_threshold: 341.0,
+        spawn: p(323.0, 301.0),
+        points: &[
+            Point { pos: p(323.0, 151.0), label: "Records", action: Action::Terminal("writing") },
+            Point { pos: p(385.0, 182.0), label: "Talk to the archivist", action: Action::Talk(Npc::Archivist) },
+            Point { pos: p(323.0, 328.0), label: "Back to the Crescent", action: Action::Goto(SceneId::Bridge) },
+        ],
+        npc: Some((Npc::Archivist, p(385.0, 182.0))),
+        mask: include_bytes!("../masks/archive_walkable.png"),
+    };
+    match id {
+        SceneId::Bridge => &BRIDGE,
+        SceneId::Port => &PORT,
+        SceneId::Archive => &ARCHIVE,
+    }
+}
+
+/// Walkability for the current scene, decoded from the art pack's white masks.
+#[derive(Resource)]
+pub struct Masks {
+    bridge: Vec<bool>,
+    port: Vec<bool>,
+    archive: Vec<bool>,
+}
+
+fn decode_mask(bytes: &[u8]) -> Vec<bool> {
+    let img = Image::from_buffer(
+        bytes,
+        ImageType::Extension("png"),
+        CompressedImageFormats::NONE,
+        false,
+        ImageSampler::Default,
+        RenderAssetUsages::MAIN_WORLD,
+    )
+    .expect("walk mask decodes");
+    let (w, h) = (img.width(), img.height());
+    let mut out = vec![false; (VW as usize) * (VH as usize)];
+    for y in 0..h.min(VH as u32) {
+        for x in 0..w.min(VW as u32) {
+            if let Ok(c) = img.get_color_at(x, y) {
+                out[(y as usize) * (VW as usize) + x as usize] = c.to_srgba().red > 0.5;
+            }
+        }
+    }
+    out
+}
+
+impl Masks {
+    fn new() -> Self {
+        Self {
+            bridge: decode_mask(scene_def(SceneId::Bridge).mask),
+            port: decode_mask(scene_def(SceneId::Port).mask),
+            archive: decode_mask(scene_def(SceneId::Archive).mask),
+        }
+    }
+    pub fn walkable(&self, scene: SceneId, at: Vec2) -> bool {
+        if at.x < 0.0 || at.y < 0.0 || at.x >= VW || at.y >= VH {
+            return false;
+        }
+        let m = match scene {
+            SceneId::Bridge => &self.bridge,
+            SceneId::Port => &self.port,
+            SceneId::Archive => &self.archive,
+        };
+        m[(at.y as usize) * (VW as usize) + at.x as usize]
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Game state
+// ---------------------------------------------------------------------------
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
+pub enum Mode {
+    #[default]
+    Explore,
+    Dialogue,
+    Terminal,
+    Atlas,
+    Sheet,
+    Travel,
+}
 
 #[derive(Resource)]
-struct InputEnabled(bool);
+pub struct Game {
+    pub scene: SceneId,
+    pub mode: Mode,
+    /// The interaction point the player is standing at, if any.
+    pub nearby: Option<Point>,
+    /// The visitor tapped this point: use it when the player gets there.
+    pub pending: Option<Point>,
+    pub visited: Vec<String>,
+    /// Pause everything while the page has an overlay up.
+    pub paused: bool,
+    /// Something the UI should open next (set by interactions and the page).
+    pub request: Option<ui::Request>,
+}
 
-/// Seconds left on the warp streak that plays when the visitor travels.
-#[derive(Resource, Default)]
-struct Warp(f32);
+impl Game {
+    pub fn mark_visited(&mut self, id: &str) {
+        if !self.visited.iter().any(|v| v == id) {
+            self.visited.push(id.to_owned());
+            bridge::emit("visited", id);
+        }
+    }
+}
 
-pub fn app(canvas: Option<String>) -> App {
+/// Startup options from the page.
+#[derive(Resource, Clone, Default)]
+pub struct Boot {
+    pub start: String,
+    /// The page's devicePixelRatio, so high-DPI screens render sharp.
+    pub dpr: f32,
+}
+
+#[derive(Resource)]
+pub struct Art {
+    pub idle: Handle<Image>,
+    pub walk: Handle<Image>,
+    pub idle_layout: Handle<TextureAtlasLayout>,
+    pub walk_layout: Handle<TextureAtlasLayout>,
+    pub npc_layout: Handle<TextureAtlasLayout>,
+    pub technician_npc: Handle<Image>,
+    pub archivist_npc: Handle<Image>,
+}
+
+#[derive(Component)]
+pub struct SceneEntity;
+
+#[derive(Component)]
+struct Foreground;
+
+#[derive(Clone, Copy, PartialEq, Eq, Default)]
+enum Facing {
+    #[default]
+    Down,
+    Up,
+    Left,
+    Right,
+}
+
+impl Facing {
+    fn row(self) -> usize {
+        match self {
+            Facing::Down => 0,
+            Facing::Up => 1,
+            Facing::Left => 2,
+            Facing::Right => 3,
+        }
+    }
+    fn from_dir(d: Vec2) -> Self {
+        if d.x.abs() > d.y.abs() {
+            if d.x > 0.0 { Facing::Right } else { Facing::Left }
+        } else if d.y > 0.0 {
+            Facing::Down
+        } else {
+            Facing::Up
+        }
+    }
+}
+
+#[derive(Component, Default)]
+pub struct Player {
+    /// Foot position in scene pixels.
+    pub foot: Vec2,
+    pub target: Option<Vec2>,
+    facing: Facing,
+    walking: bool,
+    frame: usize,
+    clock: f32,
+}
+
+#[derive(Component)]
+struct NpcSprite {
+    foot: Vec2,
+}
+
+/// Sent to change scenes (after travel or through a door).
+#[derive(Message, Clone, Copy)]
+pub struct EnterScene(pub SceneId);
+
+// ---------------------------------------------------------------------------
+// App
+// ---------------------------------------------------------------------------
+
+pub fn app(canvas: Option<String>, registry: Registry, boot: Boot, visited: Vec<String>) -> App {
     let mut app = App::new();
-    app.add_plugins(DefaultPlugins.set(WindowPlugin {
-        primary_window: Some(Window {
-            title: "The Scattered Atlas".into(),
-            canvas,
-            fit_canvas_to_parent: true,
-            // Let the page keep scrolling and keyboard shortcuts.
-            prevent_default_event_handling: false,
-            ..default()
-        }),
-        ..default()
-    }))
-    .insert_resource(ClearColor(PLUM))
-    .insert_resource(InputEnabled(true))
-    .init_resource::<Nearby>()
-    .init_resource::<Warp>()
+    let boot_res = boot.clone();
+    let asset_root = if cfg!(target_arch = "wasm32") { "/atlas/assets" } else { "../public/atlas/assets" };
+    app.add_plugins(
+        DefaultPlugins
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "The Scattered Atlas".into(),
+                    canvas,
+                    fit_canvas_to_parent: true,
+                    prevent_default_event_handling: true,
+                    ..default()
+                }),
+                ..default()
+            })
+            .set(AssetPlugin {
+                file_path: asset_root.into(),
+                meta_check: AssetMetaCheck::Never,
+                ..default()
+            })
+            .set(ImagePlugin::default_nearest()),
+    )
+    .insert_resource(ClearColor(Color::BLACK))
+    .insert_resource(registry)
+    .insert_resource(boot_res)
+    .insert_resource(Masks::new())
+    .insert_resource(Game {
+        scene: SceneId::Bridge,
+        mode: Mode::Explore,
+        nearby: None,
+        pending: None,
+        visited,
+        paused: false,
+        request: None,
+    })
+    .add_message::<EnterScene>()
+    .init_resource::<PageTap>()
     .add_systems(Startup, setup)
+    .add_systems(PreUpdate, read_page)
     .add_systems(
         Update,
         (
-            read_shell,
-            (keyboard_move, pointer_target, follow_target)
+            enter_scene,
+            (keyboard_walk, pointer_walk, follow_target)
                 .chain()
-                .run_if(|e: Res<InputEnabled>| e.0),
-            detect_nearby,
-            use_station.run_if(|e: Res<InputEnabled>| e.0),
-            drift_stars,
-            draw_deck,
+                .run_if(|g: Res<Game>| g.mode == Mode::Explore && !g.paused),
+            find_nearby,
+            use_point.run_if(|g: Res<Game>| g.mode == Mode::Explore && !g.paused),
+            animate_player,
+            depth_sort,
         )
             .chain(),
-    );
+    )
+    .add_plugins(ui::UiPlugin);
     app
 }
 
-fn setup(
+pub(crate) fn setup(
     mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
+    assets: Res<AssetServer>,
+    mut layouts: ResMut<Assets<TextureAtlasLayout>>,
+    boot: Res<Boot>,
+    mut enter: MessageWriter<EnterScene>,
 ) {
     commands.spawn((
         Camera2d,
         Projection::Orthographic(OrthographicProjection {
-            scaling_mode: ScalingMode::AutoMin { min_width: DECK_W + 80.0, min_height: DECK_H + 80.0 },
+            scaling_mode: ScalingMode::AutoMin { min_width: VW, min_height: VH },
             ..OrthographicProjection::default_2d()
         }),
     ));
 
-    // Starfield behind the hull. A tiny LCG keeps it deterministic without a rand dependency.
-    let star = meshes.add(Circle::new(1.4));
-    let star_mat = materials.add(CITRON.with_alpha(0.55));
-    let mut seed: u32 = 0x5eed_a71a;
-    let mut next = || {
-        seed = seed.wrapping_mul(1_664_525).wrapping_add(1_013_904_223);
-        (seed >> 8) as f32 / (1u32 << 24) as f32
+    let art = Art {
+        idle: assets.load("player/courier_idle.png"),
+        walk: assets.load("player/courier_walk.png"),
+        idle_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(48, 64), 4, 4, None, None)),
+        walk_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(48, 64), 6, 4, None, None)),
+        npc_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(48, 64), 4, 1, None, None)),
+        technician_npc: assets.load("cast/technician/npc.png"),
+        archivist_npc: assets.load("cast/archivist/npc.png"),
     };
-    for _ in 0..140 {
-        let pos = Vec3::new((next() - 0.5) * 2400.0, (next() - 0.5) * 1400.0, -10.0);
-        let scale = 0.5 + next() * 1.3;
-        commands.spawn((
-            Mesh2d(star.clone()),
-            MeshMaterial2d(star_mat.clone()),
-            Transform::from_translation(pos).with_scale(Vec3::splat(scale)),
-            Star { speed: 6.0 + next() * 18.0 },
-        ));
-    }
 
-    // Hull.
+    // Erikk. The art pack's pivot is (24, 62) in a 48 × 64 cell.
     commands.spawn((
-        Mesh2d(meshes.add(Rectangle::new(DECK_W + 24.0, DECK_H + 24.0))),
-        MeshMaterial2d(materials.add(SLATE)),
-        Transform::from_xyz(0.0, 0.0, -2.0),
-    ));
-    commands.spawn((
-        Mesh2d(meshes.add(Rectangle::new(DECK_W, DECK_H))),
-        MeshMaterial2d(materials.add(Color::srgb(0.12, 0.07, 0.10))),
-        Transform::from_xyz(0.0, 0.0, -1.0),
-    ));
-
-    let font = TextFont { font_size: FontSize::Px(15.0), ..default() };
-    let pad = meshes.add(Circle::new(30.0));
-    let core = meshes.add(Circle::new(14.0));
-    for (station, pos) in STATIONS {
-        commands.spawn((
-            station,
-            Mesh2d(pad.clone()),
-            MeshMaterial2d(materials.add(SAGE.with_alpha(0.35))),
-            Transform::from_translation(pos.extend(0.0)),
-            children![
-                (
-                    Mesh2d(core.clone()),
-                    MeshMaterial2d(materials.add(OLIVE)),
-                    Transform::from_xyz(0.0, 0.0, 0.1),
-                ),
-                (
-                    Text2d::new(station.label.to_uppercase()),
-                    font.clone(),
-                    TextColor(SAGE),
-                    Transform::from_xyz(0.0, -48.0, 0.2),
-                ),
-            ],
-        ));
-    }
-
-    commands.spawn((
-        Player { target: None, facing: Vec2::Y, use_on_arrival: None },
-        Mesh2d(meshes.add(Circle::new(PLAYER_RADIUS))),
-        MeshMaterial2d(materials.add(OLIVE)),
+        Player::default(),
+        Sprite::from_atlas_image(art.idle.clone(), TextureAtlas { layout: art.idle_layout.clone(), index: 0 }),
+        Anchor(Vec2::new(0.0, (32.0 - 62.0) / 64.0)),
         Transform::from_xyz(0.0, 0.0, 1.0),
-        children![(
-            Facing,
-            Mesh2d(meshes.add(Circle::new(5.0))),
-            MeshMaterial2d(materials.add(CITRON)),
-            Transform::from_xyz(0.0, 9.0, 0.1),
-        )],
     ));
+    commands.insert_resource(art);
 
-    commands.spawn((
-        Prompt,
-        Text2d::new(""),
-        TextFont { font_size: FontSize::Px(17.0), ..default() },
-        TextColor(CITRON),
-        Transform::from_xyz(0.0, DECK_H / 2.0 - 26.0, 5.0),
-    ));
+    let scene = match boot.start.as_str() {
+        "work" => SceneId::Port,
+        "writing" => SceneId::Archive,
+        _ => SceneId::Bridge,
+    };
+    enter.write(EnterScene(scene));
 }
 
-fn keyboard_move(
-    keys: Res<ButtonInput<KeyCode>>,
-    time: Res<Time>,
-    mut player: Single<(&mut Player, &mut Transform)>,
+fn enter_scene(
+    mut commands: Commands,
+    mut msgs: MessageReader<EnterScene>,
+    assets: Res<AssetServer>,
+    art: Res<Art>,
+    old: Query<Entity, With<SceneEntity>>,
+    mut game: ResMut<Game>,
+    mut player: Single<&mut Player>,
 ) {
+    let Some(EnterScene(id)) = msgs.read().last().copied() else { return };
+    for e in &old {
+        commands.entity(e).despawn();
+    }
+    let def = scene_def(id);
+    game.scene = id;
+    game.nearby = None;
+    game.pending = None;
+    match id {
+        SceneId::Port => game.mark_visited("work"),
+        SceneId::Archive => game.mark_visited("writing"),
+        SceneId::Bridge => {}
+    }
+    bridge::emit("scene", def.label);
+
+    commands.spawn((SceneEntity, Sprite::from_image(assets.load(def.bg)), Transform::from_xyz(0.0, 0.0, 0.0)));
+    commands.spawn((
+        SceneEntity,
+        Foreground,
+        Sprite::from_image(assets.load(def.fg)),
+        Transform::from_xyz(0.0, 0.0, 0.5),
+    ));
+    if let Some((npc, foot)) = def.npc {
+        let image = match npc {
+            Npc::Technician => art.technician_npc.clone(),
+            Npc::Archivist => art.archivist_npc.clone(),
+        };
+        commands.spawn((
+            SceneEntity,
+            NpcSprite { foot },
+            Sprite::from_atlas_image(image, TextureAtlas { layout: art.npc_layout.clone(), index: 0 }),
+            Anchor(Vec2::new(0.0, (32.0 - 62.0) / 64.0)),
+            Transform::from_translation(to_world(foot).extend(1.0)),
+        ));
+    }
+
+    player.foot = def.spawn;
+    player.target = None;
+    player.facing = Facing::Up;
+}
+
+/// A touch or pen tap the page caught on the canvas this frame, as a
+/// fraction of the canvas size. Touch goes through the page instead of
+/// winit, which drops taps on mobile browsers.
+#[derive(Resource, Default)]
+pub struct PageTap(pub Option<Vec2>);
+
+fn read_page(mut game: ResMut<Game>, mut tap: ResMut<PageTap>) {
+    tap.0 = None;
+    for msg in bridge::drain() {
+        match msg {
+            bridge::Inbound::Tap(at) => tap.0 = Some(at),
+            bridge::Inbound::Paused(p) => game.paused = p,
+            bridge::Inbound::Go(id) => game.request = Some(ui::Request::Destination(id)),
+        }
+    }
+}
+
+/// Where the pointer is in scene pixels, if it was just pressed this frame.
+pub fn pointer_press(
+    mouse: &ButtonInput<MouseButton>,
+    touches: &Touches,
+    page_tap: &PageTap,
+    window: &Window,
+    frame: &ui::Frame,
+) -> Option<Vec2> {
+    let screen = if mouse.just_pressed(MouseButton::Left) {
+        window.cursor_position()
+    } else if let Some(f) = page_tap.0 {
+        Some(f * Vec2::new(window.width(), window.height()))
+    } else {
+        // Taps fire on release, so a quick tap inside one frame still counts.
+        touches.iter_just_released().next().map(|t| t.position())
+    }?;
+    Some(frame.to_scene(screen))
+}
+
+fn keyboard_walk(keys: Res<ButtonInput<KeyCode>>, mut player: Single<&mut Player>) {
     let mut dir = Vec2::ZERO;
     if keys.any_pressed([KeyCode::KeyW, KeyCode::ArrowUp]) {
-        dir.y += 1.0;
+        dir.y -= 1.0;
     }
     if keys.any_pressed([KeyCode::KeyS, KeyCode::ArrowDown]) {
-        dir.y -= 1.0;
+        dir.y += 1.0;
     }
     if keys.any_pressed([KeyCode::KeyA, KeyCode::ArrowLeft]) {
         dir.x -= 1.0;
@@ -212,146 +501,150 @@ fn keyboard_move(
     if keys.any_pressed([KeyCode::KeyD, KeyCode::ArrowRight]) {
         dir.x += 1.0;
     }
-    if dir == Vec2::ZERO {
-        return;
+    if dir != Vec2::ZERO {
+        // Keyboard steps one frame ahead; follow_target does the moving.
+        let foot = player.foot;
+        player.target = Some(foot + dir.normalize() * 6.0);
     }
-    let (ref mut p, ref mut tf) = *player;
-    p.target = None;
-    p.use_on_arrival = None;
-    p.facing = dir.normalize();
-    let step = p.facing * PLAYER_SPEED * time.delta_secs();
-    tf.translation = clamp_to_deck(tf.translation.truncate() + step).extend(tf.translation.z);
 }
 
-/// Click or tap somewhere on the deck to walk there. Tapping a station walks to it and uses it.
-fn pointer_target(
+fn pointer_walk(
     mouse: Res<ButtonInput<MouseButton>>,
     touches: Res<Touches>,
+    page_tap: Res<PageTap>,
     window: Single<&Window, With<PrimaryWindow>>,
-    camera: Single<(&Camera, &GlobalTransform)>,
-    stations: Query<(&Station, &Transform)>,
-    mut player: Single<(&mut Player, &Transform), Without<Station>>,
+    frame: Res<ui::Frame>,
+    mut game: ResMut<Game>,
+    mut player: Single<&mut Player>,
 ) {
-    let screen = if mouse.just_pressed(MouseButton::Left) {
-        window.cursor_position()
+    let Some(at) = pointer_press(&mouse, &touches, &page_tap, &window, &frame) else { return };
+    if ui::hud_hit(at) || !(0.0..VW).contains(&at.x) || !(0.0..VH).contains(&at.y) {
+        return;
+    }
+    let def = scene_def(game.scene);
+    if let Some(pt) = def.points.iter().find(|pt| pt.pos.distance(at) < 30.0) {
+        game.pending = Some(*pt);
+        player.target = Some(pt.pos);
     } else {
-        touches.iter_just_pressed().next().map(|t| t.position())
+        game.pending = None;
+        player.target = Some(at);
+    }
+}
+
+fn follow_target(time: Res<Time>, masks: Res<Masks>, mut game: ResMut<Game>, mut player: Single<&mut Player>) {
+    let Some(target) = player.target else {
+        player.walking = false;
+        return;
     };
-    let Some(screen) = screen else { return };
-    let (cam, cam_tf) = *camera;
-    let Ok(world) = cam.viewport_to_world_2d(cam_tf, screen) else { return };
-    let (ref mut p, tf) = *player;
-    let here = tf.translation.truncate();
-    let hit = stations.iter().find(|(_, t)| t.translation.truncate().distance(world) < 40.0);
-    if let Some((station, t)) = hit {
-        // Stop just short of the pad, on the side the player is coming from.
-        let pad = t.translation.truncate();
-        let stand = pad + (here - pad).normalize_or(Vec2::NEG_Y) * (REACH * 0.6);
-        p.target = Some(clamp_to_deck(stand));
-        p.use_on_arrival = Some(station.id);
+    let to = target - player.foot;
+    let step = SPEED * time.delta_secs().min(0.1);
+    // Tapped a point: arriving within reach is enough (consoles sit off the walkable floor).
+    if let Some(pt) = game.pending {
+        if player.foot.distance(pt.pos) <= REACH {
+            player.target = None;
+            player.walking = false;
+            game.pending = None;
+            ui::trigger(&mut game, pt);
+            return;
+        }
+    }
+    if to.length() < 0.5 {
+        player.target = None;
+        player.walking = false;
+        return;
+    }
+    let dir = to.normalize();
+    player.facing = Facing::from_dir(dir);
+    let mv = dir * step.min(to.length());
+    let here = player.foot;
+    let next = if masks.walkable(game.scene, here + mv) {
+        Some(here + mv)
+    } else if masks.walkable(game.scene, here + Vec2::new(mv.x, 0.0)) && mv.x.abs() > 0.05 {
+        Some(here + Vec2::new(mv.x, 0.0))
+    } else if masks.walkable(game.scene, here + Vec2::new(0.0, mv.y)) && mv.y.abs() > 0.05 {
+        Some(here + Vec2::new(0.0, mv.y))
     } else {
-        p.target = Some(clamp_to_deck(world));
-        p.use_on_arrival = None;
-    }
-}
-
-fn follow_target(time: Res<Time>, mut player: Single<(&mut Player, &mut Transform)>) {
-    let (ref mut p, ref mut tf) = *player;
-    let Some(target) = p.target else { return };
-    let here = tf.translation.truncate();
-    let to = target - here;
-    let step = PLAYER_SPEED * time.delta_secs();
-    if to.length() <= step {
-        tf.translation = target.extend(tf.translation.z);
-        p.target = None;
-        if let Some(id) = p.use_on_arrival.take() {
-            bridge::emit("station", id);
+        None
+    };
+    match next {
+        Some(n) => {
+            player.foot = n;
+            player.walking = true;
         }
-    } else {
-        p.facing = to.normalize();
-        tf.translation += (p.facing * step).extend(0.0);
-    }
-}
-
-fn detect_nearby(
-    player: Single<(&Player, &Transform), Without<Facing>>,
-    mut facing: Single<&mut Transform, With<Facing>>,
-    stations: Query<(&Station, &Transform), (Without<Player>, Without<Facing>)>,
-    mut nearby: ResMut<Nearby>,
-    mut prompt: Single<&mut Text2d, With<Prompt>>,
-) {
-    let (p, tf) = *player;
-    facing.translation = (p.facing * 9.0).extend(0.1);
-    let here = tf.translation.truncate();
-    let found = stations
-        .iter()
-        .map(|(s, t)| (*s, t.translation.truncate().distance(here)))
-        .filter(|(_, d)| *d < REACH)
-        .min_by(|a, b| a.1.total_cmp(&b.1))
-        .map(|(s, _)| s);
-    let changed = found.map(|s| s.id) != nearby.0.map(|s| s.id);
-    if changed {
-        prompt.0 = match found {
-            Some(s) => format!("Press E or tap to use the {}", s.label),
-            None => String::new(),
-        };
-        bridge::emit("nearby", found.map(|s| s.id).unwrap_or(""));
-    }
-    nearby.0 = found;
-}
-
-fn use_station(keys: Res<ButtonInput<KeyCode>>, nearby: Res<Nearby>) {
-    let Some(station) = nearby.0 else { return };
-    if keys.any_just_pressed([KeyCode::KeyE, KeyCode::Enter, KeyCode::Space]) {
-        bridge::emit("station", station.id);
-    }
-}
-
-fn read_shell(mut enabled: ResMut<InputEnabled>, mut warp: ResMut<Warp>) {
-    for msg in bridge::drain() {
-        match msg {
-            bridge::Inbound::Input(on) => enabled.0 = on,
-            bridge::Inbound::Travel(_) => warp.0 = 1.2,
-        }
-    }
-}
-
-fn drift_stars(time: Res<Time>, mut warp: ResMut<Warp>, mut stars: Query<(&Star, &mut Transform)>) {
-    let dt = time.delta_secs();
-    warp.0 = (warp.0 - dt).max(0.0);
-    let boost = 1.0 + warp.0 * 40.0;
-    for (star, mut tf) in &mut stars {
-        tf.translation.x -= star.speed * boost * dt;
-        if tf.translation.x < -1200.0 {
-            tf.translation.x += 2400.0;
-        }
-        tf.scale.x = tf.scale.y * (1.0 + warp.0 * 12.0);
-    }
-}
-
-fn draw_deck(mut gizmos: Gizmos, nearby: Res<Nearby>, stations: Query<(&Station, &Transform)>, time: Res<Time>) {
-    let grid = SAGE.with_alpha(0.05);
-    let mut x = -DECK_W / 2.0 + 40.0;
-    while x < DECK_W / 2.0 {
-        gizmos.line_2d(Vec2::new(x, -DECK_H / 2.0), Vec2::new(x, DECK_H / 2.0), grid);
-        x += 40.0;
-    }
-    let mut y = -DECK_H / 2.0 + 40.0;
-    while y < DECK_H / 2.0 {
-        gizmos.line_2d(Vec2::new(-DECK_W / 2.0, y), Vec2::new(DECK_W / 2.0, y), grid);
-        y += 40.0;
-    }
-    if let Some(near) = nearby.0 {
-        for (s, tf) in &stations {
-            if s.id == near.id {
-                let pulse = 36.0 + (time.elapsed_secs() * 4.0).sin() * 3.0;
-                gizmos.circle_2d(tf.translation.truncate(), pulse, CITRON);
+        None => {
+            // Blocked. If we were heading for a point and got close, use it anyway.
+            if let Some(pt) = game.pending.take() {
+                if player.foot.distance(pt.pos) < REACH * 2.2 {
+                    ui::trigger(&mut game, pt);
+                }
             }
+            player.target = None;
+            player.walking = false;
         }
     }
 }
 
-fn clamp_to_deck(p: Vec2) -> Vec2 {
-    let half = Vec2::new(DECK_W, DECK_H) / 2.0 - Vec2::splat(PLAYER_RADIUS + 4.0);
-    p.clamp(-half, half)
+fn find_nearby(mut game: ResMut<Game>, player: Single<&Player>) {
+    let def = scene_def(game.scene);
+    game.nearby = def
+        .points
+        .iter()
+        .filter(|pt| pt.pos.distance(player.foot) <= REACH + 10.0)
+        .min_by(|a, b| a.pos.distance(player.foot).total_cmp(&b.pos.distance(player.foot)))
+        .copied();
+}
+
+fn use_point(keys: Res<ButtonInput<KeyCode>>, mut game: ResMut<Game>) {
+    if keys.any_just_pressed([KeyCode::KeyE, KeyCode::Enter, KeyCode::Space]) {
+        if let Some(pt) = game.nearby {
+            ui::trigger(&mut game, pt);
+        }
+    }
+}
+
+fn animate_player(time: Res<Time>, art: Res<Art>, mut q: Query<(&mut Player, &mut Sprite)>) {
+    for (mut p, mut sprite) in &mut q {
+        let (cols, ms, image, layout) = if p.walking {
+            (6, 0.110, &art.walk, &art.walk_layout)
+        } else {
+            (4, 0.180, &art.idle, &art.idle_layout)
+        };
+        p.clock += time.delta_secs();
+        if p.clock >= ms {
+            p.clock = 0.0;
+            p.frame = (p.frame + 1) % cols;
+        }
+        if p.frame >= cols {
+            p.frame = 0;
+        }
+        if sprite.image != *image {
+            sprite.image = image.clone();
+            p.frame = 0;
+        }
+        let index = p.facing.row() * cols + p.frame;
+        sprite.texture_atlas = Some(TextureAtlas { layout: layout.clone(), index });
+    }
+}
+
+/// Lower on screen draws in front; the foreground cutout covers actors standing behind it.
+pub(crate) fn depth_sort(
+    game: Res<Game>,
+    mut player: Query<(&Player, &mut Transform), (Without<Foreground>, Without<NpcSprite>)>,
+    mut npcs: Query<(&NpcSprite, &mut Transform, &mut Sprite), (Without<Foreground>, Without<Player>)>,
+    mut fg: Query<&mut Transform, (With<Foreground>, Without<Player>, Without<NpcSprite>)>,
+) {
+    let def = scene_def(game.scene);
+    let Ok((p, mut tf)) = player.single_mut() else { return };
+    tf.translation = to_world(p.foot).extend(1.0 + p.foot.y / 1000.0);
+    for (npc, mut ntf, mut sprite) in &mut npcs {
+        ntf.translation.z = 1.0 + npc.foot.y / 1000.0;
+        // NPCs turn to face Erikk when he is close.
+        if let Some(atlas) = sprite.texture_atlas.as_mut() {
+            let d = p.foot - npc.foot;
+            atlas.index = if d.length() < 70.0 { Facing::from_dir(d).row() } else { 0 };
+        }
+    }
+    for mut f in &mut fg {
+        f.translation.z = if p.foot.y < def.fg_threshold { 5.0 } else { 0.5 };
+    }
 }

@@ -44,7 +44,14 @@ export interface PlayerStats {
   attributes: { label: string; value: number; note: string }[];
   skills: string[];
   softSkills: string[];
-  questLog: { title: string; place: string; years: string; current: boolean }[];
+  questLog: { title: string; place: string; years: string; current: boolean; summary: string; feats: string[] }[];
+  /** Six radar axes, 1–10. Derived from site content; see `radar` below to tune. */
+  radar: { label: string; value: number; note: string }[];
+  inventory: {
+    keyItems: { name: string; from: string; note: string; kind: 'credential' | 'degree' }[];
+    gear: { name: string; uses: number }[];
+  };
+  training: { title: string; place: string; years: string }[];
 }
 
 export interface AtlasRegistry {
@@ -75,85 +82,76 @@ export async function getAtlasRegistry(): Promise<AtlasRegistry> {
     .sort((a, b) => a.data.order - b.data.order);
 
   const credentials = await getCollection('credentials', ({ data }) => data.visible);
+  const education = (await getCollection('education', ({ data }) => data.visible))
+    .sort((a, b) => a.data.order - b.data.order);
 
   const firstStart = experience.reduce<Date | null>(
     (min, e) => (!min || e.data.startDate < min ? e.data.startDate : min), null,
   );
   const years = firstStart ? Math.max(1, new Date().getUTCFullYear() - firstStart.getUTCFullYear()) : 1;
 
+  // Four destinations, matching the atlas art (work, about, writing, contact).
+  // Between them they cover the whole site IA.
   const destinations: Destination[] = [
+    {
+      id: 'work',
+      name: 'The Dockyard',
+      label: 'Work',
+      preview: `${projects.length} hulls in dock, plus ${apps.length} Thoughtful App Co. concepts on the bench.`,
+      href: '/portfolio',
+      intro: ['Every hull in this dock is something Erikk built: design systems, apps, and the experiments between them.'],
+      items: [
+        ...projects.map((p) => ({
+          title: p.data.title,
+          description: p.data.description,
+          href: p.data.customUrl ?? `/portfolio/${p.id}`,
+          meta: p.data.technologies.slice(0, 3).join(' · '),
+        })),
+        ...apps.map((a) => ({
+          title: a.data.title,
+          description: a.data.oneLiner,
+          href: `/thoughtful-app-co/${a.id}`,
+          meta: `Thoughtful App Co. · ${a.data.status}`,
+        })),
+        { title: 'Open the full portfolio', href: '/portfolio', meta: 'shupp.dev/portfolio' },
+      ],
+      chart: { x: 140 / 640, y: 137 / 360 },
+    },
     {
       id: 'about',
       name: 'The Mirror Moon',
       label: 'About',
       preview: author.shortBio,
       href: '/about',
-      intro: author.longBio.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean),
+      intro: author.longBio.split(/\n\s*\n/).map((p) => p.replace(/\*/g, '').trim()).filter(Boolean),
       items: [
         { title: 'Read the full About page', href: '/about' },
         { title: 'Resume', href: '/resume', description: 'Experience, education and credentials.' },
       ],
-      chart: { x: 0.22, y: 0.3 },
+      chart: { x: 326 / 640, y: 85 / 360 },
     },
     {
-      id: 'portfolio',
-      name: 'The Dockyard',
-      label: 'Work',
-      preview: `${projects.length} hulls in dock: design systems, apps, and the experiments between them.`,
-      href: '/portfolio',
-      intro: ['Selected work and projects. Each one opens its full write-up on the site.'],
-      items: projects.map((p) => ({
-        title: p.data.title,
-        description: p.data.description,
-        href: p.data.customUrl ?? `/portfolio/${p.id}`,
-        meta: p.data.technologies.slice(0, 3).join(' · '),
-      })),
-      chart: { x: 0.68, y: 0.22 },
-    },
-    {
-      id: 'galaxy',
-      name: 'The Galaxy Garden',
+      id: 'writing',
+      name: 'The Archive',
       label: 'Writing',
-      preview: `${notes.length} notes, from raw nebulae to fully formed stars.`,
+      preview: `${notes.length} notes in the Galaxy garden and ${press.length} broadcasts on the relay.`,
       href: '/galaxy',
-      intro: ['A digital garden. Notes grow from nebula to protostar to star as they mature.'],
-      items: notes.slice(0, 12).map((n) => ({
-        title: n.data.title,
-        description: n.data.description,
-        href: `/galaxy/${n.id}`,
-        meta: `${n.data.stage} · ${fmtMonth(n.data.lastObserved)}`,
-      })),
-      chart: { x: 0.84, y: 0.62 },
-    },
-    {
-      id: 'press',
-      name: 'The Broadcast Relay',
-      label: 'Press',
-      preview: 'Podcast episodes, videos, articles and appearances.',
-      href: '/press',
-      intro: [`Transmissions from ${siteConfig.ventures.humansOnlyPodcast.name} and elsewhere.`],
-      items: press.slice(0, 12).map((p) => ({
-        title: p.data.title,
-        description: p.data.description,
-        href: `/press/${p.id}`,
-        meta: [p.data.outlet, fmtMonth(p.data.pubDate)].filter(Boolean).join(' · '),
-      })),
-      chart: { x: 0.5, y: 0.78 },
-    },
-    {
-      id: 'foundry',
-      name: 'The Foundry',
-      label: siteConfig.ventures.thoughtfulAppCo.name,
-      preview: siteConfig.ventures.thoughtfulAppCo.tagline + '. App concepts that start from a real problem.',
-      href: '/thoughtful-app-co',
-      intro: ['Every concept starts with a real problem and ends with a solution that respects people’s time and attention.'],
-      items: apps.map((a) => ({
-        title: a.data.title,
-        description: a.data.oneLiner,
-        href: `/thoughtful-app-co/${a.id}`,
-        meta: a.data.status,
-      })),
-      chart: { x: 0.3, y: 0.7 },
+      intro: ['The archive keeps every note Erikk has grown, from raw nebulae to fully formed stars, and every broadcast sent from the relay.'],
+      items: [
+        ...notes.map((n) => ({
+          title: n.data.title,
+          description: n.data.description,
+          href: `/galaxy/${n.id}`,
+          meta: `Galaxy · ${n.data.stage} · ${fmtMonth(n.data.lastObserved)}`,
+        })),
+        ...press.map((p) => ({
+          title: p.data.title,
+          description: p.data.description,
+          href: `/press/${p.id}`,
+          meta: ['Press', p.data.outlet, fmtMonth(p.data.pubDate)].filter(Boolean).join(' · '),
+        })),
+      ],
+      chart: { x: 473 / 640, y: 180 / 360 },
     },
     {
       id: 'contact',
@@ -161,15 +159,39 @@ export async function getAtlasRegistry(): Promise<AtlasRegistry> {
       label: 'Contact',
       preview: `Hail ${siteConfig.author.name.split(' ')[0]} by email or on the usual channels.`,
       href: `mailto:${siteConfig.email}`,
-      intro: ['The fastest way to reach me is email. I also answer on these channels.'],
+      intro: ['Fastest way to reach me is email. I also answer on these channels.'],
       items: [
         { title: 'Email', description: siteConfig.email, href: `mailto:${siteConfig.email}` },
         { title: 'GitHub', href: siteConfig.social.github, external: true },
         { title: 'LinkedIn', href: siteConfig.social.linkedin, external: true },
         { title: 'Bluesky', href: siteConfig.social.bluesky, external: true },
       ],
-      chart: { x: 0.12, y: 0.55 },
+      chart: { x: 270 / 640, y: 256 / 360 },
     },
+  ];
+
+  // Gear: the tools that show up most across projects and roles.
+  const toolCount = new Map<string, number>();
+  for (const t of [...projects.flatMap((p) => p.data.technologies), ...experience.flatMap((e) => e.data.technologies ?? [])]) {
+    toolCount.set(t, (toolCount.get(t) ?? 0) + 1);
+  }
+  const gear = [...toolCount.entries()]
+    .sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))
+    .slice(0, 16)
+    .map(([name, uses]) => ({ name, uses }));
+
+  // Radar: six axes on a 1–10 scale, each derived from something countable on
+  // the site so it stays honest as content grows. Tune the divisors here.
+  const clamp = (n: number) => Math.max(1, Math.min(10, Math.round(n)));
+  const designProjects = projects.filter((p) =>
+    /design|ui|css|font|type|skin/i.test(`${p.data.title} ${p.data.technologies.join(' ')}`)).length;
+  const radar = [
+    { label: 'Product', value: clamp(years), note: `${years} years in the quest log` },
+    { label: 'Build', value: clamp(projects.length / 1.5), note: `${projects.length} projects shipped` },
+    { label: 'Design', value: clamp(designProjects / 1.5), note: `${designProjects} design projects` },
+    { label: 'Writing', value: clamp(notes.length / 2), note: `${notes.length} Galaxy notes` },
+    { label: 'Signal', value: clamp(press.length / 3), note: `${press.length} broadcasts` },
+    { label: 'Study', value: clamp((education.length + credentials.length) / 2), note: `${education.length + credentials.length} degrees, courses and credentials` },
   ];
 
   return {
@@ -195,6 +217,21 @@ export async function getAtlasRegistry(): Promise<AtlasRegistry> {
           place: e.data.company,
           years: `${e.data.startDate.getUTCFullYear()}–${e.data.current || !e.data.endDate ? 'now' : e.data.endDate.getUTCFullYear()}`,
           current: e.data.current,
+          summary: e.data.description,
+          feats: e.data.achievements,
+        })),
+        radar,
+        inventory: {
+          keyItems: [
+            ...credentials.map((c) => ({ name: c.data.title, from: c.data.organization, note: c.data.description, kind: 'credential' as const })),
+            ...education.map((e) => ({ name: e.data.degree, from: e.data.institution, note: e.data.field, kind: 'degree' as const })),
+          ],
+          gear,
+        },
+        training: education.map((e) => ({
+          title: `${e.data.degree}, ${e.data.field}`,
+          place: e.data.institution,
+          years: `${e.data.startDate.getUTCFullYear()}–${e.data.current || !e.data.endDate ? 'now' : e.data.endDate.getUTCFullYear()}`,
         })),
       },
     },

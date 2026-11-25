@@ -1,15 +1,19 @@
-//! The seam between Bevy and the HTML shell.
+//! The seam between the game and the page.
 //!
-//! Outbound: `emit(kind, id)` calls `window.__atlasEmit(kind, id)` if the
-//! shell defined it. Inbound: the shell calls the exported `travel` and
-//! `set_input_enabled`, which queue messages that a Bevy system drains.
+//! Outbound: `emit(kind, value)` calls `window.__atlasEmit(kind, value)`:
+//! `open` (a site URL to open), `visited` (a destination id), `scene`
+//! (the current location label).
+//! Inbound: the page calls `go(destinationId)` (hash links) and
+//! `set_paused(bool)` and `tap(x, y)` for touch.
 
 use std::cell::RefCell;
 use std::collections::VecDeque;
 
 pub enum Inbound {
-    Travel(String),
-    Input(bool),
+    Go(String),
+    Paused(bool),
+    /// A tap at (x, y) as fractions of the canvas size.
+    Tap(bevy::math::Vec2),
 }
 
 thread_local! {
@@ -31,51 +35,64 @@ mod web {
     #[wasm_bindgen]
     extern "C" {
         #[wasm_bindgen(js_namespace = window, js_name = __atlasEmit, catch)]
-        fn atlas_emit(kind: &str, id: &str) -> Result<(), JsValue>;
+        fn atlas_emit(kind: &str, value: &str) -> Result<(), JsValue>;
     }
 
-    pub fn emit(kind: &str, id: &str) {
-        let _ = atlas_emit(kind, id);
+    pub fn emit(kind: &str, value: &str) {
+        let _ = atlas_emit(kind, value);
     }
 
-    /// Start the ship inside `<canvas id="{canvas_id}">`.
+    /// Start the game inside `<canvas id="{canvas_id}">`.
+    /// `registry` is the JSON from /atlas/registry.json, `start` a destination
+    /// id to begin at (or ""), `visited` a comma-separated list of ids.
     #[wasm_bindgen]
-    pub fn start(canvas_id: &str) {
-        crate::app(Some(format!("#{canvas_id}"))).run();
+    pub fn start(canvas_id: &str, registry: &str, start: &str, visited: &str, dpr: f32) {
+        let visited = visited.split(',').filter(|s| !s.is_empty()).map(str::to_owned).collect();
+        crate::app(
+            Some(format!("#{canvas_id}")),
+            crate::Registry::parse(registry),
+            crate::Boot { start: start.to_owned(), dpr },
+            visited,
+        )
+        .run();
     }
 
-    /// The visitor chose Travel in the atlas (list or chart).
     #[wasm_bindgen]
-    pub fn travel(destination: &str) {
-        super::push(super::Inbound::Travel(destination.to_owned()));
+    pub fn go(destination: &str) {
+        super::push(super::Inbound::Go(destination.to_owned()));
     }
 
-    /// Pause walking while an HTML panel is open, so keys go to the panel.
+    /// A touch or pen tap on the canvas, as fractions of its size (0–1).
     #[wasm_bindgen]
-    pub fn set_input_enabled(on: bool) {
-        super::push(super::Inbound::Input(on));
+    pub fn tap(x: f32, y: f32) {
+        super::push(super::Inbound::Tap(bevy::math::Vec2::new(x, y)));
+    }
+
+    #[wasm_bindgen]
+    pub fn set_paused(paused: bool) {
+        super::push(super::Inbound::Paused(paused));
     }
 }
 
 #[cfg(target_arch = "wasm32")]
-pub use web::{set_input_enabled, start, travel};
+pub use web::{go, set_paused, start, tap};
 
 #[cfg(target_arch = "wasm32")]
-pub(crate) fn emit(kind: &str, id: &str) {
-    web::emit(kind, id);
+pub(crate) fn emit(kind: &str, value: &str) {
+    web::emit(kind, value);
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-pub(crate) fn emit(kind: &str, id: &str) {
-    println!("[atlas] {kind}: {id}");
+pub(crate) fn emit(kind: &str, value: &str) {
+    println!("[atlas] {kind}: {value}");
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-pub fn travel(destination: &str) {
-    push(Inbound::Travel(destination.to_owned()));
+pub fn go(destination: &str) {
+    push(Inbound::Go(destination.to_owned()));
 }
 
 #[cfg(not(target_arch = "wasm32"))]
-pub fn set_input_enabled(on: bool) {
-    push(Inbound::Input(on));
+pub fn set_paused(paused: bool) {
+    push(Inbound::Paused(paused));
 }
