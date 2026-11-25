@@ -277,8 +277,27 @@ const edges = destinations.map((d, i) => [d, destinations[(i + 1) % destinations
     let shipLoading: Promise<void> | null = null;
     const status = $('#ship-status');
 
+    function shipFailed(err: unknown) {
+      console.error('[atlas] ship failed to start', err);
+      status.hidden = false;
+      status.textContent = 'The ship view could not start on this device. The atlas list has everything.';
+      wasm = null;
+      shipLoading = null;
+      setView('list', false);
+    }
+
+    // Bevy finishes setting up the renderer after start() returns, so a GPU
+    // failure surfaces later as an uncaught wasm error rather than in the promise.
+    window.addEventListener('error', (e) => {
+      if (shipLoading && /RuntimeError|unreachable|wasm|wgpu/i.test(`${e.message} ${e.error?.name ?? ''}`)) shipFailed(e.error ?? e.message);
+    });
+
     function loadShip(): Promise<void> {
       if (shipLoading) return shipLoading;
+      if (!document.createElement('canvas').getContext('webgl2')) {
+        shipFailed(new Error('WebGL2 is not available'));
+        return Promise.resolve();
+      }
       status.hidden = false;
       status.textContent = 'Powering up the ship…';
       // Bevy calls back into the page through this hook.
@@ -298,12 +317,7 @@ const edges = destinations.map((d, i) => [d, destinations[(i + 1) % destinations
           status.hidden = true;
           syncInput();
         })
-        .catch((err) => {
-          console.error('[atlas] ship failed to start', err);
-          status.textContent = 'The ship view could not start on this device. The atlas list has everything.';
-          shipLoading = null;
-          setView('list', false);
-        });
+        .catch(shipFailed);
       return shipLoading;
     }
 
@@ -430,10 +444,11 @@ const edges = destinations.map((d, i) => [d, destinations[(i + 1) % destinations
     document.addEventListener('click', (e) => {
       const t = (e.target as Element).closest<HTMLElement>('[data-action],[data-travel],[data-select],[data-layout],[data-view-pref],[data-dest]');
       if (!t) return;
+      const me = e as MouseEvent;
+      // Links keep their real destinations for modified clicks (new tab, etc.).
+      const modified = me.metaKey || me.ctrlKey || me.shiftKey || me.altKey || me.button !== 0;
+      if ((t.dataset.travel || t.dataset.dest) && modified) return;
       if (t.dataset.travel) {
-        // Plain-link fallback: modified clicks still open the real page.
-        const me = e as MouseEvent;
-        if (me.metaKey || me.ctrlKey || me.shiftKey || me.button !== 0) return;
         e.preventDefault();
         travel(t.dataset.travel);
       } else if (t.dataset.dest) {
