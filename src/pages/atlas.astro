@@ -1,0 +1,810 @@
+---
+// The Scattered Atlas — M1 slice.
+//
+// Tier 2 hybrid: on roomy screens the walkable Bevy ship fills the page and
+// the atlas opens as a console drawer; on phones (or with reduced motion) the
+// list-first atlas is the page and the ship view is opt-in. Every piece of
+// copy comes from src/lib/atlas/registry.ts, which reads the same content
+// collections as the rest of the site. Without JavaScript every card is a
+// plain link to the real page.
+import { getAtlasRegistry } from '../lib/atlas/registry';
+import { siteConfig } from '../config/site';
+
+const atlas = await getAtlasRegistry();
+const { destinations, player } = atlas;
+const stats = player.stats;
+const origin = Astro.site?.origin ?? siteConfig.siteUrl;
+const canonical = new URL('/atlas/', origin).href;
+const description = `${atlas.ship.name}: shupp.dev as a small explorable ship. Every destination opens the real page.`;
+
+const siteIndex = [
+  { href: '/', label: 'Home' },
+  { href: '/about', label: 'About' },
+  { href: '/portfolio', label: 'Portfolio' },
+  { href: '/galaxy', label: 'Galaxy (writing)' },
+  { href: '/press', label: 'Press' },
+  { href: '/thoughtful-app-co', label: 'Thoughtful App Co.' },
+  { href: '/resume', label: 'Resume' },
+  { href: '/design/spec', label: 'Design spec' },
+  { href: `mailto:${siteConfig.email}`, label: 'Email' },
+];
+
+// Chart edges: a loose ring through the destinations, in registry order.
+const edges = destinations.map((d, i) => [d, destinations[(i + 1) % destinations.length]] as const);
+---
+<!doctype html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>{atlas.ship.name} · shupp.dev</title>
+  <meta name="description" content={description} />
+  <link rel="canonical" href={canonical} />
+  <meta name="theme-color" content="#14080E" />
+  <meta property="og:title" content={atlas.ship.name} />
+  <meta property="og:description" content={description} />
+  <meta property="og:url" content={canonical} />
+  <link rel="icon" href="/favicon.svg" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&family=Hind:wght@400;500;600&display=swap" rel="stylesheet" />
+  <script is:inline>
+    // Pick the starting view before first paint so the page never jumps.
+    (function () {
+      var pref = null;
+      try { pref = localStorage.getItem('atlas:view'); } catch (e) {}
+      var roomy = matchMedia('(min-width: 900px) and (min-height: 560px)').matches;
+      var calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      var view = pref === 'ship' || pref === 'list' ? pref : (roomy && !calm ? 'ship' : 'list');
+      document.documentElement.dataset.view = view;
+    })();
+  </script>
+</head>
+<body>
+  <a class="skip" href="#atlas">Skip to the atlas</a>
+
+  <header class="topbar">
+    <a class="brand" href="/atlas" aria-label={`${atlas.ship.name}, atlas home`}>
+      <span class="brand-ship">{atlas.ship.name}</span>
+      <span class="brand-sub">shupp.dev</span>
+    </a>
+    <nav class="toplinks" aria-label="Site">
+      <a href="/portfolio" data-dest="portfolio">Work</a>
+      <a href="/about" data-dest="about">About</a>
+      <a href={`mailto:${siteConfig.email}`} data-dest="contact">Contact</a>
+    </nav>
+  </header>
+
+  <main>
+    <section class="ship" id="ship" aria-label="Ship view">
+      <div class="ship-stage" id="ship-stage">
+        <canvas id="atlas-canvas" aria-label="The ship deck. Walk with WASD or the arrow keys, or click where you want to go. Press E next to a station to use it." tabindex="0"></canvas>
+        <p class="ship-status" id="ship-status" role="status" hidden></p>
+        <p class="ship-hint" id="ship-hint">Walk with <kbd>WASD</kbd> or arrows, or click. <kbd>E</kbd> uses a station.</p>
+      </div>
+      <div class="ship-teaser">
+        <div class="ship-teaser-art" aria-hidden="true">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <div>
+          <p class="eyebrow">You are aboard</p>
+          <p class="ship-teaser-title">{atlas.ship.name}</p>
+          <button class="pill" type="button" data-action="open-ship">Open ship view</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="atlas" id="atlas" aria-labelledby="atlas-title" tabindex="-1">
+      <div class="atlas-head">
+        <div>
+          <p class="eyebrow">Star chart</p>
+          <h1 id="atlas-title">Atlas</h1>
+        </div>
+        <div class="atlas-tools">
+          <div class="seg" role="group" aria-label="Atlas layout">
+            <button type="button" data-layout="list" aria-pressed="true">List</button>
+            <button type="button" data-layout="chart" aria-pressed="false">Chart</button>
+          </div>
+          <button class="icon-btn atlas-close" type="button" data-action="close-atlas" aria-label="Close atlas">✕</button>
+        </div>
+      </div>
+
+      <div class="chart" id="chart" hidden>
+        <svg viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          {edges.map(([a, b]) => (
+            <line x1={a.chart.x * 100} y1={a.chart.y * 100} x2={b.chart.x * 100} y2={b.chart.y * 100} />
+          ))}
+        </svg>
+        <span class="chart-ship" aria-hidden="true" style="left:50%;top:48%">◆<small>you</small></span>
+        {destinations.map((d) => (
+          <button type="button" class="chart-node" data-select={d.id} style={`left:${d.chart.x * 100}%;top:${d.chart.y * 100}%`}>
+            <span class="dot" aria-hidden="true"></span>
+            <span class="chart-name">{d.name}</span>
+            <span class="chart-label">{d.label}</span>
+          </button>
+        ))}
+      </div>
+
+      <ul class="dest-list" id="dest-list">
+        {destinations.map((d) => (
+          <li class="dest" data-id={d.id}>
+            <div class="dest-text">
+              <h2 class="dest-name">{d.name}</h2>
+              <p class="dest-label">{d.label}<span class="visited" aria-label="visited">· visited</span></p>
+              <p class="dest-preview">{d.preview}</p>
+            </div>
+            <a class="pill dest-go" href={d.href} data-travel={d.id}>Travel<span class="sr"> to {d.name} ({d.label})</span></a>
+          </li>
+        ))}
+      </ul>
+
+      <footer class="site-index">
+        <p class="eyebrow">Site index</p>
+        <ul>
+          {siteIndex.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+        </ul>
+        <p class="fineprint">The atlas is a new way into shupp.dev. Every page above works on its own.</p>
+      </footer>
+    </section>
+  </main>
+
+  <nav class="bottombar" aria-label="Ship controls">
+    <button type="button" data-action="return-ship"><span aria-hidden="true">◆</span>Ship</button>
+    <button type="button" data-action="open-atlas"><span aria-hidden="true">✦</span>Atlas</button>
+    <button type="button" data-action="open-sheet"><span aria-hidden="true">☰</span>Character</button>
+    <button type="button" data-action="open-menu"><span aria-hidden="true">⋯</span>Menu</button>
+  </nav>
+
+  <!-- Selection card: shown before travel from the chart, so a stray tap never travels. -->
+  <dialog class="sheet sheet--select" id="select-sheet" aria-labelledby="select-name">
+    <p class="eyebrow" id="select-label"></p>
+    <h2 id="select-name"></h2>
+    <p id="select-preview"></p>
+    <div class="sheet-actions">
+      <button type="button" class="pill pill--ghost" data-action="close">Not yet</button>
+      <button type="button" class="pill" id="select-travel">Travel</button>
+    </div>
+  </dialog>
+
+  {destinations.map((d) => (
+    <dialog class="sheet sheet--panel" id={`panel-${d.id}`} data-panel={d.id} aria-labelledby={`panel-${d.id}-title`}>
+      <div class="sheet-bar">
+        <p class="eyebrow">{d.label}</p>
+        <button class="icon-btn" type="button" data-action="close" aria-label="Close">✕</button>
+      </div>
+      <h2 class="panel-title" id={`panel-${d.id}-title`}>{d.name}</h2>
+      <div class="panel-intro">
+        {d.intro.map((p) => <p>{p}</p>)}
+      </div>
+      {d.items.length > 0 && (
+        <ul class="panel-items">
+          {d.items.map((item) => (
+            <li>
+              <a href={item.href} {...(item.external ? { target: '_blank', rel: 'noopener' } : {})}>
+                <span class="item-title">{item.title}</span>
+                {item.description && <span class="item-desc">{item.description}</span>}
+                {item.meta && <span class="item-meta">{item.meta}</span>}
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div class="sheet-actions">
+        <a class="pill" href={d.href}>Open the {d.label} page</a>
+        <button type="button" class="pill pill--ghost" data-action="return-ship">Return to ship</button>
+      </div>
+    </dialog>
+  ))}
+
+  <dialog class="sheet sheet--character" id="character-sheet" aria-labelledby="character-title">
+    <button type="button" class="sheet-handle" data-action="expand" aria-label="Expand character sheet" aria-expanded="false"></button>
+    <div class="sheet-bar">
+      <p class="eyebrow">Character sheet</p>
+      <button class="icon-btn" type="button" data-action="close" aria-label="Close">✕</button>
+    </div>
+    <h2 class="panel-title" id="character-title">{stats.name}</h2>
+    <p class="char-class">{stats.title} · {stats.location}</p>
+    <div class="char-level" title={stats.levelNote}>
+      <span class="char-level-num">{stats.level}</span>
+      <span>Level<br /><small>{stats.levelNote}</small></span>
+    </div>
+    <dl class="char-attrs">
+      {stats.attributes.map((a) => (
+        <div>
+          <dt>{a.label}</dt>
+          <dd><strong>{a.value}</strong><small>{a.note}</small></dd>
+        </div>
+      ))}
+    </dl>
+    <h3 class="eyebrow">Skills</h3>
+    <ul class="tags">{stats.skills.map((s) => <li>{s}</li>)}</ul>
+    <h3 class="eyebrow">Disciplines</h3>
+    <ul class="tags tags--soft">{stats.softSkills.map((s) => <li>{s}</li>)}</ul>
+    <h3 class="eyebrow">Quest log</h3>
+    <ol class="quests">
+      {stats.questLog.map((q) => (
+        <li class={q.current ? 'is-current' : ''}>
+          <span class="q-title">{q.title}</span>
+          <span class="q-place">{q.place}</span>
+          <span class="q-years">{q.years}</span>
+        </li>
+      ))}
+    </ol>
+    <div class="sheet-actions">
+      <a class="pill" href="/resume">Full resume</a>
+    </div>
+  </dialog>
+
+  <dialog class="sheet sheet--menu" id="menu-sheet" aria-labelledby="menu-title">
+    <div class="sheet-bar">
+      <p class="eyebrow" id="menu-title">Menu</p>
+      <button class="icon-btn" type="button" data-action="close" aria-label="Close">✕</button>
+    </div>
+    <ul class="menu-links">
+      {siteIndex.map((l) => <li><a href={l.href}>{l.label}</a></li>)}
+    </ul>
+    <div class="menu-prefs">
+      <p class="eyebrow">Atlas view</p>
+      <div class="seg" role="group" aria-label="Preferred view">
+        <button type="button" data-view-pref="ship">Ship first</button>
+        <button type="button" data-view-pref="list">List first</button>
+        <button type="button" data-view-pref="auto">Automatic</button>
+      </div>
+    </div>
+  </dialog>
+
+  <script>
+    type Wasm = {
+      start: (canvasId: string) => void;
+      travel: (id: string) => void;
+      set_input_enabled: (on: boolean) => void;
+    };
+
+    const root = document.documentElement;
+    const $ = <T extends Element = HTMLElement>(sel: string, el: ParentNode = document) => el.querySelector<T>(sel)!;
+    const $$ = <T extends Element = HTMLElement>(sel: string, el: ParentNode = document) => [...el.querySelectorAll<T>(sel)];
+    const calm = matchMedia('(prefers-reduced-motion: reduce)');
+
+    const store = {
+      get(key: string) { try { return localStorage.getItem(key); } catch { return null; } },
+      set(key: string, val: string | null) {
+        try { val === null ? localStorage.removeItem(key) : localStorage.setItem(key, val); } catch { /* private mode */ }
+      },
+    };
+
+    // ---------- Bevy ship ----------
+    let wasm: Wasm | null = null;
+    let shipLoading: Promise<void> | null = null;
+    const status = $('#ship-status');
+
+    function loadShip(): Promise<void> {
+      if (shipLoading) return shipLoading;
+      status.hidden = false;
+      status.textContent = 'Powering up the ship…';
+      // Bevy calls back into the page through this hook.
+      (window as unknown as { __atlasEmit: (k: string, id: string) => void }).__atlasEmit = onShipEvent;
+      // A plain runtime import keeps Vite's dev server from rewriting a /public file.
+      const load = new Function('u', 'return import(u)') as (u: string) => Promise<Record<string, unknown>>;
+      shipLoading = load('/atlas/pkg/scattered_atlas.js')
+        .then(async (mod) => {
+          await (mod.default as () => Promise<unknown>)();
+          wasm = mod as unknown as Wasm;
+          try {
+            wasm.start('atlas-canvas');
+          } catch (err) {
+            // winit leaves its event loop by throwing on the web; that one is expected.
+            if (!String(err).includes('Using exceptions for control flow')) throw err;
+          }
+          status.hidden = true;
+          syncInput();
+        })
+        .catch((err) => {
+          console.error('[atlas] ship failed to start', err);
+          status.textContent = 'The ship view could not start on this device. The atlas list has everything.';
+          shipLoading = null;
+          setView('list', false);
+        });
+      return shipLoading;
+    }
+
+    function onShipEvent(kind: string, id: string) {
+      if (kind !== 'station') return;
+      if (id === 'chart') openAtlas();
+      else if (id === 'sheet') openDialog($<HTMLDialogElement>('#character-sheet'));
+      else if (id === 'comms') openPanel('contact');
+      else if (id === 'hatch') openPanel('portfolio');
+    }
+
+    // Walking pauses whenever something sits on top of the deck.
+    function syncInput() {
+      const covered = !!document.querySelector('dialog[open]') || root.dataset.atlasOpen === 'true';
+      wasm?.set_input_enabled(!covered && root.dataset.view === 'ship');
+    }
+
+    // ---------- Views ----------
+    function setView(view: 'ship' | 'list', remember = true) {
+      root.dataset.view = view;
+      if (remember) store.set('atlas:view', view);
+      if (view === 'ship') {
+        closeAtlas();
+        loadShip().then(() => $('#atlas-canvas').focus({ preventScroll: true }));
+      }
+      setLayout(view === 'ship' ? 'chart' : 'list');
+      syncInput();
+    }
+
+    function setLayout(layout: 'list' | 'chart') {
+      $('#chart').hidden = layout !== 'chart';
+      $('#dest-list').hidden = layout !== 'list';
+      $$('[data-layout]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.layout === layout)));
+    }
+
+    function openAtlas() {
+      if (root.dataset.view === 'ship') {
+        root.dataset.atlasOpen = 'true';
+        syncInput();
+      }
+      const atlas = $('#atlas');
+      atlas.scrollIntoView({ behavior: calm.matches ? 'auto' : 'smooth', block: 'start' });
+      atlas.focus({ preventScroll: true });
+    }
+
+    function closeAtlas() {
+      delete root.dataset.atlasOpen;
+      syncInput();
+    }
+
+    function returnToShip() {
+      $$<HTMLDialogElement>('dialog[open]').forEach((d) => d.close());
+      if (root.dataset.view !== 'ship') setView('ship');
+      else { closeAtlas(); $('#atlas-canvas').focus({ preventScroll: true }); }
+    }
+
+    // ---------- Dialogs ----------
+    function openDialog(dialog: HTMLDialogElement) {
+      $$<HTMLDialogElement>('dialog[open]').forEach((d) => d !== dialog && d.close());
+      if (!dialog.open) dialog.showModal();
+      syncInput();
+    }
+
+    document.addEventListener('close', (e) => {
+      const dialog = e.target as HTMLDialogElement;
+      if (dialog.dataset.panel && location.hash === `#/${dialog.dataset.panel}`) {
+        history.replaceState(null, '', location.pathname + location.search);
+      }
+      syncInput();
+    }, true);
+
+    // Click on the backdrop closes a sheet.
+    $$<HTMLDialogElement>('dialog').forEach((d) => d.addEventListener('click', (e) => {
+      if (e.target === d) d.close();
+    }));
+
+    // ---------- Destinations ----------
+    const visited = new Set<string>((store.get('atlas:visited') ?? '').split(',').filter(Boolean));
+    function paintVisited() {
+      $$('.dest').forEach((li) => li.classList.toggle('is-visited', visited.has(li.dataset.id!)));
+      $$('.chart-node').forEach((b) => b.classList.toggle('is-visited', visited.has(b.dataset.select!)));
+    }
+
+    function openPanel(id: string) {
+      const panel = document.getElementById(`panel-${id}`) as HTMLDialogElement | null;
+      if (!panel) return;
+      visited.add(id);
+      store.set('atlas:visited', [...visited].join(','));
+      paintVisited();
+      if (location.hash !== `#/${id}`) history.replaceState(null, '', `#/${id}`);
+      closeAtlas();
+      openDialog(panel);
+    }
+
+    function travel(id: string) {
+      const warp = wasm && root.dataset.view === 'ship' && !calm.matches;
+      if (warp) {
+        closeAtlas();
+        $$<HTMLDialogElement>('dialog[open]').forEach((d) => d.close());
+        wasm!.travel(id);
+        setTimeout(() => openPanel(id), 900);
+      } else {
+        openPanel(id);
+      }
+    }
+
+    let selected: string | null = null;
+    function select(id: string) {
+      const card = document.querySelector<HTMLElement>(`.dest[data-id="${id}"]`)!;
+      selected = id;
+      $('#select-name').textContent = $('.dest-name', card).textContent;
+      $('#select-label').textContent = $('.dest-label', card).firstChild!.textContent;
+      $('#select-preview').textContent = $('.dest-preview', card).textContent;
+      openDialog($<HTMLDialogElement>('#select-sheet'));
+      $('#select-travel').focus();
+    }
+
+    $('#select-travel').addEventListener('click', () => {
+      $<HTMLDialogElement>('#select-sheet').close();
+      if (selected) travel(selected);
+    });
+
+    // ---------- Wiring ----------
+    document.addEventListener('click', (e) => {
+      const t = (e.target as Element).closest<HTMLElement>('[data-action],[data-travel],[data-select],[data-layout],[data-view-pref],[data-dest]');
+      if (!t) return;
+      if (t.dataset.travel) {
+        // Plain-link fallback: modified clicks still open the real page.
+        const me = e as MouseEvent;
+        if (me.metaKey || me.ctrlKey || me.shiftKey || me.button !== 0) return;
+        e.preventDefault();
+        travel(t.dataset.travel);
+      } else if (t.dataset.dest) {
+        e.preventDefault();
+        openPanel(t.dataset.dest);
+      } else if (t.dataset.select) {
+        select(t.dataset.select);
+      } else if (t.dataset.layout) {
+        setLayout(t.dataset.layout as 'list' | 'chart');
+      } else if (t.dataset.viewPref) {
+        const pref = t.dataset.viewPref;
+        store.set('atlas:view', pref === 'auto' ? null : pref);
+        if (pref !== 'auto') setView(pref as 'ship' | 'list');
+        $<HTMLDialogElement>('#menu-sheet').close();
+      } else {
+        switch (t.dataset.action) {
+          case 'open-ship': setView('ship'); break;
+          case 'return-ship': returnToShip(); break;
+          case 'open-atlas': $$<HTMLDialogElement>('dialog[open]').forEach((d) => d.close()); openAtlas(); break;
+          case 'close-atlas': closeAtlas(); $('#atlas-canvas').focus({ preventScroll: true }); break;
+          case 'open-sheet': openDialog($<HTMLDialogElement>('#character-sheet')); break;
+          case 'open-menu': openDialog($<HTMLDialogElement>('#menu-sheet')); break;
+          case 'close': t.closest('dialog')?.close(); break;
+          case 'expand': {
+            const sheet = t.closest('dialog')!;
+            const on = sheet.classList.toggle('is-expanded');
+            t.setAttribute('aria-expanded', String(on));
+            break;
+          }
+        }
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && root.dataset.atlasOpen === 'true' && !document.querySelector('dialog[open]')) {
+        closeAtlas();
+        $('#atlas-canvas').focus({ preventScroll: true });
+      }
+    });
+
+    // ---------- Start ----------
+    paintVisited();
+    setLayout(root.dataset.view === 'ship' ? 'chart' : 'list');
+    if (root.dataset.view === 'ship') loadShip();
+
+    const deepLink = location.hash.match(/^#\/([\w-]+)$/);
+    if (deepLink) openPanel(deepLink[1]);
+  </script>
+</body>
+</html>
+
+<style is:global>
+  @font-face {
+    font-family: 'Shupp';
+    src: url('/fonts/Shupp.otf') format('opentype');
+    font-display: swap;
+  }
+
+  :root {
+    --plum: #14080E;
+    --slate: #49475B;
+    --sage: #799496;
+    --olive: #ACC196;
+    --citron: #E9EB9E;
+    --deck: #1f1119;
+    --surface: #24151d;
+    --surface-2: #2e1e27;
+    --line: rgba(121, 148, 150, 0.28);
+    --text: #f1eee6;
+    --muted: #b9b6ad;
+    --ease-liquid: cubic-bezier(0.22, 1, 0.36, 1);
+    --top: 64px;
+    --bottom: 68px;
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--plum);
+    color: var(--text);
+    font: 400 1rem/1.65 'Hind', system-ui, sans-serif;
+    min-height: 100dvh;
+    padding-bottom: calc(var(--bottom) + env(safe-area-inset-bottom));
+  }
+  a { color: var(--citron); }
+  canvas:focus-visible { outline: 2px solid var(--sage); outline-offset: -2px; }
+  a:focus-visible, button:focus-visible, [tabindex]:not(canvas):focus-visible {
+    outline: 2px solid var(--sage);
+    outline-offset: 3px;
+  }
+  .sr, .skip:not(:focus) {
+    position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;
+  }
+  .skip:focus { position: fixed; top: 8px; left: 8px; z-index: 100; background: var(--citron); color: var(--plum); padding: 8px 14px; border-radius: 999px; }
+
+  .eyebrow {
+    margin: 0;
+    font: 600 0.72rem/1.2 'Cairo', sans-serif;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--sage);
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 20;
+    height: var(--top);
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 0 16px;
+    background: color-mix(in srgb, var(--plum) 88%, transparent);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+  }
+  .brand { display: flex; flex-direction: column; text-decoration: none; line-height: 1.05; min-width: 0; }
+  .brand-ship { font-family: 'Shupp', 'Cairo', sans-serif; font-size: 1.45rem; color: var(--citron); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .brand-sub { font: 600 0.66rem 'Cairo', sans-serif; letter-spacing: 0.18em; text-transform: uppercase; color: var(--sage); }
+  .toplinks { display: flex; gap: 2px; }
+  .toplinks a {
+    display: inline-flex; align-items: center; min-height: 44px; padding: 0 10px;
+    color: var(--text); text-decoration: none;
+    font: 600 0.8rem 'Cairo', sans-serif; letter-spacing: 0.08em; text-transform: uppercase;
+    border-radius: 999px;
+  }
+  .toplinks a:hover { background: var(--surface-2); color: var(--citron); }
+  @media (max-width: 420px) {
+    .brand-ship { font-size: 1.15rem; }
+    .toplinks a { padding: 0 7px; font-size: 0.72rem; letter-spacing: 0.04em; }
+  }
+
+  /* ---------- Buttons ---------- */
+  .pill {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    min-height: 44px; padding: 0 20px;
+    border: 0; border-radius: 999px;
+    background: var(--citron); color: var(--plum);
+    font: 700 0.85rem 'Cairo', sans-serif; letter-spacing: 0.06em; text-transform: uppercase;
+    text-decoration: none; cursor: pointer;
+    transition: transform 0.35s var(--ease-liquid), background 0.2s;
+  }
+  .pill:hover { transform: translateY(-2px); }
+  .pill--ghost { background: transparent; color: var(--citron); box-shadow: inset 0 0 0 1px var(--line); }
+  .icon-btn {
+    width: 44px; height: 44px; border-radius: 999px; border: 0; cursor: pointer;
+    background: var(--surface-2); color: var(--text); font-size: 1rem;
+  }
+  .seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--surface-2); }
+  .seg button {
+    min-height: 38px; padding: 0 14px; border: 0; border-radius: 999px; cursor: pointer;
+    background: transparent; color: var(--muted);
+    font: 600 0.78rem 'Cairo', sans-serif; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+  .seg button[aria-pressed='true'] { background: var(--olive); color: var(--plum); }
+
+  /* ---------- Ship ---------- */
+  .ship-stage { display: none; }
+  .ship-teaser {
+    display: flex; align-items: center; gap: 16px;
+    margin: 16px; padding: 16px;
+    border-radius: 20px; border: 1px solid var(--line);
+    background: radial-gradient(120% 140% at 0% 0%, #2a1a24 0%, var(--deck) 60%);
+  }
+  .ship-teaser-title { margin: 2px 0 10px; font-family: 'Shupp', 'Cairo', sans-serif; font-size: 1.5rem; color: var(--text); }
+  .ship-teaser-art {
+    position: relative; flex: 0 0 84px; height: 84px; border-radius: 16px;
+    background: var(--plum); border: 1px solid var(--line); overflow: hidden;
+  }
+  .ship-teaser-art span { position: absolute; width: 10px; height: 10px; border-radius: 50%; background: var(--olive); }
+  .ship-teaser-art span:nth-child(1) { left: 37px; top: 14px; background: var(--citron); }
+  .ship-teaser-art span:nth-child(2) { left: 12px; top: 44px; }
+  .ship-teaser-art span:nth-child(3) { left: 62px; top: 44px; }
+  .ship-teaser-art span:nth-child(4) { left: 37px; top: 62px; }
+
+  html[data-view='ship'] .ship-teaser { display: none; }
+  html[data-view='ship'] .ship-stage {
+    display: block;
+    position: fixed; z-index: 1;
+    top: var(--top); left: 0; right: 0;
+    bottom: calc(var(--bottom) + env(safe-area-inset-bottom));
+  }
+  html[data-view='ship'] #atlas-canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+  .ship-status, .ship-hint {
+    position: absolute; left: 50%; transform: translateX(-50%);
+    margin: 0; padding: 8px 16px; border-radius: 999px;
+    background: color-mix(in srgb, var(--plum) 80%, transparent);
+    color: var(--muted); font-size: 0.9rem; text-align: center;
+  }
+  .ship-status { top: 45%; color: var(--citron); }
+  .ship-hint { top: 12px; }
+  kbd { font: 600 0.75rem 'Cairo', sans-serif; padding: 1px 6px; border-radius: 6px; background: var(--surface-2); color: var(--text); }
+  @media (pointer: coarse) { .ship-hint { display: none; } }
+
+  /* ---------- Atlas ---------- */
+  .atlas { padding: 8px 16px 24px; outline: none; }
+  .atlas-head { display: flex; align-items: end; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+  .atlas-head h1 { margin: 0; font-family: 'Shupp', 'Cairo', sans-serif; font-weight: 400; font-size: 2.4rem; line-height: 1; color: var(--citron); }
+  .atlas-tools { display: flex; gap: 8px; align-items: center; }
+  .atlas-close { display: none; }
+
+  html[data-view='ship'] .atlas {
+    position: fixed; z-index: 10;
+    top: var(--top); right: 0;
+    bottom: calc(var(--bottom) + env(safe-area-inset-bottom));
+    width: min(440px, 100%);
+    overflow-y: auto;
+    background: color-mix(in srgb, var(--plum) 94%, transparent);
+    border-left: 1px solid var(--line);
+    transform: translateX(105%);
+    visibility: hidden;
+    transition: transform 0.45s var(--ease-liquid), visibility 0s 0.45s;
+  }
+  html[data-view='ship'][data-atlas-open='true'] .atlas {
+    transform: none; visibility: visible;
+    transition: transform 0.45s var(--ease-liquid), visibility 0s;
+  }
+  html[data-view='ship'] .atlas-close { display: inline-block; }
+
+  .dest-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+  @media (min-width: 700px) {
+    html[data-view='list'] .dest-list { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (min-width: 1100px) {
+    html[data-view='list'] .dest-list { grid-template-columns: repeat(3, 1fr); }
+  }
+  .dest {
+    display: flex; flex-direction: column; gap: 12px; justify-content: space-between;
+    padding: 16px; border-radius: 18px;
+    background: var(--surface); border: 1px solid var(--line);
+    transition: transform 0.35s var(--ease-liquid), border-color 0.2s;
+  }
+  .dest:hover { transform: translateY(-2px); border-color: var(--sage); }
+  .dest-name { margin: 0; font: 700 1.15rem/1.25 'Cairo', sans-serif; color: var(--text); }
+  .dest-label { margin: 2px 0 6px; font: 600 0.74rem 'Cairo', sans-serif; letter-spacing: 0.14em; text-transform: uppercase; color: var(--olive); }
+  .dest-preview { margin: 0; color: var(--muted); font-size: 0.95rem; }
+  .visited { display: none; margin-left: 6px; color: var(--sage); }
+  .dest.is-visited .visited { display: inline; }
+  .dest-go { align-self: flex-start; }
+
+  .chart {
+    position: relative; aspect-ratio: 1 / 1; max-height: 70vh; margin: 0 auto 8px;
+    border-radius: 18px; border: 1px solid var(--line);
+    background:
+      radial-gradient(circle at 50% 48%, rgba(172, 193, 150, 0.12), transparent 45%),
+      radial-gradient(1px 1px at 20% 30%, var(--citron), transparent),
+      radial-gradient(1px 1px at 70% 80%, var(--citron), transparent),
+      radial-gradient(1px 1px at 85% 15%, var(--citron), transparent),
+      var(--deck);
+  }
+  .chart[hidden], .dest-list[hidden] { display: none; }
+  .chart svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+  .chart line { stroke: var(--sage); stroke-opacity: 0.35; stroke-width: 0.3; stroke-dasharray: 1 1; vector-effect: non-scaling-stroke; }
+  .chart-ship { position: absolute; transform: translate(-50%, -50%); color: var(--citron); text-align: center; line-height: 1; }
+  .chart-ship small { display: block; font: 600 0.6rem 'Cairo', sans-serif; letter-spacing: 0.14em; text-transform: uppercase; color: var(--sage); }
+  .chart-node {
+    position: absolute; transform: translate(-50%, -22px);
+    display: flex; flex-direction: column; align-items: center;
+    min-width: 44px; min-height: 44px; padding: 4px; border: 0; background: none; cursor: pointer;
+    color: var(--text); text-align: center;
+  }
+  .chart-node .dot {
+    width: 18px; height: 18px; border-radius: 50%; margin-bottom: 4px;
+    background: var(--olive); box-shadow: 0 0 0 6px rgba(172, 193, 150, 0.15);
+    transition: transform 0.35s var(--ease-liquid);
+  }
+  .chart-node:hover .dot, .chart-node:focus-visible .dot { transform: scale(1.25); background: var(--citron); }
+  .chart-node.is-visited .dot { background: var(--sage); }
+  .chart-name { font: 700 0.78rem/1.15 'Cairo', sans-serif; max-width: 9em; }
+  .chart-label { font: 600 0.62rem 'Cairo', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: var(--olive); }
+
+  .site-index { margin-top: 28px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .site-index ul { list-style: none; padding: 0; margin: 8px 0; display: flex; flex-wrap: wrap; gap: 4px 16px; }
+  .site-index a { display: inline-flex; min-height: 44px; align-items: center; }
+  .fineprint { color: var(--muted); font-size: 0.85rem; margin: 0; }
+
+  /* ---------- Bottom bar ---------- */
+  .bottombar {
+    position: fixed; z-index: 30; left: 0; right: 0; bottom: 0;
+    height: calc(var(--bottom) + env(safe-area-inset-bottom));
+    padding: 6px 8px env(safe-area-inset-bottom);
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;
+    background: color-mix(in srgb, var(--plum) 92%, transparent);
+    backdrop-filter: blur(8px);
+    border-top: 1px solid var(--line);
+  }
+  .bottombar button {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    min-height: 44px; border: 0; border-radius: 14px; cursor: pointer;
+    background: transparent; color: var(--muted);
+    font: 600 0.7rem 'Cairo', sans-serif; letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .bottombar button span { font-size: 1.1rem; color: var(--olive); }
+  .bottombar button:hover { background: var(--surface-2); color: var(--citron); }
+  @media (min-width: 900px) {
+    .bottombar { left: 50%; right: auto; transform: translateX(-50%); width: 520px; bottom: 12px; height: var(--bottom); border-radius: 20px; border: 1px solid var(--line); }
+    body { padding-bottom: calc(var(--bottom) + 24px); }
+  }
+
+  /* ---------- Sheets ---------- */
+  dialog.sheet {
+    border: 1px solid var(--line); padding: 20px 16px calc(20px + env(safe-area-inset-bottom));
+    background: var(--surface); color: var(--text);
+    width: 100%; max-width: 100%;
+    margin: auto 0 0; /* bottom sheet on phones */
+    border-radius: 22px 22px 0 0;
+    max-height: 88dvh; overflow-y: auto;
+  }
+  dialog.sheet::backdrop { background: rgba(10, 4, 7, 0.6); backdrop-filter: blur(2px); }
+  dialog.sheet[open] { animation: sheet-up 0.4s var(--ease-liquid); }
+  @keyframes sheet-up { from { transform: translateY(24px); opacity: 0; } }
+  @media (prefers-reduced-motion: reduce) {
+    dialog.sheet[open] { animation: none; }
+    *, *::before, *::after { transition-duration: 0s !important; }
+  }
+  .sheet h2 { margin: 6px 0 8px; }
+  .sheet-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .sheet-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 20px; }
+  #select-name { font: 700 1.4rem 'Cairo', sans-serif; }
+  #select-preview { color: var(--muted); }
+
+  .sheet--panel { height: 100dvh; max-height: 100dvh !important; border-radius: 0 !important; }
+  .panel-title { font-family: 'Shupp', 'Cairo', sans-serif; font-weight: 400; font-size: 2.2rem; line-height: 1.1; color: var(--citron); }
+  .panel-intro { max-width: 68ch; }
+  .panel-intro p { margin: 0 0 12px; }
+  .panel-items { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 8px; }
+  .panel-items a {
+    display: grid; gap: 2px; padding: 12px 14px; min-height: 44px;
+    border-radius: 14px; background: var(--surface-2); text-decoration: none; color: var(--text);
+    transition: transform 0.35s var(--ease-liquid);
+  }
+  .panel-items a:hover { transform: translateX(3px); }
+  .item-title { font: 700 1rem 'Cairo', sans-serif; color: var(--citron); }
+  .item-desc { color: var(--muted); font-size: 0.92rem; }
+  .item-meta { font: 600 0.68rem 'Cairo', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sage); }
+
+  .sheet--character { max-height: 75dvh; transition: max-height 0.4s var(--ease-liquid); padding-top: 8px; }
+  .sheet--character.is-expanded { max-height: 100dvh; height: 100dvh; border-radius: 0; }
+  .sheet-handle { display: block; margin: 0 auto 8px; width: 64px; height: 24px; border: 0; background: none; cursor: pointer; position: relative; }
+  .sheet-handle::after { content: ''; position: absolute; left: 12px; right: 12px; top: 10px; height: 4px; border-radius: 4px; background: var(--slate); }
+  .char-class { margin: 0 0 14px; color: var(--muted); }
+  .char-level { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 16px; background: var(--surface-2); margin-bottom: 14px; font: 600 0.8rem 'Cairo', sans-serif; letter-spacing: 0.1em; text-transform: uppercase; }
+  .char-level small { text-transform: none; letter-spacing: 0; font: 400 0.8rem 'Hind', sans-serif; color: var(--muted); }
+  .char-level-num { font: 700 2.4rem/1 'Cairo', sans-serif; color: var(--citron); min-width: 1.6em; text-align: center; }
+  .char-attrs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0 0 18px; }
+  .char-attrs div { padding: 10px 12px; border-radius: 14px; border: 1px solid var(--line); }
+  .char-attrs dt { font: 600 0.68rem 'Cairo', sans-serif; letter-spacing: 0.12em; text-transform: uppercase; color: var(--sage); }
+  .char-attrs dd { margin: 0; display: flex; flex-direction: column; }
+  .char-attrs strong { font: 700 1.6rem/1.1 'Cairo', sans-serif; color: var(--olive); }
+  .char-attrs small { color: var(--muted); font-size: 0.78rem; }
+  .sheet h3.eyebrow { margin: 16px 0 8px; }
+  .tags { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+  .tags li { padding: 4px 12px; border-radius: 999px; background: var(--surface-2); font-size: 0.88rem; }
+  .tags--soft li { background: transparent; box-shadow: inset 0 0 0 1px var(--line); }
+  .quests { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+  .quests li { display: grid; grid-template-columns: 1fr auto; gap: 0 12px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); }
+  .quests li.is-current { box-shadow: inset 3px 0 0 var(--citron); }
+  .q-title { font-weight: 600; }
+  .q-place { grid-column: 1; color: var(--muted); font-size: 0.9rem; }
+  .q-years { grid-row: 1; grid-column: 2; font: 600 0.75rem 'Cairo', sans-serif; color: var(--sage); }
+
+  .menu-links { list-style: none; margin: 8px 0 16px; padding: 0; }
+  .menu-links a { display: flex; align-items: center; min-height: 48px; padding: 0 4px; border-bottom: 1px solid var(--line); text-decoration: none; font: 600 1.05rem 'Cairo', sans-serif; }
+  .menu-prefs .seg { margin-top: 8px; flex-wrap: wrap; }
+
+  @media (min-width: 900px) {
+    dialog.sheet { margin: auto; width: min(560px, 92vw); border-radius: 22px; max-height: 84vh; }
+    .sheet--panel { width: min(780px, 92vw) !important; height: auto; max-height: 86vh !important; border-radius: 22px !important; }
+    .sheet--character {
+      margin: var(--top) 0 0 auto; height: calc(100vh - var(--top)); max-height: none;
+      width: min(440px, 92vw); border-radius: 22px 0 0 22px;
+    }
+    .sheet--character.is-expanded { height: calc(100vh - var(--top)); border-radius: 22px 0 0 22px; }
+    .sheet-handle { display: none; }
+  }
+</style>
