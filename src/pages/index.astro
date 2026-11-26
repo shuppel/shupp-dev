@@ -36,7 +36,9 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
   <meta property="og:title" content={atlas.ship.name} />
   <meta property="og:description" content={description} />
   <meta property="og:url" content={canonical} />
-  <link rel="icon" href="/favicon.svg" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
   <link rel="preload" href={wasmUrl} as="fetch" type="application/wasm" crossorigin />
 </head>
 <body>
@@ -280,7 +282,7 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
           // winit leaves its event loop by throwing on the web; that one is expected.
           if (!String(err).includes('Using exceptions for control flow')) throw err;
         }
-        if (new URLSearchParams(location.search).get('font') === 'mana') game.set_dialogue_font(true);
+        if (new URLSearchParams(location.search).get('font') === 'body') game.set_dialogue_font(false);
         if (start === 'about' || start === 'contact') game.go(start);
         label.textContent = 'Unpacking the ship…';
         // Never strand someone on the loading screen if an asset hangs.

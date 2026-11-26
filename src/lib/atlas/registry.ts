@@ -57,7 +57,7 @@ export interface PlayerStats {
 }
 
 export type ItemType = 'scroll' | 'certificate' | 'tablet' | 'codex' | 'relic';
-export type Rarity = 'common' | 'rare' | 'unique' | 'legendary';
+export type Rarity = 'common' | 'uncommon' | 'rare' | 'unique' | 'legendary';
 
 export interface KeyItem {
   id: string;
@@ -107,7 +107,8 @@ function itemType(name: string, kind: 'credential' | 'degree'): ItemType {
 function itemRarity(name: string, from: string): Rarity {
   if (/^(master|doctor)\b/i.test(name)) return 'legendary';
   if (/nielsen/i.test(`${name} ${from}`)) return 'unique';
-  if (/tryhackme|uipath|additional/i.test(`${name} ${from}`)) return 'common';
+  if (/additional|continuous/i.test(name)) return 'uncommon';
+  if (/tryhackme|uipath/i.test(`${name} ${from}`)) return 'common';
   return 'rare';
 }
 

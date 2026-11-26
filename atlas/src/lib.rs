@@ -174,7 +174,7 @@ pub fn actor_scale(scene: SceneId, y: f32) -> f32 {
 /// Where Erikk lands when he walks into `to` from `from`.
 fn arrival(to: SceneId, from: SceneId) -> Option<Vec2> {
     Some(match (to, from) {
-        (SceneId::Bridge, SceneId::Engine) => STAIRWELL + p(-14.0, 14.0),
+        (SceneId::Bridge, SceneId::Engine) => STAIRWELL + p(-44.0, 34.0),
         (SceneId::Bridge, SceneId::Quarters) => p(214.0, 160.0),
         (SceneId::Bridge, SceneId::Archive) => ARCHIVE_PATH + p(0.0, 18.0),
         (SceneId::Bridge, SceneId::Port) => BRIDGE_GANGWAY + p(0.0, -18.0),
@@ -228,7 +228,7 @@ pub fn scene_def(id: SceneId) -> &'static SceneDef {
         spawn: QUARTERS_DOOR_IN,
         points: &[
             Point { pos: p(112.0, 182.0), label: "Look in the mirror", action: Action::Mirror, deck: Deck::Any },
-            Point { pos: p(250.0, 186.0), label: "Desk", action: Action::Desk, deck: Deck::Any },
+            Point { pos: p(250.0, 186.0), label: "Desk: Captain's Log", action: Action::Desk, deck: Deck::Any },
             Point { pos: p(451.0, 232.0), label: "Pongo's bed", action: Action::PetBed, deck: Deck::Any },
             Point { pos: p(508.0, 180.0), label: "Sea chest: keepsakes", action: Action::MenuTab(1), deck: Deck::Any },
             Point { pos: p(40.0, 244.0), label: "Back to the concourse", action: Action::Goto(SceneId::Bridge), deck: Deck::Any },
@@ -606,7 +606,7 @@ pub fn app(canvas: Option<String>, registry: Registry, boot: Boot, visited: Vec<
         visited,
         paused: false,
         request: None,
-        mana_dialogue: false,
+        mana_dialogue: true,
         hatch_open: false,
         pongo_bed: false,
     })
