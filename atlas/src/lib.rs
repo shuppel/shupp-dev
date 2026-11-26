@@ -108,9 +108,10 @@ pub struct SceneDef {
     /// The backdrop is 2× source art (1280 × 720) shown at 640 × 360.
     pub hd: bool,
     pub fg_threshold: f32,
-    /// Erikk and Pongo are drawn this much bigger (the quarters art is a
-    /// close-up, so a standard-size Erikk looks tiny in it).
-    pub actor_scale: f32,
+    /// How big Erikk and Pongo draw, by depth: (y at the back, scale there,
+    /// y at the front, scale there). The concourse is a deep shot, so he
+    /// shrinks toward the treehouse; the quarters are a close-up.
+    pub depth_scale: (f32, f32, f32, f32),
     pub spawn: Vec2,
     pub points: &'static [Point],
     pub npc: Option<(Npc, Vec2)>,
@@ -163,6 +164,13 @@ const QUARTERS_DOOR_IN: Vec2 = p(70.0, 236.0);
 /// of quarters_walkable.png by make_atlier_rooms.py.
 const PET_BED: Vec2 = p(451.0, 212.0);
 
+/// How big an actor standing at depth `y` draws in this scene.
+pub fn actor_scale(scene: SceneId, y: f32) -> f32 {
+    let (y0, s0, y1, s1) = scene_def(scene).depth_scale;
+    let t = ((y - y0) / (y1 - y0)).clamp(0.0, 1.0);
+    s0 + (s1 - s0) * t
+}
+
 /// Where Erikk lands when he walks into `to` from `from`.
 fn arrival(to: SceneId, from: SceneId) -> Option<Vec2> {
     Some(match (to, from) {
@@ -197,7 +205,7 @@ pub fn scene_def(id: SceneId) -> &'static SceneDef {
         fg: None,
         hd: true,
         fg_threshold: 0.0,
-        actor_scale: 1.0,
+        depth_scale: (128.0, 0.7, 340.0, 1.06),
         spawn: p(320.0, 262.0),
         points: &[
             Point { pos: STAR_CONSOLE, label: "Star console", action: Action::OpenAtlas, deck: Deck::Any },
@@ -216,7 +224,7 @@ pub fn scene_def(id: SceneId) -> &'static SceneDef {
         fg: None,
         hd: true,
         fg_threshold: 0.0,
-        actor_scale: 1.4,
+        depth_scale: (175.0, 1.3, 350.0, 1.55),
         spawn: QUARTERS_DOOR_IN,
         points: &[
             Point { pos: p(112.0, 182.0), label: "Look in the mirror", action: Action::Mirror, deck: Deck::Any },
@@ -237,7 +245,7 @@ pub fn scene_def(id: SceneId) -> &'static SceneDef {
         fg: None,
         hd: true,
         fg_threshold: 0.0,
-        actor_scale: 1.0,
+        depth_scale: (0.0, 1.0, 360.0, 1.0),
         spawn: p(232.0, 312.0),
         points: &[
             Point { pos: LIFT_LOWER_EXIT, label: "Ride the lift up", action: Action::Lift, deck: Deck::Lower },
@@ -257,7 +265,7 @@ pub fn scene_def(id: SceneId) -> &'static SceneDef {
         fg: Some("maps/archive_foreground.png"),
         hd: false,
         fg_threshold: 341.0,
-        actor_scale: 1.0,
+        depth_scale: (0.0, 1.0, 360.0, 1.0),
         spawn: p(323.0, 301.0),
         points: &[
             Point { pos: p(323.0, 168.0), label: "Records", action: Action::Terminal("writing"), deck: Deck::Any },
@@ -274,10 +282,10 @@ pub fn scene_def(id: SceneId) -> &'static SceneDef {
         fg: None,
         hd: true,
         fg_threshold: 0.0,
-        actor_scale: 1.0,
+        depth_scale: (0.0, 1.0, 360.0, 1.0),
         spawn: ENGINE_ARRIVAL,
         points: &[
-            Point { pos: p(36.0, 246.0), label: "Ladder up to the bridge", action: Action::Goto(SceneId::Bridge), deck: Deck::Any },
+            Point { pos: p(36.0, 246.0), label: "Doorway back to the concourse", action: Action::Goto(SceneId::Bridge), deck: Deck::Any },
             Point { pos: p(400.0, 270.0), label: "Reactor console", action: Action::Menu, deck: Deck::Any },
             Point { pos: p(470.0, 182.0), label: "Ship status board", action: Action::Menu, deck: Deck::Any },
             Point { pos: p(572.0, 272.0), label: "Talk to Dave", action: Action::Talk(Npc::Mechanic), deck: Deck::Any },
@@ -623,6 +631,7 @@ pub fn app(canvas: Option<String>, registry: Registry, boot: Boot, visited: Vec<
             animate_engine_room,
             depth_sort,
             fx::animate,
+            fx::markers,
         )
             .chain(),
     )
@@ -1197,7 +1206,7 @@ pub(crate) fn depth_sort(
     // Whole scene pixels only: a sub-pixel position makes nearest sampling
     // double or drop columns, which reads as a smeared, low-res sprite.
     tf.translation = to_world(p.foot.round()).extend(1.0 + p.foot.y / 1000.0);
-    tf.scale = Vec3::splat(def.actor_scale);
+    tf.scale = Vec3::splat(actor_scale(game.scene, p.foot.y));
     for (npc, mut ntf, mut sprite) in &mut npcs {
         ntf.translation.z = 1.0 + npc.foot.y / 1000.0;
         // NPCs turn to face Erikk when he is close.
@@ -1348,7 +1357,7 @@ fn follow_pongo(
     // In bed he draws over the bed, whose baseline is lower on screen.
     let z = if bedtime && !moving { 1.0 + PET_BED.y / 1000.0 + 0.0005 } else { 1.0 + dog.foot.y / 1000.0 };
     tf.translation = to_world(dog.foot.round()).extend(z);
-    tf.scale = Vec3::splat(scene_def(game.scene).actor_scale);
+    tf.scale = Vec3::splat(actor_scale(game.scene, dog.foot.y));
 }
 
 // ---------------------------------------------------------------------------
@@ -1373,9 +1382,10 @@ const fn prop(image: &'static str, x: f32, y: f32, w: f32, h: f32, solid: bool, 
 const DAVE: Vec2 = p(566.0, 262.0);
 const HATCH: usize = 0;
 
-static ENGINE_PROPS: [Prop; 15] = [
+static ENGINE_PROPS: [Prop; 12] = [
     prop("props/engine_room/hatch_closed.png", 300.0, 334.0, 50.0, 31.0, false, true),
-    prop("props/engine_room/ladder.png", 30.0, 238.0, 24.0, 52.0, false, false),
+    // The doorway back up to the concourse (stand-in art, make_engine_door.py).
+    prop("props/engine_room/doorway.png", 30.0, 246.0, 46.0, 68.0, false, false),
     prop("props/engine_room/coolant_tank.png", 82.0, 176.0, 34.0, 66.0, true, false),
     prop("props/engine_room/flywheel.png", 140.0, 176.0, 56.0, 62.0, true, false),
     prop("props/engine_room/reactor_core.png", 236.0, 178.0, 84.0, 106.0, true, false),
@@ -1386,9 +1396,6 @@ static ENGINE_PROPS: [Prop; 15] = [
     prop("props/engine_room/console.png", 400.0, 262.0, 62.0, 53.0, true, false),
     prop("props/engine_room/warning_lamp.png", 444.0, 258.0, 22.0, 27.0, true, false),
     prop("props/engine_room/piston_bank.png", 566.0, 244.0, 72.0, 69.0, true, false),
-    prop("props/engine_room/toolbox.png", 512.0, 300.0, 38.0, 29.0, true, false),
-    prop("props/engine_room/crate_small.png", 84.0, 312.0, 44.0, 40.0, true, false),
-    prop("props/engine_room/cable_spool.png", 604.0, 344.0, 46.0, 46.0, true, false),
 ];
 
 #[derive(Component)]

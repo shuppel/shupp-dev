@@ -203,11 +203,13 @@ struct Travel {
 const TABS: [&str; 4] = ["Status", "Items", "Skills", "Quests"];
 /// ui_icons index for each tab.
 const TAB_ICONS: [usize; 4] = [0, 1, 8, 2];
-const SUITS: [(&str, &str); 4] = [("skill", "SKILLS"), ("discipline", "DISCIPLINES"), ("special", "SPECIALS"), ("equipment", "EQUIPMENT")];
+const SUITS: [(&str, &str); 5] = [("skill", "SKILLS"), ("discipline", "DISCIPLINES"), ("special", "SPECIALS"), ("equipment", "EQUIPMENT"), ("profile", "PROFILE")];
 
 #[derive(Resource, Default)]
 struct Ui {
     dirty: bool,
+    /// A screen opened this frame: ignore this frame's input.
+    fresh: bool,
     dialogue: Option<Dialogue>,
     terminal: Option<Terminal>,
     atlas_sel: usize,
@@ -561,12 +563,16 @@ fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Regi
         return;
     }
     ui.dirty = true;
+    // The key press that opened this (E at a console) must not also act on
+    // it in the same frame, e.g. confirming the star map's default planet.
+    ui.fresh = true;
     match req {
         Request::Atlas => {
             let here = match game.scene {
-                SceneId::Port => 0,
                 SceneId::Archive => 2,
-                SceneId::Bridge | SceneId::Engine | SceneId::Quarters => 1,
+                // Never preselect the Mirror Moon (About): an extra E at the
+                // console would read as "the star map opens the mirror".
+                _ => 0,
             };
             ui.atlas_sel = here;
             game.mode = Mode::Atlas;
@@ -765,6 +771,10 @@ fn input(
     mut ui: ResMut<Ui>,
 ) {
     let typed_keys: Vec<_> = typed_keys.read().filter(|k| k.state.is_pressed()).map(|k| k.logical_key.clone()).collect();
+    if ui.fresh {
+        ui.fresh = false;
+        return;
+    }
     if page_tap.at.is_some() {
         ui.touch = page_tap.touch;
     } else if touches.any_just_pressed() {
@@ -1022,10 +1032,22 @@ fn input(
                 ui.sel = 0;
                 ui.quest_full = false;
             };
-            let next = keys.just_pressed(KeyCode::Tab) || keys.just_pressed(KeyCode::KeyQ);
+            let shift = keys.any_pressed([KeyCode::ShiftLeft, KeyCode::ShiftRight]);
+            let tab_key = keys.just_pressed(KeyCode::Tab);
+            let next = (tab_key && !shift) || keys.just_pressed(KeyCode::KeyQ);
             // In the grids the arrows move the cursor; elsewhere left/right flip tabs.
             let grid = cols > 1;
-            if next || (!grid && right) {
+            if tab_key && shift {
+                // Shift+Tab: in Skills, the next suit; elsewhere, the previous tab.
+                if ui.tab == 2 {
+                    ui.suit = (ui.suit + 1) % SUITS.len();
+                    ui.sel = 0;
+                } else {
+                    let t = (ui.tab + TABS.len() - 1) % TABS.len();
+                    set_tab(&mut ui, t);
+                }
+                changed = true;
+            } else if next || (!grid && right) {
                 let t = (ui.tab + 1) % TABS.len();
                 set_tab(&mut ui, t);
                 changed = true;
@@ -1155,14 +1177,14 @@ fn grid_rect(tab: usize, i: usize) -> Rect {
 }
 
 fn suit_rect(i: usize) -> Rect {
-    let x = 146.0 + i as f32 * 48.0;
-    Rect::new(x, 52.0, x + 46.0, 68.0)
+    let x = 146.0 + i as f32 * 41.0;
+    Rect::new(x, 52.0, x + 39.0, 68.0)
 }
 
 fn rarity_color(r: &str) -> Color {
     match r {
         "legendary" => Color::srgb(0.91, 0.73, 0.29),
-        "epic" => Color::srgb(0.69, 0.42, 0.85),
+        "unique" => Color::srgb(0.69, 0.42, 0.85),
         "rare" => Color::srgb(0.31, 0.62, 0.85),
         _ => Color::srgb(0.62, 0.62, 0.62),
     }
@@ -1173,6 +1195,7 @@ fn suit_color(s: &str) -> Color {
         "skill" => Color::srgb(0.36, 0.55, 0.78),
         "discipline" => Color::srgb(0.38, 0.66, 0.52),
         "special" => Color::srgb(0.91, 0.73, 0.29),
+        "profile" => Color::srgb(0.80, 0.45, 0.62),
         _ => Color::srgb(0.72, 0.50, 0.32),
     }
 }
@@ -1869,7 +1892,7 @@ fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Re
                         Node { border: UiRect::all(Val::Px(1.0)), border_radius: BorderRadius::all(Val::Px(2.0)), ..at(r.min.x, r.min.y, r.width(), r.height()) },
                         BackgroundColor(if on { suit_color(SUITS[i].0).with_alpha(0.35) } else { Color::NONE }),
                         BorderColor::all(if on { CITRON } else { suit_color(SUITS[i].0).with_alpha(0.6) }),
-                        children![text_at(&f.label, 6.5, if on { CITRON } else { TEXT }, *label, 0.0, 3.5, r.width() - 2.0).with_justify()],
+                        children![text_at(&f.label, 5.5, if on { CITRON } else { TEXT }, *label, 0.0, 3.5, r.width() - 2.0).with_justify()],
                     ));
                 }
                 let suit = SUITS[ui.suit].0;

@@ -32,6 +32,74 @@ impl Plugin for FxPlugin {
 pub(crate) struct FxArt {
     glows: [Handle<Image>; 4],
     spark: Handle<Image>,
+    ring: Handle<Image>,
+}
+
+/// A soft gold ring on the floor at something you can use, breathing so the
+/// room shows what's interactive before you walk up to it.
+#[derive(Component)]
+pub(crate) struct Marker {
+    idx: usize,
+    phase: f32,
+}
+
+/// The ring: an ellipse outline with a soft falloff, white so it can be tinted.
+fn ring_image() -> Image {
+    use bevy::asset::RenderAssetUsages;
+    use bevy::render::render_resource::{Extent3d, TextureDimension, TextureFormat};
+    let (w, h) = (64u32, 24u32);
+    let mut img = Image::new_fill(Extent3d { width: w, height: h, depth_or_array_layers: 1 }, TextureDimension::D2, &[0, 0, 0, 0], TextureFormat::Rgba8UnormSrgb, RenderAssetUsages::default());
+    for y in 0..h {
+        for x in 0..w {
+            let d = Vec2::new((x as f32 + 0.5 - w as f32 / 2.0) / (w as f32 / 2.0), (y as f32 + 0.5 - h as f32 / 2.0) / (h as f32 / 2.0)).length();
+            let rim = (1.0 - ((d - 0.78).abs() / 0.16)).clamp(0.0, 1.0);
+            let fill = (1.0 - d).clamp(0.0, 1.0) * 0.35;
+            let a = rim.max(fill);
+            if a > 0.0 {
+                let _ = img.set_color_at(x, y, Color::srgba(1.0, 1.0, 1.0, a));
+            }
+        }
+    }
+    img
+}
+
+/// Keep a ring under every interaction point in the room, pulsing; the one
+/// Erikk is standing at glows brighter.
+pub(crate) fn markers(
+    mut commands: Commands,
+    time: Res<Time>,
+    game: Res<Game>,
+    art: Res<FxArt>,
+    mut st: ResMut<FxState>,
+    mut q: Query<(&Marker, &mut Sprite, &mut Transform, &mut Visibility)>,
+) {
+    let def = crate::scene_def(game.scene);
+    if q.is_empty() || st.marker_scene != Some(game.scene) {
+        st.marker_scene = Some(game.scene);
+        if q.is_empty() {
+            for (i, pt) in def.points.iter().enumerate() {
+                commands.spawn((
+                    SceneEntity,
+                    Marker { idx: i, phase: i as f32 * 1.3 },
+                    Sprite { image: art.ring.clone(), custom_size: Some(Vec2::new(30.0, 11.0)), color: Color::NONE, ..default() },
+                    Transform::from_translation(to_world(pt.pos + Vec2::new(0.0, 2.0)).extend(0.25)),
+                ));
+            }
+        }
+        return;
+    }
+    let t = time.elapsed_secs();
+    let explore = game.mode == Mode::Explore && !game.paused;
+    for (m, mut sprite, mut tf, mut vis) in &mut q {
+        let Some(pt) = def.points.get(m.idx) else { continue };
+        let on_deck = pt.deck == crate::Deck::Any || game.deck == crate::Deck::Any || pt.deck == game.deck;
+        *vis = if on_deck && explore { Visibility::Visible } else { Visibility::Hidden };
+        let near = game.nearby.is_some_and(|n| n.pos == pt.pos);
+        let wave = 0.5 + 0.5 * (t * 2.6 + m.phase).sin();
+        let (a, k) = if near { (0.95, 1.18 + 0.06 * wave) } else { (0.28 + 0.32 * wave, 0.92 + 0.12 * wave) };
+        sprite.color = Color::srgba(1.0, 0.84, 0.45, a);
+        tf.scale = Vec3::new(k, k, 1.0);
+    }
 }
 
 #[derive(Resource, Default)]
@@ -39,6 +107,7 @@ pub(crate) struct FxState {
     key: Option<(SceneId, Vec2)>,
     t: f32,
     spark_clock: f32,
+    marker_scene: Option<SceneId>,
     seed: u32,
 }
 
@@ -62,10 +131,11 @@ pub(crate) struct Spark {
     base: Vec2,
 }
 
-fn setup(mut commands: Commands, assets: Res<AssetServer>) {
+fn setup(mut commands: Commands, assets: Res<AssetServer>, mut images: ResMut<Assets<Image>>) {
     let art = FxArt {
         glows: GLOWS.map(|(path, _)| crate::load_t(&assets, path)),
         spark: crate::load_t(&assets, "fx/spark.png"),
+        ring: images.add(ring_image()),
     };
     commands.spawn((Glow, Sprite::from_image(art.glows[0].clone()), Transform::from_xyz(0.0, 0.0, 0.3), Visibility::Hidden));
     commands
@@ -186,7 +256,7 @@ pub(crate) fn animate(
         **cv = Visibility::Hidden;
         return;
     };
-    let k = crate::scene_def(game.scene).actor_scale;
+    let k = crate::actor_scale(game.scene, player.foot.y);
     let tip = cloud_tip(game.scene, &pt).unwrap_or(player.foot + Vec2::new(6.0, -62.0) * k);
     let bob = ((t * 2.6).sin() * 1.5).round();
     ct.translation = (to_world(tip) + Vec2::new(0.0, bob)).round().extend(9.0);

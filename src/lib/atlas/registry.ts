@@ -57,7 +57,7 @@ export interface PlayerStats {
 }
 
 export type ItemType = 'scroll' | 'certificate' | 'tablet' | 'codex' | 'relic';
-export type Rarity = 'common' | 'rare' | 'epic' | 'legendary';
+export type Rarity = 'common' | 'rare' | 'unique' | 'legendary';
 
 export interface KeyItem {
   id: string;
@@ -76,7 +76,7 @@ export interface KeyItem {
 export interface SkillCard {
   id: string;
   name: string;
-  suit: 'skill' | 'discipline' | 'special' | 'equipment';
+  suit: 'skill' | 'discipline' | 'special' | 'equipment' | 'profile';
   /** 1–5 pips. */
   mastery: number;
   /** The competency it feeds: DEV, PRO, DES, GTM, WRI or COM. */
@@ -98,13 +98,15 @@ function feedsFrom(text: string): string {
 
 function itemType(name: string, kind: 'credential' | 'degree'): ItemType {
   if (/continuous|additional/i.test(name)) return 'codex';
-  if (/master|bachelor|doctor|associate/i.test(name)) return 'scroll';
+  if (/^(master|bachelor|doctor|associate)\b/i.test(name)) return 'scroll';
   return kind === 'credential' ? 'tablet' : 'certificate';
 }
 
+// Common, rare, unique (purple: one of a kind, like the Nielsen UX
+// certification) and legendary (gold: the Master's degree).
 function itemRarity(name: string, from: string): Rarity {
-  if (/master|doctor/i.test(name)) return 'legendary';
-  if (/bachelor|product management|nielsen/i.test(`${name} ${from}`)) return 'epic';
+  if (/^(master|doctor)\b/i.test(name)) return 'legendary';
+  if (/nielsen/i.test(`${name} ${from}`)) return 'unique';
   if (/tryhackme|uipath|additional/i.test(`${name} ${from}`)) return 'common';
   return 'rare';
 }
@@ -131,6 +133,15 @@ const CARD_TUNING: Record<string, { mastery?: number; flavor?: string; feeds?: s
 };
 
 // Signature moves. These are rarer than skills and always hand-written.
+// The social profile: StrengthsFinder top five, in order, and Myers-Briggs.
+const PROFILE: Omit<SkillCard, 'suit'>[] = [
+  { id: 'strength-strategic', name: '1 · Strategic', mastery: 5, feeds: 'PRO', flavor: 'StrengthsFinder #1. Sees the patterns in a mess and picks the path through it.' },
+  { id: 'strength-ideation', name: '2 · Ideation', mastery: 5, feeds: 'DES', flavor: 'StrengthsFinder #2. Finds the link between things that look unrelated.' },
+  { id: 'strength-activator', name: '3 · Activator', mastery: 5, feeds: 'GTM', flavor: 'StrengthsFinder #3. Turns thinking into doing: let\'s start now.' },
+  { id: 'strength-learner', name: '4 · Learner', mastery: 5, feeds: 'DEV', flavor: 'StrengthsFinder #4. Loves the process of learning as much as the result.' },
+  { id: 'mbti-entp', name: 'ENTP', mastery: 5, feeds: 'COM', flavor: 'Myers-Briggs: extraverted, intuitive, thinking, perceiving. Argues both sides for fun.' },
+];
+
 const SPECIALS: Omit<SkillCard, 'suit'>[] = [
   { id: 'machine-optimized-prompting', name: 'Machine-Optimized Prompting', mastery: 5, feeds: 'DEV', flavor: 'Turns a vague ask into an exact instruction a model can run with.' },
   { id: 'o-n-scoping-special', name: 'O(n) Scoping', mastery: 5, feeds: 'PRO', flavor: 'Any roadmap, cut to the shortest path that still ships.' },
@@ -339,6 +350,7 @@ export async function getAtlasRegistry(): Promise<AtlasRegistry> {
           ...(author.skills ?? []).map((name: string) => card(name, 'skill')),
           ...(author.softSkills ?? []).map((name: string) => card(name, 'discipline')),
           ...SPECIALS.map((c) => ({ ...c, suit: 'special' as const })),
+          ...PROFILE.map((c) => ({ ...c, suit: 'profile' as const })),
           ...gear.map((g) => card(g.name, 'equipment', Math.max(1, Math.min(5, Math.ceil(g.uses / 2))), `Carried on ${g.uses} ${g.uses === 1 ? 'mission' : 'missions'}.`)),
         ],
         training: education.map((e) => ({

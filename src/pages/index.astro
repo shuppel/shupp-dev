@@ -46,6 +46,7 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
   <div class="term-preview" id="term-preview" hidden aria-hidden="true"><iframe id="term-frame" title="Page preview" tabindex="-1" sandbox="allow-same-origin" loading="eager"></iframe></div>
   <input class="term-search" id="term-search" type="search" enterkeyhint="done" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Search" aria-label="Search the terminal" hidden />
 
+  <p class="build-stamp" aria-hidden="true">build {v}</p>
   <div class="boot" id="boot" role="status">
     <p class="boot-title">{atlas.ship.name}</p>
     <div class="boot-bar"><span id="boot-fill"></span></div>
@@ -186,6 +187,21 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
       $('atlas-canvas').focus();
     }
 
+    // An open tab keeps running the game it loaded. When it comes back into
+    // view (or is restored from the back/forward cache), check for a newer
+    // build and reload, so old code never runs against new art.
+    async function checkVersion() {
+      try {
+        const res = await fetch('/atlas/version.json', { cache: 'no-store' });
+        const { v } = await res.json();
+        const mine = $('atlas-canvas').dataset.v;
+        if (v && mine && v !== mine) location.reload();
+      } catch { /* offline: keep playing */ }
+    }
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) checkVersion(); });
+    window.addEventListener('pageshow', (e) => { if (e.persisted) checkVersion(); });
+    setInterval(checkVersion, 5 * 60 * 1000);
+
     async function boot() {
       if (!document.createElement('canvas').getContext('webgl2')) {
         fallback();
@@ -295,6 +311,7 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
 
   .boot { position: fixed; inset: 0; display: grid; place-content: center; justify-items: center; gap: 14px; background: #000; transition: opacity 0.6s; }
   .boot.done { opacity: 0; pointer-events: none; }
+  .build-stamp { position: fixed; right: 6px; bottom: 4px; margin: 0; font: 10px/1 ui-monospace, monospace; color: #799496; opacity: 0.5; pointer-events: none; z-index: 1; }
   .boot-title { margin: 0; font: 2rem 'Shupp', cursive; color: #E9EB9E; }
   .boot-bar { width: min(260px, 70vw); height: 6px; border: 1px solid #cc8c4d; border-radius: 3px; overflow: hidden; }
   .boot-bar span { display: block; height: 100%; width: 0; background: #ee8c40; transition: width 0.2s; }
