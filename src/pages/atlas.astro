@@ -7,11 +7,17 @@
 // list of the same destinations appears so nobody is stranded.
 import { getAtlasRegistry } from '../lib/atlas/registry';
 import { siteConfig } from '../config/site';
+import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 
 const atlas = await getAtlasRegistry();
 const origin = Astro.site?.origin ?? siteConfig.siteUrl;
 const canonical = new URL('/atlas/', origin).href;
 const description = `${atlas.ship.name}: shupp.dev as a small sprite JRPG. Walk the ship, talk to the crew, read the quest log.`;
+// Cache-bust the game files: a phone holding yesterday's JS glue with today's
+// wasm fails silently, so both URLs carry a hash of the build.
+const v = createHash('sha1').update(readFileSync('public/atlas/pkg/scattered_atlas_bg.wasm')).digest('hex').slice(0, 10);
+const wasmUrl = `/atlas/pkg/scattered_atlas_bg.wasm?v=${v}`;
 const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
 ---
 <!doctype html>
@@ -27,10 +33,10 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
   <meta property="og:description" content={description} />
   <meta property="og:url" content={canonical} />
   <link rel="icon" href="/favicon.svg" />
-  <link rel="preload" href="/atlas/pkg/scattered_atlas_bg.wasm" as="fetch" type="application/wasm" crossorigin />
+  <link rel="preload" href={wasmUrl} as="fetch" type="application/wasm" crossorigin />
 </head>
 <body>
-  <canvas id="atlas-canvas" tabindex="0" aria-label={`${atlas.ship.name}. A sprite game version of shupp.dev. The same pages are listed below the game for screen readers.`}></canvas>
+  <canvas id="atlas-canvas" data-v={v} tabindex="0" aria-label={`${atlas.ship.name}. A sprite game version of shupp.dev. The same pages are listed below the game for screen readers.`}></canvas>
 
   <div class="boot" id="boot" role="status">
     <p class="boot-title">{atlas.ship.name}</p>
@@ -113,7 +119,8 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
       const label = $('boot-text');
       try {
         // Stream the wasm so the loading bar means something.
-        const res = await fetch('/atlas/pkg/scattered_atlas_bg.wasm');
+        const v = $('atlas-canvas').dataset.v ?? '';
+        const res = await fetch(`/atlas/pkg/scattered_atlas_bg.wasm?v=${v}`);
         const total = Number(res.headers.get('content-length')) || 0;
         const reader = res.body!.getReader();
         const chunks: Uint8Array[] = [];
@@ -132,7 +139,7 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
 
         // A plain runtime import keeps Vite from rewriting a /public file.
         const load = new Function('u', 'return import(u)') as (u: string) => Promise<Game>;
-        const game = await load('/atlas/pkg/scattered_atlas.js');
+        const game = await load(`/atlas/pkg/scattered_atlas.js?v=${v}`);
         await game.default({ module_or_path: bytes });
 
         window.addEventListener('error', (e) => {
