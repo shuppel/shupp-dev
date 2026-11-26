@@ -188,15 +188,13 @@ export async function getAtlasRegistry(): Promise<AtlasRegistry> {
   const clamp = (n: number) => Math.max(1, Math.min(10, Math.round(n)));
   const designProjects = projects.filter((p) =>
     /design|ui|css|font|type|skin/i.test(`${p.data.title} ${p.data.technologies.join(' ')}`)).length;
-  const gtmRoles = experience.filter((e) =>
-    /market|growth|launch|go-to-market|gtm|brand|sales|business development/i.test(`${e.data.position} ${e.data.description} ${e.data.achievements.join(' ')}`)).length;
-  const gtmSkills = (author.softSkills ?? []).filter((k: string) => /market|brand|business|growth|sales/i.test(k)).length;
   // Competencies: the radar. Six three-letter axes, each counted from the site.
   const radar = [
     { label: 'DEV', value: clamp(projects.length / 1.5), note: `${projects.length} projects shipped` },
     { label: 'PRO', value: clamp(years), note: `${years} years in the quest log` },
     { label: 'DES', value: clamp(designProjects / 1.5), note: `${designProjects} design projects` },
-    { label: 'GTM', value: clamp(gtmRoles * 2 + gtmSkills * 2), note: `${gtmRoles} go-to-market roles, ${gtmSkills} GTM disciplines` },
+    // GTM is hand-set: the site doesn't count go-to-market work well.
+    { label: 'GTM', value: 5, note: 'Go-to-market: launches, positioning and growth' },
     { label: 'WRI', value: clamp(notes.length / 2), note: `${notes.length} Galaxy notes` },
     { label: 'COM', value: clamp(press.length / 3), note: `${press.length} broadcasts` },
   ];

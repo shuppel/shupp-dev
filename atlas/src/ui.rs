@@ -208,6 +208,7 @@ struct UiArt {
     flight_layout: Handle<TextureAtlasLayout>,
     radar: Handle<Image>,
     menu_bg: Handle<Image>,
+    full_body: Handle<Image>,
     /// status, items, quests, map, credential, degree, quest_active, quest_done,
     /// character, ship, settings
     ui_icons: [Handle<Image>; 11],
@@ -286,6 +287,7 @@ fn setup_ui(
         flight_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(768, 448), 4, 1, None, None)),
         radar,
         menu_bg: assets.load("ui/menu_bg.png"),
+        full_body: crate::load_smooth(&assets, "portraits/full_body.png"),
         ui_icons: [
             "ui/menu/status.png",
             "ui/menu/items.png",
@@ -1187,7 +1189,8 @@ fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Re
         match ui.tab {
             0 => {
                 // STATUS
-                p.spawn((at(146.0, 50.0, 102.0, 140.0), ImageNode::from_atlas_image(art.erikk_faces.clone(), TextureAtlas { layout: art.faces_layout.clone(), index: 1 })));
+                // Full-body character art, standing beside the sheet.
+                p.spawn((at(152.0, 44.0, 96.0, 196.0), ImageNode::new(art.full_body.clone())));
                 p.spawn(text_at(&f.display, 22.0, CITRON, stats.name.clone(), 256.0, 46.0, 200.0));
                 p.spawn(text_at(&f.label, 8.5, LAMP, format!("CLASS · {}", stats.title.to_uppercase()), 256.0, 76.0, 200.0));
                 p.spawn(text_at(&f.body, 10.0, MUTED, stats.location.clone(), 256.0, 90.0, 200.0));
