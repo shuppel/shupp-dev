@@ -47,6 +47,8 @@ pub enum SceneId {
     Archive,
     /// The Atlier's engine room, below the bridge: Dave the Mechanic's deck.
     Engine,
+    /// Erikk's cabin in the treehouse off the concourse: the About page.
+    Quarters,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -70,6 +72,12 @@ pub enum Action {
     Hatch,
     /// Look over the Crescent (planet runs come in a later build).
     Crescent,
+    /// The quarters mirror: Erikk explains himself to his reflection (About).
+    Mirror,
+    /// Open the menu on this tab (the desk has the quest log, the chest the items).
+    MenuTab(usize),
+    /// Send Pongo to his bed.
+    PetBed,
 }
 
 /// Which deck of a two-level room a point or the player is on.
@@ -138,28 +146,80 @@ fn on_stairs(at: Vec2) -> bool {
     }
     odd
 }
-/// Where Erikk comes in: the bridge stairwell, and the foot of the engine room ladder.
-const BRIDGE_FROM_ENGINE: Vec2 = p(440.0, 300.0);
+/// Bridge exits and the spots Erikk arrives at from each one.
+const STAR_CONSOLE: Vec2 = p(500.0, 192.0);
+const TREEHOUSE: Vec2 = p(230.0, 200.0);
+const ARCHIVE_PATH: Vec2 = p(366.0, 136.0);
+const STAIRWELL: Vec2 = p(590.0, 210.0);
+const BRIDGE_GANGWAY: Vec2 = p(300.0, 350.0);
+const QUARTERS_DOOR_IN: Vec2 = p(70.0, 236.0);
+/// Pongo's bed in the quarters (bottom centre). Its footprint is carved out
+/// of quarters_walkable.png by make_atlier_rooms.py.
+const PET_BED: Vec2 = p(451.0, 212.0);
+
+/// Where Erikk lands when he walks into `to` from `from`.
+fn arrival(to: SceneId, from: SceneId) -> Option<Vec2> {
+    Some(match (to, from) {
+        (SceneId::Bridge, SceneId::Engine) => STAIRWELL + p(-14.0, 14.0),
+        (SceneId::Bridge, SceneId::Quarters) => TREEHOUSE + p(10.0, 12.0),
+        (SceneId::Bridge, SceneId::Archive) => ARCHIVE_PATH + p(0.0, 18.0),
+        (SceneId::Bridge, SceneId::Port) => BRIDGE_GANGWAY + p(0.0, -18.0),
+        (SceneId::Quarters, _) => QUARTERS_DOOR_IN,
+        _ => return None,
+    })
+}
+
+/// Furniture placed in a room: image, foot (bottom centre), drawn size, and
+/// whether it always draws over actors (foreground pots).
+const ROOM_PROPS: &[(SceneId, &str, Vec2, Vec2, bool)] = &[
+    (SceneId::Bridge, "props/quarters/captain_chair.png", p(552.0, 176.0), p(30.0, 34.0), false),
+    (SceneId::Quarters, "props/quarters/pet_bed.png", PET_BED, p(56.0, 33.0), false),
+    (SceneId::Quarters, "props/quarters/fern.png", p(26.0, 362.0), p(52.0, 46.0), true),
+    (SceneId::Quarters, "props/quarters/fern.png", p(616.0, 362.0), p(52.0, 46.0), true),
+];
 const ENGINE_ARRIVAL: Vec2 = p(52.0, 254.0);
 const CRESCENT_CENTER: Vec2 = p(420.0, 156.0);
 const CRESCENT_SIZE: Vec2 = p(148.0, 82.0);
 
 pub fn scene_def(id: SceneId) -> &'static SceneDef {
+    // The garden concourse: the treehouse up to the quarters, the path aft to
+    // the archive, the stairwell down to the engine room, the gangway to the
+    // dockyard, and the star console on its dais.
     static BRIDGE: SceneDef = SceneDef {
         name: "The Atlier",
         label: "Bridge",
         bg: "scenes/bridge.png",
-        fg: Some("maps/bridge_foreground.png"),
-        hd: false,
-        fg_threshold: 265.0,
-        spawn: p(310.0, 298.0),
+        fg: None,
+        hd: true,
+        fg_threshold: 0.0,
+        spawn: p(320.0, 262.0),
         points: &[
-            Point { pos: p(470.0, 180.0), label: "Star console", action: Action::OpenAtlas, deck: Deck::Any },
-            Point { pos: p(250.0, 330.0), label: "Gangway to the Dockyard", action: Action::Goto(SceneId::Port), deck: Deck::Any },
-            Point { pos: p(454.0, 304.0), label: "Stairs down to the engine room", action: Action::Goto(SceneId::Engine), deck: Deck::Any },
+            Point { pos: STAR_CONSOLE, label: "Star console", action: Action::OpenAtlas, deck: Deck::Any },
+            Point { pos: TREEHOUSE, label: "Up to the Captain's Quarters", action: Action::Goto(SceneId::Quarters), deck: Deck::Any },
+            Point { pos: ARCHIVE_PATH, label: "Path to the Archive", action: Action::Goto(SceneId::Archive), deck: Deck::Any },
+            Point { pos: STAIRWELL, label: "Stairs down to the engine room", action: Action::Goto(SceneId::Engine), deck: Deck::Any },
+            Point { pos: BRIDGE_GANGWAY, label: "Gangway to the Dockyard", action: Action::Goto(SceneId::Port), deck: Deck::Any },
         ],
         npc: None,
         mask: include_bytes!("../masks/bridge_walkable.png"),
+    };
+    static QUARTERS: SceneDef = SceneDef {
+        name: "Captain's Quarters",
+        label: "About",
+        bg: "scenes/quarters.png",
+        fg: None,
+        hd: true,
+        fg_threshold: 0.0,
+        spawn: QUARTERS_DOOR_IN,
+        points: &[
+            Point { pos: p(112.0, 182.0), label: "Look in the mirror", action: Action::Mirror, deck: Deck::Any },
+            Point { pos: p(250.0, 186.0), label: "Desk: the quest log", action: Action::MenuTab(3), deck: Deck::Any },
+            Point { pos: p(451.0, 232.0), label: "Pongo's bed", action: Action::PetBed, deck: Deck::Any },
+            Point { pos: p(508.0, 180.0), label: "Sea chest: keepsakes", action: Action::MenuTab(1), deck: Deck::Any },
+            Point { pos: p(40.0, 244.0), label: "Back to the concourse", action: Action::Goto(SceneId::Bridge), deck: Deck::Any },
+        ],
+        npc: None,
+        mask: include_bytes!("../masks/quarters_walkable.png"),
     };
     // The glasshouse dockyard: a service deck below, the Crescent's fighter
     // bay above, and a crane lift between them (art pack elevator.json).
@@ -221,6 +281,7 @@ pub fn scene_def(id: SceneId) -> &'static SceneDef {
         SceneId::Bridge => &BRIDGE,
         SceneId::Port => &PORT,
         SceneId::Archive => &ARCHIVE,
+        SceneId::Quarters => &QUARTERS,
     }
 }
 
@@ -232,6 +293,7 @@ pub struct Masks {
     port_upper: Vec<bool>,
     archive: Vec<bool>,
     engine: Vec<bool>,
+    quarters: Vec<bool>,
 }
 
 /// Shrink the walkable area by the body's half-width, so Erikk's shoulders
@@ -284,6 +346,7 @@ impl Masks {
     fn new() -> Self {
         Self {
             bridge: decode_mask(scene_def(SceneId::Bridge).mask),
+            quarters: decode_mask(scene_def(SceneId::Quarters).mask),
             port: decode_mask(scene_def(SceneId::Port).mask),
             port_upper: {
                 // The parked Crescent is solid: carve its hull out of the bay floor.
@@ -334,6 +397,7 @@ impl Masks {
             SceneId::Port => &self.port,
             SceneId::Archive => &self.archive,
             SceneId::Engine => &self.engine,
+            SceneId::Quarters => &self.quarters,
         };
         let floor = m[(at.y as usize) * (VW as usize) + at.x as usize] || (scene == SceneId::Port && on_stairs(at));
         floor && !npc_blocks(scene, deck, at)
@@ -381,6 +445,8 @@ pub struct Game {
     pub mana_dialogue: bool,
     /// The engine room's maintenance hatch has been opened (relic found).
     pub hatch_open: bool,
+    /// Pongo has been sent to his bed in the quarters.
+    pub pongo_bed: bool,
 }
 
 impl Game {
@@ -524,6 +590,7 @@ pub fn app(canvas: Option<String>, registry: Registry, boot: Boot, visited: Vec<
         request: None,
         mana_dialogue: false,
         hatch_open: false,
+        pongo_bed: false,
     })
     .add_message::<EnterScene>()
     .init_resource::<PageTap>()
@@ -617,6 +684,7 @@ pub(crate) fn setup(
         "work" => SceneId::Port,
         "writing" => SceneId::Archive,
         "engine" => SceneId::Engine,
+        "about" => SceneId::Quarters,
         _ => SceneId::Bridge,
     };
     // Starting here (not arriving from the Crescent) puts Erikk at the lower lift.
@@ -645,7 +713,7 @@ fn enter_scene(
     match id {
         SceneId::Port => game.mark_visited("work"),
         SceneId::Archive => game.mark_visited("writing"),
-        SceneId::Bridge | SceneId::Engine => {}
+        SceneId::Bridge | SceneId::Engine | SceneId::Quarters => {}
     }
     bridge::emit("scene", def.label);
 
@@ -662,9 +730,14 @@ fn enter_scene(
     if let Some(fg) = def.fg {
         commands.spawn((SceneEntity, Foreground, Sprite::from_image(load_t(&assets, fg)), Transform::from_xyz(0.0, 0.0, 0.5)));
     }
-    let mut spawn = def.spawn;
-    if id == SceneId::Bridge && from == SceneId::Engine {
-        spawn = BRIDGE_FROM_ENGINE;
+    let mut spawn = if from != id { arrival(id, from).unwrap_or(def.spawn) } else { def.spawn };
+    for (_, path, at, size, front) in ROOM_PROPS.iter().filter(|r| r.0 == id) {
+        commands.spawn((
+            SceneEntity,
+            Sprite { image: hd(path), custom_size: Some(*size), ..default() },
+            Anchor::BOTTOM_CENTER,
+            Transform::from_translation(to_world(*at).extend(if *front { 6.0 } else { 1.0 + at.y / 1000.0 })),
+        ));
     }
     if id == SceneId::Engine {
         for (i, prop) in ENGINE_PROPS.iter().enumerate() {
@@ -1146,13 +1219,15 @@ struct Pongo {
     idle: f32,
     clock: f32,
     frame: usize,
+    /// How long Erikk has stood still.
+    still: f32,
 }
 
 const PONGO_GAP: f32 = 30.0;
 
 fn follow_pongo(
     time: Res<Time>,
-    game: Res<Game>,
+    mut game: ResMut<Game>,
     art: Res<Art>,
     mut trail: ResMut<Trail>,
     player: Single<&Player>,
@@ -1178,7 +1253,19 @@ fn follow_pongo(
         if trail.0.len() > 96 {
             trail.0.remove(0);
         }
+        dog.still = 0.0;
+        if game.pongo_bed {
+            game.pongo_bed = false;
+        }
+    } else {
+        dog.still += dt;
     }
+    // In the quarters, Pongo goes and curls up in his bed if Erikk lingers.
+    let in_quarters = game.scene == SceneId::Quarters;
+    if in_quarters && dog.still > 6.0 && !game.pongo_bed {
+        game.pongo_bed = true;
+    }
+    let bedtime = in_quarters && game.pongo_bed;
     // The point on the trail PONGO_GAP behind Erikk.
     let mut target = dog.foot;
     let mut acc = 0.0;
@@ -1190,6 +1277,9 @@ fn follow_pongo(
         }
     }
 
+    if bedtime {
+        target = PET_BED + Vec2::new(0.0, -9.0);
+    }
     let to = target - dog.foot;
     let far = to.length();
     let moving = far > 1.5 && game.mode != Mode::Lift;
@@ -1224,7 +1314,8 @@ fn follow_pongo(
         (image, &art.pongo_layout, dog.facing.row() * 4 + dog.frame % 4, false)
     } else {
         // Stand, then sit after a moment, then lie down if Erikk lingers.
-        let t = dog.idle;
+        // In his bed he settles straight down.
+        let t = if bedtime { dog.idle + 13.0 } else { dog.idle };
         let index = if t < 1.2 {
             4
         } else if t < 1.8 {
@@ -1243,7 +1334,9 @@ fn follow_pongo(
     }
     sprite.texture_atlas = Some(TextureAtlas { layout: layout.clone(), index });
     sprite.flip_x = flip;
-    tf.translation = to_world(dog.foot.round()).extend(1.0 + dog.foot.y / 1000.0);
+    // In bed he draws over the bed, whose baseline is lower on screen.
+    let z = if bedtime && !moving { 1.0 + PET_BED.y / 1000.0 + 0.0005 } else { 1.0 + dog.foot.y / 1000.0 };
+    tf.translation = to_world(dog.foot.round()).extend(z);
 }
 
 // ---------------------------------------------------------------------------

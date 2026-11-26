@@ -63,10 +63,18 @@ pub enum Request {
     /// Open the engine room hatch and find the relic.
     Hatch,
     Crescent,
+    /// Open the menu on a given tab.
+    MenuTab(usize),
 }
 
 pub fn trigger(game: &mut Game, pt: Point) {
     game.request = Some(match pt.action {
+        Action::PetBed => {
+            game.pongo_bed = true;
+            return;
+        }
+        Action::Mirror => Request::Destination("about".into()),
+        Action::MenuTab(t) => Request::MenuTab(t),
         Action::OpenAtlas => Request::Atlas,
         Action::Goto(s) => Request::Door(s),
         Action::Talk(n) => Request::Talk(n),
@@ -266,7 +274,9 @@ struct UiArt {
     ship_cursor: Handle<Image>,
     flight: Handle<Image>,
     flight_layout: Handle<TextureAtlasLayout>,
-    blueprint: Handle<Image>,
+    cutaway: Handle<Image>,
+    glow_dot: Handle<Image>,
+    streaks: Handle<Image>,
     room_glow: Vec<Handle<Image>>,
     radar: Handle<Image>,
     menu_bg: Handle<Image>,
@@ -287,40 +297,76 @@ struct UiRoot(Entity);
 #[derive(Clone, Copy)]
 enum RoomGo {
     Scene(SceneId),
+    /// For rooms that are a page rather than a place (Comms, later).
+    #[allow(dead_code)]
     Dest(&'static str),
 }
 
-/// Rooms on the ship map (a side-view blueprint of the Atlier, after
-/// Erikk's sketch): name, site label, where it goes, blurb, and the room's
-/// outline in sketch coordinates (see `bp`).
-type RoomDef = (&'static str, &'static str, RoomGo, &'static str, &'static [(f32, f32)]);
+/// Rooms on the ship map, a cutaway of the Atlier: name, site label, where
+/// it goes, blurb, the room's outline and its label spot, both in cutaway
+/// source pixels (see `cw`). Smaller rooms come first so they win the hover
+/// over the garden around them.
+type RoomDef = (&'static str, &'static str, RoomGo, &'static str, &'static [(f32, f32)], (f32, f32));
 const ROOMS: [RoomDef; 5] = [
     ("Engine Room", "SKILLS", RoomGo::Scene(SceneId::Engine), "Dave keeps the reactor humming. Ask him about the tools that keep the ship flying.",
-        &[(72.0, 162.0), (100.0, 160.0), (180.0, 172.0), (250.0, 196.0), (254.0, 232.0), (205.0, 262.0), (152.0, 278.0), (124.0, 268.0), (110.0, 232.0), (96.0, 196.0)]),
-    ("Captain's Quarters", "ABOUT", RoomGo::Dest("about"), "A bunk, a desk, and a mirror. Stand in front of it and you end up explaining yourself.",
-        &[(216.0, 88.0), (262.0, 86.0), (262.0, 112.0), (216.0, 112.0)]),
+        &[(205.0, 252.0), (250.0, 234.0), (420.0, 238.0), (436.0, 300.0), (432.0, 386.0), (240.0, 388.0), (205.0, 384.0)], (318.0, 268.0)),
+    ("Captain's Quarters", "ABOUT", RoomGo::Scene(SceneId::Quarters), "A bunk, a desk, and a mirror up in the treehouse. Stand in front of the mirror and you end up explaining yourself.",
+        &[(1150.0, 296.0), (1302.0, 296.0), (1302.0, 470.0), (1150.0, 470.0)], (1226.0, 300.0)),
     ("The Archive", "WRITING", RoomGo::Scene(SceneId::Archive), "",
-        &[(262.0, 86.0), (370.0, 93.0), (432.0, 120.0), (440.0, 136.0), (400.0, 138.0), (330.0, 128.0), (286.0, 126.0), (262.0, 112.0)]),
+        &[(196.0, 394.0), (640.0, 394.0), (658.0, 440.0), (660.0, 504.0), (632.0, 512.0), (632.0, 656.0), (250.0, 656.0), (200.0, 600.0)], (430.0, 410.0)),
     ("The Dockyard", "WORK", RoomGo::Scene(SceneId::Port), "",
-        &[(196.0, 162.0), (240.0, 150.0), (296.0, 130.0), (330.0, 128.0), (400.0, 138.0), (392.0, 182.0), (330.0, 186.0), (232.0, 172.0)]),
-    ("The Bridge", "HOME", RoomGo::Scene(SceneId::Bridge), "The helm of the Atlier, and the heart of the ship.",
-        &[(400.0, 138.0), (440.0, 136.0), (466.0, 160.0), (470.0, 182.0), (392.0, 182.0)]),
+        &[(640.0, 508.0), (986.0, 510.0), (990.0, 666.0), (640.0, 666.0)], (812.0, 524.0)),
+    ("The Bridge", "HOME", RoomGo::Scene(SceneId::Bridge), "The garden concourse at the heart of the ship, with the star console up in the nose.",
+        &[(440.0, 186.0), (650.0, 160.0), (1000.0, 166.0), (1400.0, 214.0), (1700.0, 384.0), (1756.0, 416.0), (1600.0, 470.0), (1300.0, 560.0),
+          (1000.0, 600.0), (990.0, 504.0), (660.0, 500.0), (656.0, 392.0), (436.0, 388.0)], (1560.0, 330.0)),
 ];
-/// The hull outline and the deck line, in sketch coordinates.
-const HULL: [(f32, f32); 18] = [
-    (100.0, 128.0), (135.0, 100.0), (260.0, 84.0), (370.0, 92.0), (435.0, 118.0), (470.0, 160.0), (480.0, 186.0), (468.0, 196.0),
-    (400.0, 208.0), (300.0, 225.0), (240.0, 248.0), (200.0, 272.0), (150.0, 284.0), (116.0, 274.0), (106.0, 240.0), (98.0, 200.0),
-    (70.0, 162.0), (92.0, 150.0),
-];
-const DECK: [(f32, f32); 2] = [(76.0, 160.0), (470.0, 182.0)];
+/// Where the cutaway sits on screen (logical), and the source crop it was cut
+/// from (make_atlier_rooms.py writes ships/atlier/cutaway.png from CUT_SRC).
+const CUT: Rect = Rect { min: Vec2::new(20.0, 60.0), max: Vec2::new(620.0, 278.0) };
+const CUT_SRC: (f32, f32, f32) = (10.0, 85.0, 1750.0);
 
-/// Sketch coordinates to the logical frame.
-fn bp(p: (f32, f32)) -> Vec2 {
-    Vec2::new(20.0 + (p.0 - 50.0) * 1.33, 18.0 + (p.1 - 60.0) * 1.16)
+/// Cutaway source pixels to the logical frame.
+fn cw(p: (f32, f32)) -> Vec2 {
+    let k = CUT.width() / CUT_SRC.2;
+    Vec2::new(CUT.min.x + (p.0 - CUT_SRC.0) * k, CUT.min.y + (p.1 - CUT_SRC.1) * k)
 }
 
+/// Lights on the cutaway, in source pixels: position, radius (logical px),
+/// colour, pulse speed, pulse depth. Engines throb, the lab tubes and the
+/// tube hall breathe, the star dais pulses, lanterns twinkle.
+const MAP_LIGHTS: &[((f32, f32), f32, (f32, f32, f32), f32, f32)] = &[
+    ((40.0, 290.0), 26.0, (1.0, 0.62, 0.22), 3.1, 0.45),
+    ((40.0, 425.0), 26.0, (1.0, 0.62, 0.22), 3.3, 0.45),
+    ((40.0, 560.0), 26.0, (1.0, 0.62, 0.22), 2.9, 0.45),
+    ((34.0, 290.0), 10.0, (1.0, 0.92, 0.7), 17.0, 0.35),
+    ((34.0, 425.0), 10.0, (1.0, 0.92, 0.7), 19.0, 0.35),
+    ((34.0, 560.0), 10.0, (1.0, 0.92, 0.7), 15.0, 0.35),
+    ((318.0, 300.0), 30.0, (1.0, 0.72, 0.3), 1.3, 0.35),
+    ((430.0, 480.0), 48.0, (0.45, 0.72, 1.0), 0.9, 0.55),
+    ((1600.0, 398.0), 40.0, (0.72, 0.5, 1.0), 1.6, 0.55),
+    ((1160.0, 330.0), 5.0, (1.0, 0.82, 0.45), 2.3, 0.8),
+    ((1192.0, 302.0), 5.0, (1.0, 0.82, 0.45), 3.1, 0.8),
+    ((1262.0, 306.0), 5.0, (1.0, 0.82, 0.45), 2.7, 0.8),
+    ((1302.0, 340.0), 5.0, (1.0, 0.82, 0.45), 3.6, 0.8),
+    ((1332.0, 318.0), 5.0, (1.0, 0.82, 0.45), 2.1, 0.8),
+    ((1140.0, 372.0), 5.0, (1.0, 0.82, 0.45), 3.3, 0.8),
+    ((520.0, 330.0), 4.0, (1.0, 0.85, 0.5), 2.6, 0.7),
+    ((700.0, 420.0), 4.0, (1.0, 0.85, 0.5), 3.4, 0.7),
+    ((860.0, 300.0), 4.0, (1.0, 0.85, 0.5), 2.2, 0.7),
+    ((1400.0, 440.0), 4.0, (1.0, 0.85, 0.5), 3.0, 0.7),
+    ((1500.0, 330.0), 4.0, (1.0, 0.85, 0.5), 2.8, 0.7),
+    ((950.0, 470.0), 4.0, (1.0, 0.85, 0.5), 3.7, 0.7),
+    ((700.0, 545.0), 4.0, (1.0, 0.7, 0.2), 6.0, 1.0),
+];
+/// The waterfall by the treehouse (source px): falling light streaks.
+const WATERFALL: ((f32, f32), (f32, f32)) = ((1082.0, 424.0), (1146.0, 498.0));
+
 fn room_poly(i: usize) -> Vec<Vec2> {
-    ROOMS[i].4.iter().map(|p| bp(*p)).collect()
+    ROOMS[i].4.iter().map(|p| cw(*p)).collect()
+}
+
+fn room_label_at(i: usize) -> Vec2 {
+    cw(ROOMS[i].5)
 }
 
 fn poly_contains(poly: &[Vec2], at: Vec2) -> bool {
@@ -340,15 +386,11 @@ fn room_at(at: Vec2) -> Option<usize> {
     (0..ROOMS.len()).find(|i| poly_contains(&room_poly(*i), at))
 }
 
-fn room_center(i: usize) -> Vec2 {
-    let poly = room_poly(i);
-    poly.iter().copied().sum::<Vec2>() / poly.len() as f32
-}
-
 fn room_dest(go: RoomGo) -> Option<&'static str> {
     match go {
         RoomGo::Scene(SceneId::Port) => Some("work"),
         RoomGo::Scene(SceneId::Archive) => Some("writing"),
+        RoomGo::Scene(SceneId::Quarters) => Some("about"),
         RoomGo::Dest(d) => Some(d),
         _ => None,
     }
@@ -422,7 +464,9 @@ fn setup_ui(
         // The Atlier, the big terrarium ship, is what travels between stars.
         flight: crate::load_smooth(&assets, "ships/atlier/flight.png"),
         flight_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(768, 448), 4, 1, None, None)),
-        blueprint: images.add(blueprint_image()),
+        cutaway: crate::load_smooth(&assets, "ships/atlier/cutaway.png"),
+        glow_dot: images.add(glow_dot_image()),
+        streaks: images.add(streak_image()),
         room_glow: (0..ROOMS.len()).map(|i| images.add(room_glow_image(i))).collect(),
         radar,
         menu_bg: crate::load_t(&assets, "ui/menu_bg.png"),
@@ -495,7 +539,7 @@ fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Regi
             let here = match game.scene {
                 SceneId::Port => 0,
                 SceneId::Archive => 2,
-                SceneId::Bridge | SceneId::Engine => 1,
+                SceneId::Bridge | SceneId::Engine | SceneId::Quarters => 1,
             };
             ui.atlas_sel = here;
             game.mode = Mode::Atlas;
@@ -507,6 +551,11 @@ fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Regi
         }
         Request::Menu => {
             ui.tab = 0;
+            ui.sel = 0;
+            game.mode = Mode::Sheet;
+        }
+        Request::MenuTab(t) => {
+            ui.tab = t.min(TABS.len() - 1);
             ui.sel = 0;
             game.mode = Mode::Sheet;
         }
@@ -1263,8 +1312,29 @@ struct Cog(f32);
 #[derive(Component)]
 struct Orbit(usize);
 
+/// A light on the ship map cutaway, pulsing.
+#[derive(Component)]
+struct MapLight {
+    rgb: Vec3,
+    speed: f32,
+    depth: f32,
+    phase: f32,
+}
+
+/// The ship map waterfall's falling streaks.
+#[derive(Component)]
+struct Streak;
+
+/// The ship map's "you are here" marker, bobbing.
+#[derive(Component)]
+struct MapBob;
+
+#[allow(clippy::type_complexity, clippy::too_many_arguments)]
 fn animate_map(
     time: Res<Time>,
+    mut lights: Query<(&MapLight, &mut ImageNode), (Without<Pulse>, Without<Orbit>, Without<Holo>)>,
+    mut streaks: Query<&mut Node, (With<Streak>, Without<Parallax>, Without<Shimmer>)>,
+    mut bobs: Query<&mut UiTransform, (With<MapBob>, Without<Cog>, Without<Holo>)>,
     mut strips: Query<(&Parallax, &mut Node)>,
     mut pulse: Query<&mut ImageNode, (With<Pulse>, Without<Orbit>)>,
     mut planets: Query<(&Orbit, &mut ImageNode), Without<Pulse>>,
@@ -1273,6 +1343,18 @@ fn animate_map(
     mut holo: Query<(&mut ImageNode, &mut UiTransform), (With<Holo>, Without<Pulse>, Without<Orbit>, Without<Cog>)>,
 ) {
     let tt = time.elapsed_secs();
+    for (l, mut img) in &mut lights {
+        let wave = 0.5 + 0.5 * (tt * l.speed + l.phase).sin();
+        // Fast lights flicker; the hazard lamp (depth 1) blinks on and off.
+        let a = if l.depth >= 1.0 { if wave > 0.5 { 0.95 } else { 0.0 } } else { 0.9 * (1.0 - l.depth + l.depth * wave) };
+        img.color = Color::srgba(l.rgb.x, l.rgb.y, l.rgb.z, a);
+    }
+    for mut node in &mut streaks {
+        node.top = Val::Px(-32.0 + (tt * 26.0) % 32.0);
+    }
+    for mut tf in &mut bobs {
+        tf.translation = Val2::px(0.0, ((tt * 3.2).sin() * 2.0).round());
+    }
     for (mut img, mut tf) in &mut holo {
         // Mostly steady, with a quick dip now and then like a weak signal.
         let dip = if (tt * 0.9).fract() < 0.04 { 0.45 } else { 0.0 };
@@ -1519,6 +1601,7 @@ fn render(
             let here = match game.scene {
                 SceneId::Port => DESTS[0].1,
                 SceneId::Archive => DESTS[2].1,
+                SceneId::Quarters => DESTS[1].1,
                 SceneId::Bridge | SceneId::Engine => Vec2::new(320.0, 180.0),
             };
             let sel = ui.atlas_sel;
@@ -1570,24 +1653,43 @@ fn render(
             let sel = ui.ship_sel;
             let here = ROOMS.iter().position(|r| matches!(r.2, RoomGo::Scene(s) if s == game.scene));
             commands.entity(overlay).with_children(|p| {
-                // A blueprint of the Atlier, side on. The selected room lights up.
-                p.spawn((at(0.0, 0.0, VW, VH), ImageNode::new(art.blueprint.clone())));
+                // The Atlier in cutaway, side on, with its lights alive.
+                // The selected room lights up.
+                p.spawn((at(0.0, 0.0, VW, VH), BackgroundColor(Color::srgb(0.012, 0.012, 0.06))));
+                p.spawn((at(CUT.min.x, CUT.min.y, CUT.width(), CUT.height()), ImageNode::new(art.cutaway.clone())));
+                for (i, (src, r, c, speed, depth)) in MAP_LIGHTS.iter().enumerate() {
+                    let q = cw(*src);
+                    p.spawn((
+                        at(q.x - r, q.y - r, r * 2.0, r * 2.0),
+                        ImageNode { color: Color::srgba(c.0, c.1, c.2, 0.0), ..ImageNode::new(art.glow_dot.clone()) },
+                        MapLight { rgb: Vec3::new(c.0, c.1, c.2), speed: *speed, depth: *depth, phase: i as f32 * 1.7 },
+                    ));
+                }
+                let (w0, w1) = (cw(WATERFALL.0), cw(WATERFALL.1));
+                p.spawn((Node { overflow: Overflow::clip(), ..at(w0.x, w0.y, w1.x - w0.x, w1.y - w0.y) },)).with_children(|w| {
+                    w.spawn((at(0.0, -32.0, w1.x - w0.x, 96.0), ImageNode { color: Color::srgba(0.8, 0.95, 1.0, 0.55), ..ImageNode::new(art.streaks.clone()) }, Streak));
+                });
                 p.spawn((at(0.0, 0.0, VW, VH), ImageNode::new(art.room_glow[sel].clone())));
                 p.spawn(text_at(&f.label, 9.0, Color::srgb(0.70, 0.86, 1.0), "SHIP MAP · FAST TRAVEL", 20.0, 16.0, 260.0));
                 p.spawn(text_at(&f.display, 22.0, Color::WHITE, "The Atlier", 20.0, 26.0, 300.0));
-                p.spawn(text_at(&f.label, 7.0, Color::srgb(0.70, 0.86, 1.0).with_alpha(0.7), "SECTION A-A · NOT TO SCALE", 20.0, 52.0, 200.0));
                 close_button(p, f);
                 for (i, room) in ROOMS.iter().enumerate() {
                     let on = i == sel;
-                    let c = room_center(i);
-                    let tw = 96.0;
-                    p.spawn(text_at(&f.label, 7.0, if on { Color::WHITE } else { Color::srgb(0.70, 0.86, 1.0) }, room.0.to_uppercase(), c.x - tw / 2.0, c.y - 5.0, tw).with_justify());
+                    let c = room_label_at(i);
+                    let tw = room.0.len() as f32 * 4.6 + 10.0;
+                    p.spawn((
+                        Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(c.x - tw / 2.0, c.y - 6.0, tw, 11.0) },
+                        BackgroundColor(if on { Color::srgba(0.95, 0.62, 0.25, 0.92) } else { Color::srgba(0.02, 0.03, 0.10, 0.78) }),
+                    ))
+                    .with_children(|l| {
+                        l.spawn(text_at(&f.label, 7.0, if on { Color::srgb(0.08, 0.04, 0.02) } else { Color::srgb(0.80, 0.90, 1.0) }, room.0.to_uppercase(), 0.0, 1.5, tw).with_justify());
+                    });
                 }
                 if let Some(h) = here {
-                    let hp = room_center(h);
-                    p.spawn((at(hp.x - 10.0, hp.y - 30.0, 20.0, 20.0), ImageNode::new(art.ship_cursor.clone())));
+                    let hp = room_label_at(h);
+                    p.spawn((at(hp.x - 9.0, hp.y - 28.0, 18.0, 18.0), ImageNode::new(art.ship_cursor.clone()), UiTransform::default(), MapBob));
                 }
-                let (name, label, go, blurb, _) = ROOMS[sel];
+                let (name, label, go, blurb, _, _) = ROOMS[sel];
                 let text = if blurb.is_empty() { room_dest(go).map_or(String::new(), |d| registry.dest(d).preview.clone()) } else { blurb.to_owned() };
                 p.spawn(panel(20.0, 290.0, 460.0, 58.0)).with_children(|b| {
                     b.spawn(text_at(&f.label, 8.0, LAMP, if here == Some(sel) { format!("{label} · YOU ARE HERE") } else { label.to_owned() }, 10.0, 5.0, 300.0));
@@ -2124,63 +2226,38 @@ fn blank(w: u32, h: u32) -> Image {
     img
 }
 
-/// The blueprint sheet: grid paper, the hull, the deck line and every room
-/// outline. Drawn at 2× for crisp lines; lines are stamped along each
-/// segment so startup stays quick.
-fn blueprint_image() -> Image {
-    const K: f32 = 2.0;
-    let (w, h) = ((VW * K) as u32, (VH * K) as u32);
-    let hull: Vec<Vec2> = HULL.iter().map(|p| bp(*p)).collect();
-    let mut buf = vec![Vec3::ZERO; (w * h) as usize];
-    for y in 0..h {
-        for x in 0..w {
-            let p = Vec2::new((x as f32 + 0.5) / K, (y as f32 + 0.5) / K);
-            let mut c = Vec3::new(0.05, 0.16, 0.34);
-            let fine = (p.x % 10.0).min(10.0 - p.x % 10.0).min((p.y % 10.0).min(10.0 - p.y % 10.0));
-            let coarse = (p.x % 50.0).min(50.0 - p.x % 50.0).min((p.y % 50.0).min(50.0 - p.y % 50.0));
-            if fine < 0.35 {
-                c = c.lerp(Vec3::new(0.30, 0.50, 0.75), 0.25);
-            }
-            if coarse < 0.5 {
-                c = c.lerp(Vec3::new(0.40, 0.62, 0.88), 0.45);
-            }
-            if poly_contains(&hull, p) {
-                c = c.lerp(Vec3::new(0.10, 0.25, 0.48), 0.5);
-            }
-            buf[(y * w + x) as usize] = c;
-        }
-    }
-    // Stamp an antialiased line of half-width `wd` (logical px).
-    let mut stroke = |pts: &[Vec2], closed: bool, wd: f32, color: Vec3, strength: f32| {
-        let n = pts.len();
-        let segs = if closed { n } else { n - 1 };
-        for i in 0..segs {
-            let (a, b) = (pts[i] * K, pts[(i + 1) % n] * K);
-            let (lo, hi) = (a.min(b) - Vec2::splat(wd * K + 2.0), a.max(b) + Vec2::splat(wd * K + 2.0));
-            for y in (lo.y.max(0.0) as u32)..(hi.y.min(h as f32 - 1.0) as u32) {
-                for x in (lo.x.max(0.0) as u32)..(hi.x.min(w as f32 - 1.0) as u32) {
-                    let d = seg_d(Vec2::new(x as f32 + 0.5, y as f32 + 0.5), a, b);
-                    let cov = (wd * K - d + 0.5).clamp(0.0, 1.0) * strength;
-                    if cov > 0.0 {
-                        let px = &mut buf[(y * w + x) as usize];
-                        *px = px.lerp(color, cov);
-                    }
-                }
+/// A soft round light, white so it can be tinted.
+fn glow_dot_image() -> Image {
+    const S: u32 = 64;
+    let mut img = blank(S, S);
+    for y in 0..S {
+        for x in 0..S {
+            let d = (Vec2::new(x as f32 + 0.5, y as f32 + 0.5) - Vec2::splat(S as f32 / 2.0)).length() / (S as f32 / 2.0);
+            let a = (1.0 - d).clamp(0.0, 1.0).powf(1.8);
+            if a > 0.0 {
+                let _ = img.set_color_at(x, y, Color::srgba(1.0, 1.0, 1.0, a));
             }
         }
-    };
-    let ink = Vec3::new(0.92, 0.96, 1.0);
-    for i in 0..ROOMS.len() {
-        stroke(&room_poly(i), true, 0.5, Vec3::new(0.62, 0.80, 1.0), 0.75);
     }
-    let deck: Vec<Vec2> = DECK.iter().map(|p| bp(*p)).collect();
-    stroke(&deck, false, 0.5, ink, 0.6);
-    stroke(&hull, true, 0.9, ink, 1.0);
+    img
+}
+
+/// Thin falling streaks for the waterfall, tiling every 32 px vertically.
+fn streak_image() -> Image {
+    let (w, h) = (24u32, 96u32);
     let mut img = blank(w, h);
-    for y in 0..h {
-        for x in 0..w {
-            let c = buf[(y * w + x) as usize];
-            let _ = img.set_color_at(x, y, Color::srgb(c.x, c.y, c.z));
+    for x in 0..w {
+        // Each column gets its own short dash at its own height.
+        let seed = (x * 2_654_435_761u32.wrapping_mul(1)) % 97;
+        if x % 3 == 1 {
+            continue;
+        }
+        for y in 0..h {
+            let u = ((y + seed) % 32) as f32 / 32.0;
+            let a = if u < 0.35 { (1.0 - u / 0.35) * 0.9 } else { 0.0 };
+            if a > 0.0 {
+                let _ = img.set_color_at(x, y, Color::srgba(1.0, 1.0, 1.0, a));
+            }
         }
     }
     img
@@ -2199,7 +2276,7 @@ fn room_glow_image(i: usize) -> Image {
             let inside = poly_contains(&poly, p);
             let a = if inside { 0.32 } else { 0.0 } + (1.4 - d).clamp(0.0, 1.0) * 0.9 + ((4.0 - d) / 4.0).clamp(0.0, 1.0) * 0.25;
             if a > 0.0 {
-                let _ = img.set_color_at(x, y, Color::srgba(0.55, 0.92, 1.0, a.min(1.0)));
+                let _ = img.set_color_at(x, y, Color::srgba(1.0, 0.86, 0.55, (a * 0.85).min(1.0)));
             }
         }
     }

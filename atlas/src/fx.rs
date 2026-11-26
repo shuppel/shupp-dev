@@ -11,7 +11,7 @@ use crate::{to_world, Action, Game, Mode, Player, SceneId, SceneEntity};
 
 /// Console boxes in scene pixels (x0, y0, x1, y1). Keep in sync with make_fx.py.
 const GLOWS: [(&str, [f32; 4]); 3] = [
-    ("fx/glow_star_console.png", [444.0, 104.0, 560.0, 158.0]),
+    ("fx/glow_star_console.png", [506.0, 116.0, 592.0, 162.0]),
     ("fx/glow_workbench.png", [292.0, 250.0, 348.0, 298.0]),
     ("fx/glow_records.png", [254.0, 70.0, 388.0, 142.0]),
 ];
