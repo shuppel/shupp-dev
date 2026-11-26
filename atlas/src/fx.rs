@@ -94,6 +94,16 @@ fn glow_for(scene: SceneId, action: Action) -> Option<(usize, [f32; 4])> {
     Some((i, GLOWS[i].1))
 }
 
+/// Where the thought cloud's tail points for this interaction, in scene
+/// pixels. `None` for doors, whose cloud follows the player instead.
+pub(crate) fn cloud_tip(scene: SceneId, pt: &crate::Point) -> Option<Vec2> {
+    match (glow_for(scene, pt.action), pt.action) {
+        (Some((_, b)), _) => Some(Vec2::new((b[0] + b[2]) / 2.0 + 4.0, b[1] - 2.0)),
+        (None, Action::Talk(_)) => Some(pt.pos + Vec2::new(6.0, -60.0)),
+        _ => None,
+    }
+}
+
 fn ease_out_back(u: f32) -> f32 {
     let u = u.clamp(0.0, 1.0) - 1.0;
     1.0 + 2.70158 * u * u * u + 1.70158 * u * u
@@ -171,12 +181,7 @@ pub(crate) fn animate(
         **cv = Visibility::Hidden;
         return;
     };
-    let tip = match (lit, pt.action) {
-        (Some((_, b)), _) => Vec2::new((b[0] + b[2]) / 2.0 + 4.0, b[1] - 2.0),
-        (None, Action::Talk(_)) => pt.pos + Vec2::new(6.0, -60.0),
-        // Doors: the cloud floats over the player.
-        _ => player.foot + Vec2::new(6.0, -62.0),
-    };
+    let tip = cloud_tip(game.scene, &pt).unwrap_or(player.foot + Vec2::new(6.0, -62.0));
     let bob = ((t * 2.6).sin() * 1.5).round();
     ct.translation = (to_world(tip) + Vec2::new(0.0, bob)).round().extend(9.0);
     ct.scale = Vec3::splat(ease_out_back(t / 0.28).max(0.01));

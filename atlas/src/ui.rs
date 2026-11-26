@@ -182,6 +182,8 @@ struct UiArt {
     menu_bg: Handle<Image>,
     /// status, items, quests, map, credential, degree, quest_active, quest_done
     ui_icons: [Handle<Image>; 8],
+    key_e: Handle<Image>,
+    key_tap: Handle<Image>,
 }
 
 #[derive(Resource)]
@@ -245,6 +247,8 @@ fn setup_ui(
         menu_bg: assets.load("ui/menu_bg.png"),
         ui_icons: ["status", "items", "quests", "map", "credential", "degree", "quest_active", "quest_done"]
             .map(|n| assets.load(format!("ui/icon_{n}.png"))),
+        key_e: assets.load("ui/key_e.png"),
+        key_tap: assets.load("ui/key_tap.png"),
     });
     let root = commands
         .spawn(Node {
@@ -1103,11 +1107,12 @@ fn hud(
     mut ui: ResMut<Ui>,
     game: Res<Game>,
     fonts: Res<Fonts>,
+    art: Res<UiArt>,
     root: Res<UiRoot>,
 ) {
     let show = game.mode == Mode::Explore;
-    let prompt = if show { game.nearby.map(|p| (p.label, p.pos)) } else { None };
-    let key = format!("{show}|{:?}|{:?}|{}|{}", game.scene, prompt.map(|p| p.0), ui.hint > 0.0, ui.touch);
+    let prompt = if show { game.nearby } else { None };
+    let key = format!("{show}|{:?}|{:?}|{}|{}", game.scene, prompt.map(|p| p.label), ui.hint > 0.0, ui.touch);
     if key == ui.hud_key {
         return;
     }
@@ -1134,12 +1139,22 @@ fn hud(
             p.spawn((panel(r.min.x, r.min.y, r.width(), r.height()), children![text_at(&f.label, 9.0, CITRON, label, 0.0, 3.0, r.width())
                 .with_justify()]));
         }
-        if let Some((label, pos)) = prompt {
-            let w = 150.0;
-            let verb = if touch { "TAP" } else { "E" };
-            let _ = pos;
-            p.spawn(panel(VW / 2.0 - w / 2.0, 310.0, w, 18.0)).with_children(|b| {
-                b.spawn(text_at(&f.label, 8.5, CITRON, format!("{verb} · {}", label.to_uppercase()), 0.0, 2.0, w).with_justify());
+        if let Some(pt) = prompt {
+            // "Activate console" with a key icon, right beside the thought cloud.
+            let text = match pt.action {
+                Action::OpenAtlas | Action::Terminal(_) => format!("Activate {}", pt.label.to_lowercase()),
+                _ => pt.label.to_owned(),
+            };
+            let w = 30.0 + text.chars().count() as f32 * 5.2;
+            let (x, y) = match crate::fx::cloud_tip(game.scene, &pt) {
+                Some(tip) if tip.x + 40.0 + w <= VW - 4.0 => (tip.x + 40.0, tip.y - 26.0),
+                Some(tip) => (tip.x - w - 4.0, tip.y - 26.0),
+                None => (VW / 2.0 - w / 2.0, 310.0),
+            };
+            let key = if touch { art.key_tap.clone() } else { art.key_e.clone() };
+            p.spawn(panel(x, y, w, 20.0)).with_children(|b| {
+                b.spawn((at(3.0, 1.5, 15.0, 15.0), ImageNode::new(key)));
+                b.spawn(text_at(&f.label, 8.5, CITRON, text, 23.0, 3.0, w - 24.0));
             });
         }
         if hint {

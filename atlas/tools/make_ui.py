@@ -222,3 +222,48 @@ for name, art in ICONS.items():
                 im.putpixel((x, y), PAL[ch] + (255,))
     im.save(f'{OUT}/icon_{name}.png')
 print('ui ok')
+
+# Key prompts: an E keycap, and a tapping finger for touch screens.
+KEY = {
+    'key_e': """
+..KKKKKKKKKKK..
+.KWWWWWWWWWWWK.
+.KWWWWWWWWWWWK.
+.KWWWKKKKKWWWK.
+.KWWWKWWWWWWWK.
+.KWWWKWWWWWWWK.
+.KWWWKKKKWWWWK.
+.KWWWKWWWWWWWK.
+.KWWWKWWWWWWWK.
+.KWWWKKKKKWWWK.
+.KWWWWWWWWWWWK.
+.KTTTTTTTTTTTK.
+.KTTTTTTTTTTTK.
+..KKKKKKKKKKK..
+...............""",
+    'key_tap': """
+.....KK........
+....KWWK.......
+....KWWK.......
+....KWWKKK.....
+....KWWKWWKK...
+..KKKWWKWWKWK..
+.KWWKWWWWWKWWK.
+.KWWKWWWWWWWWK.
+..KWWWWWWWWWWK.
+..KWWWWWWWWWWK.
+...KWWWWWWWWK..
+...KWWWWWWWWK..
+....KWWWWWWK...
+....KKKKKKKK...
+...............""",
+}
+for name, art in KEY.items():
+    rows = art.strip('\n').split('\n')
+    im = Image.new('RGBA', (15, 15), (0, 0, 0, 0))
+    for y, row in enumerate(rows):
+        for x, ch in enumerate(row[:15]):
+            if ch in PAL:
+                im.putpixel((x, y), PAL[ch] + (255,))
+    im.save(f'{OUT}/{name}.png')
+print('keys ok')
