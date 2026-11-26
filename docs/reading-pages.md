@@ -20,6 +20,9 @@ twin sits at the same path with `.json` in place of the trailing slash.
 | Galaxy note | `/galaxy/<slug>/` | `/galaxy/<slug>.json` |
 | Press index | `/press/` | `/press.json` |
 | Press entry | `/press/<slug>/` | `/press/<slug>.json` |
+| Portfolio index | `/portfolio/` | `/portfolio.json` |
+| Project | `/portfolio/<slug>/` | `/portfolio/<slug>.json` |
+| About | `/about/` | `/about.json` |
 | Design spec | (rendered spec page) | `/design-spec/<name>.spec.json` (already live) |
 
 The page links its twin with `<link rel="alternate" type="application/json">`,
@@ -60,7 +63,10 @@ The old site format is being sunset section by section.
   comms panels either side.
 - Done: galaxy notes (the blog). Every note renders from
   `src/pages/galaxy/[slug].astro` on the reading layout and has a JSON twin.
-- Next: design spec, portfolio, about, then the list pages (the game's terminals do
+- Done: portfolio, projects and about (no photos). Design systems with their
+  own page keep it; the portfolio links straight to them.
+- Done: design spec is prerendered at build so it reads without JavaScript.
+- Next: resume, the old /home page, then the list pages (the game's terminals do
   the listing, so list pages become light indexes for crawlers).
 
 Reading pages carry no site sidebar, nav or photos of Erikk. Pages without
