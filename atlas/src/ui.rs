@@ -763,10 +763,6 @@ fn input(
                 } else if let Some(i) = terminal_row_at(at, term.sel, n) {
                     // A tap only selects and previews; opening the page is the button's job.
                     term.sel = i;
-                } else if PAGE_UP_BTN.contains(at) {
-                    term.sel = term.sel.saturating_sub(T_ROWS);
-                } else if PAGE_DOWN_BTN.contains(at) && n > 0 {
-                    term.sel = (term.sel + T_ROWS).min(n - 1);
                 } else if OPEN_BTN.contains(at) && n > 0 {
                     open = true;
                 }
@@ -979,8 +975,6 @@ const CLOSE: Rect = Rect { min: Vec2::new(578.0, 22.0), max: Vec2::new(602.0, 44
 const SEARCH: Rect = Rect { min: Vec2::new(44.0, 62.0), max: Vec2::new(344.0, 80.0) };
 /// The page lays an iframe of the selected page over this box.
 const PREVIEW: Rect = Rect { min: Vec2::new(364.0, 62.0), max: Vec2::new(596.0, 210.0) };
-const PAGE_UP_BTN: Rect = Rect { min: Vec2::new(250.0, 318.0), max: Vec2::new(294.0, 336.0) };
-const PAGE_DOWN_BTN: Rect = Rect { min: Vec2::new(298.0, 318.0), max: Vec2::new(344.0, 336.0) };
 const TRAVEL_BTN: Rect = Rect { min: Vec2::new(488.0, 288.0), max: Vec2::new(600.0, 312.0) };
 
 fn term_start(sel: usize, n: usize) -> usize {
@@ -1361,7 +1355,6 @@ fn render(
             let Some(term) = ui.terminal.as_ref() else { return };
             let n = term.hits.len();
             let start = term_start(term.sel, n);
-            let hint = if ui.touch { "Tap a row to preview it" } else { "Type to search · Arrows · Enter opens · Esc" };
             commands.entity(overlay).with_children(|p| {
                 p.spawn(panel(TERM.min.x, TERM.min.y, TERM.width(), TERM.height()));
                 p.spawn(text_at(&f.label, 9.0, SAGE, format!("TERMINAL · {}", term.dest.label.to_uppercase()), 44.0, 22.0, 400.0));
@@ -1397,16 +1390,11 @@ fn render(
                 if n == 0 {
                     p.spawn(text_at(&f.body, 11.0, MUTED, format!("Nothing matches \"{}\".", term.query.trim()), LIST_X + 4.0, T_TOP + 6.0, LIST_W));
                 }
-                // Footer: position, then page buttons for thumbs.
+                // Footer: just the position. PgUp/PgDn keys page; taps near the
+                // list edge scroll it, since the window follows the selection.
                 if n > 0 {
                     p.spawn(text_at(&f.label, 8.0, MUTED, format!("{} of {}", term.sel + 1, n), LIST_X, 322.0, 80.0));
                 }
-                if n > T_ROWS {
-                    for (r, label) in [(PAGE_UP_BTN, "PG UP"), (PAGE_DOWN_BTN, "PG DN")] {
-                        p.spawn((panel(r.min.x, r.min.y, r.width(), r.height()), children![text_at(&f.label, 7.5, CITRON, label, 0.0, 4.0, r.width() - 2.0).with_justify()]));
-                    }
-                }
-                p.spawn(text_at(&f.label, 7.5, MUTED, hint, 112.0, 322.0, 140.0));
                 // Preview pane: the page draws a live thumbnail of the page over PREVIEW.
                 p.spawn((
                     Node { border: UiRect::all(Val::Px(1.0)), border_radius: BorderRadius::all(Val::Px(2.0)), ..at(PREVIEW.min.x, PREVIEW.min.y, PREVIEW.width(), PREVIEW.height()) },
