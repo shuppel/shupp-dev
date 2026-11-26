@@ -85,6 +85,8 @@ export async function getAtlasRegistry(): Promise<AtlasRegistry> {
   const education = (await getCollection('education', ({ data }) => data.visible))
     .sort((a, b) => a.data.order - b.data.order);
 
+  /** Level is years working professionally: Erikk started in 2002. */
+  const CAREER_START = 2002;
   const firstStart = experience.reduce<Date | null>(
     (min, e) => (!min || e.data.startDate < min ? e.data.startDate : min), null,
   );
@@ -186,14 +188,19 @@ export async function getAtlasRegistry(): Promise<AtlasRegistry> {
   const clamp = (n: number) => Math.max(1, Math.min(10, Math.round(n)));
   const designProjects = projects.filter((p) =>
     /design|ui|css|font|type|skin/i.test(`${p.data.title} ${p.data.technologies.join(' ')}`)).length;
+  const gtmRoles = experience.filter((e) =>
+    /market|growth|launch|go-to-market|gtm|brand|sales|business development/i.test(`${e.data.position} ${e.data.description} ${e.data.achievements.join(' ')}`)).length;
+  const gtmSkills = (author.softSkills ?? []).filter((k: string) => /market|brand|business|growth|sales/i.test(k)).length;
+  // Competencies: the radar. Six three-letter axes, each counted from the site.
   const radar = [
-    { label: 'Product', value: clamp(years), note: `${years} years in the quest log` },
-    { label: 'Build', value: clamp(projects.length / 1.5), note: `${projects.length} projects shipped` },
-    { label: 'Design', value: clamp(designProjects / 1.5), note: `${designProjects} design projects` },
-    { label: 'Writing', value: clamp(notes.length / 2), note: `${notes.length} Galaxy notes` },
-    { label: 'Signal', value: clamp(press.length / 3), note: `${press.length} broadcasts` },
-    { label: 'Study', value: clamp((education.length + credentials.length) / 2), note: `${education.length + credentials.length} degrees, courses and credentials` },
+    { label: 'DEV', value: clamp(projects.length / 1.5), note: `${projects.length} projects shipped` },
+    { label: 'PRO', value: clamp(years), note: `${years} years in the quest log` },
+    { label: 'DES', value: clamp(designProjects / 1.5), note: `${designProjects} design projects` },
+    { label: 'GTM', value: clamp(gtmRoles * 2 + gtmSkills * 2), note: `${gtmRoles} go-to-market roles, ${gtmSkills} GTM disciplines` },
+    { label: 'WRI', value: clamp(notes.length / 2), note: `${notes.length} Galaxy notes` },
+    { label: 'COM', value: clamp(press.length / 3), note: `${press.length} broadcasts` },
   ];
+
 
   return {
     ship: { name: 'The Scattered Atlas', tagline: siteConfig.tagline },
@@ -202,14 +209,17 @@ export async function getAtlasRegistry(): Promise<AtlasRegistry> {
       stats: {
         name: author.name,
         title: siteConfig.author.title,
-        location: author.location,
-        level: years,
-        levelNote: `Years since the first entry in the quest log (${firstStart?.getUTCFullYear() ?? '—'}).`,
+        location: 'DMV Area',
+        level: new Date().getUTCFullYear() - CAREER_START,
+        levelNote: `Years working professionally (since ${CAREER_START}).`,
+        // Attributes: the character, not the résumé. Hand-set on a 1–20 scale; tune freely.
         attributes: [
-          { label: 'Ships built', value: projects.length, note: 'Projects in the portfolio' },
-          { label: 'Notes grown', value: notes.length, note: 'Notes in the Galaxy garden' },
-          { label: 'Broadcasts', value: press.length, note: 'Press, podcast and video' },
-          { label: 'Seals earned', value: credentials.length, note: 'Credentials' },
+          { label: 'WIL', value: 12, note: 'Willpower: sees hard things through' },
+          { label: 'INT', value: 15, note: 'Intelligence: systems and architecture' },
+          { label: 'WIT', value: 15, note: 'Wit: quick on his feet' },
+          { label: 'CHA', value: 16, note: 'Charisma: rallies a crew' },
+          { label: 'WIS', value: 16, note: 'Wisdom: knows what not to build' },
+          { label: 'LCK', value: 15, note: 'Luck: right place, right time' },
         ],
         skills: author.skills ?? [],
         softSkills: author.softSkills ?? [],

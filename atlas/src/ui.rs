@@ -58,6 +58,8 @@ pub enum Request {
     Menu,
     /// Ride the dockyard lift.
     Lift,
+    /// Open the engine room hatch and find the relic.
+    Hatch,
 }
 
 pub fn trigger(game: &mut Game, pt: Point) {
@@ -67,6 +69,8 @@ pub fn trigger(game: &mut Game, pt: Point) {
         Action::Talk(n) => Request::Talk(n),
         Action::Terminal(id) => Request::Terminal(id.to_owned()),
         Action::Lift => Request::Lift,
+        Action::Menu => Request::Menu,
+        Action::Hatch => Request::Hatch,
     });
 }
 
@@ -106,6 +110,7 @@ enum Who {
     Erikk,
     Technician,
     Archivist,
+    Mechanic,
 }
 
 struct Line {
@@ -138,7 +143,8 @@ struct Travel {
     flight: bool,
 }
 
-const TABS: [&str; 4] = ["Status", "Items", "Quests", "Map"];
+// The star map lives on the bridge console (and the MAP tray button), not in the player menu.
+const TABS: [&str; 3] = ["Status", "Items", "Quests"];
 
 #[derive(Resource, Default)]
 struct Ui {
@@ -182,6 +188,8 @@ struct UiArt {
     tech_call: Handle<Image>,
     arch_faces: Handle<Image>,
     arch_call: Handle<Image>,
+    mech_faces: Handle<Image>,
+    mech_call: Handle<Image>,
     faces_layout: Handle<TextureAtlasLayout>,
     call_layout: Handle<TextureAtlasLayout>,
     atlas_bg: Handle<Image>,
@@ -259,6 +267,8 @@ fn setup_ui(
         tech_call: assets.load("cast/technician/calls.png"),
         arch_faces: assets.load("cast/archivist/faces.png"),
         arch_call: assets.load("cast/archivist/calls.png"),
+        mech_faces: assets.load("cast/mechanic/faces.png"),
+        mech_call: assets.load("cast/mechanic/calls.png"),
         faces_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(256, 352), 4, 1, None, None)),
         call_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(192, 256), 4, 1, None, None)),
         atlas_bg: assets.load("scenes/atlas.png"),
@@ -343,7 +353,7 @@ fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Regi
             let here = match game.scene {
                 SceneId::Port => 0,
                 SceneId::Archive => 2,
-                SceneId::Bridge => 1,
+                SceneId::Bridge | SceneId::Engine => 1,
             };
             ui.atlas_sel = here;
             game.mode = Mode::Atlas;
@@ -360,6 +370,49 @@ fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Regi
             ui.terminal = Some(Terminal { dest: registry.dest(&id), sel: 0 });
             game.mode = Mode::Terminal;
         }
+        Request::Hatch => {
+            let first = !game.hatch_open;
+            game.hatch_open = true;
+            let text = if first {
+                "Under the grating: a brass socket wrench, worn smooth, with \"D.\" scratched in the handle. Relic found."
+            } else {
+                "Just pipes and the hum of the reactor down there now."
+            };
+            let name = registry.player.stats.name.clone();
+            let lines = vec![Line { speaker: name, who: Who::Erikk, pose: if first { 2 } else { 0 }, call: false, text: text.into() }];
+            ui.dialogue = Some(Dialogue { lines, idx: 0, shown: 0.0, after: None });
+            game.mode = Mode::Dialogue;
+        }
+        Request::Talk(Npc::Mechanic) => {
+            // Dave tells the stack as gear: the "weapons" half of the skills tab.
+            let name = "Dave the Mechanic";
+            let skills = &registry.player.stats.skills;
+            let mut lines = vec![Line {
+                speaker: name.into(),
+                who: Who::Mechanic,
+                pose: 1,
+                call: false,
+                text: "Captain. Mind the pistons, they bite. Want the rundown on what keeps this tub flying?".into(),
+            }];
+            for (i, chunk) in skills.chunks(3).enumerate() {
+                let kit = chunk.join(", ");
+                let text = match i {
+                    0 => format!("Main drive's built on {kit}. Never once let us down."),
+                    1 => format!("Then there's the auxiliary kit: {kit}."),
+                    _ => format!("And in the back of the toolbox: {kit}."),
+                };
+                lines.push(Line { speaker: name.into(), who: Who::Mechanic, pose: if i % 2 == 0 { 2 } else { 0 }, call: false, text });
+            }
+            lines.push(Line {
+                speaker: name.into(),
+                who: Who::Mechanic,
+                pose: 3,
+                call: false,
+                text: "The console tunes the engines, and the board up top has the full ship's log. And if you find my wrench, it's mine.".into(),
+            });
+            ui.dialogue = Some(Dialogue { lines, idx: 0, shown: 0.0, after: None });
+            game.mode = Mode::Dialogue;
+        }
         Request::Talk(npc) => {
             let (who, name, dest, closing) = match npc {
                 Npc::Technician => (
@@ -368,7 +421,7 @@ fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Regi
                     registry.dest("work"),
                     "The workbench has the full manifest. Every entry opens the real write-up.",
                 ),
-                Npc::Archivist => (
+                Npc::Archivist | Npc::Mechanic => (
                     Who::Archivist,
                     "Astro the Archivist",
                     registry.dest("writing"),
@@ -655,12 +708,6 @@ fn input(
             if ok && ui.tab == 2 {
                 bridge::emit("open", "/resume");
             }
-            if ui.tab == 3 {
-                // The Map tab is a shortcut to the star atlas.
-                game.mode = Mode::Explore;
-                game.request = Some(Request::Atlas);
-                changed = true;
-            }
             if back || keys.just_pressed(KeyCode::KeyC) {
                 game.mode = Mode::Explore;
                 changed = true;
@@ -819,6 +866,10 @@ struct Parallax(f32);
 #[derive(Component)]
 struct Pulse;
 
+/// The light sweep across the selected menu tab; holds the bar width.
+#[derive(Component)]
+struct Shimmer(f32);
+
 /// A destination planet turning in place.
 #[derive(Component)]
 struct Orbit(usize);
@@ -828,7 +879,14 @@ fn animate_map(
     mut strips: Query<(&Parallax, &mut Node)>,
     mut pulse: Query<&mut ImageNode, (With<Pulse>, Without<Orbit>)>,
     mut planets: Query<(&Orbit, &mut ImageNode), Without<Pulse>>,
+    mut sweeps: Query<(&Shimmer, &mut Node), Without<Parallax>>,
 ) {
+    // Sweep for 0.5 s, rest for 1.3 s, like a light catching a blade.
+    let u = (time.elapsed_secs() % 1.8) / 0.5;
+    for (sh, mut node) in &mut sweeps {
+        let x = if u < 1.0 { -30.0 + (sh.0 + 40.0) * (u * u * (3.0 - 2.0 * u)) } else { -30.0 };
+        node.left = Val::Px(x.round());
+    }
     let t = time.elapsed_secs();
     for (p, mut node) in &mut strips {
         node.left = Val::Px(-((t * p.0) % PARALLAX_W).round());
@@ -947,6 +1005,8 @@ fn render(
                 (Who::Technician, true) => (&art.tech_call, &art.call_layout, 120.0, 160.0),
                 (Who::Archivist, false) => (&art.arch_faces, &art.faces_layout, 124.0, 170.0),
                 (Who::Archivist, true) => (&art.arch_call, &art.call_layout, 120.0, 160.0),
+                (Who::Mechanic, false) => (&art.mech_faces, &art.faces_layout, 124.0, 170.0),
+                (Who::Mechanic, true) => (&art.mech_call, &art.call_layout, 120.0, 160.0),
             };
             let mut typed = None;
             let mut more = None;
@@ -1022,7 +1082,7 @@ fn render(
             let here = match game.scene {
                 SceneId::Port => DESTS[0].1,
                 SceneId::Archive => DESTS[2].1,
-                SceneId::Bridge => Vec2::new(320.0, 180.0),
+                SceneId::Bridge | SceneId::Engine => Vec2::new(320.0, 180.0),
             };
             let sel = ui.atlas_sel;
             let dest = registry.dest(DESTS[sel].0);
@@ -1107,16 +1167,22 @@ fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Re
             let r = tab_rect(i);
             let on = i == ui.tab;
             if on {
+                // Selected tab: an amber bar with an anime-style light sweep across it.
                 p.spawn((
-                    Node { border: UiRect::all(Val::Px(1.0)), ..at(r.min.x, r.min.y, r.width(), r.height()) },
+                    Node { border: UiRect::all(Val::Px(1.0)), overflow: Overflow::clip(), ..at(r.min.x, r.min.y, r.width(), r.height()) },
                     BackgroundColor(SELECT),
                     BorderColor::all(LINE),
-                ));
+                ))
+                .with_children(|bar| {
+                    bar.spawn((Shimmer(r.width()), at(-30.0, -2.0, 14.0, r.height() + 4.0), BackgroundColor(Color::WHITE.with_alpha(0.18))))
+                        .with_children(|band| {
+                            band.spawn((at(5.0, 0.0, 3.0, r.height() + 4.0), BackgroundColor(Color::WHITE.with_alpha(0.55))));
+                        });
+                });
             }
             p.spawn((at(r.min.x + 4.0, r.min.y + 3.0, 16.0, 16.0), ImageNode::new(art.ui_icons[i].clone())));
             p.spawn(text_at(&f.label, 10.0, if on { CITRON } else { TEXT }, name.to_uppercase(), r.min.x + 25.0, r.min.y + 5.0, 70.0));
         }
-        p.spawn(text_at(&f.label, 7.5, MUTED, "Left/Right tabs · Up/Down select · Esc close", 40.0, 326.0, 200.0));
 
         match ui.tab {
             0 => {
@@ -1127,10 +1193,11 @@ fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Re
                 p.spawn(text_at(&f.body, 10.0, MUTED, stats.location.clone(), 256.0, 90.0, 200.0));
                 p.spawn(text_at(&f.label, 9.0, SAGE, "LV", 256.0, 112.0, 30.0));
                 p.spawn(text_at(&f.label, 22.0, CITRON, stats.level.to_string(), 276.0, 102.0, 60.0));
+                // Attributes in two columns of three: WIL INT WIT / CHA WIS LCK.
                 for (i, a) in stats.attributes.iter().enumerate() {
-                    let y = 142.0 + i as f32 * 22.0;
-                    p.spawn(text_at(&f.label, 8.5, SAGE, a.label.to_uppercase(), 256.0, y, 110.0));
-                    p.spawn(text_at(&f.label, 12.0, OLIVE, a.value.to_string(), 366.0, y - 3.0, 40.0));
+                    let (x, y) = (256.0 + (i / 3) as f32 * 76.0, 144.0 + (i % 3) as f32 * 24.0);
+                    p.spawn(text_at(&f.label, 8.5, SAGE, a.label.to_uppercase(), x, y + 3.0, 40.0));
+                    p.spawn(text_at(&f.label, 14.0, OLIVE, a.value.to_string(), x + 30.0, y - 2.0, 40.0));
                 }
                 // Radar.
                 let (cx, cy, r) = (512.0, 150.0, 78.0);
@@ -1268,10 +1335,11 @@ fn hud(
         if let Some(pt) = prompt {
             // "Activate console" with a key icon, right beside the thought cloud.
             let text = match pt.action {
-                Action::OpenAtlas | Action::Terminal(_) => format!("Activate {}", pt.label.to_lowercase()),
+                Action::OpenAtlas | Action::Terminal(_) | Action::Menu => format!("Activate {}", pt.label.to_lowercase()),
                 _ => pt.label.to_owned(),
             };
-            let w = 30.0 + text.chars().count() as f32 * 5.2;
+            // Manaspace runs wide: about 6.4 UI px per character at this size.
+            let w = 32.0 + text.chars().count() as f32 * 6.4;
             let (x, y) = match crate::fx::cloud_tip(game.scene, &pt) {
                 Some(tip) if tip.x + 40.0 + w <= VW - 4.0 => (tip.x + 40.0, tip.y - 26.0),
                 Some(tip) => (tip.x - w - 4.0, tip.y - 26.0),

@@ -45,12 +45,15 @@ pub enum SceneId {
     Bridge,
     Port,
     Archive,
+    /// The Atlier's engine room, below the bridge: Dave the Mechanic's deck.
+    Engine,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Npc {
     Technician,
     Archivist,
+    Mechanic,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
@@ -61,6 +64,10 @@ pub enum Action {
     Terminal(&'static str),
     /// Ride the dockyard crane lift to the other deck.
     Lift,
+    /// Open the menu (the engine room's console and ship status board).
+    Menu,
+    /// Pry open the engine room's maintenance hatch.
+    Hatch,
 }
 
 /// Which deck of a two-level room a point or the player is on.
@@ -110,6 +117,9 @@ const LIFT_TRAVEL: f32 = 2.1;
 const LIFT_STEP: f32 = 0.4; // walking on or off the platform
 /// Where Erikk lands when he walks down the Crescent's ramp.
 const BAY_ARRIVAL: Vec2 = p(360.0, 190.0);
+/// Where Erikk comes in: the bridge stairwell, and the foot of the engine room ladder.
+const BRIDGE_FROM_ENGINE: Vec2 = p(440.0, 300.0);
+const ENGINE_ARRIVAL: Vec2 = p(52.0, 254.0);
 const CRESCENT_CENTER: Vec2 = p(420.0, 156.0);
 const CRESCENT_SIZE: Vec2 = p(148.0, 82.0);
 
@@ -125,6 +135,7 @@ pub fn scene_def(id: SceneId) -> &'static SceneDef {
         points: &[
             Point { pos: p(470.0, 180.0), label: "Star console", action: Action::OpenAtlas, deck: Deck::Any },
             Point { pos: p(250.0, 330.0), label: "Gangway to the Dockyard", action: Action::Goto(SceneId::Port), deck: Deck::Any },
+            Point { pos: p(454.0, 304.0), label: "Stairs down to the engine room", action: Action::Goto(SceneId::Engine), deck: Deck::Any },
         ],
         npc: None,
         mask: include_bytes!("../masks/bridge_walkable.png"),
@@ -165,7 +176,26 @@ pub fn scene_def(id: SceneId) -> &'static SceneDef {
         npc: Some((Npc::Archivist, p(385.0, 182.0))),
         mask: include_bytes!("../masks/archive_walkable.png"),
     };
+    static ENGINE: SceneDef = SceneDef {
+        name: "Engine Room",
+        label: "Atlier",
+        bg: "scenes/engine_room.png",
+        fg: None,
+        hd: true,
+        fg_threshold: 0.0,
+        spawn: ENGINE_ARRIVAL,
+        points: &[
+            Point { pos: p(36.0, 246.0), label: "Ladder up to the bridge", action: Action::Goto(SceneId::Bridge), deck: Deck::Any },
+            Point { pos: p(400.0, 270.0), label: "Reactor console", action: Action::Menu, deck: Deck::Any },
+            Point { pos: p(470.0, 182.0), label: "Ship status board", action: Action::Menu, deck: Deck::Any },
+            Point { pos: p(572.0, 272.0), label: "Talk to Dave", action: Action::Talk(Npc::Mechanic), deck: Deck::Any },
+            Point { pos: p(300.0, 322.0), label: "Maintenance hatch", action: Action::Hatch, deck: Deck::Any },
+        ],
+        npc: None,
+        mask: include_bytes!("../masks/engine_room_walkable.png"),
+    };
     match id {
+        SceneId::Engine => &ENGINE,
         SceneId::Bridge => &BRIDGE,
         SceneId::Port => &PORT,
         SceneId::Archive => &ARCHIVE,
@@ -179,6 +209,7 @@ pub struct Masks {
     port: Vec<bool>,
     port_upper: Vec<bool>,
     archive: Vec<bool>,
+    engine: Vec<bool>,
 }
 
 fn decode_mask(bytes: &[u8]) -> Vec<bool> {
@@ -222,6 +253,20 @@ impl Masks {
                 m
             },
             archive: decode_mask(scene_def(SceneId::Archive).mask),
+            engine: {
+                // Machines are solid: carve each prop's footprint out of the floor.
+                let mut m = decode_mask(scene_def(SceneId::Engine).mask);
+                for prop in ENGINE_PROPS.iter().filter(|p| p.solid) {
+                    let (x0, x1) = ((prop.at.x - prop.size.x * 0.4) as usize, (prop.at.x + prop.size.x * 0.4) as usize);
+                    let (y0, y1) = ((prop.at.y - 10.0).max(0.0) as usize, prop.at.y as usize + 2);
+                    for y in y0..y1.min(VH as usize) {
+                        for x in x0..x1.min(VW as usize) {
+                            m[y * VW as usize + x] = false;
+                        }
+                    }
+                }
+                m
+            },
         }
     }
     pub fn walkable(&self, scene: SceneId, deck: Deck, at: Vec2) -> bool {
@@ -233,6 +278,7 @@ impl Masks {
             SceneId::Port if deck == Deck::Upper => &self.port_upper,
             SceneId::Port => &self.port,
             SceneId::Archive => &self.archive,
+            SceneId::Engine => &self.engine,
         };
         m[(at.y as usize) * (VW as usize) + at.x as usize]
     }
@@ -272,6 +318,8 @@ pub struct Game {
     pub request: Option<ui::Request>,
     /// Dialogue in Manaspace instead of the sans (`?font=mana` on the page).
     pub mana_dialogue: bool,
+    /// The engine room's maintenance hatch has been opened (relic found).
+    pub hatch_open: bool,
 }
 
 impl Game {
@@ -308,6 +356,8 @@ pub struct Art {
     pub pongo_idle_layout: Handle<TextureAtlasLayout>,
     pub npc_layout: Handle<TextureAtlasLayout>,
     pub technician_npc: Handle<Image>,
+    pub mechanic_work: Handle<Image>,
+    pub work_layout: Handle<TextureAtlasLayout>,
     pub archivist_npc: Handle<Image>,
 }
 
@@ -409,6 +459,7 @@ pub fn app(canvas: Option<String>, registry: Registry, boot: Boot, visited: Vec<
         paused: false,
         request: None,
         mana_dialogue: false,
+        hatch_open: false,
     })
     .add_message::<EnterScene>()
     .init_resource::<PageTap>()
@@ -427,6 +478,7 @@ pub fn app(canvas: Option<String>, registry: Registry, boot: Boot, visited: Vec<
             ride_lift,
             animate_player,
             follow_pongo,
+            animate_engine_room,
             depth_sort,
             fx::animate,
         )
@@ -467,6 +519,8 @@ pub(crate) fn setup(
         walk_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(128, 128), 6, 4, None, None)),
         npc_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(48, 64), 4, 1, None, None)),
         technician_npc: assets.load("cast/technician/npc_outlined.png"),
+        mechanic_work: load_smooth(&assets, "cast/mechanic/work.png"),
+        work_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(128, 128), 6, 1, None, None)),
         archivist_npc: assets.load("cast/archivist/npc_outlined.png"),
     };
 
@@ -496,6 +550,7 @@ pub(crate) fn setup(
     let scene = match boot.start.as_str() {
         "work" => SceneId::Port,
         "writing" => SceneId::Archive,
+        "engine" => SceneId::Engine,
         _ => SceneId::Bridge,
     };
     // Starting here (not arriving from the Crescent) puts Erikk at the lower lift.
@@ -524,7 +579,7 @@ fn enter_scene(
     match id {
         SceneId::Port => game.mark_visited("work"),
         SceneId::Archive => game.mark_visited("writing"),
-        SceneId::Bridge => {}
+        SceneId::Bridge | SceneId::Engine => {}
     }
     bridge::emit("scene", def.label);
 
@@ -542,6 +597,41 @@ fn enter_scene(
         commands.spawn((SceneEntity, Foreground, Sprite::from_image(assets.load(fg)), Transform::from_xyz(0.0, 0.0, 0.5)));
     }
     let mut spawn = def.spawn;
+    if id == SceneId::Bridge && from == SceneId::Engine {
+        spawn = BRIDGE_FROM_ENGINE;
+    }
+    if id == SceneId::Engine {
+        for (i, prop) in ENGINE_PROPS.iter().enumerate() {
+            let path = if i == HATCH && game.hatch_open { "props/engine_room/hatch_open.png" } else { prop.image };
+            let mut e = commands.spawn((
+                SceneEntity,
+                Sprite { image: hd(path), custom_size: Some(prop.size), ..default() },
+                Anchor::BOTTOM_CENTER,
+                // Flat floor pieces sit under everyone; the rest sort by baseline.
+                Transform::from_translation(to_world(prop.at).extend(if prop.flat { 0.2 } else { 1.0 + prop.at.y / 1000.0 })),
+            ));
+            if i == HATCH {
+                e.insert(HatchSprite);
+            }
+            if prop.image.ends_with("flywheel.png") {
+                e.insert((Spin, Anchor::CENTER, Transform::from_translation(to_world(prop.at - Vec2::new(0.0, prop.size.y / 2.0)).extend(1.0 + prop.at.y / 1000.0))));
+            }
+            if prop.image.ends_with("warning_lamp.png") || prop.image.ends_with("reactor_core.png") {
+                e.insert(Pulse);
+            }
+        }
+        // Dave, wrenching at the piston bank with his back to us.
+        commands.spawn((
+            SceneEntity,
+            Worker::default(),
+            Sprite {
+                custom_size: Some(Vec2::new(64.0, 64.0)),
+                ..Sprite::from_atlas_image(art.mechanic_work.clone(), TextureAtlas { layout: art.work_layout.clone(), index: 0 })
+            },
+            Anchor(Vec2::new(0.0, (64.0 - 124.0) / 128.0)),
+            Transform::from_translation(to_world(DAVE).extend(1.0 + DAVE.y / 1000.0)),
+        ));
+    }
     game.deck = Deck::Any;
     if id == SceneId::Port {
         // Walking down the Crescent's ramp lands in the fighter bay; any
@@ -567,7 +657,7 @@ fn enter_scene(
     if let Some((npc, foot)) = def.npc {
         let image = match npc {
             Npc::Technician => art.technician_npc.clone(),
-            Npc::Archivist => art.archivist_npc.clone(),
+            Npc::Archivist | Npc::Mechanic => art.archivist_npc.clone(),
         };
         commands.spawn((
             SceneEntity,
@@ -1012,4 +1102,100 @@ fn follow_pongo(
     sprite.texture_atlas = Some(TextureAtlas { layout: layout.clone(), index });
     sprite.flip_x = flip;
     tf.translation = to_world(dog.foot.round()).extend(1.0 + dog.foot.y / 1000.0);
+}
+
+// ---------------------------------------------------------------------------
+// Engine room
+// ---------------------------------------------------------------------------
+
+/// A placed prop: image, foot (bottom centre) in scene pixels, drawn size.
+struct Prop {
+    image: &'static str,
+    at: Vec2,
+    size: Vec2,
+    /// Blocks walking across its footprint.
+    solid: bool,
+    /// Lies on the floor under every actor.
+    flat: bool,
+}
+
+const fn prop(image: &'static str, x: f32, y: f32, w: f32, h: f32, solid: bool, flat: bool) -> Prop {
+    Prop { image, at: Vec2::new(x, y), size: Vec2::new(w, h), solid, flat }
+}
+
+const DAVE: Vec2 = p(566.0, 262.0);
+const HATCH: usize = 0;
+
+static ENGINE_PROPS: [Prop; 15] = [
+    prop("props/engine_room/hatch_closed.png", 300.0, 334.0, 50.0, 31.0, false, true),
+    prop("props/engine_room/ladder.png", 30.0, 238.0, 24.0, 52.0, false, false),
+    prop("props/engine_room/coolant_tank.png", 82.0, 176.0, 34.0, 66.0, true, false),
+    prop("props/engine_room/flywheel.png", 140.0, 176.0, 56.0, 62.0, true, false),
+    prop("props/engine_room/reactor_core.png", 236.0, 178.0, 84.0, 106.0, true, false),
+    prop("props/engine_room/status_board.png", 470.0, 176.0, 66.0, 68.0, true, false),
+    prop("props/engine_room/grow_tube.png", 556.0, 176.0, 50.0, 65.0, true, false),
+    prop("props/engine_room/coolant_tank.png", 608.0, 176.0, 34.0, 66.0, true, false),
+    prop("props/engine_room/gauge_cluster.png", 140.0, 252.0, 58.0, 43.0, true, false),
+    prop("props/engine_room/console.png", 400.0, 262.0, 62.0, 53.0, true, false),
+    prop("props/engine_room/warning_lamp.png", 444.0, 258.0, 22.0, 27.0, true, false),
+    prop("props/engine_room/piston_bank.png", 566.0, 244.0, 72.0, 69.0, true, false),
+    prop("props/engine_room/toolbox.png", 512.0, 300.0, 38.0, 29.0, true, false),
+    prop("props/engine_room/crate_small.png", 84.0, 312.0, 44.0, 40.0, true, false),
+    prop("props/engine_room/cable_spool.png", 604.0, 344.0, 46.0, 46.0, true, false),
+];
+
+#[derive(Component)]
+struct HatchSprite;
+
+/// The flywheel turns.
+#[derive(Component)]
+struct Spin;
+
+/// Glowing machines breathe a little.
+#[derive(Component)]
+struct Pulse;
+
+#[derive(Component, Default)]
+struct Worker {
+    clock: f32,
+    frame: usize,
+}
+
+fn animate_engine_room(
+    time: Res<Time>,
+    game: Res<Game>,
+    assets: Res<AssetServer>,
+    mut spin: Query<&mut Transform, (With<Spin>, Without<Worker>)>,
+    mut pulse: Query<&mut Sprite, (With<Pulse>, Without<Worker>, Without<HatchSprite>)>,
+    mut worker: Query<(&mut Worker, &mut Sprite), (Without<Pulse>, Without<HatchSprite>)>,
+    mut hatch: Query<&mut Sprite, (With<HatchSprite>, Without<Pulse>, Without<Worker>)>,
+) {
+    if game.scene != SceneId::Engine {
+        return;
+    }
+    let t = time.elapsed_secs();
+    for mut tf in &mut spin {
+        tf.rotation = Quat::from_rotation_z(-t * 0.9);
+    }
+    for mut s in &mut pulse {
+        let k = 0.9 + 0.1 * (t * 3.0).sin();
+        s.color = Color::srgb(k + 0.1, k + 0.1, k);
+    }
+    for (mut w, mut s) in &mut worker {
+        w.clock += time.delta_secs();
+        if w.clock >= 0.16 {
+            w.clock = 0.0;
+            w.frame = (w.frame + 1) % 6;
+        }
+        if let Some(a) = s.texture_atlas.as_mut() {
+            a.index = w.frame;
+        }
+    }
+    if game.hatch_open {
+        for mut s in &mut hatch {
+            // The open hatch art is taller (the lid stands up): keep its foot.
+            s.image = load_smooth(&assets, "props/engine_room/hatch_open.png");
+            s.custom_size = Some(Vec2::new(50.0, 50.0));
+        }
+    }
 }
