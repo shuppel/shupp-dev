@@ -16,6 +16,8 @@ pub enum Inbound {
     Tap(bevy::math::Vec2, bool),
     /// true: dialogue in Manaspace; false: the sans.
     DialogueFont(bool),
+    /// The terminal search text, typed into the page's input on phones.
+    Search(String),
 }
 
 thread_local! {
@@ -77,6 +79,12 @@ mod web {
         super::push(super::Inbound::DialogueFont(mana));
     }
 
+    /// The terminal search box's text (phones type into a page input).
+    #[wasm_bindgen]
+    pub fn search(text: &str) {
+        super::push(super::Inbound::Search(text.to_owned()));
+    }
+
     #[wasm_bindgen]
     pub fn set_paused(paused: bool) {
         super::push(super::Inbound::Paused(paused));
@@ -84,7 +92,7 @@ mod web {
 }
 
 #[cfg(target_arch = "wasm32")]
-pub use web::{go, set_dialogue_font, set_paused, start, tap};
+pub use web::{go, search, set_dialogue_font, set_paused, start, tap};
 
 #[cfg(target_arch = "wasm32")]
 pub(crate) fn emit(kind: &str, value: &str) {

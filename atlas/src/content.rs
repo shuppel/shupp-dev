@@ -61,6 +61,26 @@ pub struct KeyItem {
     pub from: String,
     pub note: String,
     pub kind: String,
+    #[serde(default, rename = "type")]
+    pub kind_in_game: String,
+    #[serde(default)]
+    pub rarity: String,
+    #[serde(default)]
+    pub year: Option<i64>,
+    #[serde(default)]
+    pub bonus: String,
+}
+
+#[derive(Deserialize, Clone, Default)]
+pub struct SkillCard {
+    pub name: String,
+    pub suit: String,
+    #[serde(default)]
+    pub mastery: u8,
+    #[serde(default)]
+    pub feeds: String,
+    #[serde(default)]
+    pub flavor: String,
 }
 
 #[derive(Deserialize, Clone, Default)]
@@ -106,6 +126,8 @@ pub struct Stats {
     pub inventory: Inventory,
     #[serde(default)]
     pub training: Vec<Training>,
+    #[serde(default)]
+    pub cards: Vec<SkillCard>,
 }
 
 #[derive(Deserialize, Clone, Default)]

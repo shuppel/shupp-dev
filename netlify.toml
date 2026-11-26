@@ -5,3 +5,16 @@
 [build.environment]
   NODE_VERSION = "22"
    SECRETS_SCAN_OMIT_KEYS = "PUBLIC_GISCUS_REPO,PUBLIC_GISCUS_REPO_ID,PUBLIC_GISCUS_CATEGORY,PUBLIC_GISCUS_CATEGORY_ID,SCREENSHOT_MACHINE_API_KEY"
+# The game is the front door now; old /atlas links land on it. Exact paths
+# only, so /atlas/pkg, /atlas/assets and /atlas/registry.json still serve.
+[[redirects]]
+  from = "/atlas"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/atlas/"
+  to = "/"
+  status = 301
+  force = true

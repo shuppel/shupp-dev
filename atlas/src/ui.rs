@@ -50,6 +50,8 @@ impl Plugin for UiPlugin {
 #[derive(Clone, Debug)]
 pub enum Request {
     Atlas,
+    /// The ship map: fast travel between rooms.
+    Ship,
     Door(SceneId),
     Talk(Npc),
     Terminal(String),
@@ -60,6 +62,7 @@ pub enum Request {
     Lift,
     /// Open the engine room hatch and find the relic.
     Hatch,
+    Crescent,
 }
 
 pub fn trigger(game: &mut Game, pt: Point) {
@@ -71,6 +74,7 @@ pub fn trigger(game: &mut Game, pt: Point) {
         Action::Lift => Request::Lift,
         Action::Menu => Request::Menu,
         Action::Hatch => Request::Hatch,
+        Action::Crescent => Request::Crescent,
     });
 }
 
@@ -132,7 +136,48 @@ struct Dialogue {
 
 struct Terminal {
     dest: Destination,
+    /// Index into `hits`, not into `dest.items`.
     sel: usize,
+    query: String,
+    /// The items that match `query`, in order.
+    hits: Vec<usize>,
+}
+
+impl Terminal {
+    fn new(dest: Destination) -> Self {
+        let mut t = Terminal { dest, sel: 0, query: String::new(), hits: Vec::new() };
+        t.refilter();
+        t
+    }
+
+    fn refilter(&mut self) {
+        let q = self.query.trim().to_lowercase();
+        let words: Vec<&str> = q.split_whitespace().collect();
+        self.hits = (0..self.dest.items.len())
+            .filter(|&i| {
+                let it = &self.dest.items[i];
+                let hay = format!(
+                    "{} {} {}",
+                    it.title,
+                    it.meta.as_deref().unwrap_or(""),
+                    it.description.as_deref().unwrap_or("")
+                )
+                .to_lowercase();
+                words.iter().all(|w| hay.contains(w))
+            })
+            .collect();
+        self.sel = 0;
+    }
+
+    fn current(&self) -> Option<&crate::content::Item> {
+        self.hits.get(self.sel).map(|&i| &self.dest.items[i])
+    }
+}
+
+/// Tell the page which page to preview beside the list ("" hides it).
+fn emit_preview(term: Option<&Terminal>) {
+    let href = term.and_then(|t| t.current()).map(|it| it.href.as_str()).unwrap_or("");
+    bridge::emit("preview", href);
 }
 
 struct Travel {
@@ -144,7 +189,10 @@ struct Travel {
 }
 
 // The star map lives on the bridge console (and the MAP tray button), not in the player menu.
-const TABS: [&str; 3] = ["Status", "Items", "Quests"];
+const TABS: [&str; 4] = ["Status", "Items", "Skills", "Quests"];
+/// ui_icons index for each tab.
+const TAB_ICONS: [usize; 4] = [0, 1, 8, 2];
+const SUITS: [(&str, &str); 4] = [("skill", "SKILLS"), ("discipline", "DISCIPLINES"), ("special", "SPECIALS"), ("equipment", "EQUIPMENT")];
 
 #[derive(Resource, Default)]
 struct Ui {
@@ -169,6 +217,9 @@ struct Ui {
     portrait: Option<Entity>,
     fade: Option<Entity>,
     flight: Option<Entity>,
+    /// Which suit the Skills tab shows.
+    suit: usize,
+    ship_sel: usize,
 }
 
 #[derive(Resource)]
@@ -196,28 +247,64 @@ struct UiArt {
     /// Star map layers: far and near stars scroll at different speeds under the chart.
     stars_far: Handle<Image>,
     stars_near: Handle<Image>,
+    // The planet chart, kept for when the Crescent flies to planets.
+    #[allow(dead_code)]
     chart: Handle<Image>,
     pulse: Handle<Image>,
     pulse_layout: Handle<TextureAtlasLayout>,
+    #[allow(dead_code)]
     icons: Vec<(String, [Handle<Image>; 3])>,
     /// 16-frame spinning planet for each destination.
+    #[allow(dead_code)]
     orbits: Vec<Handle<Image>>,
+    #[allow(dead_code)]
     orbit_layout: Handle<TextureAtlasLayout>,
     ship_cursor: Handle<Image>,
     flight: Handle<Image>,
     flight_layout: Handle<TextureAtlasLayout>,
+    ship_overhead: Handle<Image>,
     radar: Handle<Image>,
     menu_bg: Handle<Image>,
     full_body: Handle<Image>,
     /// status, items, quests, map, credential, degree, quest_active, quest_done,
     /// character, ship, settings
     ui_icons: [Handle<Image>; 11],
+    cog: Handle<Image>,
     key_e: Handle<Image>,
     key_tap: Handle<Image>,
 }
 
 #[derive(Resource)]
 struct UiRoot(Entity);
+
+/// Where a ship map room takes you: a room you walk into, or a destination
+/// (About is a conversation, Contact is a terminal).
+#[derive(Clone, Copy)]
+enum RoomGo {
+    Scene(SceneId),
+    Dest(&'static str),
+}
+
+/// Rooms on the ship map: name, site label, marker position, where it goes, blurb.
+/// Positions sit on the overhead Atlier art drawn at SHIP_ART.
+const ROOMS: [(&str, &str, Vec2, RoomGo, &str); 6] = [
+    ("Engine Room", "SKILLS", Vec2::new(162.0, 182.0), RoomGo::Scene(SceneId::Engine), "Dave keeps the reactor humming. Ask him about the tools that keep the ship flying."),
+    ("The Archive", "WRITING", Vec2::new(262.0, 146.0), RoomGo::Scene(SceneId::Archive), ""),
+    ("The Dockyard", "WORK", Vec2::new(346.0, 214.0), RoomGo::Scene(SceneId::Port), ""),
+    ("Captain's Quarters", "ABOUT", Vec2::new(432.0, 146.0), RoomGo::Dest("about"), "A bunk, a desk, and a mirror. Stand in front of it and you end up explaining yourself."),
+    ("Comms", "CONTACT", Vec2::new(432.0, 216.0), RoomGo::Dest("contact"), ""),
+    ("The Bridge", "HOME", Vec2::new(522.0, 182.0), RoomGo::Scene(SceneId::Bridge), "The helm of the Atlier, and the heart of the ship."),
+];
+const SHIP_ART: Rect = Rect { min: Vec2::new(40.0, 20.0), max: Vec2::new(600.0, 347.0) };
+
+fn room_dest(go: RoomGo) -> Option<&'static str> {
+    match go {
+        RoomGo::Scene(SceneId::Port) => Some("work"),
+        RoomGo::Scene(SceneId::Archive) => Some("writing"),
+        RoomGo::Dest(d) => Some(d),
+        _ => None,
+    }
+}
 
 /// Destinations on the atlas, positions from the art pack's destinations.json.
 const DESTS: [(&str, Vec2); 4] = [
@@ -243,7 +330,9 @@ fn setup_ui(
         body: assets.load("fonts/Hind_400Regular.ttf"),
         bold: assets.load("fonts/Hind_600SemiBold.ttf"),
         // Manaspace for the game chrome: labels, tabs, prompts, stats.
-        label: assets.load("fonts/Manaspace.ttf"),
+        // Small caps labels: a vector face, so they stay crisp at any scale
+        // (the pixel font smeared at fractional sizes).
+        label: assets.load("fonts/Cairo_700Bold.ttf"),
         mana: assets.load("fonts/Manaspace.ttf"),
         display: assets.load("fonts/Shupp.otf"),
     });
@@ -285,6 +374,7 @@ fn setup_ui(
         // The Atlier, the big terrarium ship, is what travels between stars.
         flight: crate::load_smooth(&assets, "ships/atlier/flight.png"),
         flight_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(768, 448), 4, 1, None, None)),
+        ship_overhead: crate::load_smooth(&assets, "ships/atlier/overhead.png"),
         radar,
         menu_bg: assets.load("ui/menu_bg.png"),
         full_body: crate::load_smooth(&assets, "portraits/full_body.png"),
@@ -302,6 +392,7 @@ fn setup_ui(
             "ui/menu/settings.png",
         ]
         .map(|p| crate::load_smooth(&assets, p)),
+        cog: images.add(cog_image()),
         key_e: assets.load("ui/key_e.png"),
         key_tap: assets.load("ui/key_tap.png"),
     });
@@ -360,6 +451,11 @@ fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Regi
             ui.atlas_sel = here;
             game.mode = Mode::Atlas;
         }
+        Request::Ship => {
+            let here = ROOMS.iter().position(|r| matches!(r.3, RoomGo::Scene(s) if s == game.scene)).unwrap_or(0);
+            ui.ship_sel = here;
+            game.mode = Mode::Ship;
+        }
         Request::Menu => {
             ui.tab = 0;
             ui.sel = 0;
@@ -369,8 +465,10 @@ fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Regi
         Request::Lift => game.mode = Mode::Lift,
         Request::Terminal(id) => {
             game.mark_visited(&id);
-            ui.terminal = Some(Terminal { dest: registry.dest(&id), sel: 0 });
+            ui.terminal = Some(Terminal::new(registry.dest(&id)));
             game.mode = Mode::Terminal;
+            bridge::emit("terminal", "open");
+            emit_preview(ui.terminal.as_ref());
         }
         Request::Hatch => {
             let first = !game.hatch_open;
@@ -382,6 +480,15 @@ fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Regi
             };
             let name = registry.player.stats.name.clone();
             let lines = vec![Line { speaker: name, who: Who::Erikk, pose: if first { 2 } else { 0 }, call: false, text: text.into() }];
+            ui.dialogue = Some(Dialogue { lines, idx: 0, shown: 0.0, after: None });
+            game.mode = Mode::Dialogue;
+        }
+        Request::Crescent => {
+            let name = registry.player.stats.name.clone();
+            let lines = vec![
+                Line { speaker: name.clone(), who: Who::Erikk, pose: 0, call: false, text: "The Crescent. Fast, nimble, and built for the long jumps between stars.".into() },
+                Line { speaker: name, who: Who::Erikk, pose: 2, call: false, text: "Her flight systems are still being tuned. Once they're ready, she'll take us out to the planets.".into() },
+            ];
             ui.dialogue = Some(Dialogue { lines, idx: 0, shown: 0.0, after: None });
             game.mode = Mode::Dialogue;
         }
@@ -459,7 +566,8 @@ fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Regi
                     .flat_map(|p| paginate(&p))
                     .enumerate()
                 {
-                    lines.push(Line { speaker: name.clone(), who: Who::Erikk, pose: [1, 2, 0, 3][i % 4], call: false, text: chunk });
+                    // The captain's quarters mirror: Erikk explaining himself to his reflection.
+                    lines.push(Line { speaker: format!("{name} · in the mirror"), who: Who::Erikk, pose: [1, 2, 0, 3][i % 4], call: false, text: chunk });
                 }
                 lines.push(Line {
                     speaker: name,
@@ -538,9 +646,11 @@ fn input(
     window: Single<&Window, With<PrimaryWindow>>,
     frame: Res<Frame>,
     registry: Res<Registry>,
+    mut typed_keys: MessageReader<bevy::input::keyboard::KeyboardInput>,
     mut game: ResMut<Game>,
     mut ui: ResMut<Ui>,
 ) {
+    let typed_keys: Vec<_> = typed_keys.read().filter(|k| k.state.is_pressed()).map(|k| k.logical_key.clone()).collect();
     if page_tap.at.is_some() {
         ui.touch = page_tap.touch;
     } else if touches.any_just_pressed() {
@@ -558,7 +668,7 @@ fn input(
     let down = keys.any_just_pressed([KeyCode::ArrowDown, KeyCode::KeyS]);
     let left = keys.any_just_pressed([KeyCode::ArrowLeft, KeyCode::KeyA]);
     let right = keys.any_just_pressed([KeyCode::ArrowRight, KeyCode::KeyD]);
-    let close_hit = |at: Vec2| Rect::new(600.0, 14.0, 628.0, 40.0).contains(at);
+    let close_hit = |at: Vec2| CLOSE.contains(at);
 
     match game.mode {
         Mode::Explore => {
@@ -567,8 +677,9 @@ fn input(
                 ui.tray = false;
                 game.request = Some(Request::Menu);
             } else if keys.just_pressed(KeyCode::KeyM) || tray_tap(MAP_BTN) {
+                // M and the tray's map button open the ship map; the bridge's star console has the planets.
                 ui.tray = false;
-                game.request = Some(Request::Atlas);
+                game.request = Some(Request::Ship);
             } else if let Some(t) = tap {
                 // The sliver opens the tray; its chevron, or any tap elsewhere, closes it.
                 ui.tray = if ui.tray { false } else { SLIVER.contains(t) };
@@ -595,37 +706,132 @@ fn input(
         }
         Mode::Terminal => {
             let Some(term) = ui.terminal.as_mut() else { return };
-            let n = term.dest.items.len();
-            let mut changed = false;
+            let before = (term.sel, term.query.clone());
+            // Letters type into the search box, so only the arrows move the cursor here.
+            let mut close = keys.just_pressed(KeyCode::Escape) && term.query.is_empty();
+            if keys.just_pressed(KeyCode::Escape) && !term.query.is_empty() {
+                term.query.clear();
+                term.refilter();
+            }
+            if let Some(q) = game.search.take() {
+                term.query = q;
+                term.refilter();
+            }
+            for key in &typed_keys {
+                use bevy::input::keyboard::Key;
+                match key {
+                    Key::Character(c) if c.chars().all(|ch| !ch.is_control()) && term.query.chars().count() < 28 => {
+                        term.query.push_str(c);
+                        term.refilter();
+                    }
+                    Key::Space if !term.query.is_empty() => {
+                        term.query.push(' ');
+                        term.refilter();
+                    }
+                    Key::Backspace => {
+                        term.query.pop();
+                        term.refilter();
+                    }
+                    _ => {}
+                }
+            }
+            let n = term.hits.len();
+            let up = keys.just_pressed(KeyCode::ArrowUp);
+            let down = keys.just_pressed(KeyCode::ArrowDown);
             if up && term.sel > 0 {
                 term.sel -= 1;
-                changed = true;
             }
             if down && term.sel + 1 < n {
                 term.sel += 1;
-                changed = true;
             }
-            if ok && n > 0 {
-                bridge::emit("open", &term.dest.items[term.sel].href);
+            if keys.just_pressed(KeyCode::PageUp) {
+                term.sel = term.sel.saturating_sub(T_ROWS);
             }
+            if keys.just_pressed(KeyCode::PageDown) && n > 0 {
+                term.sel = (term.sel + T_ROWS).min(n - 1);
+            }
+            if keys.just_pressed(KeyCode::Home) {
+                term.sel = 0;
+            }
+            if keys.just_pressed(KeyCode::End) && n > 0 {
+                term.sel = n - 1;
+            }
+            let mut open = keys.just_pressed(KeyCode::Enter) && n > 0;
+            if let Some(at) = tap {
+                if close_hit(at) {
+                    close = true;
+                } else if let Some(i) = terminal_row_at(at, term.sel, n) {
+                    // A tap only selects and previews; opening the page is the button's job.
+                    term.sel = i;
+                } else if PAGE_UP_BTN.contains(at) {
+                    term.sel = term.sel.saturating_sub(T_ROWS);
+                } else if PAGE_DOWN_BTN.contains(at) && n > 0 {
+                    term.sel = (term.sel + T_ROWS).min(n - 1);
+                } else if OPEN_BTN.contains(at) && n > 0 {
+                    open = true;
+                }
+            }
+            if open {
+                if let Some(it) = term.current() {
+                    bridge::emit("open", &it.href);
+                }
+            }
+            let changed = term.sel != before.0 || term.query != before.1;
+            if changed {
+                emit_preview(Some(term));
+            }
+            if changed || close {
+                ui.dirty = true;
+            }
+            if close {
+                game.mode = Mode::Explore;
+                ui.dirty = true;
+                bridge::emit("terminal", "");
+                emit_preview(None);
+            }
+        }
+        Mode::Ship => {
+            // The ship map: fast travel between the Atlier's rooms.
+            let n = ROOMS.len();
+            if left || up {
+                ui.ship_sel = (ui.ship_sel + n - 1) % n;
+                ui.dirty = true;
+            }
+            if right || down {
+                ui.ship_sel = (ui.ship_sel + 1) % n;
+                ui.dirty = true;
+            }
+            let mut go = ok;
             if let Some(at) = tap {
                 if close_hit(at) {
                     game.mode = Mode::Explore;
-                } else if let Some(i) = terminal_row_at(at, term.sel, n) {
-                    if i == term.sel {
-                        bridge::emit("open", &term.dest.items[i].href);
+                    ui.dirty = true;
+                    return;
+                }
+                if let Some(i) = ROOMS.iter().position(|r| r.2.distance(at) < 22.0) {
+                    if i == ui.ship_sel {
+                        go = true;
                     } else {
-                        term.sel = i;
+                        ui.ship_sel = i;
+                        ui.dirty = true;
                     }
-                    changed = true;
-                } else if OPEN_BTN.contains(at) && n > 0 {
-                    bridge::emit("open", &term.dest.items[term.sel].href);
+                } else if TRAVEL_BTN.contains(at) {
+                    go = true;
                 }
             }
-            if back {
+            if go {
                 game.mode = Mode::Explore;
-            }
-            if changed || game.mode != Mode::Terminal {
+                game.request = Some(match ROOMS[ui.ship_sel].3 {
+                    RoomGo::Scene(s) if s == game.scene => {
+                        ui.dirty = true;
+                        return;
+                    }
+                    RoomGo::Scene(s) => Request::Door(s),
+                    RoomGo::Dest(d) => Request::Destination(d.to_owned()),
+                });
+                ui.dirty = true;
+            } else if back || keys.just_pressed(KeyCode::KeyM) {
+                game.mode = Mode::Explore;
                 ui.dirty = true;
             }
         }
@@ -668,46 +874,81 @@ fn input(
             }
         }
         Mode::Sheet => {
-            let list_len = match ui.tab {
-                1 => registry.player.stats.inventory.key_items.len(),
-                2 => registry.player.stats.quest_log.len() + registry.player.stats.training.len(),
-                _ => 0,
+            let stats = &registry.player.stats;
+            let suit = SUITS[ui.suit].0;
+            let (list_len, cols) = match ui.tab {
+                1 => (stats.inventory.key_items.len() + usize::from(game.hatch_open), ITEM_COLS),
+                2 => (stats.cards.iter().filter(|c| c.suit == suit).count(), CARD_COLS),
+                3 => (stats.quest_log.len() + stats.training.len(), 1),
+                _ => (0, 1),
             };
             let mut changed = false;
-            if keys.just_pressed(KeyCode::Tab) || keys.just_pressed(KeyCode::KeyQ) || right {
-                ui.tab = (ui.tab + 1) % TABS.len();
+            let set_tab = |ui: &mut Ui, t: usize| {
+                ui.tab = t;
                 ui.sel = 0;
+            };
+            let next = keys.just_pressed(KeyCode::Tab) || keys.just_pressed(KeyCode::KeyQ);
+            // In the grids the arrows move the cursor; elsewhere left/right flip tabs.
+            let grid = cols > 1;
+            if next || (!grid && right) {
+                let t = (ui.tab + 1) % TABS.len();
+                set_tab(&mut ui, t);
                 changed = true;
+            } else if !grid && left {
+                let t = (ui.tab + TABS.len() - 1) % TABS.len();
+                set_tab(&mut ui, t);
+                changed = true;
+            } else {
+                let sel = ui.sel;
+                let to = if up && sel >= cols {
+                    sel - cols
+                } else if down && sel + cols < list_len {
+                    sel + cols
+                } else if down && cols == 1 && sel + 1 < list_len {
+                    sel + 1
+                } else if grid && left && sel > 0 {
+                    sel - 1
+                } else if grid && right && sel + 1 < list_len {
+                    sel + 1
+                } else {
+                    sel
+                };
+                if to != sel {
+                    ui.sel = to;
+                    changed = true;
+                }
             }
-            if left {
-                ui.tab = (ui.tab + TABS.len() - 1) % TABS.len();
-                ui.sel = 0;
-                changed = true;
-            }
-            if up && ui.sel > 0 {
-                ui.sel -= 1;
-                changed = true;
-            }
-            if down && ui.sel + 1 < list_len {
-                ui.sel += 1;
-                changed = true;
+            if ui.tab == 2 {
+                for (i, k) in [KeyCode::Digit1, KeyCode::Digit2, KeyCode::Digit3, KeyCode::Digit4].iter().enumerate() {
+                    if keys.just_pressed(*k) {
+                        ui.suit = i;
+                        ui.sel = 0;
+                        changed = true;
+                    }
+                }
             }
             if let Some(at) = tap {
                 if close_hit(at) {
                     game.mode = Mode::Explore;
                     changed = true;
                 } else if let Some(t) = (0..TABS.len()).find(|t| tab_rect(*t).contains(at)) {
-                    ui.tab = t;
+                    set_tab(&mut ui, t);
+                    changed = true;
+                } else if ui.tab == 2 && let Some(i) = (0..SUITS.len()).find(|i| suit_rect(*i).contains(at)) {
+                    ui.suit = i;
                     ui.sel = 0;
                     changed = true;
-                } else if let Some(i) = sheet_row_at(at, ui.sel, list_len) {
+                } else if grid && let Some(i) = (0..list_len).find(|i| grid_rect(ui.tab, *i).contains(at)) {
                     ui.sel = i;
                     changed = true;
-                } else if ui.tab == 2 && OPEN_BTN.contains(at) {
+                } else if ui.tab == 3 && let Some(i) = sheet_row_at(at, ui.sel, list_len) {
+                    ui.sel = i;
+                    changed = true;
+                } else if ui.tab == 3 && OPEN_BTN.contains(at) {
                     bridge::emit("open", "/resume");
                 }
             }
-            if ok && ui.tab == 2 {
+            if keys.just_pressed(KeyCode::Enter) && ui.tab == 3 {
                 bridge::emit("open", "/resume");
             }
             if back || keys.just_pressed(KeyCode::KeyC) {
@@ -727,22 +968,85 @@ const TERM: Rect = Rect { min: Vec2::new(28.0, 14.0), max: Vec2::new(612.0, 346.
 const LIST_X: f32 = 44.0;
 const LIST_W: f32 = 300.0;
 const LIST_TOP: f32 = 70.0;
+const T_TOP: f32 = 86.0;
 const ROW_H: f32 = 28.0;
 const ROWS: usize = 9;
-const OPEN_BTN: Rect = Rect { min: Vec2::new(470.0, 306.0), max: Vec2::new(596.0, 330.0) };
-const TRAVEL_BTN: Rect = Rect { min: Vec2::new(488.0, 318.0), max: Vec2::new(600.0, 342.0) };
+const T_ROWS: usize = 8;
+const OPEN_BTN: Rect = Rect { min: Vec2::new(470.0, 312.0), max: Vec2::new(596.0, 334.0) };
+/// The close X, tucked inside the top-right corner of the 28..612 panel.
+const CLOSE: Rect = Rect { min: Vec2::new(578.0, 22.0), max: Vec2::new(602.0, 44.0) };
+/// Search box above the terminal list; the page lays a real input over it on phones.
+const SEARCH: Rect = Rect { min: Vec2::new(44.0, 62.0), max: Vec2::new(344.0, 80.0) };
+/// The page lays an iframe of the selected page over this box.
+const PREVIEW: Rect = Rect { min: Vec2::new(364.0, 62.0), max: Vec2::new(596.0, 210.0) };
+const PAGE_UP_BTN: Rect = Rect { min: Vec2::new(250.0, 318.0), max: Vec2::new(294.0, 336.0) };
+const PAGE_DOWN_BTN: Rect = Rect { min: Vec2::new(298.0, 318.0), max: Vec2::new(344.0, 336.0) };
+const TRAVEL_BTN: Rect = Rect { min: Vec2::new(488.0, 288.0), max: Vec2::new(600.0, 312.0) };
+
+fn term_start(sel: usize, n: usize) -> usize {
+    if n <= T_ROWS { 0 } else { sel.saturating_sub(T_ROWS / 2).min(n - T_ROWS) }
+}
 
 fn window_start(sel: usize, n: usize) -> usize {
     if n <= ROWS { 0 } else { sel.saturating_sub(ROWS / 2).min(n - ROWS) }
 }
 
 fn terminal_row_at(at: Vec2, sel: usize, n: usize) -> Option<usize> {
-    if at.x < LIST_X || at.x > LIST_X + LIST_W || at.y < LIST_TOP {
+    if at.x < LIST_X || at.x > LIST_X + LIST_W || at.y < T_TOP {
         return None;
     }
-    let row = ((at.y - LIST_TOP) / ROW_H) as usize;
-    let i = window_start(sel, n) + row;
-    (row < ROWS && i < n).then_some(i)
+    let row = ((at.y - T_TOP) / ROW_H) as usize;
+    let i = term_start(sel, n) + row;
+    (row < T_ROWS && i < n).then_some(i)
+}
+
+const ITEM_COLS: usize = 4;
+const CARD_COLS: usize = 5;
+
+/// A slot in the Items grid (tab 1) or a mini card in the Skills deck (tab 2).
+fn grid_rect(tab: usize, i: usize) -> Rect {
+    let (x0, y0, w, h, cols) = if tab == 1 { (148.0, 66.0, 42.0, 42.0, ITEM_COLS) } else { (148.0, 76.0, 34.0, 46.0, CARD_COLS) };
+    let (c, r) = ((i % cols) as f32, (i / cols) as f32);
+    let (x, y) = (x0 + c * (w + 5.0), y0 + r * (h + 5.0));
+    Rect::new(x, y, x + w, y + h)
+}
+
+fn suit_rect(i: usize) -> Rect {
+    let x = 146.0 + i as f32 * 48.0;
+    Rect::new(x, 52.0, x + 46.0, 68.0)
+}
+
+fn rarity_color(r: &str) -> Color {
+    match r {
+        "legendary" => Color::srgb(0.91, 0.73, 0.29),
+        "epic" => Color::srgb(0.69, 0.42, 0.85),
+        "rare" => Color::srgb(0.31, 0.62, 0.85),
+        _ => Color::srgb(0.62, 0.62, 0.62),
+    }
+}
+
+fn suit_color(s: &str) -> Color {
+    match s {
+        "skill" => Color::srgb(0.36, 0.55, 0.78),
+        "discipline" => Color::srgb(0.38, 0.66, 0.52),
+        "special" => Color::srgb(0.91, 0.73, 0.29),
+        _ => Color::srgb(0.72, 0.50, 0.32),
+    }
+}
+
+/// Two-letter monogram used on cards until their art arrives.
+fn monogram(name: &str) -> String {
+    let words: Vec<&str> = name.split(|c: char| !c.is_alphanumeric()).filter(|w| !w.is_empty() && !["and", "of", "the"].contains(&w.to_lowercase().as_str())).collect();
+    match words.as_slice() {
+        [] => "?".into(),
+        [w] => w.chars().take(2).collect::<String>().to_uppercase(),
+        [a, b, ..] => format!("{}{}", a.chars().next().unwrap_or(' '), b.chars().next().unwrap_or(' ')).to_uppercase(),
+    }
+}
+
+fn title_case(s: &str) -> String {
+    let mut c = s.chars();
+    c.next().map(|f| f.to_uppercase().collect::<String>() + c.as_str()).unwrap_or_default()
 }
 
 fn tab_rect(i: usize) -> Rect {
@@ -872,6 +1176,10 @@ struct Pulse;
 #[derive(Component)]
 struct Shimmer(f32);
 
+/// A brass cog on the quest dossier, turning at this many radians a second.
+#[derive(Component)]
+struct Cog(f32);
+
 /// A destination planet turning in place.
 #[derive(Component)]
 struct Orbit(usize);
@@ -882,7 +1190,11 @@ fn animate_map(
     mut pulse: Query<&mut ImageNode, (With<Pulse>, Without<Orbit>)>,
     mut planets: Query<(&Orbit, &mut ImageNode), Without<Pulse>>,
     mut sweeps: Query<(&Shimmer, &mut Node), Without<Parallax>>,
+    mut cogs: Query<(&Cog, &mut UiTransform)>,
 ) {
+    for (cog, mut tf) in &mut cogs {
+        tf.rotation = Rot2::radians(time.elapsed_secs() * cog.0);
+    }
     // Sweep for 0.5 s, rest for 1.3 s, like a light catching a blade.
     let u = (time.elapsed_secs() % 1.8) / 0.5;
     for (sh, mut node) in &mut sweeps {
@@ -959,7 +1271,10 @@ fn truncate(s: &str, max: usize) -> String {
 }
 
 fn close_button(p: &mut ChildSpawnerCommands, f: &Fonts) {
-    p.spawn((panel(600.0, 14.0, 26.0, 24.0), children![text_at(&f.label, 11.0, CITRON, "X", 8.0, 3.0, 20.0)]));
+    p.spawn((
+        panel(CLOSE.min.x, CLOSE.min.y, CLOSE.width(), CLOSE.height()),
+        children![text_at(&f.label, 11.0, CITRON, "X", 0.0, 3.0, CLOSE.width() - 2.0).with_justify()],
+    ));
 }
 
 // ---------------------------------------------------------------------------
@@ -1044,18 +1359,32 @@ fn render(
 
         Mode::Terminal => {
             let Some(term) = ui.terminal.as_ref() else { return };
-            let n = term.dest.items.len();
-            let start = window_start(term.sel, n);
-            let hint = if ui.touch { "Tap to select, tap again to open" } else { "Up/Down select · Enter open · Esc close" };
+            let n = term.hits.len();
+            let start = term_start(term.sel, n);
+            let hint = if ui.touch { "Tap a row to preview it" } else { "Type to search · Arrows · Enter opens · Esc" };
             commands.entity(overlay).with_children(|p| {
                 p.spawn(panel(TERM.min.x, TERM.min.y, TERM.width(), TERM.height()));
-                p.spawn(text_at(&f.label, 9.0, SAGE, format!("TERMINAL · {}", term.dest.label.to_uppercase()), 44.0, 24.0, 400.0));
-                p.spawn(text_at(&f.display, 22.0, CITRON, term.dest.name.clone(), 44.0, 34.0, 400.0));
+                p.spawn(text_at(&f.label, 9.0, SAGE, format!("TERMINAL · {}", term.dest.label.to_uppercase()), 44.0, 22.0, 400.0));
+                p.spawn(text_at(&f.display, 22.0, CITRON, term.dest.name.clone(), 44.0, 32.0, 400.0));
                 close_button(p, f);
-                for (row, i) in (start..n.min(start + ROWS)).enumerate() {
-                    let item = &term.dest.items[i];
-                    let y = LIST_TOP + row as f32 * ROW_H;
-                    let selected = i == term.sel;
+                // Search box.
+                p.spawn((
+                    Node { border: UiRect::all(Val::Px(1.0)), border_radius: BorderRadius::all(Val::Px(2.0)), ..at(SEARCH.min.x - 4.0, SEARCH.min.y, SEARCH.width() + 8.0, SEARCH.height()) },
+                    BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.35)),
+                    BorderColor::all(if term.query.is_empty() { LINE } else { CITRON }),
+                ));
+                let (q, qc) = if term.query.is_empty() {
+                    (if ui.touch { "Tap to search".to_owned() } else { "Search: just start typing".to_owned() }, MUTED)
+                } else {
+                    (format!("{}_", term.query), CITRON)
+                };
+                p.spawn(text_at(&f.label, 7.0, SAGE, "FIND", SEARCH.min.x + 2.0, SEARCH.min.y + 4.5, 26.0));
+                p.spawn(text_at(&f.bold, 10.0, qc, q, SEARCH.min.x + 28.0, SEARCH.min.y + 2.0, SEARCH.width() - 82.0));
+                p.spawn(text_at(&f.label, 7.5, MUTED, format!("{} / {}", n, term.dest.items.len()), SEARCH.max.x - 54.0, SEARCH.min.y + 5.0, 52.0).with_justify());
+                for (row, k) in (start..n.min(start + T_ROWS)).enumerate() {
+                    let item = &term.dest.items[term.hits[k]];
+                    let y = T_TOP + row as f32 * ROW_H;
+                    let selected = k == term.sel;
                     p.spawn((
                         Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(LIST_X - 4.0, y, LIST_W + 8.0, ROW_H - 2.0) },
                         BackgroundColor(if selected { SELECT } else { Color::NONE }),
@@ -1065,18 +1394,36 @@ fn render(
                         p.spawn(text_at(&f.label, 7.5, SAGE, truncate(&meta.to_uppercase(), 60), LIST_X + 4.0, y + 15.0, LIST_W));
                     }
                 }
-                if n > ROWS {
-                    p.spawn(text_at(&f.label, 8.0, MUTED, format!("{} of {}", term.sel + 1, n), LIST_X, 326.0, 120.0));
+                if n == 0 {
+                    p.spawn(text_at(&f.body, 11.0, MUTED, format!("Nothing matches \"{}\".", term.query.trim()), LIST_X + 4.0, T_TOP + 6.0, LIST_W));
                 }
-                if let Some(item) = term.dest.items.get(term.sel) {
-                    p.spawn(text_at(&f.bold, 13.0, CITRON, item.title.clone(), 368.0, 72.0, 228.0));
+                // Footer: position, then page buttons for thumbs.
+                if n > 0 {
+                    p.spawn(text_at(&f.label, 8.0, MUTED, format!("{} of {}", term.sel + 1, n), LIST_X, 322.0, 80.0));
+                }
+                if n > T_ROWS {
+                    for (r, label) in [(PAGE_UP_BTN, "PG UP"), (PAGE_DOWN_BTN, "PG DN")] {
+                        p.spawn((panel(r.min.x, r.min.y, r.width(), r.height()), children![text_at(&f.label, 7.5, CITRON, label, 0.0, 4.0, r.width() - 2.0).with_justify()]));
+                    }
+                }
+                p.spawn(text_at(&f.label, 7.5, MUTED, hint, 112.0, 322.0, 140.0));
+                // Preview pane: the page draws a live thumbnail of the page over PREVIEW.
+                p.spawn((
+                    Node { border: UiRect::all(Val::Px(1.0)), border_radius: BorderRadius::all(Val::Px(2.0)), ..at(PREVIEW.min.x, PREVIEW.min.y, PREVIEW.width(), PREVIEW.height()) },
+                    BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.4)),
+                    BorderColor::all(LINE),
+                ));
+                if let Some(item) = term.current() {
+                    let local = item.href.starts_with('/');
+                    let note = if local { "Loading preview…" } else { "Opens outside shupp.dev" };
+                    p.spawn(text_at(&f.label, 8.0, MUTED, note, PREVIEW.min.x, PREVIEW.min.y + PREVIEW.height() / 2.0 - 5.0, PREVIEW.width()).with_justify());
+                    p.spawn(text_at(&f.bold, 12.0, CITRON, truncate(&item.title, 60), PREVIEW.min.x, 218.0, PREVIEW.width()));
                     if let Some(desc) = &item.description {
-                        p.spawn(text_at(&f.body, 11.0, TEXT, truncate(desc, 260), 368.0, 112.0, 228.0));
+                        p.spawn(text_at(&f.body, 9.5, TEXT, truncate(desc, 150), PREVIEW.min.x, 250.0, PREVIEW.width()));
                     }
                     p.spawn((panel(OPEN_BTN.min.x, OPEN_BTN.min.y, OPEN_BTN.width(), OPEN_BTN.height()),
-                        children![text_at(&f.label, 9.0, CITRON, "OPEN PAGE ›", 22.0, 5.0, 120.0)]));
+                        children![text_at(&f.label, 9.0, CITRON, "OPEN PAGE ›", 0.0, 5.0, OPEN_BTN.width() - 2.0).with_justify()]));
                 }
-                p.spawn(text_at(&f.label, 8.0, MUTED, hint, 200.0, 326.0, 260.0));
             });
         }
 
@@ -1127,8 +1474,60 @@ fn render(
                     b.spawn(text_at(&f.bold, 13.0, CITRON, dest.name.clone(), 10.0, 18.0, 320.0));
                     b.spawn(text_at(&f.body, 10.0, MUTED, truncate(&dest.preview, 120), 10.0, 36.0, 320.0));
                 });
-                p.spawn((panel(TRAVEL_BTN.min.x, TRAVEL_BTN.min.y - 30.0, TRAVEL_BTN.width(), TRAVEL_BTN.height()),
+                p.spawn((panel(TRAVEL_BTN.min.x, TRAVEL_BTN.min.y, TRAVEL_BTN.width(), TRAVEL_BTN.height()),
                     children![text_at(&f.label, 9.0, CITRON, "TRAVEL ›", 30.0, 5.0, 100.0)]));
+            });
+        }
+        Mode::Ship => {
+            let sel = ui.ship_sel;
+            let here = ROOMS.iter().position(|r| matches!(r.3, RoomGo::Scene(s) if s == game.scene));
+            commands.entity(overlay).with_children(|p| {
+                // The Atlier from above, drifting through the stars.
+                p.spawn((at(0.0, 0.0, VW, VH), BackgroundColor(Color::srgb_u8(5, 11, 24))));
+                for (img, speed) in [(&art.stars_far, 3.0), (&art.stars_near, 11.0)] {
+                    p.spawn((Parallax(speed), at(0.0, 0.0, PARALLAX_W * 2.0, VH))).with_children(|r| {
+                        r.spawn((at(0.0, 0.0, PARALLAX_W, VH), ImageNode::new(img.clone())));
+                        r.spawn((at(PARALLAX_W, 0.0, PARALLAX_W, VH), ImageNode::new(img.clone())));
+                    });
+                }
+                p.spawn((at(SHIP_ART.min.x, SHIP_ART.min.y, SHIP_ART.width(), SHIP_ART.height()), ImageNode::new(art.ship_overhead.clone())));
+                p.spawn(text_at(&f.label, 9.0, SAGE, "SHIP MAP · FAST TRAVEL", 20.0, 16.0, 260.0));
+                p.spawn(text_at(&f.display, 22.0, CITRON, "The Atlier", 20.0, 26.0, 300.0));
+                close_button(p, f);
+                let sp = ROOMS[sel].2;
+                p.spawn((
+                    Pulse,
+                    at(sp.x - 26.0, sp.y - 26.0, 52.0, 52.0),
+                    ImageNode::from_atlas_image(art.pulse.clone(), TextureAtlas { layout: art.pulse_layout.clone(), index: 0 }),
+                ));
+                for (i, (name, _, pos, go, _)) in ROOMS.iter().enumerate() {
+                    let on = i == sel;
+                    let seen = room_dest(*go).is_some_and(|d| game.visited.iter().any(|v| v == d));
+                    p.spawn((
+                        Node { border: UiRect::all(Val::Px(2.0)), border_radius: BorderRadius::all(Val::Px(6.0)), ..at(pos.x - 6.0, pos.y - 6.0, 12.0, 12.0) },
+                        BackgroundColor(if on { LAMP } else if seen { OLIVE.with_alpha(0.8) } else { INK }),
+                        BorderColor::all(if on { CITRON } else { LINE }),
+                    ));
+                    // Name tag on a dark plate so it reads over the garden art.
+                    p.spawn((
+                        Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(pos.x - 46.0, pos.y + 10.0, 92.0, 13.0) },
+                        BackgroundColor(Color::srgba(0.05, 0.03, 0.05, if on { 0.9 } else { 0.7 })),
+                        children![text_at(&f.label, 7.0, if on { CITRON } else { TEXT }, name.to_uppercase(), 0.0, 2.0, 92.0).with_justify()],
+                    ));
+                }
+                if let Some(h) = here {
+                    let hp = ROOMS[h].2;
+                    p.spawn((at(hp.x - 10.0, hp.y - 32.0, 20.0, 20.0), ImageNode::new(art.ship_cursor.clone())));
+                }
+                let (name, label, _, go, blurb) = ROOMS[sel];
+                let text = if blurb.is_empty() { room_dest(go).map_or(String::new(), |d| registry.dest(d).preview.clone()) } else { blurb.to_owned() };
+                p.spawn(panel(20.0, 282.0, 460.0, 66.0)).with_children(|b| {
+                    b.spawn(text_at(&f.label, 8.0, LAMP, if here == Some(sel) { format!("{label} · YOU ARE HERE") } else { label.to_owned() }, 10.0, 6.0, 300.0));
+                    b.spawn(text_at(&f.bold, 13.0, CITRON, name, 10.0, 18.0, 320.0));
+                    b.spawn(text_at(&f.body, 10.0, MUTED, truncate(&text, 120), 10.0, 36.0, 440.0));
+                });
+                p.spawn((panel(TRAVEL_BTN.min.x, TRAVEL_BTN.min.y, TRAVEL_BTN.width(), TRAVEL_BTN.height()),
+                    children![text_at(&f.label, 9.0, CITRON, "GO ›", 0.0, 5.0, TRAVEL_BTN.width() - 2.0).with_justify()]));
             });
         }
 
@@ -1154,12 +1553,12 @@ fn render(
             ui.flight = flight;
         }
 
-        Mode::Sheet => render_sheet(&mut commands, overlay, &ui, &registry, f, &art),
+        Mode::Sheet => render_sheet(&mut commands, overlay, &ui, &registry, f, &art, game.hatch_open),
         Mode::Explore | Mode::Lift => {}
     }
 }
 
-fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Registry, f: &Fonts, art: &UiArt) {
+fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Registry, f: &Fonts, art: &UiArt, hatch: bool) {
     let stats = &registry.player.stats;
     commands.entity(overlay).with_children(|p| {
         p.spawn((at(TERM.min.x, TERM.min.y, TERM.width(), TERM.height()), ImageNode::new(art.menu_bg.clone())));
@@ -1182,7 +1581,7 @@ fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Re
                         });
                 });
             }
-            p.spawn((at(r.min.x + 4.0, r.min.y + 3.0, 16.0, 16.0), ImageNode::new(art.ui_icons[i].clone())));
+            p.spawn((at(r.min.x + 4.0, r.min.y + 3.0, 16.0, 16.0), ImageNode::new(art.ui_icons[TAB_ICONS[i]].clone())));
             p.spawn(text_at(&f.label, 10.0, if on { CITRON } else { TEXT }, name.to_uppercase(), r.min.x + 25.0, r.min.y + 5.0, 70.0));
         }
 
@@ -1213,42 +1612,112 @@ fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Re
                     p.spawn(text_at(&f.label, 8.0, TEXT, format!("{} {}", a.label.to_uppercase(), a.value as i32), lx - 40.0, ly - 6.0, 80.0))
                         .insert(TextLayout::justify(Justify::Center));
                 }
-                p.spawn(text_at(&f.label, 8.5, SAGE, "SKILLS", 146.0, 240.0, 100.0));
-                p.spawn(text_at(&f.body, 10.0, TEXT, stats.skills.join(" · "), 146.0, 254.0, 450.0));
-                p.spawn(text_at(&f.label, 8.5, SAGE, "DISCIPLINES", 146.0, 290.0, 100.0));
-                p.spawn(text_at(&f.body, 10.0, TEXT, stats.soft_skills.join(" · "), 146.0, 304.0, 450.0));
+                if let Some(q) = stats.quest_log.iter().find(|q| q.current) {
+                    p.spawn(text_at(&f.label, 8.0, SAGE, "CURRENT QUEST", 152.0, 252.0, 200.0));
+                    p.spawn(text_at(&f.bold, 12.0, CITRON, q.title.clone(), 152.0, 266.0, 440.0));
+                    p.spawn(text_at(&f.label, 8.0, LAMP, format!("{} · {}", q.place.to_uppercase(), q.years), 152.0, 284.0, 440.0));
+                }
+                let counts = format!(
+                    "{} ITEMS  ·  {} CARDS  ·  {} QUESTS",
+                    stats.inventory.key_items.len() + usize::from(hatch),
+                    stats.cards.len(),
+                    stats.quest_log.len()
+                );
+                p.spawn(text_at(&f.label, 8.0, MUTED, counts, 152.0, 310.0, 440.0));
             }
             1 => {
-                // ITEMS
-                let items = &stats.inventory.key_items;
-                p.spawn(text_at(&f.label, 8.5, SAGE, "KEY ITEMS", 148.0, 50.0, 200.0));
-                let start = window_start(ui.sel, items.len());
-                for (row, i) in (start..items.len().min(start + ROWS)).enumerate() {
-                    let it = &items[i];
-                    let y = LIST_TOP + row as f32 * ROW_H;
-                    let on = i == ui.sel;
-                    p.spawn((Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(144.0, y, 238.0, ROW_H - 2.0) }, BackgroundColor(if on { SELECT } else { Color::NONE })));
-                    let icon = if it.kind == "credential" { 4 } else { 5 };
-                    p.spawn((at(148.0, y + 5.0, 16.0, 16.0), ImageNode::new(art.ui_icons[icon].clone())));
-                    p.spawn(text_at(&f.bold, 10.5, if on { CITRON } else { TEXT }, truncate(&it.name, 32), 170.0, y + 1.0, 210.0));
-                    p.spawn(text_at(&f.label, 7.5, SAGE, truncate(&it.from.to_uppercase(), 38), 170.0, y + 15.0, 210.0));
+                // ITEMS: an inventory grid; the selected item opens as a card.
+                let relic = crate::content::KeyItem {
+                    name: "Dave's Socket Wrench".into(),
+                    from: "Engine room hatch".into(),
+                    note: "Brass, heavy, stamped \"D.\" on the handle. Dave says he lost it years ago. He didn't.".into(),
+                    kind: "relic".into(),
+                    kind_in_game: "relic".into(),
+                    rarity: "legendary".into(),
+                    year: None,
+                    bonus: "+1 LCK".into(),
+                };
+                let mut items: Vec<&crate::content::KeyItem> = stats.inventory.key_items.iter().collect();
+                if hatch {
+                    items.push(&relic);
+                }
+                p.spawn(text_at(&f.label, 8.0, SAGE, format!("INVENTORY · {}", items.len()), 148.0, 50.0, 200.0));
+                let slots = items.len().max(16).div_ceil(ITEM_COLS) * ITEM_COLS;
+                for i in 0..slots.min(20) {
+                    let r = grid_rect(1, i);
+                    let it = items.get(i);
+                    let on = i == ui.sel && it.is_some();
+                    let edge = it.map_or(LINE.with_alpha(0.25), |it| rarity_color(&it.rarity));
+                    p.spawn((
+                        Node { border: UiRect::all(Val::Px(if on { 2.0 } else { 1.0 })), border_radius: BorderRadius::all(Val::Px(3.0)), ..at(r.min.x, r.min.y, r.width(), r.height()) },
+                        BackgroundColor(if on { SELECT } else { Color::srgba(0.0, 0.0, 0.0, 0.35) }),
+                        BorderColor::all(if on { CITRON } else { edge }),
+                    ));
+                    if let Some(it) = it {
+                        p.spawn((at(r.min.x + 9.0, r.min.y + 7.0, 24.0, 24.0), ImageNode::new(art.ui_icons[item_icon(&it.kind_in_game)].clone())));
+                        // Rarity gem in the corner.
+                        p.spawn((Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(r.max.x - 7.0, r.max.y - 7.0, 4.0, 4.0) }, BackgroundColor(edge)));
+                    }
                 }
                 if let Some(it) = items.get(ui.sel) {
-                    p.spawn(text_at(&f.bold, 12.0, CITRON, it.name.clone(), 398.0, 50.0, 200.0));
-                    p.spawn(text_at(&f.label, 8.0, LAMP, format!("{} · {}", if it.kind == "credential" { "CREDENTIAL" } else { "TRAINING" }, it.from.to_uppercase()), 398.0, 84.0, 200.0));
-                    p.spawn(text_at(&f.body, 10.0, TEXT, truncate(&it.note, 180), 398.0, 100.0, 200.0));
-                }
-                p.spawn(text_at(&f.label, 8.5, SAGE, "GEAR", 398.0, 186.0, 100.0));
-                for (i, g) in stats.inventory.gear.iter().take(12).enumerate() {
-                    let (col, row) = (i % 2, i / 2);
-                    p.spawn(text_at(&f.body, 9.5, TEXT, format!("{} ×{}", truncate(&g.name, 18), g.uses), 398.0 + col as f32 * 104.0, 200.0 + row as f32 * 18.0, 104.0));
+                    let c = rarity_color(&it.rarity);
+                    let kind = title_case(if it.kind_in_game.is_empty() { &it.kind } else { &it.kind_in_game });
+                    item_card(p, f, c, &it.name, &format!("{} · {}", kind.to_uppercase(), it.rarity.to_uppercase()), |p, b| {
+                        p.spawn((at(b.x + b.w / 2.0 - 28.0, b.y + b.h / 2.0 - 28.0, 56.0, 56.0), ImageNode::new(art.ui_icons[item_icon(&it.kind_in_game)].clone())));
+                    }, &[
+                        ("ISSUER", it.from.clone()),
+                        ("YEAR", it.year.map_or("—".into(), |y| y.to_string())),
+                        ("BONUS", it.bonus.clone()),
+                    ], &it.note);
                 }
             }
             2 => {
-                // QUESTS: the resume as a quest log.
+                // SKILLS: a deck in four suits.
+                for (i, (_, label)) in SUITS.iter().enumerate() {
+                    let r = suit_rect(i);
+                    let on = i == ui.suit;
+                    p.spawn((
+                        Node { border: UiRect::all(Val::Px(1.0)), border_radius: BorderRadius::all(Val::Px(2.0)), ..at(r.min.x, r.min.y, r.width(), r.height()) },
+                        BackgroundColor(if on { suit_color(SUITS[i].0).with_alpha(0.35) } else { Color::NONE }),
+                        BorderColor::all(if on { CITRON } else { suit_color(SUITS[i].0).with_alpha(0.6) }),
+                        children![text_at(&f.label, 6.5, if on { CITRON } else { TEXT }, *label, 0.0, 3.5, r.width() - 2.0).with_justify()],
+                    ));
+                }
+                let suit = SUITS[ui.suit].0;
+                let deck: Vec<&crate::content::SkillCard> = stats.cards.iter().filter(|c| c.suit == suit).collect();
+                let sc = suit_color(suit);
+                for (i, card) in deck.iter().enumerate().take(25) {
+                    let r = grid_rect(2, i);
+                    let on = i == ui.sel;
+                    p.spawn((
+                        Node { border: UiRect::all(Val::Px(if on { 2.0 } else { 1.0 })), border_radius: BorderRadius::all(Val::Px(3.0)), overflow: Overflow::clip(), ..at(r.min.x, r.min.y, r.width(), r.height()) },
+                        BackgroundColor(Color::srgba(0.05, 0.03, 0.05, 0.9)),
+                        BorderColor::all(if on { CITRON } else { sc }),
+                    ))
+                    .with_children(|m| {
+                        m.spawn((at(0.0, 0.0, r.width(), 6.0), BackgroundColor(sc.with_alpha(0.8))));
+                        m.spawn(text_at(&f.display, 15.0, if on { CITRON } else { TEXT }, monogram(&card.name), 0.0, 11.0, r.width() - 2.0).with_justify());
+                        m.spawn(text_at(&f.label, 5.5, sc, pips(card.mastery), 0.0, r.height() - 12.0, r.width() - 2.0).with_justify());
+                    });
+                }
+                if let Some(card) = deck.get(ui.sel) {
+                    let label = SUITS[ui.suit].1.trim_end_matches('S');
+                    item_card(p, f, sc, &card.name, &format!("{} CARD", label), |p, b| {
+                        p.spawn(text_at(&f.display, 40.0, sc, monogram(&card.name), b.x, b.y + b.h / 2.0 - 24.0, b.w).with_justify());
+                    }, &[
+                        ("MASTERY", pips(card.mastery)),
+                        ("FEEDS", format!("+{} {}", card.mastery.div_ceil(2), card.feeds)),
+                    ], &card.flavor);
+                } else {
+                    p.spawn(text_at(&f.body, 10.0, MUTED, "No cards in this suit yet.", 352.0, 60.0, 240.0));
+                }
+            }
+            3 => {
+                // QUESTS: career as a quest log. The active quest is a brass
+                // dossier; finished ones are stamped logbook pages.
                 let quests = &stats.quest_log;
                 let total = quests.len() + stats.training.len();
-                p.spawn(text_at(&f.label, 8.5, SAGE, "QUEST LOG", 148.0, 50.0, 200.0));
+                p.spawn(text_at(&f.label, 8.0, SAGE, "QUEST LOG", 148.0, 50.0, 200.0));
                 let start = window_start(ui.sel, total);
                 for (row, i) in (start..total.min(start + ROWS)).enumerate() {
                     let y = LIST_TOP + row as f32 * ROW_H;
@@ -1263,22 +1732,20 @@ fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Re
                     };
                     p.spawn((at(148.0, y + 5.0, 16.0, 16.0), ImageNode::new(art.ui_icons[mark].clone())));
                     p.spawn(text_at(&f.bold, 10.5, if on { CITRON } else { TEXT }, truncate(&title, 30), 170.0, y + 1.0, 210.0));
-                    p.spawn(text_at(&f.label, 7.5, SAGE, truncate(&format!("{} · {}", place.to_uppercase(), years), 40), 170.0, y + 15.0, 210.0));
+                    p.spawn(text_at(&f.label, 7.0, SAGE, truncate(&format!("{} · {}", place.to_uppercase(), years), 40), 170.0, y + 15.0, 210.0));
                 }
-                if ui.sel < quests.len() {
-                    let q = &quests[ui.sel];
-                    p.spawn(text_at(&f.bold, 12.0, CITRON, q.title.clone(), 398.0, 50.0, 200.0));
-                    p.spawn(text_at(&f.label, 8.0, LAMP, format!("{} · {}", q.place.to_uppercase(), q.years), 398.0, 84.0, 200.0));
-                    p.spawn(text_at(&f.body, 9.5, TEXT, truncate(&q.summary, 150), 398.0, 98.0, 200.0));
-                    let feats: Vec<String> = q.feats.iter().take(4).map(|x| format!("• {}", truncate(x, 70))).collect();
-                    p.spawn(text_at(&f.body, 9.0, MUTED, feats.join("\n"), 398.0, 168.0, 200.0));
+                let d = (390.0, 46.0, 210.0, 260.0);
+                if let Some(q) = quests.get(ui.sel) {
+                    if q.current {
+                        dossier(p, f, art, d, q);
+                    } else {
+                        logbook(p, f, d, &q.title, &format!("{} · {}", q.place, q.years), &q.summary, &q.feats);
+                    }
                 } else if let Some(t) = stats.training.get(ui.sel - quests.len()) {
-                    p.spawn(text_at(&f.label, 8.0, LAMP, "TRAINING", 398.0, 50.0, 200.0));
-                    p.spawn(text_at(&f.bold, 12.0, CITRON, t.title.clone(), 398.0, 64.0, 200.0));
-                    p.spawn(text_at(&f.body, 10.0, TEXT, format!("{}\n{}", t.place, t.years), 398.0, 110.0, 200.0));
+                    logbook(p, f, d, &t.title, &format!("{} · {}", t.place, t.years), "Training quest.", &[]);
                 }
                 p.spawn((panel(OPEN_BTN.min.x, OPEN_BTN.min.y, OPEN_BTN.width(), OPEN_BTN.height()),
-                    children![text_at(&f.label, 9.0, CITRON, "FULL RESUME ›", 18.0, 5.0, 120.0)]));
+                    children![text_at(&f.label, 9.0, CITRON, "FULL RESUME ›", 0.0, 5.0, OPEN_BTN.width() - 2.0).with_justify()]));
             }
             _ => {}
         }
@@ -1376,6 +1843,150 @@ impl<B: Bundle> Centered for B {
     fn with_justify(self) -> (Self, TextLayout) {
         (self, TextLayout::justify(Justify::Center))
     }
+}
+
+fn item_icon(kind: &str) -> usize {
+    match kind {
+        "scroll" | "codex" => 5,
+        "relic" => 10,
+        _ => 4,
+    }
+}
+
+fn pips(n: u8) -> String {
+    format!("{n} / 5")
+}
+
+/// A content box: x, y, width, height.
+#[derive(Clone, Copy)]
+struct Bx {
+    x: f32,
+    y: f32,
+    w: f32,
+    h: f32,
+}
+
+/// The detail card on the right of Items and Skills: a framed title plate,
+/// an art window, attribute rows and flavour text.
+fn item_card(
+    p: &mut ChildSpawnerCommands,
+    f: &Fonts,
+    edge: Color,
+    title: &str,
+    kind: &str,
+    art: impl FnOnce(&mut ChildSpawnerCommands, Bx),
+    attrs: &[(&str, String)],
+    note: &str,
+) {
+    let c = Bx { x: 352.0, y: 48.0, w: 248.0, h: 262.0 };
+    p.spawn((
+        Node { border: UiRect::all(Val::Px(2.0)), border_radius: BorderRadius::all(Val::Px(4.0)), ..at(c.x, c.y, c.w, c.h) },
+        BackgroundColor(Color::srgba(0.06, 0.04, 0.06, 0.92)),
+        BorderColor::all(edge),
+    ));
+    p.spawn(text_at(&f.label, 7.0, edge, kind.to_owned(), c.x + 10.0, c.y + 7.0, c.w - 20.0));
+    p.spawn(text_at(&f.bold, 11.0, CITRON, truncate(title, 64), c.x + 10.0, c.y + 18.0, c.w - 20.0));
+    // Art window: the detailed illustration goes here once the art lands.
+    let a = Bx { x: c.x + 10.0, y: c.y + 48.0, w: c.w - 20.0, h: 96.0 };
+    p.spawn((
+        Node { border: UiRect::all(Val::Px(1.0)), border_radius: BorderRadius::all(Val::Px(2.0)), ..at(a.x, a.y, a.w, a.h) },
+        BackgroundColor(edge.with_alpha(0.12)),
+        BorderColor::all(edge.with_alpha(0.5)),
+    ));
+    art(p, a);
+    let mut y = a.y + a.h + 8.0;
+    for (k, v) in attrs {
+        p.spawn(text_at(&f.label, 7.0, SAGE, *k, c.x + 10.0, y + 2.0, 60.0));
+        p.spawn(text_at(&f.bold, 9.5, TEXT, truncate(v, 40), c.x + 70.0, y, c.w - 80.0));
+        y += 15.0;
+    }
+    p.spawn(text_at(&f.body, 9.0, MUTED, truncate(note, 150), c.x + 10.0, y + 4.0, c.w - 20.0));
+}
+
+const BRASS: Color = Color::srgb(0.71, 0.54, 0.23);
+
+/// The active quest: a riveted brass dossier with turning cogs.
+fn dossier(p: &mut ChildSpawnerCommands, f: &Fonts, art: &UiArt, (x, y, w, h): (f32, f32, f32, f32), q: &crate::content::Quest) {
+    p.spawn((
+        Node { border: UiRect::all(Val::Px(2.0)), border_radius: BorderRadius::all(Val::Px(4.0)), overflow: Overflow::clip(), ..at(x, y, w, h) },
+        BackgroundColor(Color::srgba(0.16, 0.10, 0.06, 0.96)),
+        BorderColor::all(BRASS),
+    ))
+    .with_children(|d| {
+        d.spawn((Cog(0.6), UiTransform::IDENTITY, at(w - 52.0, -18.0, 64.0, 64.0), ImageNode::new(art.cog.clone()).with_color(BRASS.with_alpha(0.55))));
+        d.spawn((Cog(-1.0), UiTransform::IDENTITY, at(w - 70.0, 30.0, 32.0, 32.0), ImageNode::new(art.cog.clone()).with_color(BRASS.with_alpha(0.4))));
+        for (rx, ry) in [(4.0, 4.0), (w - 10.0, 4.0), (4.0, h - 10.0), (w - 10.0, h - 10.0)] {
+            d.spawn((Node { border_radius: BorderRadius::all(Val::Px(3.0)), ..at(rx, ry, 4.0, 4.0) }, BackgroundColor(BRASS)));
+        }
+        d.spawn((Node { border_radius: BorderRadius::all(Val::Px(3.0)), ..at(12.0, 13.0, 6.0, 6.0) }, BackgroundColor(LAMP)));
+        d.spawn(text_at(&f.label, 7.5, LAMP, "ACTIVE QUEST", 22.0, 10.0, 120.0));
+        d.spawn(text_at(&f.bold, 12.0, CITRON, q.title.clone(), 12.0, 26.0, w - 60.0));
+        d.spawn(text_at(&f.label, 7.5, BRASS, format!("{} · {}", q.place.to_uppercase(), q.years), 12.0, 58.0, w - 24.0));
+        // Pressure tube: how long this quest has been running.
+        let since = q.years.split('–').next().and_then(|y| y.parse::<i32>().ok()).unwrap_or(2026);
+        let run = (2026 - since).clamp(0, 10) as f32 / 10.0;
+        d.spawn((Node { border: UiRect::all(Val::Px(1.0)), border_radius: BorderRadius::all(Val::Px(3.0)), ..at(12.0, 74.0, w - 24.0, 7.0) }, BorderColor::all(BRASS), BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.4))));
+        d.spawn((Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(13.0, 75.0, ((w - 26.0) * run).max(4.0), 5.0) }, BackgroundColor(LAMP)));
+        d.spawn(text_at(&f.body, 9.0, TEXT, truncate(&q.summary, 150), 12.0, 88.0, w - 24.0));
+        let feats: Vec<String> = q.feats.iter().take(3).map(|x| format!("• {}", truncate(x, 64))).collect();
+        d.spawn(text_at(&f.body, 8.5, MUTED, feats.join("\n"), 12.0, 160.0, w - 24.0));
+    });
+}
+
+/// A finished quest: an aged logbook page with a COMPLETE stamp.
+fn logbook(p: &mut ChildSpawnerCommands, f: &Fonts, (x, y, w, h): (f32, f32, f32, f32), title: &str, sub: &str, summary: &str, feats: &[String]) {
+    let ink = Color::srgb(0.22, 0.14, 0.09);
+    p.spawn((
+        Node { border: UiRect::all(Val::Px(1.0)), border_radius: BorderRadius::all(Val::Px(2.0)), overflow: Overflow::clip(), ..at(x, y, w, h) },
+        BackgroundColor(Color::srgb(0.87, 0.81, 0.67)),
+        BorderColor::all(Color::srgb(0.55, 0.42, 0.28)),
+    ))
+    .with_children(|d| {
+        for i in 0..14 {
+            d.spawn((at(0.0, 30.0 + i as f32 * 16.0, w, 1.0), BackgroundColor(Color::srgba(0.4, 0.5, 0.6, 0.18))));
+        }
+        d.spawn(text_at(&f.bold, 12.0, ink, title.to_owned(), 12.0, 10.0, w - 24.0));
+        d.spawn(text_at(&f.label, 7.5, Color::srgb(0.45, 0.30, 0.18), sub.to_uppercase(), 12.0, 44.0, w - 24.0));
+        d.spawn(text_at(&f.body, 9.0, ink, truncate(summary, 150), 12.0, 60.0, w - 24.0));
+        let feats: Vec<String> = feats.iter().take(3).map(|x| format!("• {}", truncate(x, 64))).collect();
+        d.spawn(text_at(&f.body, 8.5, Color::srgb(0.35, 0.25, 0.17), feats.join("\n"), 12.0, 140.0, w - 24.0));
+        let red = Color::srgb(0.72, 0.16, 0.12);
+        d.spawn((
+            UiTransform::from_rotation(Rot2::degrees(-12.0)),
+            Node { border: UiRect::all(Val::Px(2.0)), border_radius: BorderRadius::all(Val::Px(3.0)), ..at(w - 104.0, h - 44.0, 88.0, 24.0) },
+            BorderColor::all(red.with_alpha(0.8)),
+            children![text_at(&f.label, 10.0, red.with_alpha(0.85), "COMPLETE", 0.0, 4.0, 84.0).with_justify()],
+        ));
+    });
+}
+
+/// A plain cog wheel, white so it can be tinted.
+fn cog_image() -> Image {
+    const S: u32 = 128;
+    let mut img = Image::new_fill(
+        Extent3d { width: S, height: S, depth_or_array_layers: 1 },
+        TextureDimension::D2,
+        &[0, 0, 0, 0],
+        TextureFormat::Rgba8UnormSrgb,
+        RenderAssetUsages::default(),
+    );
+    let c = S as f32 / 2.0;
+    for y in 0..S {
+        for x in 0..S {
+            let d = Vec2::new(x as f32 + 0.5 - c, y as f32 + 0.5 - c);
+            let r = d.length();
+            let ang = d.y.atan2(d.x);
+            // Ten teeth: the rim bumps out where cos(10θ) is high.
+            let tooth = if (ang * 10.0).cos() > 0.2 { 60.0 } else { 50.0 };
+            let edge = (tooth - r).min(r - 18.0);
+            let spoke = (ang * 3.0).cos().abs() > 0.93 || r > 40.0 || r < 26.0;
+            let a = edge.clamp(0.0, 1.0) * if spoke { 1.0 } else { 0.0 };
+            if a > 0.0 {
+                let _ = img.set_color_at(x, y, Color::srgba(1.0, 1.0, 1.0, a));
+            }
+        }
+    }
+    img
 }
 
 /// Rasterise the stats radar into a small image (rings, spokes, filled shape).

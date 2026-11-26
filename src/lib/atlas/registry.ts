@@ -48,11 +48,95 @@ export interface PlayerStats {
   /** Six radar axes, 1–10. Derived from site content; see `radar` below to tune. */
   radar: { label: string; value: number; note: string }[];
   inventory: {
-    keyItems: { name: string; from: string; note: string; kind: 'credential' | 'degree' }[];
+    keyItems: KeyItem[];
     gear: { name: string; uses: number }[];
   };
+  /** The Skills tab: a deck of cards in four suits. */
+  cards: SkillCard[];
   training: { title: string; place: string; years: string }[];
 }
+
+export type ItemType = 'scroll' | 'certificate' | 'tablet' | 'codex' | 'relic';
+export type Rarity = 'common' | 'rare' | 'epic' | 'legendary';
+
+export interface KeyItem {
+  id: string;
+  name: string;
+  from: string;
+  note: string;
+  kind: 'credential' | 'degree';
+  /** What the object is in the game: degrees are scrolls, credentials are tablets, and so on. */
+  type: ItemType;
+  rarity: Rarity;
+  year?: number;
+  /** The competency it feeds, e.g. "+1 PRO". */
+  bonus: string;
+}
+
+export interface SkillCard {
+  id: string;
+  name: string;
+  suit: 'skill' | 'discipline' | 'special' | 'equipment';
+  /** 1–5 pips. */
+  mastery: number;
+  /** The competency it feeds: DEV, PRO, DES, GTM, WRI or COM. */
+  feeds: string;
+  flavor: string;
+}
+
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+
+/** Which competency an item or skill feeds, from words in its name. */
+function feedsFrom(text: string): string {
+  if (/product|scrum|agile|management|business|acquisition|bizdev/i.test(text)) return 'PRO';
+  if (/ux|ui|design|illustrator|accessib|token|anime|film|adaptive|user experience/i.test(text)) return 'DES';
+  if (/market|brand|seo|growth|go-to/i.test(text)) return 'GTM';
+  if (/writ|content|story/i.test(text)) return 'WRI';
+  if (/comm|speak|podcast/i.test(text)) return 'COM';
+  return 'DEV';
+}
+
+function itemType(name: string, kind: 'credential' | 'degree'): ItemType {
+  if (/continuous|additional/i.test(name)) return 'codex';
+  if (/master|bachelor|doctor|associate/i.test(name)) return 'scroll';
+  return kind === 'credential' ? 'tablet' : 'certificate';
+}
+
+function itemRarity(name: string, from: string): Rarity {
+  if (/master|doctor/i.test(name)) return 'legendary';
+  if (/bachelor|product management|nielsen/i.test(`${name} ${from}`)) return 'epic';
+  if (/tryhackme|uipath|additional/i.test(`${name} ${from}`)) return 'common';
+  return 'rare';
+}
+
+// Hand-tuned mastery and flavour for the deck. Anything not listed gets 3 pips
+// and a generic line, so new skills on the site still show up.
+const CARD_TUNING: Record<string, { mastery?: number; flavor?: string; feeds?: string }> = {
+  'full-stack-development': { mastery: 4, flavor: 'From the database to the pixel, one pair of hands.' },
+  'typescript-react': { mastery: 4, flavor: 'Types first, then the interface follows.' },
+  'machine-optimized-prompt-engineering': { mastery: 5, flavor: 'Speaks fluent machine.' },
+  'o-n-scoping': { mastery: 5, flavor: 'Cuts any project down to a straight line.' },
+  'cloud-architecture': { mastery: 3, flavor: 'Moors the fleet to the sky.' },
+  'api-development': { mastery: 4, flavor: 'Every system gets a front door.' },
+  'automation-scripting': { mastery: 4, flavor: 'If it happens twice, a machine does it the third time.' },
+  'seo-optimization': { mastery: 3, flavor: 'A lighthouse for the crawlers.' },
+  'product-management': { mastery: 5, flavor: 'Knows what to build, and what not to.' },
+  'marketing-branding': { mastery: 3, flavor: 'A banner people want to follow.' },
+  'user-experience': { mastery: 4, flavor: 'Walks the path before the user does.' },
+  'ui-design': { mastery: 4, flavor: 'Pixels in their right places.' },
+  'ux-management': { mastery: 4, flavor: 'Keeps a design crew pointed the same way.' },
+  'it-architecture': { mastery: 4, flavor: 'Blueprints for federal-scale systems.' },
+  'scrum-master': { mastery: 4, flavor: 'Two weeks at a time, every time.' },
+  'business-development': { mastery: 3, flavor: 'Finds the next port before the ship needs it.' },
+};
+
+// Signature moves. These are rarer than skills and always hand-written.
+const SPECIALS: Omit<SkillCard, 'suit'>[] = [
+  { id: 'machine-optimized-prompting', name: 'Machine-Optimized Prompting', mastery: 5, feeds: 'DEV', flavor: 'Turns a vague ask into an exact instruction a model can run with.' },
+  { id: 'o-n-scoping-special', name: 'O(n) Scoping', mastery: 5, feeds: 'PRO', flavor: 'Any roadmap, cut to the shortest path that still ships.' },
+  { id: 'zero-to-one-launch', name: 'Zero-to-One Launch', mastery: 4, feeds: 'GTM', flavor: 'From a napkin to a live product with real users.' },
+  { id: 'fractional-rescue', name: 'Fractional Rescue', mastery: 4, feeds: 'PRO', flavor: 'Boards a listing project and gets it sailing again.' },
+];
 
 export interface AtlasRegistry {
   ship: { name: string; tagline: string };
@@ -173,6 +257,12 @@ export async function getAtlasRegistry(): Promise<AtlasRegistry> {
     },
   ];
 
+  function card(name: string, suit: SkillCard['suit'], mastery?: number, flavor?: string): SkillCard {
+    const id = slug(name);
+    const t = CARD_TUNING[id] ?? {};
+    return { id: `${suit}-${id}`, name, suit, mastery: t.mastery ?? mastery ?? 3, feeds: t.feeds ?? feedsFrom(name), flavor: t.flavor ?? flavor ?? 'Part of the kit.' };
+  }
+
   // Gear: the tools that show up most across projects and roles.
   const toolCount = new Map<string, number>();
   for (const t of [...projects.flatMap((p) => p.data.technologies), ...experience.flatMap((e) => e.data.technologies ?? [])]) {
@@ -232,11 +322,23 @@ export async function getAtlasRegistry(): Promise<AtlasRegistry> {
         radar,
         inventory: {
           keyItems: [
-            ...credentials.map((c) => ({ name: c.data.title, from: c.data.organization, note: c.data.description, kind: 'credential' as const })),
-            ...education.map((e) => ({ name: e.data.degree, from: e.data.institution, note: e.data.field, kind: 'degree' as const })),
-          ],
+            ...credentials.map((c) => ({ name: c.data.title, from: c.data.organization, note: c.data.description, kind: 'credential' as const, year: c.data.issueDate.getUTCFullYear() })),
+            ...education.map((e) => ({ name: e.data.degree, from: e.data.institution, note: e.data.field, kind: 'degree' as const, year: (e.data.endDate ?? e.data.startDate).getUTCFullYear() })),
+          ].map((it): KeyItem => ({
+            ...it,
+            id: slug(`${it.name}-${it.from}`),
+            type: itemType(it.name, it.kind),
+            rarity: itemRarity(it.name, it.from),
+            bonus: `+1 ${feedsFrom(`${it.name} ${it.note}`)}`,
+          })),
           gear,
         },
+        cards: [
+          ...(author.skills ?? []).map((name: string) => card(name, 'skill')),
+          ...(author.softSkills ?? []).map((name: string) => card(name, 'discipline')),
+          ...SPECIALS.map((c) => ({ ...c, suit: 'special' as const })),
+          ...gear.map((g) => card(g.name, 'equipment', Math.max(1, Math.min(5, Math.ceil(g.uses / 2))), `Carried on ${g.uses} ${g.uses === 1 ? 'mission' : 'missions'}.`)),
+        ],
         training: education.map((e) => ({
           title: `${e.data.degree}, ${e.data.field}`,
           place: e.data.institution,

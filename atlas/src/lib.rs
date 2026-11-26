@@ -68,6 +68,8 @@ pub enum Action {
     Menu,
     /// Pry open the engine room's maintenance hatch.
     Hatch,
+    /// Look over the Crescent (planet runs come in a later build).
+    Crescent,
 }
 
 /// Which deck of a two-level room a point or the player is on.
@@ -115,8 +117,27 @@ const LIFT_SIZE: Vec2 = p(83.0, 36.0);
 const RIDER_OFFSET: Vec2 = p(0.0, 2.0);
 const LIFT_TRAVEL: f32 = 2.1;
 const LIFT_STEP: f32 = 0.4; // walking on or off the platform
-/// Where Erikk lands when he walks down the Crescent's ramp.
-const BAY_ARRIVAL: Vec2 = p(360.0, 190.0);
+/// The dockyard stairs between the decks, as the quad Erikk's feet can use
+/// (bottom-left, bottom-right, top-right, top-left). It overlaps both deck masks.
+const STAIRS: [Vec2; 4] = [p(520.0, 307.0), p(556.0, 307.0), p(588.0, 190.0), p(564.0, 190.0)];
+const STAIRS_TOP_Y: f32 = 200.0;
+const STAIRS_FOOT_Y: f32 = 298.0;
+/// The gangway at the left end of the lower deck: the way back to the Atlier.
+const GANGWAY: Vec2 = p(66.0, 312.0);
+const DOCK_ARRIVAL: Vec2 = p(92.0, 316.0);
+
+fn on_stairs(at: Vec2) -> bool {
+    let mut odd = false;
+    let mut j = STAIRS.len() - 1;
+    for i in 0..STAIRS.len() {
+        let (a, b) = (STAIRS[i], STAIRS[j]);
+        if (a.y > at.y) != (b.y > at.y) && at.x < (b.x - a.x) * (at.y - a.y) / (b.y - a.y) + a.x {
+            odd = !odd;
+        }
+        j = i;
+    }
+    odd
+}
 /// Where Erikk comes in: the bridge stairwell, and the foot of the engine room ladder.
 const BRIDGE_FROM_ENGINE: Vec2 = p(440.0, 300.0);
 const ENGINE_ARRIVAL: Vec2 = p(52.0, 254.0);
@@ -155,7 +176,8 @@ pub fn scene_def(id: SceneId) -> &'static SceneDef {
             Point { pos: p(320.0, 300.0), label: "Workbench", action: Action::Terminal("work"), deck: Deck::Lower },
             Point { pos: LIFT_UPPER_EXIT, label: "Ride the lift down", action: Action::Lift, deck: Deck::Upper },
             Point { pos: p(545.0, 174.0), label: "Talk to the technician", action: Action::Talk(Npc::Technician), deck: Deck::Upper },
-            Point { pos: p(420.0, 192.0), label: "Back to the Atlier", action: Action::Goto(SceneId::Bridge), deck: Deck::Upper },
+            Point { pos: p(420.0, 192.0), label: "Inspect the Crescent", action: Action::Crescent, deck: Deck::Upper },
+            Point { pos: GANGWAY, label: "Gangway to the Atlier", action: Action::Goto(SceneId::Bridge), deck: Deck::Lower },
         ],
         npc: Some((Npc::Technician, p(545.0, 174.0))),
         mask: include_bytes!("../masks/glasshouse_lower.png"),
@@ -169,7 +191,7 @@ pub fn scene_def(id: SceneId) -> &'static SceneDef {
         fg_threshold: 341.0,
         spawn: p(323.0, 301.0),
         points: &[
-            Point { pos: p(323.0, 151.0), label: "Records", action: Action::Terminal("writing"), deck: Deck::Any },
+            Point { pos: p(323.0, 168.0), label: "Records", action: Action::Terminal("writing"), deck: Deck::Any },
             Point { pos: p(385.0, 182.0), label: "Talk to Astro", action: Action::Talk(Npc::Archivist), deck: Deck::Any },
             Point { pos: p(323.0, 328.0), label: "Back to the Atlier", action: Action::Goto(SceneId::Bridge), deck: Deck::Any },
         ],
@@ -212,7 +234,31 @@ pub struct Masks {
     engine: Vec<bool>,
 }
 
+/// Shrink the walkable area by the body's half-width, so Erikk's shoulders
+/// stop at walls and furniture instead of only his feet.
+fn erode(m: &[bool], rx: usize, ry: usize) -> Vec<bool> {
+    let (w, h) = (VW as usize, VH as usize);
+    let mut out = vec![false; m.len()];
+    for y in ry..h.saturating_sub(ry) {
+        'px: for x in rx..w.saturating_sub(rx) {
+            for dy in [0, ry] {
+                for (yy, xx) in [(y - dy, x - rx), (y - dy, x + rx), (y + dy, x - rx), (y + dy, x + rx), (y - dy, x), (y + dy, x)] {
+                    if !m[yy * w + xx] {
+                        continue 'px;
+                    }
+                }
+            }
+            out[y * w + x] = true;
+        }
+    }
+    out
+}
+
 fn decode_mask(bytes: &[u8]) -> Vec<bool> {
+    erode(&decode_mask_raw(bytes), 6, 3)
+}
+
+fn decode_mask_raw(bytes: &[u8]) -> Vec<bool> {
     let img = Image::from_buffer(
         bytes,
         ImageType::Extension("png"),
@@ -252,7 +298,16 @@ impl Masks {
                 }
                 m
             },
-            archive: decode_mask(scene_def(SceneId::Archive).mask),
+            archive: {
+                // Keep a step back from the records desk so Erikk stands in front of it.
+                let mut m = decode_mask(scene_def(SceneId::Archive).mask);
+                for y in 0..166 {
+                    for x in 228..418 {
+                        m[y * VW as usize + x] = false;
+                    }
+                }
+                m
+            },
             engine: {
                 // Machines are solid: carve each prop's footprint out of the floor.
                 let mut m = decode_mask(scene_def(SceneId::Engine).mask);
@@ -280,7 +335,8 @@ impl Masks {
             SceneId::Archive => &self.archive,
             SceneId::Engine => &self.engine,
         };
-        m[(at.y as usize) * (VW as usize) + at.x as usize]
+        let floor = m[(at.y as usize) * (VW as usize) + at.x as usize] || (scene == SceneId::Port && on_stairs(at));
+        floor && !npc_blocks(scene, deck, at)
     }
 }
 
@@ -294,7 +350,10 @@ pub enum Mode {
     Explore,
     Dialogue,
     Terminal,
+    /// The planet star map (bridge star console).
     Atlas,
+    /// The ship map: fast travel between rooms.
+    Ship,
     Sheet,
     Travel,
     /// Riding the dockyard lift: input and exits are off until it stops.
@@ -307,6 +366,8 @@ pub struct Game {
     /// Which deck the player is on, in rooms that have two.
     pub deck: Deck,
     pub mode: Mode,
+    /// Search text from the page's input, waiting for the terminal.
+    pub search: Option<String>,
     /// The interaction point the player is standing at, if any.
     pub nearby: Option<Point>,
     /// The visitor tapped this point: use it when the player gets there.
@@ -453,6 +514,7 @@ pub fn app(canvas: Option<String>, registry: Registry, boot: Boot, visited: Vec<
         scene: SceneId::Bridge,
         deck: Deck::Any,
         mode: Mode::Explore,
+        search: None,
         nearby: None,
         pending: None,
         visited,
@@ -634,11 +696,11 @@ fn enter_scene(
     }
     game.deck = Deck::Any;
     if id == SceneId::Port {
-        // Walking down the Crescent's ramp lands in the fighter bay; any
-        // other arrival starts at the foot of the lift.
-        game.deck = if from == SceneId::Bridge { Deck::Upper } else { Deck::Lower };
-        if game.deck == Deck::Upper {
-            spawn = BAY_ARRIVAL;
+        // Everyone comes in by the gangway on the service deck; the stairs and
+        // the lift both lead up to the Crescent's bay.
+        game.deck = Deck::Lower;
+        if from != id {
+            spawn = DOCK_ARRIVAL;
         }
         let stop = if game.deck == Deck::Upper { LIFT_UPPER } else { LIFT_LOWER };
         commands.spawn((
@@ -670,7 +732,7 @@ fn enter_scene(
 
     player.foot = spawn;
     player.target = None;
-    player.facing = if spawn == BAY_ARRIVAL { Facing::Down } else { Facing::Up };
+    player.facing = if spawn == DOCK_ARRIVAL { Facing::Right } else { Facing::Up };
 }
 
 /// Load 2× (or larger) source art with linear filtering, so it stays smooth
@@ -680,6 +742,16 @@ pub fn load_smooth(assets: &AssetServer, path: impl Into<bevy::asset::AssetPath<
         .load_builder()
         .with_settings(|s: &mut ImageLoaderSettings| s.sampler = ImageSampler::linear())
         .load(path)
+}
+
+/// Crew are solid: a small oval around each NPC's feet.
+fn npc_blocks(scene: SceneId, deck: Deck, at: Vec2) -> bool {
+    let foot = match (scene, deck) {
+        (SceneId::Engine, _) => Some(DAVE),
+        (SceneId::Port, Deck::Lower) => None,
+        _ => scene_def(scene).npc.map(|(_, f)| f),
+    };
+    foot.is_some_and(|f| ((at - f) / Vec2::new(12.0, 6.0)).length_squared() < 1.0)
 }
 
 /// Points that belong to the deck the player is on.
@@ -786,6 +858,7 @@ fn read_page(mut game: ResMut<Game>, mut tap: ResMut<PageTap>) {
             bridge::Inbound::Paused(p) => game.paused = p,
             bridge::Inbound::DialogueFont(mana) => game.mana_dialogue = mana,
             bridge::Inbound::Go(id) => game.request = Some(ui::Request::Destination(id)),
+            bridge::Inbound::Search(q) => game.search = Some(q),
         }
     }
 }
@@ -898,6 +971,15 @@ fn follow_target(time: Res<Time>, masks: Res<Masks>, mut game: ResMut<Game>, mut
         Some(n) => {
             player.foot = n;
             player.walking = true;
+            // The dockyard stairs: stepping off the top puts Erikk on the upper
+            // deck, off the bottom back on the lower one.
+            if game.scene == SceneId::Port {
+                if n.y < STAIRS_TOP_Y && game.deck != Deck::Upper {
+                    game.deck = Deck::Upper;
+                } else if n.y > STAIRS_FOOT_Y && game.deck != Deck::Lower {
+                    game.deck = Deck::Lower;
+                }
+            }
         }
         None => {
             // Blocked. If we were heading for a point and got close, use it anyway.
