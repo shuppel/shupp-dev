@@ -73,7 +73,7 @@
 
     "font": {
       "family": {
-        "display": { "css": "--font-main-header",      "$value": "'Shupp', 'Maitree', serif",  "source": "/fonts/Shupp.otf (handwritten, one weight); Maitree from Google Fonts", "use": "Wordmark, h1, h2" },
+        "display": { "css": "--font-main-header",      "$value": "'Shupp', 'Maitree', serif",  "source": "/fonts/Shupp*.otf (handwritten): Shupp.otf 400, Shupp-Bold.otf 700, Shupp-Italic.otf 400 italic, Shupp-Thin.otf 100, Shupp-Narrow.otf 400 and Shupp-ThinNarrow.otf 100 as font-stretch semi-condensed, all under family 'Shupp'; Maitree from Google Fonts", "use": "Wordmark, h1, h2" },
         "heading": { "css": "--font-secondary-header", "$value": "'Cairo', sans-serif",        "source": "Google Fonts 300–700", "use": "h3–h6, labels, buttons, nav" },
         "body":    { "css": "--font-body",             "$value": "'Hind', sans-serif",         "source": "Google Fonts 300–700", "use": "Body, descriptions, meta" },
         "mono":    { "css": null,                      "$value": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace", "use": "Inline code" }

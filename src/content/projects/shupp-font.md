@@ -40,7 +40,7 @@ The font is used throughout shupp.dev and Thoughtful App for:
 ## Technical Details
 
 - **Format**: OpenType (.otf)
-- **Weight**: Medium-Light
+- **Cuts**: Regular, Bold, Italic, Thin, Narrow, Thin Narrow
 - **Character Coverage**: 96 artboards of meticulously designed characters
 - **License**: Open source
 - **Repository**: Available on GitHub under the Thoughtful App Co. organization
@@ -53,10 +53,24 @@ The font can be loaded via CSS `@font-face`:
 @font-face {
   font-family: 'Shupp';
   src: url('/fonts/Shupp.otf') format('opentype');
-  font-weight: normal;
+  font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
+
+@font-face {
+  font-family: 'Shupp';
+  src: url('/fonts/Shupp-Bold.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Same pattern for the other cuts:
+   Shupp-Italic.otf   font-style: italic
+   Shupp-Thin.otf     font-weight: 100
+   Shupp-Narrow.otf   font-stretch: semi-condensed
+   Shupp-ThinNarrow.otf  font-weight: 100; font-stretch: semi-condensed */
 ```
 
 ## What's Next
