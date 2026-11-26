@@ -530,6 +530,7 @@ pub fn app(canvas: Option<String>, registry: Registry, boot: Boot, visited: Vec<
     .init_resource::<Ride>()
     .add_systems(Startup, setup)
     .add_systems(PreUpdate, read_page)
+    .add_systems(Last, boot_progress)
     .add_systems(
         Update,
         (
@@ -586,7 +587,7 @@ pub(crate) fn setup(
         technician_npc: load_smooth(&assets, "cast/technician/npc_hd.png"),
         mechanic_work: load_smooth(&assets, "cast/mechanic/work.png"),
         work_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(128, 128), 6, 1, None, None)),
-        archivist_npc: assets.load("cast/archivist/npc_outlined.png"),
+        archivist_npc: load_t(&assets, "cast/archivist/npc_outlined.png"),
     };
 
     // Erikk. The art pack's pivot is (24, 62) in a 48 × 64 cell.
@@ -655,11 +656,11 @@ fn enter_scene(
     let bg = if def.hd {
         Sprite { image: hd(def.bg), custom_size: Some(Vec2::new(VW, VH)), ..default() }
     } else {
-        Sprite::from_image(assets.load(def.bg))
+        Sprite::from_image(load_t(&assets, def.bg))
     };
     commands.spawn((SceneEntity, bg, Transform::from_xyz(0.0, 0.0, 0.0)));
     if let Some(fg) = def.fg {
-        commands.spawn((SceneEntity, Foreground, Sprite::from_image(assets.load(fg)), Transform::from_xyz(0.0, 0.0, 0.5)));
+        commands.spawn((SceneEntity, Foreground, Sprite::from_image(load_t(&assets, fg)), Transform::from_xyz(0.0, 0.0, 0.5)));
     }
     let mut spawn = def.spawn;
     if id == SceneId::Bridge && from == SceneId::Engine {
@@ -749,10 +750,58 @@ fn enter_scene(
 /// Load 2× (or larger) source art with linear filtering, so it stays smooth
 /// when drawn at its smaller logical size.
 pub fn load_smooth(assets: &AssetServer, path: impl Into<bevy::asset::AssetPath<'static>>) -> Handle<Image> {
-    assets
-        .load_builder()
-        .with_settings(|s: &mut ImageLoaderSettings| s.sampler = ImageSampler::linear())
-        .load(path)
+    track(
+        assets
+            .load_builder()
+            .with_settings(|s: &mut ImageLoaderSettings| s.sampler = ImageSampler::linear())
+            .load(path),
+    )
+}
+
+/// Load an asset and count it toward the loading screen.
+pub fn load_t<A: Asset>(assets: &AssetServer, path: impl Into<bevy::asset::AssetPath<'static>>) -> Handle<A> {
+    track(assets.load(path))
+}
+
+/// Handles the loading screen waits on. `None` once the game is revealed, so
+/// later loads (other rooms) don't count.
+static PRELOAD: std::sync::Mutex<Option<Vec<UntypedHandle>>> = std::sync::Mutex::new(Some(Vec::new()));
+
+fn track<A: Asset>(h: Handle<A>) -> Handle<A> {
+    if let Ok(mut g) = PRELOAD.lock() {
+        if let Some(v) = g.as_mut() {
+            v.push(h.clone().untyped());
+        }
+    }
+    h
+}
+
+/// Report loading progress to the page, then say "ready" once everything
+/// requested during boot (the first room, the cast, the menus) is decoded,
+/// so the game appears whole instead of stuttering while art streams in.
+fn boot_progress(assets: Res<AssetServer>, mut last: Local<(usize, u32)>) {
+    let Ok(mut g) = PRELOAD.lock() else { return };
+    let Some(v) = g.as_ref() else { return };
+    let total = v.len();
+    let done = v
+        .iter()
+        .filter(|h| {
+            assets.is_loaded_with_dependencies(h.id())
+                || matches!(assets.get_load_state(h.id()), Some(bevy::asset::LoadState::Failed(_)))
+        })
+        .count();
+    if done != last.0 {
+        last.0 = done;
+        bridge::emit("loading", &format!("{done}/{total}"));
+    }
+    // Wait two frames after the last asset so its sprite has been drawn.
+    if total > 0 && done == total {
+        last.1 += 1;
+        if last.1 >= 2 {
+            *g = None;
+            bridge::emit("ready", "");
+        }
+    }
 }
 
 /// Crew are solid: a small oval around each NPC's feet.

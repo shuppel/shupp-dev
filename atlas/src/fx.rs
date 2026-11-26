@@ -63,21 +63,21 @@ pub(crate) struct Spark {
 
 fn setup(mut commands: Commands, assets: Res<AssetServer>) {
     let art = FxArt {
-        glows: GLOWS.map(|(path, _)| assets.load(path)),
-        spark: assets.load("fx/spark.png"),
+        glows: GLOWS.map(|(path, _)| crate::load_t(&assets, path)),
+        spark: crate::load_t(&assets, "fx/spark.png"),
     };
     commands.spawn((Glow, Sprite::from_image(art.glows[0].clone()), Transform::from_xyz(0.0, 0.0, 0.3), Visibility::Hidden));
     commands
         .spawn((
             Cloud,
-            Sprite::from_image(assets.load("fx/cloud.png")),
+            Sprite::from_image(crate::load_t(&assets, "fx/cloud.png")),
             Anchor(Vec2::new(TIP.x / 40.0 - 0.5, 0.5 - TIP.y / 34.0)),
             Transform::from_xyz(0.0, 0.0, 9.0),
             Visibility::Hidden,
         ))
         .with_children(|c| {
             for i in 0..3 {
-                c.spawn((Dot(i), Sprite::from_image(assets.load("fx/dot.png")), Transform::from_xyz(0.0, 0.0, 0.1)));
+                c.spawn((Dot(i), Sprite::from_image(crate::load_t(&assets, "fx/dot.png")), Transform::from_xyz(0.0, 0.0, 0.1)));
             }
         });
     commands.insert_resource(art);

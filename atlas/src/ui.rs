@@ -375,14 +375,14 @@ fn setup_ui(
     mut ui: ResMut<Ui>,
 ) {
     commands.insert_resource(Fonts {
-        body: assets.load("fonts/Hind_400Regular.ttf"),
-        bold: assets.load("fonts/Hind_600SemiBold.ttf"),
+        body: crate::load_t(&assets, "fonts/Hind_400Regular.ttf"),
+        bold: crate::load_t(&assets, "fonts/Hind_600SemiBold.ttf"),
         // Manaspace for the game chrome: labels, tabs, prompts, stats.
         // Small caps labels: a vector face, so they stay crisp at any scale
         // (the pixel font smeared at fractional sizes).
-        label: assets.load("fonts/Cairo_700Bold.ttf"),
-        mana: assets.load("fonts/Manaspace.ttf"),
-        display: assets.load("fonts/Shupp.otf"),
+        label: crate::load_t(&assets, "fonts/Cairo_700Bold.ttf"),
+        mana: crate::load_t(&assets, "fonts/Manaspace.ttf"),
+        display: crate::load_t(&assets, "fonts/Shupp.otf"),
     });
     let icons = DESTS
         .iter()
@@ -399,33 +399,33 @@ fn setup_ui(
         .collect();
     let radar = images.add(radar_image(&registry.player.stats.radar.iter().map(|a| a.value).collect::<Vec<_>>()));
     commands.insert_resource(UiArt {
-        erikk_faces: assets.load("portraits/live.png"),
-        erikk_call: assets.load("portraits/call.png"),
-        tech_faces: assets.load("cast/technician/faces.png"),
-        tech_call: assets.load("cast/technician/calls.png"),
-        arch_faces: assets.load("cast/archivist/faces.png"),
-        arch_call: assets.load("cast/archivist/calls.png"),
-        mech_faces: assets.load("cast/mechanic/faces.png"),
-        mech_call: assets.load("cast/mechanic/calls.png"),
+        erikk_faces: crate::load_t(&assets, "portraits/live.png"),
+        erikk_call: crate::load_t(&assets, "portraits/call.png"),
+        tech_faces: crate::load_t(&assets, "cast/technician/faces.png"),
+        tech_call: crate::load_t(&assets, "cast/technician/calls.png"),
+        arch_faces: crate::load_t(&assets, "cast/archivist/faces.png"),
+        arch_call: crate::load_t(&assets, "cast/archivist/calls.png"),
+        mech_faces: crate::load_t(&assets, "cast/mechanic/faces.png"),
+        mech_call: crate::load_t(&assets, "cast/mechanic/calls.png"),
         faces_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(256, 352), 4, 1, None, None)),
         call_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(192, 256), 4, 1, None, None)),
-        atlas_bg: assets.load("scenes/atlas.png"),
-        stars_far: assets.load("parallax/stars_far.png"),
-        stars_near: assets.load("parallax/stars_near.png"),
-        chart: assets.load("ui/star_map/chart.png"),
-        pulse: assets.load("ui/star_map/selection_pulse.png"),
+        atlas_bg: crate::load_t(&assets, "scenes/atlas.png"),
+        stars_far: crate::load_t(&assets, "parallax/stars_far.png"),
+        stars_near: crate::load_t(&assets, "parallax/stars_near.png"),
+        chart: crate::load_t(&assets, "ui/star_map/chart.png"),
+        pulse: crate::load_t(&assets, "ui/star_map/selection_pulse.png"),
         pulse_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(112, 112), 12, 1, None, None)),
         icons,
         orbits: DESTS.iter().map(|(id, _)| crate::load_smooth(&assets, format!("ui/star_map/{id}_orbit.png"))).collect(),
         orbit_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(96, 96), 16, 1, None, None)),
-        ship_cursor: assets.load("ui/star_map/ship_cursor.png"),
+        ship_cursor: crate::load_t(&assets, "ui/star_map/ship_cursor.png"),
         // The Atlier, the big terrarium ship, is what travels between stars.
         flight: crate::load_smooth(&assets, "ships/atlier/flight.png"),
         flight_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(768, 448), 4, 1, None, None)),
         blueprint: images.add(blueprint_image()),
         room_glow: (0..ROOMS.len()).map(|i| images.add(room_glow_image(i))).collect(),
         radar,
-        menu_bg: assets.load("ui/menu_bg.png"),
+        menu_bg: crate::load_t(&assets, "ui/menu_bg.png"),
         full_body: crate::load_smooth(&assets, "portraits/full_body.png"),
         ui_icons: [
             "ui/menu/status.png",
@@ -442,8 +442,8 @@ fn setup_ui(
         ]
         .map(|p| crate::load_smooth(&assets, p)),
         cog: images.add(cog_image()),
-        key_e: assets.load("ui/key_e.png"),
-        key_tap: assets.load("ui/key_tap.png"),
+        key_e: crate::load_t(&assets, "ui/key_e.png"),
+        key_tap: crate::load_t(&assets, "ui/key_tap.png"),
     });
     let root = commands
         .spawn(Node {

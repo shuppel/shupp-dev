@@ -17,7 +17,10 @@ const canonical = new URL('/', origin).href;
 const description = `${atlas.ship.name}: shupp.dev as a small sprite JRPG. Walk the ship, talk to the crew, read the quest log.`;
 // Cache-bust the game files: a phone holding yesterday's JS glue with today's
 // wasm fails silently, so both URLs carry a hash of the build.
-const v = createHash('sha1').update(readFileSync('public/atlas/pkg/scattered_atlas_bg.wasm')).digest('hex').slice(0, 10);
+const wasmBytes = readFileSync('public/atlas/pkg/scattered_atlas_bg.wasm');
+const v = createHash('sha1').update(wasmBytes).digest('hex').slice(0, 10);
+// The raw size, because a compressed response's content-length undercounts.
+const wasmSize = wasmBytes.length;
 const wasmUrl = `/atlas/pkg/scattered_atlas_bg.wasm?v=${v}`;
 const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
 ---
@@ -37,7 +40,7 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
   <link rel="preload" href={wasmUrl} as="fetch" type="application/wasm" crossorigin />
 </head>
 <body>
-  <canvas id="atlas-canvas" data-v={v} tabindex="0" aria-label={`${atlas.ship.name}. A sprite game version of shupp.dev. The same pages are listed below the game for screen readers.`}></canvas>
+  <canvas id="atlas-canvas" data-v={v} data-size={wasmSize} tabindex="0" aria-label={`${atlas.ship.name}. A sprite game version of shupp.dev. The same pages are listed below the game for screen readers.`}></canvas>
 
   <!-- Terminal helpers laid over the canvas: a live thumbnail of the selected page, and a real text input for phone keyboards. -->
   <div class="term-preview" id="term-preview" hidden aria-hidden="true"><iframe id="term-frame" title="Page preview" tabindex="-1" sandbox="allow-same-origin" loading="eager"></iframe></div>
@@ -157,6 +160,12 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
         if (!terminalOpen) { closeSearch(); showPreview(''); (($('term-search')) as HTMLInputElement).value = ''; }
       } else if (kind === 'preview') {
         showPreview(value);
+      } else if (kind === 'loading') {
+        // The art for the first room, the cast and the menus: the last 30% of the bar.
+        const [done, total] = value.split('/').map(Number);
+        if (total) $('boot-fill').style.width = `${70 + 30 * (done / total)}%`;
+      } else if (kind === 'ready') {
+        reveal();
       }
     };
 
@@ -167,6 +176,15 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
     portrait.addEventListener('change', syncRotate);
     $('rotate-dismiss').addEventListener('click', () => { dismissed = true; syncRotate(); });
     syncRotate();
+
+    let revealed = false;
+    function reveal() {
+      if (revealed) return;
+      revealed = true;
+      $('boot-fill').style.width = '100%';
+      $('boot').classList.add('done');
+      $('atlas-canvas').focus();
+    }
 
     async function boot() {
       if (!document.createElement('canvas').getContext('webgl2')) {
@@ -179,7 +197,7 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
         // Stream the wasm so the loading bar means something.
         const v = $('atlas-canvas').dataset.v ?? '';
         const res = await fetch(`/atlas/pkg/scattered_atlas_bg.wasm?v=${v}`);
-        const total = Number(res.headers.get('content-length')) || 0;
+        const total = Number($('atlas-canvas').dataset.size) || 0;
         const reader = res.body!.getReader();
         const chunks: Uint8Array[] = [];
         let got = 0;
@@ -188,7 +206,8 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
           if (done) break;
           chunks.push(value);
           got += value.length;
-          fill.style.width = total ? `${Math.min(100, (got / total) * 100)}%` : `${Math.min(95, got / 200000)}%`;
+          // The download is the first 70% of the bar; unpacking art is the rest.
+          fill.style.width = total ? `${Math.min(70, (got / total) * 70)}%` : `${Math.min(65, got / 300000)}%`;
         }
         const bytes = new Uint8Array(got);
         let at = 0;
@@ -247,8 +266,9 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
         }
         if (new URLSearchParams(location.search).get('font') === 'mana') game.set_dialogue_font(true);
         if (start === 'about' || start === 'contact') game.go(start);
-        $('boot').classList.add('done');
-        $('atlas-canvas').focus();
+        label.textContent = 'Unpacking the ship…';
+        // Never strand someone on the loading screen if an asset hangs.
+        setTimeout(reveal, 20000);
       } catch (err) {
         console.error('[atlas]', err);
         fallback('The game could not start on this device. Here is the same ship as a list.');
