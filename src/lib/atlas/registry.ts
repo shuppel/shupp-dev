@@ -188,15 +188,15 @@ export async function getAtlasRegistry(): Promise<AtlasRegistry> {
   const clamp = (n: number) => Math.max(1, Math.min(10, Math.round(n)));
   const designProjects = projects.filter((p) =>
     /design|ui|css|font|type|skin/i.test(`${p.data.title} ${p.data.technologies.join(' ')}`)).length;
-  // Competencies: the radar. Six three-letter axes, each counted from the site.
+  // Competencies: the radar. Mostly hand-set by Erikk; DES is still counted from the site.
   const radar = [
-    { label: 'DEV', value: clamp(projects.length / 1.5), note: `${projects.length} projects shipped` },
-    { label: 'PRO', value: clamp(years), note: `${years} years in the quest log` },
+    { label: 'DEV', value: 6, note: 'Development: hand-set' },
+    { label: 'PRO', value: 9, note: 'Product: hand-set' },
     { label: 'DES', value: clamp(designProjects / 1.5), note: `${designProjects} design projects` },
     // GTM is hand-set: the site doesn't count go-to-market work well.
     { label: 'GTM', value: 5, note: 'Go-to-market: launches, positioning and growth' },
-    { label: 'WRI', value: clamp(notes.length / 2), note: `${notes.length} Galaxy notes` },
-    { label: 'COM', value: clamp(press.length / 3), note: `${press.length} broadcasts` },
+    { label: 'WRI', value: 9, note: 'Writing: hand-set' },
+    { label: 'COM', value: 8, note: 'Comms: hand-set' },
   ];
 
 
