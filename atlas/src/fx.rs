@@ -12,7 +12,7 @@ use crate::{to_world, Action, Game, Mode, Player, SceneId, SceneEntity};
 /// Console boxes in scene pixels (x0, y0, x1, y1). Keep in sync with make_fx.py.
 const GLOWS: [(&str, [f32; 4]); 3] = [
     ("fx/glow_star_console.png", [444.0, 104.0, 560.0, 158.0]),
-    ("fx/glow_workbench.png", [306.0, 82.0, 364.0, 120.0]),
+    ("fx/glow_workbench.png", [292.0, 250.0, 348.0, 298.0]),
     ("fx/glow_records.png", [254.0, 70.0, 388.0, 142.0]),
 ];
 
@@ -87,6 +87,7 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
 fn glow_for(scene: SceneId, action: Action) -> Option<(usize, [f32; 4])> {
     let i = match (scene, action) {
         (SceneId::Bridge, Action::OpenAtlas) => 0,
+        (SceneId::Port, Action::Terminal(_)) => 1,
         (SceneId::Archive, Action::Terminal(_)) => 2,
         _ => return None,
     };
@@ -139,7 +140,10 @@ pub(crate) fn animate(
             gs.image = art.glows[i].clone();
         }
         let c = Vec2::new((b[0] + b[2]) / 2.0, (b[1] + b[3]) / 2.0);
-        gt.translation = to_world(c).round().extend(0.3);
+        // The workbench is a standing prop, so its halo sits just behind it;
+        // the other consoles are painted into the backdrop.
+        let z = if game.scene == SceneId::Port { 1.0 + b[3] / 1000.0 - 0.001 } else { 0.3 };
+        gt.translation = to_world(c).round().extend(z);
         let a = (t / 0.2).min(1.0) * (0.8 + 0.2 * (t * 4.0).sin());
         gs.color = Color::srgba(1.0, 1.0, 1.0, a);
         **gv = Visibility::Visible;

@@ -44,7 +44,7 @@ export interface PlayerStats {
   attributes: { label: string; value: number; note: string }[];
   skills: string[];
   softSkills: string[];
-  questLog: { title: string; place: string; years: string; current: boolean; summary: string; feats: string[] }[];
+  questLog: { title: string; place: string; years: string; current: boolean; summary: string; feats: string[]; tech: string[] }[];
   /** Six radar axes, 1–10. Derived from site content; see `radar` below to tune. */
   radar: { label: string; value: number; note: string }[];
   inventory: {
@@ -163,7 +163,8 @@ export async function getAtlasRegistry(): Promise<AtlasRegistry> {
   const apps = await getCollection('thoughtful-apps');
 
   const experience = (await getCollection('experience', ({ data }) => data.visible))
-    .sort((a, b) => a.data.order - b.data.order);
+    // Current quests first, then newest first.
+    .sort((a, b) => Number(b.data.current) - Number(a.data.current) || b.data.startDate.getTime() - a.data.startDate.getTime());
 
   const credentials = await getCollection('credentials', ({ data }) => data.visible);
   const education = (await getCollection('education', ({ data }) => data.visible))
@@ -318,6 +319,7 @@ export async function getAtlasRegistry(): Promise<AtlasRegistry> {
           current: e.data.current,
           summary: e.data.description,
           feats: e.data.achievements,
+          tech: e.data.technologies ?? [],
         })),
         radar,
         inventory: {

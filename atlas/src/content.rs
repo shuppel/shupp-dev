@@ -46,6 +46,8 @@ pub struct Quest {
     pub summary: String,
     #[serde(default)]
     pub feats: Vec<String>,
+    #[serde(default)]
+    pub tech: Vec<String>,
 }
 
 #[derive(Deserialize, Clone, Default)]

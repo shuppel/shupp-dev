@@ -173,7 +173,7 @@ pub fn scene_def(id: SceneId) -> &'static SceneDef {
         spawn: p(232.0, 312.0),
         points: &[
             Point { pos: LIFT_LOWER_EXIT, label: "Ride the lift up", action: Action::Lift, deck: Deck::Lower },
-            Point { pos: p(320.0, 300.0), label: "Workbench", action: Action::Terminal("work"), deck: Deck::Lower },
+            Point { pos: p(320.0, 304.0), label: "Workbench", action: Action::Terminal("work"), deck: Deck::Lower },
             Point { pos: LIFT_UPPER_EXIT, label: "Ride the lift down", action: Action::Lift, deck: Deck::Upper },
             Point { pos: p(545.0, 174.0), label: "Talk to the technician", action: Action::Talk(Npc::Technician), deck: Deck::Upper },
             Point { pos: p(420.0, 192.0), label: "Inspect the Crescent", action: Action::Crescent, deck: Deck::Upper },
@@ -708,6 +708,14 @@ fn enter_scene(
             LiftPlatform,
             Sprite { image: hd("props/crane_elevator.png"), custom_size: Some(LIFT_SIZE), ..default() },
             Transform::from_translation(to_world(stop).extend(lift_z(stop))),
+        ));
+        // The workbench: a console against the service deck wall (its white
+        // halo is in fx.rs, built by tools/make_workbench.py).
+        commands.spawn((
+            SceneEntity,
+            Sprite { image: hd("props/engine_room/console.png"), custom_size: Some(Vec2::new(56.0, 48.0)), ..default() },
+            Anchor::BOTTOM_CENTER,
+            Transform::from_translation(to_world(p(320.0, 298.0)).extend(1.0 + 298.0 / 1000.0)),
         ));
         let base = CRESCENT_CENTER.y + CRESCENT_SIZE.y / 2.0 - 4.0;
         commands.spawn((

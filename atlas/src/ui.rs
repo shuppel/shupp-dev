@@ -220,6 +220,10 @@ struct Ui {
     /// Which suit the Skills tab shows.
     suit: usize,
     ship_sel: usize,
+    /// The Quests tab is showing one quest in full.
+    quest_full: bool,
+    /// Last pointer position seen over the ship map.
+    hover_at: Option<Vec2>,
 }
 
 #[derive(Resource)]
@@ -262,7 +266,8 @@ struct UiArt {
     ship_cursor: Handle<Image>,
     flight: Handle<Image>,
     flight_layout: Handle<TextureAtlasLayout>,
-    ship_overhead: Handle<Image>,
+    blueprint: Handle<Image>,
+    room_glow: Vec<Handle<Image>>,
     radar: Handle<Image>,
     menu_bg: Handle<Image>,
     full_body: Handle<Image>,
@@ -285,17 +290,60 @@ enum RoomGo {
     Dest(&'static str),
 }
 
-/// Rooms on the ship map: name, site label, marker position, where it goes, blurb.
-/// Positions sit on the overhead Atlier art drawn at SHIP_ART.
-const ROOMS: [(&str, &str, Vec2, RoomGo, &str); 6] = [
-    ("Engine Room", "SKILLS", Vec2::new(162.0, 182.0), RoomGo::Scene(SceneId::Engine), "Dave keeps the reactor humming. Ask him about the tools that keep the ship flying."),
-    ("The Archive", "WRITING", Vec2::new(262.0, 146.0), RoomGo::Scene(SceneId::Archive), ""),
-    ("The Dockyard", "WORK", Vec2::new(346.0, 214.0), RoomGo::Scene(SceneId::Port), ""),
-    ("Captain's Quarters", "ABOUT", Vec2::new(432.0, 146.0), RoomGo::Dest("about"), "A bunk, a desk, and a mirror. Stand in front of it and you end up explaining yourself."),
-    ("Comms", "CONTACT", Vec2::new(432.0, 216.0), RoomGo::Dest("contact"), ""),
-    ("The Bridge", "HOME", Vec2::new(522.0, 182.0), RoomGo::Scene(SceneId::Bridge), "The helm of the Atlier, and the heart of the ship."),
+/// Rooms on the ship map (a side-view blueprint of the Atlier, after
+/// Erikk's sketch): name, site label, where it goes, blurb, and the room's
+/// outline in sketch coordinates (see `bp`).
+type RoomDef = (&'static str, &'static str, RoomGo, &'static str, &'static [(f32, f32)]);
+const ROOMS: [RoomDef; 5] = [
+    ("Engine Room", "SKILLS", RoomGo::Scene(SceneId::Engine), "Dave keeps the reactor humming. Ask him about the tools that keep the ship flying.",
+        &[(72.0, 162.0), (100.0, 160.0), (180.0, 172.0), (250.0, 196.0), (254.0, 232.0), (205.0, 262.0), (152.0, 278.0), (124.0, 268.0), (110.0, 232.0), (96.0, 196.0)]),
+    ("Captain's Quarters", "ABOUT", RoomGo::Dest("about"), "A bunk, a desk, and a mirror. Stand in front of it and you end up explaining yourself.",
+        &[(216.0, 88.0), (262.0, 86.0), (262.0, 112.0), (216.0, 112.0)]),
+    ("The Archive", "WRITING", RoomGo::Scene(SceneId::Archive), "",
+        &[(262.0, 86.0), (370.0, 93.0), (432.0, 120.0), (440.0, 136.0), (400.0, 138.0), (330.0, 128.0), (286.0, 126.0), (262.0, 112.0)]),
+    ("The Dockyard", "WORK", RoomGo::Scene(SceneId::Port), "",
+        &[(196.0, 162.0), (240.0, 150.0), (296.0, 130.0), (330.0, 128.0), (400.0, 138.0), (392.0, 182.0), (330.0, 186.0), (232.0, 172.0)]),
+    ("The Bridge", "HOME", RoomGo::Scene(SceneId::Bridge), "The helm of the Atlier, and the heart of the ship.",
+        &[(400.0, 138.0), (440.0, 136.0), (466.0, 160.0), (470.0, 182.0), (392.0, 182.0)]),
 ];
-const SHIP_ART: Rect = Rect { min: Vec2::new(40.0, 20.0), max: Vec2::new(600.0, 347.0) };
+/// The hull outline and the deck line, in sketch coordinates.
+const HULL: [(f32, f32); 18] = [
+    (100.0, 128.0), (135.0, 100.0), (260.0, 84.0), (370.0, 92.0), (435.0, 118.0), (470.0, 160.0), (480.0, 186.0), (468.0, 196.0),
+    (400.0, 208.0), (300.0, 225.0), (240.0, 248.0), (200.0, 272.0), (150.0, 284.0), (116.0, 274.0), (106.0, 240.0), (98.0, 200.0),
+    (70.0, 162.0), (92.0, 150.0),
+];
+const DECK: [(f32, f32); 2] = [(76.0, 160.0), (470.0, 182.0)];
+
+/// Sketch coordinates to the logical frame.
+fn bp(p: (f32, f32)) -> Vec2 {
+    Vec2::new(20.0 + (p.0 - 50.0) * 1.33, 18.0 + (p.1 - 60.0) * 1.16)
+}
+
+fn room_poly(i: usize) -> Vec<Vec2> {
+    ROOMS[i].4.iter().map(|p| bp(*p)).collect()
+}
+
+fn poly_contains(poly: &[Vec2], at: Vec2) -> bool {
+    let mut odd = false;
+    let mut j = poly.len() - 1;
+    for i in 0..poly.len() {
+        let (a, b) = (poly[i], poly[j]);
+        if (a.y > at.y) != (b.y > at.y) && at.x < (b.x - a.x) * (at.y - a.y) / (b.y - a.y) + a.x {
+            odd = !odd;
+        }
+        j = i;
+    }
+    odd
+}
+
+fn room_at(at: Vec2) -> Option<usize> {
+    (0..ROOMS.len()).find(|i| poly_contains(&room_poly(*i), at))
+}
+
+fn room_center(i: usize) -> Vec2 {
+    let poly = room_poly(i);
+    poly.iter().copied().sum::<Vec2>() / poly.len() as f32
+}
 
 fn room_dest(go: RoomGo) -> Option<&'static str> {
     match go {
@@ -374,7 +422,8 @@ fn setup_ui(
         // The Atlier, the big terrarium ship, is what travels between stars.
         flight: crate::load_smooth(&assets, "ships/atlier/flight.png"),
         flight_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(768, 448), 4, 1, None, None)),
-        ship_overhead: crate::load_smooth(&assets, "ships/atlier/overhead.png"),
+        blueprint: images.add(blueprint_image()),
+        room_glow: (0..ROOMS.len()).map(|i| images.add(room_glow_image(i))).collect(),
         radar,
         menu_bg: assets.load("ui/menu_bg.png"),
         full_body: crate::load_smooth(&assets, "portraits/full_body.png"),
@@ -452,7 +501,7 @@ fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Regi
             game.mode = Mode::Atlas;
         }
         Request::Ship => {
-            let here = ROOMS.iter().position(|r| matches!(r.3, RoomGo::Scene(s) if s == game.scene)).unwrap_or(0);
+            let here = ROOMS.iter().position(|r| matches!(r.2, RoomGo::Scene(s) if s == game.scene)).unwrap_or(0);
             ui.ship_sel = here;
             game.mode = Mode::Ship;
         }
@@ -787,8 +836,17 @@ fn input(
             }
         }
         Mode::Ship => {
-            // The ship map: fast travel between the Atlier's rooms.
+            // The ship map: fast travel between the Atlier's rooms. Hovering a
+            // room highlights it.
             let n = ROOMS.len();
+            if let Some(c) = window.cursor_position() {
+                let at = frame.to_scene(c);
+                if let Some(i) = room_at(at) && i != ui.ship_sel && ui.hover_at != Some(at) {
+                    ui.ship_sel = i;
+                    ui.dirty = true;
+                }
+                ui.hover_at = Some(at);
+            }
             if left || up {
                 ui.ship_sel = (ui.ship_sel + n - 1) % n;
                 ui.dirty = true;
@@ -804,7 +862,7 @@ fn input(
                     ui.dirty = true;
                     return;
                 }
-                if let Some(i) = ROOMS.iter().position(|r| r.2.distance(at) < 22.0) {
+                if let Some(i) = room_at(at) {
                     if i == ui.ship_sel {
                         go = true;
                     } else {
@@ -817,7 +875,7 @@ fn input(
             }
             if go {
                 game.mode = Mode::Explore;
-                game.request = Some(match ROOMS[ui.ship_sel].3 {
+                game.request = Some(match ROOMS[ui.ship_sel].2 {
                     RoomGo::Scene(s) if s == game.scene => {
                         ui.dirty = true;
                         return;
@@ -879,9 +937,20 @@ fn input(
                 _ => (0, 1),
             };
             let mut changed = false;
+            // A quest opened in full: any key or tap closes it, except the resume button.
+            if ui.quest_full {
+                if tap.is_some_and(|at| OPEN_BTN.contains(at)) {
+                    bridge::emit("open", "/resume");
+                } else if back || ok || tap.is_some() || left || right || up || down {
+                    ui.quest_full = false;
+                    ui.dirty = true;
+                }
+                return;
+            }
             let set_tab = |ui: &mut Ui, t: usize| {
                 ui.tab = t;
                 ui.sel = 0;
+                ui.quest_full = false;
             };
             let next = keys.just_pressed(KeyCode::Tab) || keys.just_pressed(KeyCode::KeyQ);
             // In the grids the arrows move the cursor; elsewhere left/right flip tabs.
@@ -938,14 +1007,22 @@ fn input(
                     ui.sel = i;
                     changed = true;
                 } else if ui.tab == 3 && let Some(i) = sheet_row_at(at, ui.sel, list_len) {
+                    // First tap selects (summary on the right); a second tap opens it in full.
+                    if i == ui.sel {
+                        ui.quest_full = true;
+                    }
                     ui.sel = i;
                     changed = true;
                 } else if ui.tab == 3 && OPEN_BTN.contains(at) {
                     bridge::emit("open", "/resume");
+                } else if ui.tab == 3 && QUEST_CARD.contains(at) {
+                    ui.quest_full = true;
+                    changed = true;
                 }
             }
-            if keys.just_pressed(KeyCode::Enter) && ui.tab == 3 {
-                bridge::emit("open", "/resume");
+            if ok && ui.tab == 3 {
+                ui.quest_full = true;
+                changed = true;
             }
             if back || keys.just_pressed(KeyCode::KeyC) {
                 game.mode = Mode::Explore;
@@ -975,7 +1052,7 @@ const CLOSE: Rect = Rect { min: Vec2::new(578.0, 22.0), max: Vec2::new(602.0, 44
 const SEARCH: Rect = Rect { min: Vec2::new(44.0, 62.0), max: Vec2::new(344.0, 80.0) };
 /// The page lays an iframe of the selected page over this box.
 const PREVIEW: Rect = Rect { min: Vec2::new(364.0, 62.0), max: Vec2::new(596.0, 210.0) };
-const TRAVEL_BTN: Rect = Rect { min: Vec2::new(488.0, 288.0), max: Vec2::new(600.0, 312.0) };
+const TRAVEL_BTN: Rect = Rect { min: Vec2::new(488.0, 304.0), max: Vec2::new(620.0, 334.0) };
 
 fn term_start(sel: usize, n: usize) -> usize {
     if n <= T_ROWS { 0 } else { sel.saturating_sub(T_ROWS / 2).min(n - T_ROWS) }
@@ -995,6 +1072,8 @@ fn terminal_row_at(at: Vec2, sel: usize, n: usize) -> Option<usize> {
 }
 
 const ITEM_COLS: usize = 4;
+/// The quest summary card on the right of the Quests tab.
+const QUEST_CARD: Rect = Rect { min: Vec2::new(390.0, 46.0), max: Vec2::new(600.0, 306.0) };
 const CARD_COLS: usize = 5;
 
 /// A slot in the Items grid (tab 1) or a mini card in the Skills deck (tab 2).
@@ -1170,6 +1249,10 @@ struct Pulse;
 #[derive(Component)]
 struct Shimmer(f32);
 
+/// The hologram head in a transmission: flickers and bobs.
+#[derive(Component)]
+struct Holo;
+
 /// A brass cog on the quest dossier, turning at this many radians a second.
 #[derive(Component)]
 struct Cog(f32);
@@ -1184,8 +1267,17 @@ fn animate_map(
     mut pulse: Query<&mut ImageNode, (With<Pulse>, Without<Orbit>)>,
     mut planets: Query<(&Orbit, &mut ImageNode), Without<Pulse>>,
     mut sweeps: Query<(&Shimmer, &mut Node), Without<Parallax>>,
-    mut cogs: Query<(&Cog, &mut UiTransform)>,
+    mut cogs: Query<(&Cog, &mut UiTransform), Without<Holo>>,
+    mut holo: Query<(&mut ImageNode, &mut UiTransform), (With<Holo>, Without<Pulse>, Without<Orbit>, Without<Cog>)>,
 ) {
+    let tt = time.elapsed_secs();
+    for (mut img, mut tf) in &mut holo {
+        // Mostly steady, with a quick dip now and then like a weak signal.
+        let dip = if (tt * 0.9).fract() < 0.04 { 0.45 } else { 0.0 };
+        let a = 0.78 + 0.08 * (tt * 23.0).sin() + 0.04 * (tt * 7.0).sin() - dip;
+        img.color = Color::srgba(0.62, 1.0, 1.0, a.clamp(0.2, 1.0));
+        tf.translation = Val2::px(if dip > 0.0 { 2.0 } else { 0.0 }, (tt * 1.6).sin() * 2.0);
+    }
     for (cog, mut tf) in &mut cogs {
         tf.rotation = Rot2::radians(time.elapsed_secs() * cog.0);
     }
@@ -1323,13 +1415,19 @@ fn render(
             let mut more = None;
             let mut portrait = None;
             commands.entity(overlay).with_children(|p| {
-                portrait = Some(
-                    p.spawn((
-                        at(18.0, 262.0 - h + 8.0, w, h),
-                        ImageNode::from_atlas_image(img.clone(), TextureAtlas { layout: layout.clone(), index: line.pose }),
-                    ))
-                    .id(),
-                );
+                if line.call {
+                    // A transmission: the caller's head floats as a hologram
+                    // over a little brass projector (a codec-style call).
+                    portrait = Some(holo_call(p, f, img, layout, line.pose));
+                } else {
+                    portrait = Some(
+                        p.spawn((
+                            at(18.0, 262.0 - h + 8.0, w, h),
+                            ImageNode::from_atlas_image(img.clone(), TextureAtlas { layout: layout.clone(), index: line.pose }),
+                        ))
+                        .id(),
+                    );
+                }
                 p.spawn(panel(12.0, 258.0, 616.0, 92.0)).with_children(|b| {
                     b.spawn(text_at(&f.label, 10.0, LAMP, line.speaker.to_uppercase(), 14.0, 6.0, 400.0));
                     let (font, size) = if mana_dialogue { (&f.mana, 10.0) } else { (&f.body, 13.0) };
@@ -1468,51 +1566,31 @@ fn render(
         }
         Mode::Ship => {
             let sel = ui.ship_sel;
-            let here = ROOMS.iter().position(|r| matches!(r.3, RoomGo::Scene(s) if s == game.scene));
+            let here = ROOMS.iter().position(|r| matches!(r.2, RoomGo::Scene(s) if s == game.scene));
             commands.entity(overlay).with_children(|p| {
-                // The Atlier from above, drifting through the stars.
-                p.spawn((at(0.0, 0.0, VW, VH), BackgroundColor(Color::srgb_u8(5, 11, 24))));
-                for (img, speed) in [(&art.stars_far, 3.0), (&art.stars_near, 11.0)] {
-                    p.spawn((Parallax(speed), at(0.0, 0.0, PARALLAX_W * 2.0, VH))).with_children(|r| {
-                        r.spawn((at(0.0, 0.0, PARALLAX_W, VH), ImageNode::new(img.clone())));
-                        r.spawn((at(PARALLAX_W, 0.0, PARALLAX_W, VH), ImageNode::new(img.clone())));
-                    });
-                }
-                p.spawn((at(SHIP_ART.min.x, SHIP_ART.min.y, SHIP_ART.width(), SHIP_ART.height()), ImageNode::new(art.ship_overhead.clone())));
-                p.spawn(text_at(&f.label, 9.0, SAGE, "SHIP MAP · FAST TRAVEL", 20.0, 16.0, 260.0));
-                p.spawn(text_at(&f.display, 22.0, CITRON, "The Atlier", 20.0, 26.0, 300.0));
+                // A blueprint of the Atlier, side on. The selected room lights up.
+                p.spawn((at(0.0, 0.0, VW, VH), ImageNode::new(art.blueprint.clone())));
+                p.spawn((at(0.0, 0.0, VW, VH), ImageNode::new(art.room_glow[sel].clone())));
+                p.spawn(text_at(&f.label, 9.0, Color::srgb(0.70, 0.86, 1.0), "SHIP MAP · FAST TRAVEL", 20.0, 16.0, 260.0));
+                p.spawn(text_at(&f.display, 22.0, Color::WHITE, "The Atlier", 20.0, 26.0, 300.0));
+                p.spawn(text_at(&f.label, 7.0, Color::srgb(0.70, 0.86, 1.0).with_alpha(0.7), "SECTION A-A · NOT TO SCALE", 20.0, 52.0, 200.0));
                 close_button(p, f);
-                let sp = ROOMS[sel].2;
-                p.spawn((
-                    Pulse,
-                    at(sp.x - 26.0, sp.y - 26.0, 52.0, 52.0),
-                    ImageNode::from_atlas_image(art.pulse.clone(), TextureAtlas { layout: art.pulse_layout.clone(), index: 0 }),
-                ));
-                for (i, (name, _, pos, go, _)) in ROOMS.iter().enumerate() {
+                for (i, room) in ROOMS.iter().enumerate() {
                     let on = i == sel;
-                    let seen = room_dest(*go).is_some_and(|d| game.visited.iter().any(|v| v == d));
-                    p.spawn((
-                        Node { border: UiRect::all(Val::Px(2.0)), border_radius: BorderRadius::all(Val::Px(6.0)), ..at(pos.x - 6.0, pos.y - 6.0, 12.0, 12.0) },
-                        BackgroundColor(if on { LAMP } else if seen { OLIVE.with_alpha(0.8) } else { INK }),
-                        BorderColor::all(if on { CITRON } else { LINE }),
-                    ));
-                    // Name tag on a dark plate so it reads over the garden art.
-                    p.spawn((
-                        Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(pos.x - 46.0, pos.y + 10.0, 92.0, 13.0) },
-                        BackgroundColor(Color::srgba(0.05, 0.03, 0.05, if on { 0.9 } else { 0.7 })),
-                        children![text_at(&f.label, 7.0, if on { CITRON } else { TEXT }, name.to_uppercase(), 0.0, 2.0, 92.0).with_justify()],
-                    ));
+                    let c = room_center(i);
+                    let tw = 96.0;
+                    p.spawn(text_at(&f.label, 7.0, if on { Color::WHITE } else { Color::srgb(0.70, 0.86, 1.0) }, room.0.to_uppercase(), c.x - tw / 2.0, c.y - 5.0, tw).with_justify());
                 }
                 if let Some(h) = here {
-                    let hp = ROOMS[h].2;
-                    p.spawn((at(hp.x - 10.0, hp.y - 32.0, 20.0, 20.0), ImageNode::new(art.ship_cursor.clone())));
+                    let hp = room_center(h);
+                    p.spawn((at(hp.x - 10.0, hp.y - 30.0, 20.0, 20.0), ImageNode::new(art.ship_cursor.clone())));
                 }
-                let (name, label, _, go, blurb) = ROOMS[sel];
+                let (name, label, go, blurb, _) = ROOMS[sel];
                 let text = if blurb.is_empty() { room_dest(go).map_or(String::new(), |d| registry.dest(d).preview.clone()) } else { blurb.to_owned() };
-                p.spawn(panel(20.0, 282.0, 460.0, 66.0)).with_children(|b| {
-                    b.spawn(text_at(&f.label, 8.0, LAMP, if here == Some(sel) { format!("{label} · YOU ARE HERE") } else { label.to_owned() }, 10.0, 6.0, 300.0));
-                    b.spawn(text_at(&f.bold, 13.0, CITRON, name, 10.0, 18.0, 320.0));
-                    b.spawn(text_at(&f.body, 10.0, MUTED, truncate(&text, 120), 10.0, 36.0, 440.0));
+                p.spawn(panel(20.0, 290.0, 460.0, 58.0)).with_children(|b| {
+                    b.spawn(text_at(&f.label, 8.0, LAMP, if here == Some(sel) { format!("{label} · YOU ARE HERE") } else { label.to_owned() }, 10.0, 5.0, 300.0));
+                    b.spawn(text_at(&f.bold, 12.0, CITRON, name, 10.0, 16.0, 320.0));
+                    b.spawn(text_at(&f.body, 9.5, MUTED, truncate(&text, 120), 10.0, 33.0, 440.0));
                 });
                 p.spawn((panel(TRAVEL_BTN.min.x, TRAVEL_BTN.min.y, TRAVEL_BTN.width(), TRAVEL_BTN.height()),
                     children![text_at(&f.label, 9.0, CITRON, "GO ›", 0.0, 5.0, TRAVEL_BTN.width() - 2.0).with_justify()]));
@@ -1707,7 +1785,9 @@ fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Re
                 let total = quests.len() + stats.training.len();
                 p.spawn(text_at(&f.label, 8.0, SAGE, "QUEST LOG", 148.0, 50.0, 200.0));
                 let start = window_start(ui.sel, total);
-                for (row, i) in (start..total.min(start + ROWS)).enumerate() {
+                // The full view covers the list, so skip drawing it underneath.
+                let shown = if ui.quest_full && ui.sel < quests.len() { 0 } else { total.min(start + ROWS) };
+                for (row, i) in (start..shown.max(start)).enumerate() {
                     let y = LIST_TOP + row as f32 * ROW_H;
                     let on = i == ui.sel;
                     p.spawn((Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(144.0, y, 238.0, ROW_H - 2.0) }, BackgroundColor(if on { SELECT } else { Color::NONE })));
@@ -1723,7 +1803,9 @@ fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Re
                     p.spawn(text_at(&f.label, 7.0, SAGE, truncate(&format!("{} · {}", place.to_uppercase(), years), 40), 170.0, y + 15.0, 210.0));
                 }
                 let d = (390.0, 46.0, 210.0, 260.0);
-                if let Some(q) = quests.get(ui.sel) {
+                if ui.quest_full && let Some(q) = quests.get(ui.sel) {
+                    quest_full_view(p, f, art, q);
+                } else if let Some(q) = quests.get(ui.sel) {
                     if q.current {
                         dossier(p, f, art, d, q);
                     } else {
@@ -1731,6 +1813,9 @@ fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Re
                     }
                 } else if let Some(t) = stats.training.get(ui.sel - quests.len()) {
                     logbook(p, f, d, &t.title, &format!("{} · {}", t.place, t.years), "Training quest.", &[]);
+                }
+                if !ui.quest_full && ui.sel < quests.len() {
+                    p.spawn(text_at(&f.label, 7.0, MUTED, if ui.touch { "TAP THE CARD FOR THE FULL QUEST" } else { "ENTER FOR THE FULL QUEST" }, 390.0, 316.0, 80.0));
                 }
                 p.spawn((panel(OPEN_BTN.min.x, OPEN_BTN.min.y, OPEN_BTN.width(), OPEN_BTN.height()),
                     children![text_at(&f.label, 9.0, CITRON, "FULL RESUME ›", 0.0, 5.0, OPEN_BTN.width() - 2.0).with_justify()]));
@@ -1921,6 +2006,72 @@ fn dossier(p: &mut ChildSpawnerCommands, f: &Fonts, art: &UiArt, (x, y, w, h): (
     });
 }
 
+/// The codec-style hologram for a transmission. Returns the head's entity so
+/// the dialogue tick can animate its mouth.
+fn holo_call(p: &mut ChildSpawnerCommands, f: &Fonts, img: &Handle<Image>, layout: &Handle<TextureAtlasLayout>, pose: usize) -> Entity {
+    let cyan = Color::srgb(0.45, 0.95, 1.0);
+    let (x, y, w) = (22.0, 70.0, 150.0);
+    p.spawn(text_at(&f.label, 7.0, cyan, "HOLO-COMMS · LINK OPEN", x, y - 14.0, w).with_justify());
+    // Light cone from the projector, as stacked slices fading upward.
+    for i in 0..10 {
+        let k = i as f32 / 10.0;
+        let sw = 34.0 + 110.0 * k;
+        p.spawn((at(x + (w - sw) / 2.0, y + 160.0 - 16.0 * i as f32 - 16.0, sw, 16.0), BackgroundColor(cyan.with_alpha(0.10 - 0.008 * i as f32))));
+    }
+    // Scan lines over the head.
+    for i in 0..34 {
+        p.spawn((at(x + 8.0, y + 4.0 + i as f32 * 4.6, w - 16.0, 1.0), BackgroundColor(cyan.with_alpha(0.10))));
+    }
+    let head = p
+        .spawn((
+            Holo,
+            UiTransform::IDENTITY,
+            at(x + 15.0, y, 120.0, 160.0),
+            ImageNode::from_atlas_image(img.clone(), TextureAtlas { layout: layout.clone(), index: pose }).with_color(cyan),
+        ))
+        .id();
+    // The projector: a brass puck with a lit lens.
+    p.spawn((
+        Node { border: UiRect::all(Val::Px(1.0)), border_radius: BorderRadius::all(Val::Px(5.0)), ..at(x + 40.0, y + 160.0, w - 80.0, 12.0) },
+        BackgroundColor(Color::srgb(0.30, 0.22, 0.12)),
+        BorderColor::all(BRASS),
+    ));
+    p.spawn((Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(x + w / 2.0 - 12.0, y + 158.0, 24.0, 3.0) }, BackgroundColor(cyan)));
+    head
+}
+
+/// One quest in full, over the list: everything it involved.
+fn quest_full_view(p: &mut ChildSpawnerCommands, f: &Fonts, art: &UiArt, q: &crate::content::Quest) {
+    let (x, y, w, h) = (140.0, 44.0, 460.0, 262.0);
+    let (bg, edge, ink, sub) = if q.current {
+        (Color::srgba(0.16, 0.10, 0.06, 0.98), BRASS, TEXT, BRASS)
+    } else {
+        (Color::srgb(0.87, 0.81, 0.67), Color::srgb(0.55, 0.42, 0.28), Color::srgb(0.22, 0.14, 0.09), Color::srgb(0.45, 0.30, 0.18))
+    };
+    p.spawn((
+        Node { border: UiRect::all(Val::Px(2.0)), border_radius: BorderRadius::all(Val::Px(4.0)), overflow: Overflow::clip(), ..at(x, y, w, h) },
+        BackgroundColor(bg),
+        BorderColor::all(edge),
+    ))
+    .with_children(|d| {
+        if q.current {
+            d.spawn((Cog(0.5), UiTransform::IDENTITY, at(w - 70.0, -24.0, 88.0, 88.0), ImageNode::new(art.cog.clone()).with_color(BRASS.with_alpha(0.45))));
+            d.spawn((Node { border_radius: BorderRadius::all(Val::Px(3.0)), ..at(14.0, 15.0, 6.0, 6.0) }, BackgroundColor(LAMP)));
+            d.spawn(text_at(&f.label, 7.5, LAMP, "ACTIVE QUEST", 24.0, 12.0, 160.0));
+        } else {
+            d.spawn(text_at(&f.label, 7.5, sub, "COMPLETED QUEST", 14.0, 12.0, 160.0));
+        }
+        d.spawn(text_at(&f.bold, 14.0, if q.current { CITRON } else { ink }, q.title.clone(), 14.0, 24.0, w - 100.0));
+        d.spawn(text_at(&f.label, 8.0, sub, format!("{} · {}", q.place.to_uppercase(), q.years), 14.0, 46.0, w - 28.0));
+        d.spawn(text_at(&f.body, 9.5, ink, q.summary.clone(), 14.0, 62.0, w - 28.0));
+        let feats: Vec<String> = q.feats.iter().take(6).map(|x| format!("• {}", truncate(x, 110))).collect();
+        d.spawn(text_at(&f.body, 9.0, ink, feats.join("\n"), 14.0, 104.0, w - 28.0));
+        if !q.tech.is_empty() {
+            d.spawn(text_at(&f.label, 7.0, sub, format!("KIT · {}", q.tech.join(" · ").to_uppercase()), 14.0, h - 20.0, w - 28.0));
+        }
+    });
+}
+
 /// A finished quest: an aged logbook page with a COMPLETE stamp.
 fn logbook(p: &mut ChildSpawnerCommands, f: &Fonts, (x, y, w, h): (f32, f32, f32, f32), title: &str, sub: &str, summary: &str, feats: &[String]) {
     let ink = Color::srgb(0.22, 0.14, 0.09);
@@ -1946,6 +2097,111 @@ fn logbook(p: &mut ChildSpawnerCommands, f: &Fonts, (x, y, w, h): (f32, f32, f32
             children![text_at(&f.label, 10.0, red.with_alpha(0.85), "COMPLETE", 0.0, 4.0, 84.0).with_justify()],
         ));
     });
+}
+
+fn seg_d(p: Vec2, a: Vec2, b: Vec2) -> f32 {
+    let ab = b - a;
+    let t = ((p - a).dot(ab) / ab.length_squared().max(1e-6)).clamp(0.0, 1.0);
+    p.distance(a + ab * t)
+}
+
+fn poly_d(poly: &[Vec2], p: Vec2) -> f32 {
+    let n = poly.len();
+    (0..n).map(|i| seg_d(p, poly[i], poly[(i + 1) % n])).fold(f32::MAX, f32::min)
+}
+
+fn blank(w: u32, h: u32) -> Image {
+    let mut img = Image::new_fill(
+        Extent3d { width: w, height: h, depth_or_array_layers: 1 },
+        TextureDimension::D2,
+        &[0, 0, 0, 0],
+        TextureFormat::Rgba8UnormSrgb,
+        RenderAssetUsages::default(),
+    );
+    img.sampler = ImageSampler::linear();
+    img
+}
+
+/// The blueprint sheet: grid paper, the hull, the deck line and every room
+/// outline. Drawn at 2× for crisp lines; lines are stamped along each
+/// segment so startup stays quick.
+fn blueprint_image() -> Image {
+    const K: f32 = 2.0;
+    let (w, h) = ((VW * K) as u32, (VH * K) as u32);
+    let hull: Vec<Vec2> = HULL.iter().map(|p| bp(*p)).collect();
+    let mut buf = vec![Vec3::ZERO; (w * h) as usize];
+    for y in 0..h {
+        for x in 0..w {
+            let p = Vec2::new((x as f32 + 0.5) / K, (y as f32 + 0.5) / K);
+            let mut c = Vec3::new(0.05, 0.16, 0.34);
+            let fine = (p.x % 10.0).min(10.0 - p.x % 10.0).min((p.y % 10.0).min(10.0 - p.y % 10.0));
+            let coarse = (p.x % 50.0).min(50.0 - p.x % 50.0).min((p.y % 50.0).min(50.0 - p.y % 50.0));
+            if fine < 0.35 {
+                c = c.lerp(Vec3::new(0.30, 0.50, 0.75), 0.25);
+            }
+            if coarse < 0.5 {
+                c = c.lerp(Vec3::new(0.40, 0.62, 0.88), 0.45);
+            }
+            if poly_contains(&hull, p) {
+                c = c.lerp(Vec3::new(0.10, 0.25, 0.48), 0.5);
+            }
+            buf[(y * w + x) as usize] = c;
+        }
+    }
+    // Stamp an antialiased line of half-width `wd` (logical px).
+    let mut stroke = |pts: &[Vec2], closed: bool, wd: f32, color: Vec3, strength: f32| {
+        let n = pts.len();
+        let segs = if closed { n } else { n - 1 };
+        for i in 0..segs {
+            let (a, b) = (pts[i] * K, pts[(i + 1) % n] * K);
+            let (lo, hi) = (a.min(b) - Vec2::splat(wd * K + 2.0), a.max(b) + Vec2::splat(wd * K + 2.0));
+            for y in (lo.y.max(0.0) as u32)..(hi.y.min(h as f32 - 1.0) as u32) {
+                for x in (lo.x.max(0.0) as u32)..(hi.x.min(w as f32 - 1.0) as u32) {
+                    let d = seg_d(Vec2::new(x as f32 + 0.5, y as f32 + 0.5), a, b);
+                    let cov = (wd * K - d + 0.5).clamp(0.0, 1.0) * strength;
+                    if cov > 0.0 {
+                        let px = &mut buf[(y * w + x) as usize];
+                        *px = px.lerp(color, cov);
+                    }
+                }
+            }
+        }
+    };
+    let ink = Vec3::new(0.92, 0.96, 1.0);
+    for i in 0..ROOMS.len() {
+        stroke(&room_poly(i), true, 0.5, Vec3::new(0.62, 0.80, 1.0), 0.75);
+    }
+    let deck: Vec<Vec2> = DECK.iter().map(|p| bp(*p)).collect();
+    stroke(&deck, false, 0.5, ink, 0.6);
+    stroke(&hull, true, 0.9, ink, 1.0);
+    let mut img = blank(w, h);
+    for y in 0..h {
+        for x in 0..w {
+            let c = buf[(y * w + x) as usize];
+            let _ = img.set_color_at(x, y, Color::srgb(c.x, c.y, c.z));
+        }
+    }
+    img
+}
+
+/// One room lit up: a soft fill and a bright outline, transparent elsewhere.
+fn room_glow_image(i: usize) -> Image {
+    let (w, h) = (VW as u32, VH as u32);
+    let mut img = blank(w, h);
+    let poly = room_poly(i);
+    let (lo, hi) = poly.iter().fold((Vec2::MAX, Vec2::MIN), |(lo, hi), p| (lo.min(*p), hi.max(*p)));
+    for y in (lo.y as u32).saturating_sub(4)..((hi.y as u32 + 5).min(h)) {
+        for x in (lo.x as u32).saturating_sub(4)..((hi.x as u32 + 5).min(w)) {
+            let p = Vec2::new(x as f32 + 0.5, y as f32 + 0.5);
+            let d = poly_d(&poly, p);
+            let inside = poly_contains(&poly, p);
+            let a = if inside { 0.32 } else { 0.0 } + (1.4 - d).clamp(0.0, 1.0) * 0.9 + ((4.0 - d) / 4.0).clamp(0.0, 1.0) * 0.25;
+            if a > 0.0 {
+                let _ = img.set_color_at(x, y, Color::srgba(0.55, 0.92, 1.0, a.min(1.0)));
+            }
+        }
+    }
+    img
 }
 
 /// A plain cog wheel, white so it can be tinted.
