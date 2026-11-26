@@ -36,7 +36,7 @@ impl Plugin for UiPlugin {
             .add_systems(Startup, setup_ui.after(crate::setup))
             .add_systems(
                 Update,
-                (layout_frame, handle_request, input, tick, render, hud)
+                (layout_frame, handle_request, input, tick, render, hud, animate_map)
                     .chain()
                     .after(crate::depth_sort),
             );
@@ -56,6 +56,8 @@ pub enum Request {
     /// A destination id: work, about, writing, contact.
     Destination(String),
     Menu,
+    /// Ride the dockyard lift.
+    Lift,
 }
 
 pub fn trigger(game: &mut Game, pt: Point) {
@@ -64,6 +66,7 @@ pub fn trigger(game: &mut Game, pt: Point) {
         Action::Goto(s) => Request::Door(s),
         Action::Talk(n) => Request::Talk(n),
         Action::Terminal(id) => Request::Terminal(id.to_owned()),
+        Action::Lift => Request::Lift,
     });
 }
 
@@ -167,6 +170,7 @@ struct Fonts {
     body: Handle<Font>,
     bold: Handle<Font>,
     label: Handle<Font>,
+    mana: Handle<Font>,
     display: Handle<Font>,
 }
 
@@ -181,14 +185,24 @@ struct UiArt {
     faces_layout: Handle<TextureAtlasLayout>,
     call_layout: Handle<TextureAtlasLayout>,
     atlas_bg: Handle<Image>,
+    /// Star map layers: far and near stars scroll at different speeds under the chart.
+    stars_far: Handle<Image>,
+    stars_near: Handle<Image>,
+    chart: Handle<Image>,
+    pulse: Handle<Image>,
+    pulse_layout: Handle<TextureAtlasLayout>,
     icons: Vec<(String, [Handle<Image>; 3])>,
+    /// 16-frame spinning planet for each destination.
+    orbits: Vec<Handle<Image>>,
+    orbit_layout: Handle<TextureAtlasLayout>,
     ship_cursor: Handle<Image>,
     flight: Handle<Image>,
     flight_layout: Handle<TextureAtlasLayout>,
     radar: Handle<Image>,
     menu_bg: Handle<Image>,
-    /// status, items, quests, map, credential, degree, quest_active, quest_done
-    ui_icons: [Handle<Image>; 8],
+    /// status, items, quests, map, credential, degree, quest_active, quest_done,
+    /// character, ship, settings
+    ui_icons: [Handle<Image>; 11],
     key_e: Handle<Image>,
     key_tap: Handle<Image>,
 }
@@ -219,7 +233,9 @@ fn setup_ui(
     commands.insert_resource(Fonts {
         body: assets.load("fonts/Hind_400Regular.ttf"),
         bold: assets.load("fonts/Hind_600SemiBold.ttf"),
-        label: assets.load("fonts/Cairo_700Bold.ttf"),
+        // Manaspace for the game chrome: labels, tabs, prompts, stats.
+        label: assets.load("fonts/Manaspace.ttf"),
+        mana: assets.load("fonts/Manaspace.ttf"),
         display: assets.load("fonts/Shupp.otf"),
     });
     let icons = DESTS
@@ -228,9 +244,9 @@ fn setup_ui(
             (
                 id.to_string(),
                 [
-                    assets.load(format!("atlas/{id}_normal.png")),
-                    assets.load(format!("atlas/{id}_selected.png")),
-                    assets.load(format!("atlas/{id}_visited.png")),
+                    crate::load_smooth(&assets, format!("ui/star_map/{id}_normal.png")),
+                    crate::load_smooth(&assets, format!("ui/star_map/{id}_selected.png")),
+                    crate::load_smooth(&assets, format!("ui/star_map/{id}_visited.png")),
                 ],
             )
         })
@@ -246,14 +262,34 @@ fn setup_ui(
         faces_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(256, 352), 4, 1, None, None)),
         call_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(192, 256), 4, 1, None, None)),
         atlas_bg: assets.load("scenes/atlas.png"),
+        stars_far: assets.load("parallax/stars_far.png"),
+        stars_near: assets.load("parallax/stars_near.png"),
+        chart: assets.load("ui/star_map/chart.png"),
+        pulse: assets.load("ui/star_map/selection_pulse.png"),
+        pulse_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(112, 112), 12, 1, None, None)),
         icons,
-        ship_cursor: assets.load("atlas/ship_cursor.png"),
-        flight: assets.load("ships/crescent_flight.png"),
-        flight_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(192, 112), 4, 1, None, None)),
+        orbits: DESTS.iter().map(|(id, _)| crate::load_smooth(&assets, format!("ui/star_map/{id}_orbit.png"))).collect(),
+        orbit_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(96, 96), 16, 1, None, None)),
+        ship_cursor: assets.load("ui/star_map/ship_cursor.png"),
+        // The Atlier, the big terrarium ship, is what travels between stars.
+        flight: crate::load_smooth(&assets, "ships/atlier/flight.png"),
+        flight_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(768, 448), 4, 1, None, None)),
         radar,
         menu_bg: assets.load("ui/menu_bg.png"),
-        ui_icons: ["status", "items", "quests", "map", "credential", "degree", "quest_active", "quest_done"]
-            .map(|n| assets.load(format!("ui/icon_{n}.png"))),
+        ui_icons: [
+            "ui/menu/status.png",
+            "ui/menu/items.png",
+            "ui/menu/quests.png",
+            "ui/menu/map.png",
+            "ui/icon_credential.png",
+            "ui/icon_degree.png",
+            "ui/menu/active_quest_star.png",
+            "ui/icon_quest_done.png",
+            "ui/menu/character.png",
+            "ui/menu/ship.png",
+            "ui/menu/settings.png",
+        ]
+        .map(|p| crate::load_smooth(&assets, p)),
         key_e: assets.load("ui/key_e.png"),
         key_tap: assets.load("ui/key_tap.png"),
     });
@@ -318,6 +354,7 @@ fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Regi
             game.mode = Mode::Sheet;
         }
         Request::Door(to) => start_travel(&mut game, &mut ui, to, false),
+        Request::Lift => game.mode = Mode::Lift,
         Request::Terminal(id) => {
             game.mark_visited(&id);
             ui.terminal = Some(Terminal { dest: registry.dest(&id), sel: 0 });
@@ -333,7 +370,7 @@ fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Regi
                 ),
                 Npc::Archivist => (
                     Who::Archivist,
-                    "Relay Archivist",
+                    "Astro the Archivist",
                     registry.dest("writing"),
                     "The records console holds the catalog. Pick an entry and I'll pull the full text.",
                 ),
@@ -632,7 +669,7 @@ fn input(
                 ui.dirty = true;
             }
         }
-        Mode::Travel => {}
+        Mode::Travel | Mode::Lift => {}
     }
 }
 
@@ -768,6 +805,48 @@ fn tick(
 }
 
 // ---------------------------------------------------------------------------
+// Star map motion
+// ---------------------------------------------------------------------------
+
+/// Width of one parallax star strip, in UI pixels.
+const PARALLAX_W: f32 = 1280.0;
+
+/// A star strip that scrolls left at this many UI pixels per second.
+#[derive(Component)]
+struct Parallax(f32);
+
+/// The selection ring around the chosen destination.
+#[derive(Component)]
+struct Pulse;
+
+/// A destination planet turning in place.
+#[derive(Component)]
+struct Orbit(usize);
+
+fn animate_map(
+    time: Res<Time>,
+    mut strips: Query<(&Parallax, &mut Node)>,
+    mut pulse: Query<&mut ImageNode, (With<Pulse>, Without<Orbit>)>,
+    mut planets: Query<(&Orbit, &mut ImageNode), Without<Pulse>>,
+) {
+    let t = time.elapsed_secs();
+    for (p, mut node) in &mut strips {
+        node.left = Val::Px(-((t * p.0) % PARALLAX_W).round());
+    }
+    for mut img in &mut pulse {
+        if let Some(a) = img.texture_atlas.as_mut() {
+            a.index = (t / 0.09) as usize % 12;
+        }
+    }
+    for (orbit, mut img) in &mut planets {
+        if let Some(a) = img.texture_atlas.as_mut() {
+            // Each planet keeps its own phase so they don't spin in lockstep.
+            a.index = ((t / 0.135) as usize + orbit.0) % 16;
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
 // Layout helpers
 // ---------------------------------------------------------------------------
 
@@ -855,6 +934,7 @@ fn render(
     commands.entity(root.0).add_child(overlay);
     ui.overlay = Some(overlay);
     let f = &*fonts;
+    let mana_dialogue = game.mana_dialogue;
 
     match game.mode {
         Mode::Dialogue => {
@@ -881,7 +961,8 @@ fn render(
                 );
                 p.spawn(panel(12.0, 258.0, 616.0, 92.0)).with_children(|b| {
                     b.spawn(text_at(&f.label, 10.0, LAMP, line.speaker.to_uppercase(), 14.0, 6.0, 400.0));
-                    typed = Some(b.spawn(text_at(&f.body, 13.0, TEXT, "", 14.0, 24.0, 586.0)).id());
+                    let (font, size) = if mana_dialogue { (&f.mana, 10.0) } else { (&f.body, 13.0) };
+                    typed = Some(b.spawn(text_at(font, size, TEXT, "", 14.0, 24.0, 586.0)).id());
                     more = Some(b.spawn(text_at(&f.label, 10.0, CITRON, "›", 596.0, 72.0, 14.0)).id());
                 });
                 p.spawn(text_at(
@@ -946,7 +1027,21 @@ fn render(
             let sel = ui.atlas_sel;
             let dest = registry.dest(DESTS[sel].0);
             commands.entity(overlay).with_children(|p| {
-                p.spawn((at(0.0, 0.0, VW, VH), ImageNode::new(art.atlas_bg.clone())));
+                // Parallax: far stars drift at 3 px/s, near stars at 11, chart on top.
+                p.spawn((at(0.0, 0.0, VW, VH), BackgroundColor(Color::srgb_u8(5, 11, 24))));
+                for (img, speed) in [(&art.stars_far, 3.0), (&art.stars_near, 11.0)] {
+                    p.spawn((Parallax(speed), at(0.0, 0.0, PARALLAX_W * 2.0, VH))).with_children(|r| {
+                        r.spawn((at(0.0, 0.0, PARALLAX_W, VH), ImageNode::new(img.clone())));
+                        r.spawn((at(PARALLAX_W, 0.0, PARALLAX_W, VH), ImageNode::new(img.clone())));
+                    });
+                }
+                p.spawn((at(0.0, 0.0, VW, VH), ImageNode::new(art.chart.clone())));
+                let sp = DESTS[sel].1;
+                p.spawn((
+                    Pulse,
+                    at(sp.x - 30.0, sp.y - 30.0, 60.0, 60.0),
+                    ImageNode::from_atlas_image(art.pulse.clone(), TextureAtlas { layout: art.pulse_layout.clone(), index: 0 }),
+                ));
                 p.spawn(text_at(&f.label, 9.0, SAGE, "STAR ATLAS", 20.0, 16.0, 200.0));
                 p.spawn(text_at(&f.display, 22.0, CITRON, "The Scattered Atlas", 20.0, 26.0, 300.0));
                 close_button(p, f);
@@ -954,8 +1049,14 @@ fn render(
                     let d = registry.dest(id);
                     let state = if i == sel { 1 } else if game.visited.iter().any(|v| v == id) { 2 } else { 0 };
                     let icon = art.icons[i].1[state].clone();
-                    p.spawn((at(pos.x - 16.0, pos.y - 16.0, 32.0, 32.0), ImageNode::new(icon)));
-                    p.spawn(text_at(&f.label, 8.0, if i == sel { LAMP } else { TEXT }, d.label.to_uppercase(), pos.x - 50.0, pos.y + 16.0, 100.0))
+                    // A spinning planet with its destination badge pinned to it.
+                    p.spawn((
+                        Orbit(i * 5),
+                        at(pos.x - 20.0, pos.y - 20.0, 40.0, 40.0),
+                        ImageNode::from_atlas_image(art.orbits[i].clone(), TextureAtlas { layout: art.orbit_layout.clone(), index: i * 5 }),
+                    ));
+                    p.spawn((at(pos.x + 4.0, pos.y + 2.0, 22.0, 22.0), ImageNode::new(icon)));
+                    p.spawn(text_at(&f.label, 8.0, if i == sel { LAMP } else { TEXT }, d.label.to_uppercase(), pos.x - 50.0, pos.y + 26.0, 100.0))
                         .insert(TextLayout::justify(Justify::Center));
                 }
                 p.spawn((at(here.x - 12.0, here.y - 40.0, 24.0, 24.0), ImageNode::new(art.ship_cursor.clone())));
@@ -992,7 +1093,7 @@ fn render(
         }
 
         Mode::Sheet => render_sheet(&mut commands, overlay, &ui, &registry, f, &art),
-        Mode::Explore => {}
+        Mode::Explore | Mode::Lift => {}
     }
 }
 
@@ -1152,7 +1253,7 @@ fn hud(
         });
         if tray {
             p.spawn(panel(TRAY.min.x - 3.0, TRAY.min.y, TRAY.width() + 3.0, TRAY.height())).with_children(|b| {
-                for (r, icon, label) in [(MENU_BTN, 0usize, "MENU"), (MAP_BTN, 3, "MAP")] {
+                for (r, icon, label) in [(MENU_BTN, 8usize, "MENU"), (MAP_BTN, 3, "MAP")] {
                     let x = r.min.x + 3.0;
                     b.spawn((at(x + r.width() / 2.0 - 8.0, 6.0, 16.0, 16.0), ImageNode::new(art.ui_icons[icon].clone())));
                     b.spawn(text_at(&f.label, 7.0, CITRON, label, x, 25.0, r.width()).with_justify());

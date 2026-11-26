@@ -14,6 +14,8 @@ pub enum Inbound {
     Paused(bool),
     /// A tap at (x, y) as fractions of the canvas size.
     Tap(bevy::math::Vec2, bool),
+    /// true: dialogue in Manaspace; false: the sans.
+    DialogueFont(bool),
 }
 
 thread_local! {
@@ -69,6 +71,12 @@ mod web {
         super::push(super::Inbound::Tap(bevy::math::Vec2::new(x, y), touch));
     }
 
+    /// Dialogue font: true for Manaspace, false for the sans.
+    #[wasm_bindgen]
+    pub fn set_dialogue_font(mana: bool) {
+        super::push(super::Inbound::DialogueFont(mana));
+    }
+
     #[wasm_bindgen]
     pub fn set_paused(paused: bool) {
         super::push(super::Inbound::Paused(paused));
@@ -76,7 +84,7 @@ mod web {
 }
 
 #[cfg(target_arch = "wasm32")]
-pub use web::{go, set_paused, start, tap};
+pub use web::{go, set_dialogue_font, set_paused, start, tap};
 
 #[cfg(target_arch = "wasm32")]
 pub(crate) fn emit(kind: &str, value: &str) {

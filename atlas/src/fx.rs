@@ -87,7 +87,6 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>) {
 fn glow_for(scene: SceneId, action: Action) -> Option<(usize, [f32; 4])> {
     let i = match (scene, action) {
         (SceneId::Bridge, Action::OpenAtlas) => 0,
-        (SceneId::Port, Action::Terminal(_)) => 1,
         (SceneId::Archive, Action::Terminal(_)) => 2,
         _ => return None,
     };

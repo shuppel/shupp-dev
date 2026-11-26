@@ -10,7 +10,7 @@
 
 use bevy::asset::AssetMetaCheck;
 use bevy::camera::ScalingMode;
-use bevy::image::{CompressedImageFormats, ImageSampler, ImageType};
+use bevy::image::{CompressedImageFormats, ImageLoaderSettings, ImageSampler, ImageType};
 use bevy::asset::RenderAssetUsages;
 use bevy::prelude::*;
 use bevy::sprite::Anchor;
@@ -28,6 +28,8 @@ pub const VW: f32 = 640.0;
 pub const VH: f32 = 360.0;
 
 const SPEED: f32 = 96.0; // scene px per second
+const RUN: f32 = 1.85; // run speed multiplier
+const RUN_TAP: f32 = 170.0; // taps farther than this run
 const REACH: f32 = 26.0; // interaction radius, a little over the art pack's 22 for touch
 
 pub fn to_world(p: Vec2) -> Vec2 {
@@ -57,6 +59,17 @@ pub enum Action {
     Goto(SceneId),
     Talk(Npc),
     Terminal(&'static str),
+    /// Ride the dockyard crane lift to the other deck.
+    Lift,
+}
+
+/// Which deck of a two-level room a point or the player is on.
+#[derive(Clone, Copy, PartialEq, Eq, Debug, Default)]
+pub enum Deck {
+    #[default]
+    Any,
+    Lower,
+    Upper,
 }
 
 #[derive(Clone, Copy)]
@@ -64,13 +77,17 @@ pub struct Point {
     pub pos: Vec2,
     pub label: &'static str,
     pub action: Action,
+    pub deck: Deck,
 }
 
 pub struct SceneDef {
     pub name: &'static str,
     pub label: &'static str,
     pub bg: &'static str,
-    pub fg: &'static str,
+    /// Foreground cutout drawn over actors standing behind it, if the room has one.
+    pub fg: Option<&'static str>,
+    /// The backdrop is 2× source art (1280 × 720) shown at 640 × 360.
+    pub hd: bool,
     pub fg_threshold: f32,
     pub spawn: Vec2,
     pub points: &'static [Point],
@@ -82,47 +99,68 @@ const fn p(x: f32, y: f32) -> Vec2 {
     Vec2::new(x, y)
 }
 
+// Crane lift sockets from the art pack's elevator.json (logical pixels).
+const LIFT_LOWER: Vec2 = p(171.0, 298.0);
+const LIFT_UPPER: Vec2 = p(171.0, 181.0);
+const LIFT_LOWER_EXIT: Vec2 = p(170.0, 308.0);
+const LIFT_UPPER_EXIT: Vec2 = p(216.0, 183.0);
+const LIFT_SIZE: Vec2 = p(83.0, 36.0);
+const RIDER_OFFSET: Vec2 = p(0.0, 2.0);
+const LIFT_TRAVEL: f32 = 2.1;
+const LIFT_STEP: f32 = 0.4; // walking on or off the platform
+/// Where Erikk lands when he walks down the Crescent's ramp.
+const BAY_ARRIVAL: Vec2 = p(360.0, 190.0);
+const CRESCENT_CENTER: Vec2 = p(420.0, 156.0);
+const CRESCENT_SIZE: Vec2 = p(148.0, 82.0);
+
 pub fn scene_def(id: SceneId) -> &'static SceneDef {
     static BRIDGE: SceneDef = SceneDef {
-        name: "The Crescent",
+        name: "The Atlier",
         label: "Bridge",
         bg: "scenes/bridge.png",
-        fg: "maps/bridge_foreground.png",
+        fg: Some("maps/bridge_foreground.png"),
+        hd: false,
         fg_threshold: 265.0,
         spawn: p(310.0, 298.0),
         points: &[
-            Point { pos: p(470.0, 180.0), label: "Star console", action: Action::OpenAtlas },
-            Point { pos: p(250.0, 330.0), label: "Gangway to the Dockyard", action: Action::Goto(SceneId::Port) },
+            Point { pos: p(470.0, 180.0), label: "Star console", action: Action::OpenAtlas, deck: Deck::Any },
+            Point { pos: p(250.0, 330.0), label: "Gangway to the Dockyard", action: Action::Goto(SceneId::Port), deck: Deck::Any },
         ],
         npc: None,
         mask: include_bytes!("../masks/bridge_walkable.png"),
     };
+    // The glasshouse dockyard: a service deck below, the Crescent's fighter
+    // bay above, and a crane lift between them (art pack elevator.json).
     static PORT: SceneDef = SceneDef {
         name: "The Dockyard",
         label: "Work",
-        bg: "scenes/port.png",
-        fg: "maps/port_foreground.png",
-        fg_threshold: 335.0,
-        spawn: p(323.0, 283.0),
+        bg: "scenes/glasshouse.png",
+        fg: None,
+        hd: true,
+        fg_threshold: 0.0,
+        spawn: p(232.0, 312.0),
         points: &[
-            Point { pos: p(320.0, 153.0), label: "Workbench", action: Action::Terminal("work") },
-            Point { pos: p(421.0, 176.0), label: "Talk to the technician", action: Action::Talk(Npc::Technician) },
-            Point { pos: p(169.0, 212.0), label: "Board the Crescent", action: Action::Goto(SceneId::Bridge) },
+            Point { pos: LIFT_LOWER_EXIT, label: "Ride the lift up", action: Action::Lift, deck: Deck::Lower },
+            Point { pos: p(320.0, 300.0), label: "Workbench", action: Action::Terminal("work"), deck: Deck::Lower },
+            Point { pos: LIFT_UPPER_EXIT, label: "Ride the lift down", action: Action::Lift, deck: Deck::Upper },
+            Point { pos: p(545.0, 174.0), label: "Talk to the technician", action: Action::Talk(Npc::Technician), deck: Deck::Upper },
+            Point { pos: p(420.0, 192.0), label: "Back to the Atlier", action: Action::Goto(SceneId::Bridge), deck: Deck::Upper },
         ],
-        npc: Some((Npc::Technician, p(421.0, 176.0))),
-        mask: include_bytes!("../masks/port_walkable.png"),
+        npc: Some((Npc::Technician, p(545.0, 174.0))),
+        mask: include_bytes!("../masks/glasshouse_lower.png"),
     };
     static ARCHIVE: SceneDef = SceneDef {
         name: "The Archive",
         label: "Writing",
         bg: "scenes/archive.png",
-        fg: "maps/archive_foreground.png",
+        fg: Some("maps/archive_foreground.png"),
+        hd: false,
         fg_threshold: 341.0,
         spawn: p(323.0, 301.0),
         points: &[
-            Point { pos: p(323.0, 151.0), label: "Records", action: Action::Terminal("writing") },
-            Point { pos: p(385.0, 182.0), label: "Talk to the archivist", action: Action::Talk(Npc::Archivist) },
-            Point { pos: p(323.0, 328.0), label: "Back to the Crescent", action: Action::Goto(SceneId::Bridge) },
+            Point { pos: p(323.0, 151.0), label: "Records", action: Action::Terminal("writing"), deck: Deck::Any },
+            Point { pos: p(385.0, 182.0), label: "Talk to Astro", action: Action::Talk(Npc::Archivist), deck: Deck::Any },
+            Point { pos: p(323.0, 328.0), label: "Back to the Atlier", action: Action::Goto(SceneId::Bridge), deck: Deck::Any },
         ],
         npc: Some((Npc::Archivist, p(385.0, 182.0))),
         mask: include_bytes!("../masks/archive_walkable.png"),
@@ -139,6 +177,7 @@ pub fn scene_def(id: SceneId) -> &'static SceneDef {
 pub struct Masks {
     bridge: Vec<bool>,
     port: Vec<bool>,
+    port_upper: Vec<bool>,
     archive: Vec<bool>,
 }
 
@@ -169,15 +208,29 @@ impl Masks {
         Self {
             bridge: decode_mask(scene_def(SceneId::Bridge).mask),
             port: decode_mask(scene_def(SceneId::Port).mask),
+            port_upper: {
+                // The parked Crescent is solid: carve its hull out of the bay floor.
+                let mut m = decode_mask(include_bytes!("../masks/glasshouse_upper.png"));
+                for y in 0..VH as usize {
+                    for x in 0..VW as usize {
+                        let d = (Vec2::new(x as f32, y as f32) - (CRESCENT_CENTER + Vec2::new(0.0, 2.0))) / Vec2::new(72.0, 28.0);
+                        if d.length_squared() < 1.0 {
+                            m[y * VW as usize + x] = false;
+                        }
+                    }
+                }
+                m
+            },
             archive: decode_mask(scene_def(SceneId::Archive).mask),
         }
     }
-    pub fn walkable(&self, scene: SceneId, at: Vec2) -> bool {
+    pub fn walkable(&self, scene: SceneId, deck: Deck, at: Vec2) -> bool {
         if at.x < 0.0 || at.y < 0.0 || at.x >= VW || at.y >= VH {
             return false;
         }
         let m = match scene {
             SceneId::Bridge => &self.bridge,
+            SceneId::Port if deck == Deck::Upper => &self.port_upper,
             SceneId::Port => &self.port,
             SceneId::Archive => &self.archive,
         };
@@ -198,11 +251,15 @@ pub enum Mode {
     Atlas,
     Sheet,
     Travel,
+    /// Riding the dockyard lift: input and exits are off until it stops.
+    Lift,
 }
 
 #[derive(Resource)]
 pub struct Game {
     pub scene: SceneId,
+    /// Which deck the player is on, in rooms that have two.
+    pub deck: Deck,
     pub mode: Mode,
     /// The interaction point the player is standing at, if any.
     pub nearby: Option<Point>,
@@ -213,6 +270,8 @@ pub struct Game {
     pub paused: bool,
     /// Something the UI should open next (set by interactions and the page).
     pub request: Option<ui::Request>,
+    /// Dialogue in Manaspace instead of the sans (`?font=mana` on the page).
+    pub mana_dialogue: bool,
 }
 
 impl Game {
@@ -236,8 +295,17 @@ pub struct Boot {
 pub struct Art {
     pub idle: Handle<Image>,
     pub walk: Handle<Image>,
+    pub run: Handle<Image>,
     pub idle_layout: Handle<TextureAtlasLayout>,
     pub walk_layout: Handle<TextureAtlasLayout>,
+    pub run_layout: Handle<TextureAtlasLayout>,
+    pub pongo_walk: Handle<Image>,
+    pub pongo_run: Handle<Image>,
+    pub pongo_idle: Handle<Image>,
+    /// Pongo's walk and run sheets: 4 frames × down, up, left, right.
+    pub pongo_layout: Handle<TextureAtlasLayout>,
+    /// Pongo's idle sheet: stand and sniff, sit down, lie down (facing right).
+    pub pongo_idle_layout: Handle<TextureAtlasLayout>,
     pub npc_layout: Handle<TextureAtlasLayout>,
     pub technician_npc: Handle<Image>,
     pub archivist_npc: Handle<Image>,
@@ -285,6 +353,8 @@ pub struct Player {
     pub target: Option<Vec2>,
     facing: Facing,
     walking: bool,
+    /// Shift held (or a long tap): move at run speed with the run cycle.
+    running: bool,
     frame: usize,
     clock: f32,
 }
@@ -331,15 +401,18 @@ pub fn app(canvas: Option<String>, registry: Registry, boot: Boot, visited: Vec<
     .insert_resource(Masks::new())
     .insert_resource(Game {
         scene: SceneId::Bridge,
+        deck: Deck::Any,
         mode: Mode::Explore,
         nearby: None,
         pending: None,
         visited,
         paused: false,
         request: None,
+        mana_dialogue: false,
     })
     .add_message::<EnterScene>()
     .init_resource::<PageTap>()
+    .init_resource::<Ride>()
     .add_systems(Startup, setup)
     .add_systems(PreUpdate, read_page)
     .add_systems(
@@ -351,7 +424,9 @@ pub fn app(canvas: Option<String>, registry: Registry, boot: Boot, visited: Vec<
                 .run_if(|g: Res<Game>| g.mode == Mode::Explore && !g.paused),
             find_nearby,
             use_point.run_if(|g: Res<Game>| g.mode == Mode::Explore && !g.paused),
+            ride_lift,
             animate_player,
+            follow_pongo,
             depth_sort,
             fx::animate,
         )
@@ -366,6 +441,7 @@ pub(crate) fn setup(
     assets: Res<AssetServer>,
     mut layouts: ResMut<Assets<TextureAtlasLayout>>,
     boot: Res<Boot>,
+    mut game: ResMut<Game>,
     mut enter: MessageWriter<EnterScene>,
 ) {
     commands.spawn((
@@ -377,10 +453,18 @@ pub(crate) fn setup(
     ));
 
     let art = Art {
-        idle: assets.load("player/courier_idle_outlined.png"),
-        walk: assets.load("player/courier_walk_outlined.png"),
-        idle_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(48, 64), 4, 4, None, None)),
-        walk_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(48, 64), 6, 4, None, None)),
+        // HD sheets: 128 × 128 cells (2× a 64 × 64 logical cell), foot at (64, 124).
+        idle: load_smooth(&assets, "player/erikk_idle.png"),
+        walk: load_smooth(&assets, "player/erikk_walk.png"),
+        run: load_smooth(&assets, "player/erikk_run.png"),
+        run_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(128, 128), 4, 4, None, None)),
+        pongo_walk: load_smooth(&assets, "cast/pongo/walk.png"),
+        pongo_run: load_smooth(&assets, "cast/pongo/run.png"),
+        pongo_idle: load_smooth(&assets, "cast/pongo/idle.png"),
+        pongo_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(128, 96), 4, 4, None, None)),
+        pongo_idle_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(128, 96), 4, 3, None, None)),
+        idle_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(128, 128), 8, 4, None, None)),
+        walk_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(128, 128), 6, 4, None, None)),
         npc_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(48, 64), 4, 1, None, None)),
         technician_npc: assets.load("cast/technician/npc_outlined.png"),
         archivist_npc: assets.load("cast/archivist/npc_outlined.png"),
@@ -389,10 +473,24 @@ pub(crate) fn setup(
     // Erikk. The art pack's pivot is (24, 62) in a 48 × 64 cell.
     commands.spawn((
         Player::default(),
-        Sprite::from_atlas_image(art.idle.clone(), TextureAtlas { layout: art.idle_layout.clone(), index: 0 }),
-        Anchor(Vec2::new(0.0, (32.0 - 62.0) / 64.0)),
+        Sprite {
+            custom_size: Some(Vec2::new(64.0, 64.0)),
+            ..Sprite::from_atlas_image(art.idle.clone(), TextureAtlas { layout: art.idle_layout.clone(), index: 0 })
+        },
+        Anchor(Vec2::new(0.0, (64.0 - 124.0) / 128.0)),
         Transform::from_xyz(0.0, 0.0, 1.0),
     ));
+    // Pongo, Erikk's dog, trots after him everywhere. Foot at (64, 92) of a 128 × 96 cell.
+    commands.spawn((
+        Pongo::default(),
+        Sprite {
+            custom_size: Some(Vec2::new(64.0, 48.0)),
+            ..Sprite::from_atlas_image(art.pongo_idle.clone(), TextureAtlas { layout: art.pongo_idle_layout.clone(), index: 4 })
+        },
+        Anchor(Vec2::new(0.0, (48.0 - 92.0) / 96.0)),
+        Transform::from_xyz(0.0, 0.0, 1.0),
+    ));
+    commands.init_resource::<Trail>();
     commands.insert_resource(art);
 
     let scene = match boot.start.as_str() {
@@ -400,6 +498,8 @@ pub(crate) fn setup(
         "writing" => SceneId::Archive,
         _ => SceneId::Bridge,
     };
+    // Starting here (not arriving from the Crescent) puts Erikk at the lower lift.
+    game.scene = scene;
     enter.write(EnterScene(scene));
 }
 
@@ -417,6 +517,7 @@ fn enter_scene(
         commands.entity(e).despawn();
     }
     let def = scene_def(id);
+    let from = game.scene;
     game.scene = id;
     game.nearby = None;
     game.pending = None;
@@ -427,13 +528,42 @@ fn enter_scene(
     }
     bridge::emit("scene", def.label);
 
-    commands.spawn((SceneEntity, Sprite::from_image(assets.load(def.bg)), Transform::from_xyz(0.0, 0.0, 0.0)));
-    commands.spawn((
-        SceneEntity,
-        Foreground,
-        Sprite::from_image(assets.load(def.fg)),
-        Transform::from_xyz(0.0, 0.0, 0.5),
-    ));
+    let hd = |path: &'static str| {
+        // 2× art drawn at logical size: filter it so it stays smooth when scaled.
+        load_smooth(&assets, path)
+    };
+    let bg = if def.hd {
+        Sprite { image: hd(def.bg), custom_size: Some(Vec2::new(VW, VH)), ..default() }
+    } else {
+        Sprite::from_image(assets.load(def.bg))
+    };
+    commands.spawn((SceneEntity, bg, Transform::from_xyz(0.0, 0.0, 0.0)));
+    if let Some(fg) = def.fg {
+        commands.spawn((SceneEntity, Foreground, Sprite::from_image(assets.load(fg)), Transform::from_xyz(0.0, 0.0, 0.5)));
+    }
+    let mut spawn = def.spawn;
+    game.deck = Deck::Any;
+    if id == SceneId::Port {
+        // Walking down the Crescent's ramp lands in the fighter bay; any
+        // other arrival starts at the foot of the lift.
+        game.deck = if from == SceneId::Bridge { Deck::Upper } else { Deck::Lower };
+        if game.deck == Deck::Upper {
+            spawn = BAY_ARRIVAL;
+        }
+        let stop = if game.deck == Deck::Upper { LIFT_UPPER } else { LIFT_LOWER };
+        commands.spawn((
+            SceneEntity,
+            LiftPlatform,
+            Sprite { image: hd("props/crane_elevator.png"), custom_size: Some(LIFT_SIZE), ..default() },
+            Transform::from_translation(to_world(stop).extend(lift_z(stop))),
+        ));
+        let base = CRESCENT_CENTER.y + CRESCENT_SIZE.y / 2.0 - 4.0;
+        commands.spawn((
+            SceneEntity,
+            Sprite { image: hd("ships/crescent/exterior.png"), custom_size: Some(CRESCENT_SIZE), ..default() },
+            Transform::from_translation(to_world(CRESCENT_CENTER).extend(1.0 + base / 1000.0)),
+        ));
+    }
     if let Some((npc, foot)) = def.npc {
         let image = match npc {
             Npc::Technician => art.technician_npc.clone(),
@@ -448,9 +578,101 @@ fn enter_scene(
         ));
     }
 
-    player.foot = def.spawn;
+    player.foot = spawn;
     player.target = None;
-    player.facing = Facing::Up;
+    player.facing = if spawn == BAY_ARRIVAL { Facing::Down } else { Facing::Up };
+}
+
+/// Load 2× (or larger) source art with linear filtering, so it stays smooth
+/// when drawn at its smaller logical size.
+pub fn load_smooth(assets: &AssetServer, path: impl Into<bevy::asset::AssetPath<'static>>) -> Handle<Image> {
+    assets
+        .load_builder()
+        .with_settings(|s: &mut ImageLoaderSettings| s.sampler = ImageSampler::linear())
+        .load(path)
+}
+
+/// Points that belong to the deck the player is on.
+pub fn points_here(game: &Game) -> impl Iterator<Item = &'static Point> + '_ {
+    scene_def(game.scene).points.iter().filter(move |pt| pt.deck == Deck::Any || game.deck == Deck::Any || pt.deck == game.deck)
+}
+
+// ---------------------------------------------------------------------------
+// Dockyard crane lift
+// ---------------------------------------------------------------------------
+
+#[derive(Component)]
+struct LiftPlatform;
+
+/// A lift ride in progress: step on, travel (smoothstep), step off.
+#[derive(Resource, Default)]
+struct Ride {
+    active: bool,
+    t: f32,
+    from: Vec2,
+    up: bool,
+}
+
+fn lift_z(center: Vec2) -> f32 {
+    // Just behind whoever stands on it.
+    1.0 + center.y / 1000.0
+}
+
+fn smoothstep(u: f32) -> f32 {
+    let u = u.clamp(0.0, 1.0);
+    u * u * (3.0 - 2.0 * u)
+}
+
+fn ride_lift(
+    time: Res<Time>,
+    mut game: ResMut<Game>,
+    mut ride: ResMut<Ride>,
+    mut player: Single<&mut Player>,
+    mut platform: Query<&mut Transform, With<LiftPlatform>>,
+) {
+    let Ok(mut tf) = platform.single_mut() else {
+        ride.active = false;
+        return;
+    };
+    if game.mode == Mode::Lift && !ride.active {
+        *ride = Ride { active: true, t: 0.0, from: player.foot, up: game.deck != Deck::Upper };
+        player.target = None;
+    }
+    if !ride.active {
+        return;
+    }
+    if !game.paused {
+        ride.t += time.delta_secs().min(0.1);
+    }
+    let (start, end, exit) = if ride.up {
+        (LIFT_LOWER, LIFT_UPPER, LIFT_UPPER_EXIT)
+    } else {
+        (LIFT_UPPER, LIFT_LOWER, LIFT_LOWER_EXIT)
+    };
+    let travel = ((ride.t - LIFT_STEP) / LIFT_TRAVEL).clamp(0.0, 1.0);
+    let center = start.lerp(end, smoothstep(travel));
+    tf.translation = to_world(center.round()).extend(lift_z(center));
+    let rider = center + RIDER_OFFSET;
+    let (foot, walking) = if ride.t < LIFT_STEP {
+        (ride.from.lerp(rider, ride.t / LIFT_STEP), true)
+    } else if ride.t < LIFT_STEP + LIFT_TRAVEL {
+        (rider, false)
+    } else {
+        (rider.lerp(exit, ((ride.t - LIFT_STEP - LIFT_TRAVEL) / LIFT_STEP).min(1.0)), true)
+    };
+    let d = foot - player.foot;
+    if d.length() > 0.01 && walking {
+        player.facing = Facing::from_dir(d);
+    }
+    player.foot = foot;
+    player.walking = walking;
+    if ride.t >= LIFT_STEP * 2.0 + LIFT_TRAVEL {
+        ride.active = false;
+        game.deck = if ride.up { Deck::Upper } else { Deck::Lower };
+        game.mode = Mode::Explore;
+        player.walking = false;
+        player.facing = if ride.up { Facing::Right } else { Facing::Down };
+    }
 }
 
 /// A touch or pen tap the page caught on the canvas this frame, as a
@@ -472,6 +694,7 @@ fn read_page(mut game: ResMut<Game>, mut tap: ResMut<PageTap>) {
                 tap.touch = touch;
             }
             bridge::Inbound::Paused(p) => game.paused = p,
+            bridge::Inbound::DialogueFont(mana) => game.mana_dialogue = mana,
             bridge::Inbound::Go(id) => game.request = Some(ui::Request::Destination(id)),
         }
     }
@@ -516,6 +739,7 @@ fn keyboard_walk(keys: Res<ButtonInput<KeyCode>>, mut player: Single<&mut Player
         // Keyboard steps one frame ahead; follow_target does the moving.
         let foot = player.foot;
         player.target = Some(foot + dir.normalize() * 6.0);
+        player.running = keys.any_pressed([KeyCode::ShiftLeft, KeyCode::ShiftRight]);
     }
 }
 
@@ -532,14 +756,16 @@ fn pointer_walk(
     if ui::hud_hit(at) || !(0.0..VW).contains(&at.x) || !(0.0..VH).contains(&at.y) {
         return;
     }
-    let def = scene_def(game.scene);
-    if let Some(pt) = def.points.iter().find(|pt| pt.pos.distance(at) < 30.0) {
-        game.pending = Some(*pt);
+    let hit = points_here(&game).find(|pt| pt.pos.distance(at) < 30.0).copied();
+    if let Some(pt) = hit {
+        game.pending = Some(pt);
         player.target = Some(pt.pos);
     } else {
         game.pending = None;
         player.target = Some(at);
     }
+    // No Shift key on a phone: a tap far across the room breaks into a run.
+    player.running = player.target.is_some_and(|t| t.distance(player.foot) > RUN_TAP);
 }
 
 fn follow_target(time: Res<Time>, masks: Res<Masks>, mut game: ResMut<Game>, mut player: Single<&mut Player>) {
@@ -548,7 +774,8 @@ fn follow_target(time: Res<Time>, masks: Res<Masks>, mut game: ResMut<Game>, mut
         return;
     };
     let to = target - player.foot;
-    let step = SPEED * time.delta_secs().min(0.1);
+    let speed = if player.running { SPEED * RUN } else { SPEED };
+    let step = speed * time.delta_secs().min(0.1);
     // Tapped a point: arriving within reach is enough (consoles sit off the walkable floor).
     if let Some(pt) = game.pending {
         if player.foot.distance(pt.pos) <= REACH {
@@ -568,11 +795,11 @@ fn follow_target(time: Res<Time>, masks: Res<Masks>, mut game: ResMut<Game>, mut
     player.facing = Facing::from_dir(dir);
     let mv = dir * step.min(to.length());
     let here = player.foot;
-    let next = if masks.walkable(game.scene, here + mv) {
+    let next = if masks.walkable(game.scene, game.deck, here + mv) {
         Some(here + mv)
-    } else if masks.walkable(game.scene, here + Vec2::new(mv.x, 0.0)) && mv.x.abs() > 0.05 {
+    } else if masks.walkable(game.scene, game.deck, here + Vec2::new(mv.x, 0.0)) && mv.x.abs() > 0.05 {
         Some(here + Vec2::new(mv.x, 0.0))
-    } else if masks.walkable(game.scene, here + Vec2::new(0.0, mv.y)) && mv.y.abs() > 0.05 {
+    } else if masks.walkable(game.scene, game.deck, here + Vec2::new(0.0, mv.y)) && mv.y.abs() > 0.05 {
         Some(here + Vec2::new(0.0, mv.y))
     } else {
         None
@@ -596,10 +823,11 @@ fn follow_target(time: Res<Time>, masks: Res<Masks>, mut game: ResMut<Game>, mut
 }
 
 fn find_nearby(mut game: ResMut<Game>, player: Single<&Player>) {
-    let def = scene_def(game.scene);
-    game.nearby = def
-        .points
-        .iter()
+    if game.mode == Mode::Lift {
+        game.nearby = None;
+        return;
+    }
+    game.nearby = points_here(&game)
         .filter(|pt| pt.pos.distance(player.foot) <= REACH + 10.0)
         .min_by(|a, b| a.pos.distance(player.foot).total_cmp(&b.pos.distance(player.foot)))
         .copied();
@@ -615,10 +843,12 @@ fn use_point(keys: Res<ButtonInput<KeyCode>>, mut game: ResMut<Game>) {
 
 fn animate_player(time: Res<Time>, art: Res<Art>, mut q: Query<(&mut Player, &mut Sprite)>) {
     for (mut p, mut sprite) in &mut q {
-        let (cols, ms, image, layout) = if p.walking {
-            (6, 0.110, &art.walk, &art.walk_layout)
+        let (cols, ms, image, layout) = if p.walking && p.running {
+            (4, 0.085, &art.run, &art.run_layout)
+        } else if p.walking {
+            (6, 0.105, &art.walk, &art.walk_layout)
         } else {
-            (4, 0.180, &art.idle, &art.idle_layout)
+            (8, 0.150, &art.idle, &art.idle_layout)
         };
         p.clock += time.delta_secs();
         if p.clock >= ms {
@@ -627,6 +857,9 @@ fn animate_player(time: Res<Time>, art: Res<Art>, mut q: Query<(&mut Player, &mu
         }
         if p.frame >= cols {
             p.frame = 0;
+        }
+        if !p.walking && p.target.is_none() {
+            p.running = false;
         }
         if sprite.image != *image {
             sprite.image = image.clone();
@@ -660,4 +893,123 @@ pub(crate) fn depth_sort(
     for mut f in &mut fg {
         f.translation.z = if p.foot.y < def.fg_threshold { 5.0 } else { 0.5 };
     }
+}
+
+// ---------------------------------------------------------------------------
+// Pongo
+// ---------------------------------------------------------------------------
+
+/// Erikk's recent footsteps, newest last. Pongo walks this path a few
+/// steps behind him, so he stays on the floor without his own pathfinding.
+#[derive(Resource, Default)]
+struct Trail(Vec<Vec2>);
+
+#[derive(Component, Default)]
+struct Pongo {
+    foot: Vec2,
+    scene: Option<SceneId>,
+    facing: Facing,
+    /// Last sideways direction, for the side-only idle poses.
+    left: bool,
+    idle: f32,
+    clock: f32,
+    frame: usize,
+}
+
+const PONGO_GAP: f32 = 30.0;
+
+fn follow_pongo(
+    time: Res<Time>,
+    game: Res<Game>,
+    art: Res<Art>,
+    mut trail: ResMut<Trail>,
+    player: Single<&Player>,
+    mut q: Query<(&mut Pongo, &mut Sprite, &mut Transform), Without<Player>>,
+) {
+    let Ok((mut dog, mut sprite, mut tf)) = q.single_mut() else { return };
+    let dt = if game.paused { 0.0 } else { time.delta_secs().min(0.1) };
+    let behind = Vec2::new(-22.0, 2.0);
+
+    // New room (or the lift): start beside Erikk with a fresh trail.
+    if dog.scene != Some(game.scene) || game.mode == Mode::Lift {
+        dog.scene = Some(game.scene);
+        dog.foot = player.foot + behind;
+        trail.0.clear();
+        if game.mode == Mode::Lift {
+            dog.facing = Facing::Right;
+            dog.left = false;
+        }
+    }
+
+    if trail.0.last().is_none_or(|l| l.distance(player.foot) > 3.0) {
+        trail.0.push(player.foot);
+        if trail.0.len() > 96 {
+            trail.0.remove(0);
+        }
+    }
+    // The point on the trail PONGO_GAP behind Erikk.
+    let mut target = dog.foot;
+    let mut acc = 0.0;
+    for w in trail.0.windows(2).rev() {
+        acc += w[0].distance(w[1]);
+        if acc >= PONGO_GAP {
+            target = w[0];
+            break;
+        }
+    }
+
+    let to = target - dog.foot;
+    let far = to.length();
+    let moving = far > 1.5 && game.mode != Mode::Lift;
+    let running = moving && (player.running || far > 40.0);
+    if moving {
+        let speed = if running { SPEED * RUN * 1.05 } else { SPEED * 1.05 };
+        let dir = to / far;
+        dog.foot += dir * (speed * dt).min(far);
+        dog.facing = if dir.x.abs() > dir.y.abs() * 0.7 {
+            if dir.x > 0.0 { Facing::Right } else { Facing::Left }
+        } else if dir.y > 0.0 {
+            Facing::Down
+        } else {
+            Facing::Up
+        };
+        if dir.x.abs() > 0.2 {
+            dog.left = dir.x < 0.0;
+        }
+        dog.idle = 0.0;
+    } else {
+        dog.idle += dt;
+    }
+
+    dog.clock += dt;
+    let (image, layout, index, flip) = if moving {
+        let ms = if running { 0.075 } else { 0.12 };
+        if dog.clock >= ms {
+            dog.clock = 0.0;
+            dog.frame = (dog.frame + 1) % 4;
+        }
+        let image = if running { &art.pongo_run } else { &art.pongo_walk };
+        (image, &art.pongo_layout, dog.facing.row() * 4 + dog.frame % 4, false)
+    } else {
+        // Stand, then sit after a moment, then lie down if Erikk lingers.
+        let t = dog.idle;
+        let index = if t < 1.2 {
+            4
+        } else if t < 1.8 {
+            4 + ((t - 1.2) / 0.15) as usize
+        } else if t < 14.0 {
+            7
+        } else if t < 14.6 {
+            8 + ((t - 14.0) / 0.15) as usize
+        } else {
+            11
+        };
+        (&art.pongo_idle, &art.pongo_idle_layout, index.min(11), dog.left)
+    };
+    if sprite.image != *image {
+        sprite.image = image.clone();
+    }
+    sprite.texture_atlas = Some(TextureAtlas { layout: layout.clone(), index });
+    sprite.flip_x = flip;
+    tf.translation = to_world(dog.foot.round()).extend(1.0 + dog.foot.y / 1000.0);
 }
