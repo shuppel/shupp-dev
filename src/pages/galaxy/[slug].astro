@@ -8,10 +8,13 @@ import Backlinks from '../../components/Garden/Backlinks.astro';
 import Icon from '../../components/Icon/Icon.astro';
 import { generateBacklinks } from '../../lib/garden/links';
 import '../../styles/prose.css';
+import { usesReadingTemplate } from '../../lib/reading/galaxy';
 
 export async function getStaticPaths() {
   const galaxyEntries = await getCollection('galaxy');
-  return galaxyEntries.map(entry => ({
+  // Notes on the reading template are built by ./[...read].astro instead, so
+  // they don't pick up the site layout's styles.
+  return galaxyEntries.filter(entry => !usesReadingTemplate(entry.id)).map(entry => ({
     params: { slug: entry.id },
     props: { entry },
   }));

@@ -1,0 +1,119 @@
+---
+// The standalone reading page: one written piece, no site sidebar or nav.
+// It dresses in the game's palette, type and pixel ornaments so a page opened
+// from a terminal on the ship still feels like part of the ship. It needs no
+// JavaScript, so it renders the same in the terminal's sandboxed preview, for
+// crawlers, and in a normal tab.
+
+import JsonLd from '../components/SEO/JsonLd.astro';
+import PixelGlyph from '../components/Reading/PixelGlyph.astro';
+import { siteConfig } from '../config/site';
+import '../styles/reading.css';
+
+export interface Props {
+  title: string;
+  description: string;
+  /** Where the page sits on the ship, e.g. "Writing". Shown top left. */
+  terminal: string;
+  image?: string;
+  imageAlt?: string;
+  type?: 'website' | 'article';
+  author?: string;
+  publishedTime?: string;
+  modifiedTime?: string;
+  canonicalUrl?: string;
+  /** The JSON twin of this page. */
+  jsonHref?: string;
+  jsonLdType?: 'website' | 'article';
+  jsonLdData?: any;
+}
+
+const {
+  title,
+  description,
+  terminal,
+  image = '/og-default.png',
+  imageAlt = `${title} - shupp.dev`,
+  type = 'article',
+  author = siteConfig.author.name,
+  publishedTime,
+  modifiedTime,
+  canonicalUrl,
+  jsonHref,
+  jsonLdType = 'article',
+  jsonLdData = {},
+} = Astro.props;
+
+const canonical = canonicalUrl ?? new URL(Astro.url.pathname, Astro.site).href;
+const imageURL = new URL(image, Astro.site).href;
+const twitterHandle = `@${new URL(siteConfig.social.twitter).pathname.split('/').filter(Boolean).at(-1)}`;
+---
+
+<!doctype html>
+<html lang="en" class="read-root">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} | shupp.dev</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={author} />
+    <link rel="canonical" href={canonical} />
+    {jsonHref && <link rel="alternate" type="application/json" href={jsonHref} title="This page as JSON" />}
+    <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="theme-color" content="#140812" />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={imageURL} />
+    <meta property="og:image:alt" content={imageAlt} />
+    <meta property="og:site_name" content="shupp.dev" />
+    {type === 'article' && publishedTime && <meta property="article:published_time" content={publishedTime} />}
+    {type === 'article' && modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageURL} />
+    <meta name="twitter:image:alt" content={imageAlt} />
+    <meta name="twitter:creator" content={twitterHandle} />
+
+    <link rel="preload" href="/atlas/assets/fonts/Hind_400Regular.ttf" as="font" type="font/ttf" crossorigin />
+    <link rel="preload" href="/atlas/assets/fonts/Shupp.otf" as="font" type="font/otf" crossorigin />
+
+    <JsonLd type={jsonLdType} data={jsonLdData} />
+  </head>
+  <body class="read">
+    <a href="#read-main" class="read-skip">Skip to the writing</a>
+
+    <header class="read-bar">
+      <a class="read-bar__home" href="/" aria-label="Back to the ship">
+        <img src="/atlas/assets/props/logbook.png" width="32" height="32" alt="" class="px" />
+        <span class="read-bar__crumb"><span>Terminal</span><span class="read-dot" aria-hidden="true"></span><span>{terminal}</span></span>
+      </a>
+      <a class="read-bar__return" href="/">
+        <PixelGlyph name="back" size={14} />
+        <span>Return to ship</span>
+      </a>
+    </header>
+
+    <main id="read-main">
+      <slot />
+    </main>
+
+    <footer class="read-foot">
+      <PixelGlyph name="spark" size={15} class="read-foot__spark" />
+      <p>
+        Written by <a href="/about/">{author}</a> on <a href="/">shupp.dev</a>.
+        {jsonHref && (
+          <>
+            {' '}This page is also <a href={jsonHref} class="read-foot__json"><PixelGlyph name="braces" size={12} /> JSON</a>.
+          </>
+        )}
+      </p>
+    </footer>
+  </body>
+</html>
