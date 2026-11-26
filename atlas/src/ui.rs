@@ -82,11 +82,16 @@ impl Frame {
     }
 }
 
-const MENU_BTN: Rect = Rect { min: Vec2::new(572.0, 8.0), max: Vec2::new(632.0, 28.0) };
-const MAP_BTN: Rect = Rect { min: Vec2::new(506.0, 8.0), max: Vec2::new(566.0, 28.0) };
+// The menus hide in a sliver tab at the bottom-left edge (this is a website
+// first; the game chrome stays out of the way). Tap the sliver to slide out
+// the tray with the Menu and Map icons.
+const SLIVER: Rect = Rect { min: Vec2::new(0.0, 312.0), max: Vec2::new(22.0, 356.0) };
+const TRAY: Rect = Rect { min: Vec2::new(0.0, 312.0), max: Vec2::new(98.0, 356.0) };
+const MENU_BTN: Rect = Rect { min: Vec2::new(6.0, 316.0), max: Vec2::new(44.0, 352.0) };
+const MAP_BTN: Rect = Rect { min: Vec2::new(46.0, 316.0), max: Vec2::new(84.0, 352.0) };
 
 pub fn hud_hit(at: Vec2) -> bool {
-    MENU_BTN.contains(at) || MAP_BTN.contains(at)
+    TRAY.contains(at)
 }
 
 // ---------------------------------------------------------------------------
@@ -148,6 +153,8 @@ struct Ui {
     overlay: Option<Entity>,
     hud: Option<Entity>,
     hud_key: String,
+    /// The bottom-left menu tray is slid out.
+    tray: bool,
     typed: Option<Entity>,
     more: Option<Entity>,
     portrait: Option<Entity>,
@@ -463,10 +470,16 @@ fn input(
 
     match game.mode {
         Mode::Explore => {
-            if keys.any_just_pressed([KeyCode::Escape, KeyCode::KeyC, KeyCode::Tab]) || tap.is_some_and(|t| MENU_BTN.contains(t)) {
+            let tray_tap = |r: Rect| ui.tray && tap.is_some_and(|t| r.contains(t));
+            if keys.any_just_pressed([KeyCode::Escape, KeyCode::KeyC, KeyCode::Tab]) || tray_tap(MENU_BTN) {
+                ui.tray = false;
                 game.request = Some(Request::Menu);
-            } else if keys.just_pressed(KeyCode::KeyM) || tap.is_some_and(|t| MAP_BTN.contains(t)) {
+            } else if keys.just_pressed(KeyCode::KeyM) || tray_tap(MAP_BTN) {
+                ui.tray = false;
                 game.request = Some(Request::Atlas);
+            } else if let Some(t) = tap {
+                // The sliver opens the tray; its chevron, or any tap elsewhere, closes it.
+                ui.tray = if ui.tray { false } else { SLIVER.contains(t) };
             }
         }
         Mode::Dialogue => {
@@ -1113,6 +1126,7 @@ fn hud(
     let show = game.mode == Mode::Explore;
     let prompt = if show { game.nearby } else { None };
     let key = format!("{show}|{:?}|{:?}|{}|{}", game.scene, prompt.map(|p| p.label), ui.hint > 0.0, ui.touch);
+    let key = format!("{key}|{}", ui.tray);
     if key == ui.hud_key {
         return;
     }
@@ -1126,6 +1140,7 @@ fn hud(
     let f = &*fonts;
     let def = scene_def(game.scene);
     let touch = ui.touch;
+    let tray = ui.tray;
     let hint = ui.hint > 0.0;
     let hud = commands.spawn((at(0.0, 0.0, VW, VH), ZIndex(5))).id();
     commands.entity(root.0).add_child(hud);
@@ -1135,9 +1150,19 @@ fn hud(
             b.spawn(text_at(&f.label, 7.5, LAMP, def.label.to_uppercase(), 8.0, 3.0, 140.0));
             b.spawn(text_at(&f.display, 14.0, CITRON, def.name, 8.0, 12.0, 140.0));
         });
-        for (r, label) in [(MAP_BTN, "MAP"), (MENU_BTN, "MENU")] {
-            p.spawn((panel(r.min.x, r.min.y, r.width(), r.height()), children![text_at(&f.label, 9.0, CITRON, label, 0.0, 3.0, r.width())
-                .with_justify()]));
+        if tray {
+            p.spawn(panel(TRAY.min.x - 3.0, TRAY.min.y, TRAY.width() + 3.0, TRAY.height())).with_children(|b| {
+                for (r, icon, label) in [(MENU_BTN, 0usize, "MENU"), (MAP_BTN, 3, "MAP")] {
+                    let x = r.min.x + 3.0;
+                    b.spawn((at(x + r.width() / 2.0 - 8.0, 6.0, 16.0, 16.0), ImageNode::new(art.ui_icons[icon].clone())));
+                    b.spawn(text_at(&f.label, 7.0, CITRON, label, x, 25.0, r.width()).with_justify());
+                }
+                b.spawn(text_at(&f.label, 12.0, LINE, "‹", 88.0, 12.0, 10.0));
+            });
+        } else {
+            p.spawn(panel(-3.0, 318.0, 13.0, 32.0)).with_children(|b| {
+                b.spawn(text_at(&f.label, 12.0, LINE, "›", 4.0, 7.0, 10.0));
+            });
         }
         if let Some(pt) = prompt {
             // "Activate console" with a key icon, right beside the thought cloud.
@@ -1159,7 +1184,7 @@ fn hud(
         }
         if hint {
             let msg = if touch {
-                "Tap to walk · tap people and consoles to interact · MENU for the character sheet"
+                "Tap to walk · tap people and consoles to interact · menus hide in the tab at bottom left"
             } else {
                 "WASD or click to walk · E to interact · Esc menu · M atlas"
             };
