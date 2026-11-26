@@ -46,28 +46,35 @@ def mask(poly, holes=()):
     return m.convert("RGB")
 
 
-mask(BRIDGE_FLOOR).save(M + "bridge_walkable.png")
+# The treehouse stairs, up to the landing at the quarters door.
+TREEHOUSE_STAIRS = [(206, 198), (250, 198), (240, 170), (228, 140), (222, 124), (172, 124), (172, 140), (206, 142), (210, 166)]
+bm = Image.new("L", (640, 360), 0)
+bd = ImageDraw.Draw(bm)
+bd.polygon(BRIDGE_FLOOR, fill=255)
+bd.polygon(TREEHOUSE_STAIRS, fill=255)
+bm.convert("RGB").save(M + "bridge_walkable.png")
 # Pongo's bed is solid (keep in sync with PET_BED in lib.rs).
 mask(QUARTERS_FLOOR, [[(424, 192), (478, 192), (478, 212), (424, 212)]]).save(M + "quarters_walkable.png")
 
-# --- Star console glow (same recipe as make_fx.py, from the new bridge) --------
+# --- Glows (same recipe as make_fx.py, from the new bridge) ------------------
 small = bridge.resize((640, 360), Image.LANCZOS)
-x0, y0, x1, y1 = 506, 116, 592, 162  # keep in sync with GLOWS[0] in fx.rs
-PAD = 14
-w, h = x1 - x0 + 2 * PAD, y1 - y0 + 2 * PAD
-glow = Image.new("RGBA", (w, h))
-cx, cy, rx, ry = w / 2, h / 2, (x1 - x0) / 2, (y1 - y0) / 2
-for y in range(h):
-    for x in range(w):
-        d = math.hypot((x - cx) / rx, (y - cy) / ry)
-        a = 0.32 * (max(0.0, 1 - (d - 0.6) / 0.75) if d > 0.6 else 1.0)
-        sx, sy = x0 - PAD + x, y0 - PAD + y
-        if d < 1.0 and 0 <= sx < 640 and 0 <= sy < 360:
-            r, g, b = small.getpixel((sx, sy))
-            lum = (0.3 * r + 0.59 * g + 0.11 * b) / 255
-            a = max(a, min(1.0, (lum - 0.12) * 2.2) * (1 - max(0.0, (d - 0.75) / 0.25)))
-        glow.putpixel((x, y), (255, 255, 255, int(255 * max(0.0, min(1.0, a)))))
-glow.save(A + "fx/glow_star_console.png")
+# keep in sync with GLOWS in fx.rs
+for name, (x0, y0, x1, y1) in [("star_console", (506, 116, 592, 162)), ("treehouse_door", (170, 84, 212, 136))]:
+    PAD = 14
+    w, h = x1 - x0 + 2 * PAD, y1 - y0 + 2 * PAD
+    glow = Image.new("RGBA", (w, h))
+    cx, cy, rx, ry = w / 2, h / 2, (x1 - x0) / 2, (y1 - y0) / 2
+    for y in range(h):
+        for x in range(w):
+            d = math.hypot((x - cx) / rx, (y - cy) / ry)
+            a = 0.32 * (max(0.0, 1 - (d - 0.6) / 0.75) if d > 0.6 else 1.0)
+            sx, sy = x0 - PAD + x, y0 - PAD + y
+            if d < 1.0 and 0 <= sx < 640 and 0 <= sy < 360:
+                r, g, b = small.getpixel((sx, sy))
+                lum = (0.3 * r + 0.59 * g + 0.11 * b) / 255
+                a = max(a, min(1.0, (lum - 0.12) * 2.2) * (1 - max(0.0, (d - 0.75) / 0.25)))
+            glow.putpixel((x, y), (255, 255, 255, int(255 * max(0.0, min(1.0, a)))))
+    glow.save(A + f"fx/glow_{name}.png")
 
 # --- Props ------------------------------------------------------------------------
 # The sheet's background is noisy, nearly transparent speckle: keep only the

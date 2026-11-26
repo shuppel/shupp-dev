@@ -78,6 +78,8 @@ pub enum Action {
     MenuTab(usize),
     /// Send Pongo to his bed.
     PetBed,
+    /// The quarters desk: the About readout.
+    Desk,
 }
 
 /// Which deck of a two-level room a point or the player is on.
@@ -106,6 +108,9 @@ pub struct SceneDef {
     /// The backdrop is 2× source art (1280 × 720) shown at 640 × 360.
     pub hd: bool,
     pub fg_threshold: f32,
+    /// Erikk and Pongo are drawn this much bigger (the quarters art is a
+    /// close-up, so a standard-size Erikk looks tiny in it).
+    pub actor_scale: f32,
     pub spawn: Vec2,
     pub points: &'static [Point],
     pub npc: Option<(Npc, Vec2)>,
@@ -148,7 +153,8 @@ fn on_stairs(at: Vec2) -> bool {
 }
 /// Bridge exits and the spots Erikk arrives at from each one.
 const STAR_CONSOLE: Vec2 = p(500.0, 192.0);
-const TREEHOUSE: Vec2 = p(230.0, 200.0);
+/// The quarters door, on the landing at the top of the treehouse stairs.
+const TREEHOUSE: Vec2 = p(192.0, 132.0);
 const ARCHIVE_PATH: Vec2 = p(366.0, 136.0);
 const STAIRWELL: Vec2 = p(590.0, 210.0);
 const BRIDGE_GANGWAY: Vec2 = p(300.0, 350.0);
@@ -161,7 +167,7 @@ const PET_BED: Vec2 = p(451.0, 212.0);
 fn arrival(to: SceneId, from: SceneId) -> Option<Vec2> {
     Some(match (to, from) {
         (SceneId::Bridge, SceneId::Engine) => STAIRWELL + p(-14.0, 14.0),
-        (SceneId::Bridge, SceneId::Quarters) => TREEHOUSE + p(10.0, 12.0),
+        (SceneId::Bridge, SceneId::Quarters) => p(214.0, 160.0),
         (SceneId::Bridge, SceneId::Archive) => ARCHIVE_PATH + p(0.0, 18.0),
         (SceneId::Bridge, SceneId::Port) => BRIDGE_GANGWAY + p(0.0, -18.0),
         (SceneId::Quarters, _) => QUARTERS_DOOR_IN,
@@ -172,7 +178,6 @@ fn arrival(to: SceneId, from: SceneId) -> Option<Vec2> {
 /// Furniture placed in a room: image, foot (bottom centre), drawn size, and
 /// whether it always draws over actors (foreground pots).
 const ROOM_PROPS: &[(SceneId, &str, Vec2, Vec2, bool)] = &[
-    (SceneId::Bridge, "props/quarters/captain_chair.png", p(552.0, 176.0), p(30.0, 34.0), false),
     (SceneId::Quarters, "props/quarters/pet_bed.png", PET_BED, p(56.0, 33.0), false),
     (SceneId::Quarters, "props/quarters/fern.png", p(26.0, 362.0), p(52.0, 46.0), true),
     (SceneId::Quarters, "props/quarters/fern.png", p(616.0, 362.0), p(52.0, 46.0), true),
@@ -192,10 +197,11 @@ pub fn scene_def(id: SceneId) -> &'static SceneDef {
         fg: None,
         hd: true,
         fg_threshold: 0.0,
+        actor_scale: 1.0,
         spawn: p(320.0, 262.0),
         points: &[
             Point { pos: STAR_CONSOLE, label: "Star console", action: Action::OpenAtlas, deck: Deck::Any },
-            Point { pos: TREEHOUSE, label: "Up to the Captain's Quarters", action: Action::Goto(SceneId::Quarters), deck: Deck::Any },
+            Point { pos: TREEHOUSE, label: "Captain's Quarters", action: Action::Goto(SceneId::Quarters), deck: Deck::Any },
             Point { pos: ARCHIVE_PATH, label: "Path to the Archive", action: Action::Goto(SceneId::Archive), deck: Deck::Any },
             Point { pos: STAIRWELL, label: "Stairs down to the engine room", action: Action::Goto(SceneId::Engine), deck: Deck::Any },
             Point { pos: BRIDGE_GANGWAY, label: "Gangway to the Dockyard", action: Action::Goto(SceneId::Port), deck: Deck::Any },
@@ -210,10 +216,11 @@ pub fn scene_def(id: SceneId) -> &'static SceneDef {
         fg: None,
         hd: true,
         fg_threshold: 0.0,
+        actor_scale: 1.4,
         spawn: QUARTERS_DOOR_IN,
         points: &[
             Point { pos: p(112.0, 182.0), label: "Look in the mirror", action: Action::Mirror, deck: Deck::Any },
-            Point { pos: p(250.0, 186.0), label: "Desk: the quest log", action: Action::MenuTab(3), deck: Deck::Any },
+            Point { pos: p(250.0, 186.0), label: "Desk", action: Action::Desk, deck: Deck::Any },
             Point { pos: p(451.0, 232.0), label: "Pongo's bed", action: Action::PetBed, deck: Deck::Any },
             Point { pos: p(508.0, 180.0), label: "Sea chest: keepsakes", action: Action::MenuTab(1), deck: Deck::Any },
             Point { pos: p(40.0, 244.0), label: "Back to the concourse", action: Action::Goto(SceneId::Bridge), deck: Deck::Any },
@@ -230,6 +237,7 @@ pub fn scene_def(id: SceneId) -> &'static SceneDef {
         fg: None,
         hd: true,
         fg_threshold: 0.0,
+        actor_scale: 1.0,
         spawn: p(232.0, 312.0),
         points: &[
             Point { pos: LIFT_LOWER_EXIT, label: "Ride the lift up", action: Action::Lift, deck: Deck::Lower },
@@ -249,6 +257,7 @@ pub fn scene_def(id: SceneId) -> &'static SceneDef {
         fg: Some("maps/archive_foreground.png"),
         hd: false,
         fg_threshold: 341.0,
+        actor_scale: 1.0,
         spawn: p(323.0, 301.0),
         points: &[
             Point { pos: p(323.0, 168.0), label: "Records", action: Action::Terminal("writing"), deck: Deck::Any },
@@ -265,6 +274,7 @@ pub fn scene_def(id: SceneId) -> &'static SceneDef {
         fg: None,
         hd: true,
         fg_threshold: 0.0,
+        actor_scale: 1.0,
         spawn: ENGINE_ARRIVAL,
         points: &[
             Point { pos: p(36.0, 246.0), label: "Ladder up to the bridge", action: Action::Goto(SceneId::Bridge), deck: Deck::Any },
@@ -1187,6 +1197,7 @@ pub(crate) fn depth_sort(
     // Whole scene pixels only: a sub-pixel position makes nearest sampling
     // double or drop columns, which reads as a smeared, low-res sprite.
     tf.translation = to_world(p.foot.round()).extend(1.0 + p.foot.y / 1000.0);
+    tf.scale = Vec3::splat(def.actor_scale);
     for (npc, mut ntf, mut sprite) in &mut npcs {
         ntf.translation.z = 1.0 + npc.foot.y / 1000.0;
         // NPCs turn to face Erikk when he is close.
@@ -1337,6 +1348,7 @@ fn follow_pongo(
     // In bed he draws over the bed, whose baseline is lower on screen.
     let z = if bedtime && !moving { 1.0 + PET_BED.y / 1000.0 + 0.0005 } else { 1.0 + dog.foot.y / 1000.0 };
     tf.translation = to_world(dog.foot.round()).extend(z);
+    tf.scale = Vec3::splat(scene_def(game.scene).actor_scale);
 }
 
 // ---------------------------------------------------------------------------

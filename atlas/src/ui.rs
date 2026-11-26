@@ -65,6 +65,8 @@ pub enum Request {
     Crescent,
     /// Open the menu on a given tab.
     MenuTab(usize),
+    /// Erikk talks to his reflection.
+    Mirror,
 }
 
 pub fn trigger(game: &mut Game, pt: Point) {
@@ -73,7 +75,8 @@ pub fn trigger(game: &mut Game, pt: Point) {
             game.pongo_bed = true;
             return;
         }
-        Action::Mirror => Request::Destination("about".into()),
+        Action::Mirror => Request::Mirror,
+        Action::Desk => Request::Destination("about".into()),
         Action::MenuTab(t) => Request::MenuTab(t),
         Action::OpenAtlas => Request::Atlas,
         Action::Goto(s) => Request::Door(s),
@@ -528,6 +531,30 @@ fn layout_frame(
 // Requests: interactions, menu, page links
 // ---------------------------------------------------------------------------
 
+/// The About readout (the quarters desk), or the same story as Erikk and his
+/// reflection trading lines (the mirror).
+fn about_lines(registry: &Registry, mirror: bool) -> Vec<Line> {
+    let dest = registry.dest("about");
+    let name = registry.player.stats.name.clone();
+    let mut lines = Vec::new();
+    for (i, chunk) in std::iter::once(dest.preview.clone())
+        .chain(dest.intro.iter().cloned())
+        .flat_map(|p| paginate(&p))
+        .enumerate()
+    {
+        let speaker = if mirror && i % 2 == 1 { format!("{name} · in the mirror") } else { name.clone() };
+        lines.push(Line { speaker, who: Who::Erikk, pose: [1, 2, 0, 3][i % 4], call: false, text: chunk });
+    }
+    lines.push(Line {
+        speaker: if mirror { format!("{name} · in the mirror") } else { name },
+        who: Who::Erikk,
+        pose: 1,
+        call: false,
+        text: "Open the menu for the full character sheet: stats, items and the quest log.".into(),
+    });
+    lines
+}
+
 fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Registry>) {
     let Some(req) = game.request.take() else { return };
     if game.mode == Mode::Travel {
@@ -553,6 +580,11 @@ fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Regi
             ui.tab = 0;
             ui.sel = 0;
             game.mode = Mode::Sheet;
+        }
+        Request::Mirror => {
+            game.mark_visited("about");
+            ui.dialogue = Some(Dialogue { lines: about_lines(&registry, true), idx: 0, shown: 0.0, after: None });
+            game.mode = Mode::Dialogue;
         }
         Request::MenuTab(t) => {
             ui.tab = t.min(TABS.len() - 1);
@@ -658,25 +690,7 @@ fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Regi
             "writing" => start_travel(&mut game, &mut ui, SceneId::Archive, true),
             "about" => {
                 game.mark_visited("about");
-                let dest = registry.dest("about");
-                let name = registry.player.stats.name.clone();
-                let mut lines = Vec::new();
-                for (i, chunk) in std::iter::once(dest.preview.clone())
-                    .chain(dest.intro.iter().cloned())
-                    .flat_map(|p| paginate(&p))
-                    .enumerate()
-                {
-                    // The captain's quarters mirror: Erikk explaining himself to his reflection.
-                    lines.push(Line { speaker: format!("{name} · in the mirror"), who: Who::Erikk, pose: [1, 2, 0, 3][i % 4], call: false, text: chunk });
-                }
-                lines.push(Line {
-                    speaker: name,
-                    who: Who::Erikk,
-                    pose: 1,
-                    call: false,
-                    text: "Open the menu for my full character sheet: stats, items and the quest log.".into(),
-                });
-                ui.dialogue = Some(Dialogue { lines, idx: 0, shown: 0.0, after: None });
+                ui.dialogue = Some(Dialogue { lines: about_lines(&registry, false), idx: 0, shown: 0.0, after: None });
                 game.mode = Mode::Dialogue;
             }
             "contact" => {
@@ -988,7 +1002,12 @@ fn input(
                 _ => (0, 1),
             };
             let mut changed = false;
-            // A quest opened in full: any key or tap closes it, except the resume button.
+            // F opens the full resume from the quest log.
+            if ui.tab == 3 && keys.just_pressed(KeyCode::KeyF) {
+                bridge::emit("open", "/resume");
+                return;
+            }
+            // A quest opened in full: any key or tap closes it, except the resume hint.
             if ui.quest_full {
                 if tap.is_some_and(|at| OPEN_BTN.contains(at)) {
                     bridge::emit("open", "/resume");
@@ -1921,8 +1940,17 @@ fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Re
                 if !ui.quest_full && ui.sel < quests.len() {
                     p.spawn(text_at(&f.label, 7.0, MUTED, if ui.touch { "TAP THE CARD FOR THE FULL QUEST" } else { "ENTER FOR THE FULL QUEST" }, 390.0, 316.0, 80.0));
                 }
-                p.spawn((panel(OPEN_BTN.min.x, OPEN_BTN.min.y, OPEN_BTN.width(), OPEN_BTN.height()),
-                    children![text_at(&f.label, 9.0, CITRON, "FULL RESUME ›", 0.0, 5.0, OPEN_BTN.width() - 2.0).with_justify()]));
+                // A key hint, like the E prompt in the world: press F (or tap it).
+                let (kx, ky) = (OPEN_BTN.max.x - 92.0, OPEN_BTN.min.y + 4.0);
+                if !ui.touch {
+                    p.spawn((
+                        Node { border: UiRect::all(Val::Px(1.0)), border_radius: BorderRadius::all(Val::Px(2.0)), ..at(kx, ky, 14.0, 14.0) },
+                        BorderColor::all(CITRON),
+                        BackgroundColor(Color::srgba(0.95, 0.92, 0.75, 0.12)),
+                        children![text_at(&f.label, 8.0, CITRON, "F", 0.0, 1.5, 12.0).with_justify()],
+                    ));
+                }
+                p.spawn(text_at(&f.label, 8.0, CITRON, if ui.touch { "FULL RESUME ›" } else { "FULL RESUME" }, kx + if ui.touch { 0.0 } else { 19.0 }, ky + 2.5, 90.0));
             }
             _ => {}
         }

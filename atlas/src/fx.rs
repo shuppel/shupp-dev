@@ -10,10 +10,11 @@ use bevy::sprite::Anchor;
 use crate::{to_world, Action, Game, Mode, Player, SceneId, SceneEntity};
 
 /// Console boxes in scene pixels (x0, y0, x1, y1). Keep in sync with make_fx.py.
-const GLOWS: [(&str, [f32; 4]); 3] = [
+const GLOWS: [(&str, [f32; 4]); 4] = [
     ("fx/glow_star_console.png", [506.0, 116.0, 592.0, 162.0]),
     ("fx/glow_workbench.png", [292.0, 250.0, 348.0, 298.0]),
     ("fx/glow_records.png", [254.0, 70.0, 388.0, 142.0]),
+    ("fx/glow_treehouse_door.png", [170.0, 84.0, 212.0, 136.0]),
 ];
 
 /// Where the cloud's tail tip sits in its 40 × 34 image.
@@ -29,7 +30,7 @@ impl Plugin for FxPlugin {
 
 #[derive(Resource)]
 pub(crate) struct FxArt {
-    glows: [Handle<Image>; 3],
+    glows: [Handle<Image>; 4],
     spark: Handle<Image>,
 }
 
@@ -89,6 +90,7 @@ fn glow_for(scene: SceneId, action: Action) -> Option<(usize, [f32; 4])> {
         (SceneId::Bridge, Action::OpenAtlas) => 0,
         (SceneId::Port, Action::Terminal(_)) => 1,
         (SceneId::Archive, Action::Terminal(_)) => 2,
+        (SceneId::Bridge, Action::Goto(SceneId::Quarters)) => 3,
         _ => return None,
     };
     Some((i, GLOWS[i].1))
@@ -184,7 +186,8 @@ pub(crate) fn animate(
         **cv = Visibility::Hidden;
         return;
     };
-    let tip = cloud_tip(game.scene, &pt).unwrap_or(player.foot + Vec2::new(6.0, -62.0));
+    let k = crate::scene_def(game.scene).actor_scale;
+    let tip = cloud_tip(game.scene, &pt).unwrap_or(player.foot + Vec2::new(6.0, -62.0) * k);
     let bob = ((t * 2.6).sin() * 1.5).round();
     ct.translation = (to_world(tip) + Vec2::new(0.0, bob)).round().extend(9.0);
     ct.scale = Vec3::splat(ease_out_back(t / 0.28).max(0.01));
