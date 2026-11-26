@@ -76,7 +76,7 @@ pub fn trigger(game: &mut Game, pt: Point) {
             return;
         }
         Action::Mirror => Request::Mirror,
-        Action::Desk => Request::Destination("about".into()),
+        Action::Desk => Request::Terminal("writing".into()),
         Action::MenuTab(t) => Request::MenuTab(t),
         Action::OpenAtlas => Request::Atlas,
         Action::Goto(s) => Request::Door(s),
@@ -203,7 +203,7 @@ struct Travel {
 const TABS: [&str; 4] = ["Status", "Items", "Skills", "Quests"];
 /// ui_icons index for each tab.
 const TAB_ICONS: [usize; 4] = [0, 1, 8, 2];
-const SUITS: [(&str, &str); 5] = [("skill", "SKILLS"), ("discipline", "DISCIPLINES"), ("special", "SPECIALS"), ("equipment", "EQUIPMENT"), ("profile", "PROFILE")];
+const SUITS: [(&str, &str); 4] = [("skill", "PROFICIENCIES"), ("discipline", "DISCIPLINES"), ("special", "PHILOSOPHIES"), ("equipment", "SKILLS")];
 
 #[derive(Resource, Default)]
 struct Ui {
@@ -269,6 +269,10 @@ struct UiArt {
     chart: Handle<Image>,
     pulse: Handle<Image>,
     pulse_layout: Handle<TextureAtlasLayout>,
+    /// Erikk's tiered icons: columns scroll, wrench, armillary, compass; rows
+    /// common, uncommon, rare, unique, legendary, ornate.
+    tier_icons: Handle<Image>,
+    tier_layout: Handle<TextureAtlasLayout>,
     #[allow(dead_code)]
     icons: Vec<(String, [Handle<Image>; 3])>,
     /// 16-frame spinning planet for each destination.
@@ -462,6 +466,8 @@ fn setup_ui(
         chart: crate::load_t(&assets, "ui/star_map/chart.png"),
         pulse: crate::load_t(&assets, "ui/star_map/selection_pulse.png"),
         pulse_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(112, 112), 12, 1, None, None)),
+        tier_icons: crate::load_smooth(&assets, "ui/tier_icons.png"),
+        tier_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(96, 96), 4, 6, None, None)),
         icons,
         orbits: DESTS.iter().map(|(id, _)| crate::load_smooth(&assets, format!("ui/star_map/{id}_orbit.png"))).collect(),
         orbit_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(96, 96), 16, 1, None, None)),
@@ -1177,8 +1183,8 @@ fn grid_rect(tab: usize, i: usize) -> Rect {
 }
 
 fn suit_rect(i: usize) -> Rect {
-    let x = 146.0 + i as f32 * 41.0;
-    Rect::new(x, 52.0, x + 39.0, 68.0)
+    let x = 146.0 + i as f32 * 51.0;
+    Rect::new(x, 52.0, x + 49.0, 68.0)
 }
 
 fn rarity_color(r: &str) -> Color {
@@ -1186,6 +1192,7 @@ fn rarity_color(r: &str) -> Color {
         "legendary" => Color::srgb(0.91, 0.73, 0.29),
         "unique" => Color::srgb(0.69, 0.42, 0.85),
         "rare" => Color::srgb(0.31, 0.62, 0.85),
+        "uncommon" => Color::srgb(0.55, 0.74, 0.47),
         _ => Color::srgb(0.62, 0.62, 0.62),
     }
 }
@@ -1197,16 +1204,6 @@ fn suit_color(s: &str) -> Color {
         "special" => Color::srgb(0.91, 0.73, 0.29),
         "profile" => Color::srgb(0.80, 0.45, 0.62),
         _ => Color::srgb(0.72, 0.50, 0.32),
-    }
-}
-
-/// Two-letter monogram used on cards until their art arrives.
-fn monogram(name: &str) -> String {
-    let words: Vec<&str> = name.split(|c: char| !c.is_alphanumeric()).filter(|w| !w.is_empty() && !["and", "of", "the"].contains(&w.to_lowercase().as_str())).collect();
-    match words.as_slice() {
-        [] => "?".into(),
-        [w] => w.chars().take(2).collect::<String>().to_uppercase(),
-        [a, b, ..] => format!("{}{}", a.chars().next().unwrap_or(' '), b.chars().next().unwrap_or(' ')).to_uppercase(),
     }
 }
 
@@ -1826,16 +1823,39 @@ fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Re
                 }
                 if let Some(q) = stats.quest_log.iter().find(|q| q.current) {
                     p.spawn(text_at(&f.label, 8.0, SAGE, "CURRENT QUEST", 152.0, 252.0, 200.0));
-                    p.spawn(text_at(&f.bold, 12.0, CITRON, q.title.clone(), 152.0, 266.0, 440.0));
-                    p.spawn(text_at(&f.label, 8.0, LAMP, format!("{} · {}", q.place.to_uppercase(), q.years), 152.0, 284.0, 440.0));
+                    p.spawn(text_at(&f.bold, 12.0, CITRON, q.title.clone(), 152.0, 266.0, 250.0));
+                    p.spawn(text_at(&f.label, 8.0, LAMP, format!("{} · {}", q.place.to_uppercase(), q.years), 152.0, 284.0, 250.0));
                 }
                 let counts = format!(
                     "{} ITEMS  ·  {} CARDS  ·  {} QUESTS",
                     stats.inventory.key_items.len() + usize::from(hatch),
-                    stats.cards.len(),
+                    stats.cards.iter().filter(|c| c.suit != "profile").count(),
                     stats.quest_log.len()
                 );
-                p.spawn(text_at(&f.label, 8.0, MUTED, counts, 152.0, 310.0, 440.0));
+                p.spawn(text_at(&f.label, 8.0, MUTED, counts, 152.0, 310.0, 250.0));
+                // Alignment: Myers-Briggs type and the StrengthsFinder top picks.
+                let profile: Vec<&crate::content::SkillCard> = stats.cards.iter().filter(|c| c.suit == "profile").collect();
+                if !profile.is_empty() {
+                    let (x, y) = (418.0, 248.0);
+                    p.spawn((
+                        Node { border: UiRect::all(Val::Px(1.0)), border_radius: BorderRadius::all(Val::Px(3.0)), ..at(x, y, 182.0, 82.0) },
+                        BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.3)),
+                        BorderColor::all(suit_color("profile").with_alpha(0.7)),
+                    ));
+                    p.spawn(text_at(&f.label, 7.5, SAGE, "ALIGNMENT", x + 8.0, y + 5.0, 80.0));
+                    let strengths: Vec<&&crate::content::SkillCard> = profile.iter().filter(|c| c.name.contains('·')).collect();
+                    if let Some(t) = profile.iter().find(|c| !c.name.contains('·')) {
+                        p.spawn((at(x + 6.0, y + 15.0, 20.0, 20.0), tier_image(art, 3, 2)));
+                        p.spawn(text_at(&f.bold, 13.0, CITRON, t.name.clone(), x + 30.0, y + 15.0, 50.0));
+                        p.spawn(text_at(&f.label, 7.0, LAMP, "THE VISIONARY", x + 74.0, y + 20.0, 104.0));
+                    }
+                    p.spawn(text_at(&f.label, 7.0, SAGE, "STRENGTHS", x + 8.0, y + 40.0, 80.0));
+                    for (i, c) in strengths.iter().enumerate().take(6) {
+                        let (cx, cy) = (x + 6.0 + (i % 2) as f32 * 88.0, y + 51.0 + (i / 2) as f32 * 14.0);
+                        p.spawn((at(cx, cy - 1.0, 13.0, 13.0), tier_image(art, 5, i % 4)));
+                        p.spawn(text_at(&f.label, 7.5, TEXT, c.name.replace(" · ", " ").to_uppercase(), cx + 15.0, cy + 1.0, 72.0));
+                    }
+                }
             }
             1 => {
                 // ITEMS: an inventory grid; the selected item opens as a card.
@@ -1866,7 +1886,7 @@ fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Re
                         BorderColor::all(if on { CITRON } else { edge }),
                     ));
                     if let Some(it) = it {
-                        p.spawn((at(r.min.x + 9.0, r.min.y + 7.0, 24.0, 24.0), ImageNode::new(art.ui_icons[item_icon(&it.kind_in_game)].clone())));
+                        p.spawn((at(r.min.x + 5.0, r.min.y + 4.0, 32.0, 32.0), item_image(art, it)));
                         // Rarity gem in the corner.
                         p.spawn((Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(r.max.x - 7.0, r.max.y - 7.0, 4.0, 4.0) }, BackgroundColor(edge)));
                     }
@@ -1875,7 +1895,7 @@ fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Re
                     let c = rarity_color(&it.rarity);
                     let kind = title_case(if it.kind_in_game.is_empty() { &it.kind } else { &it.kind_in_game });
                     item_card(p, f, c, &it.name, &format!("{} · {}", kind.to_uppercase(), it.rarity.to_uppercase()), |p, b| {
-                        p.spawn((at(b.x + b.w / 2.0 - 28.0, b.y + b.h / 2.0 - 28.0, 56.0, 56.0), ImageNode::new(art.ui_icons[item_icon(&it.kind_in_game)].clone())));
+                        p.spawn((at(b.x + b.w / 2.0 - 40.0, b.y + b.h / 2.0 - 40.0, 80.0, 80.0), item_image(art, it)));
                     }, &[
                         ("ISSUER", it.from.clone()),
                         ("YEAR", it.year.map_or("—".into(), |y| y.to_string())),
@@ -1908,14 +1928,19 @@ fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Re
                     ))
                     .with_children(|m| {
                         m.spawn((at(0.0, 0.0, r.width(), 6.0), BackgroundColor(sc.with_alpha(0.8))));
-                        m.spawn(text_at(&f.display, 15.0, if on { CITRON } else { TEXT }, monogram(&card.name), 0.0, 11.0, r.width() - 2.0).with_justify());
+                        m.spawn((at(3.0, 9.0, 26.0, 26.0), card_image(art, card, i)));
                         m.spawn(text_at(&f.label, 5.5, sc, pips(card.mastery), 0.0, r.height() - 12.0, r.width() - 2.0).with_justify());
                     });
                 }
                 if let Some(card) = deck.get(ui.sel) {
-                    let label = SUITS[ui.suit].1.trim_end_matches('S');
+                    let label = match SUITS[ui.suit].0 {
+                        "skill" => "PROFICIENCY",
+                        "discipline" => "DISCIPLINE",
+                        "special" => "PHILOSOPHY",
+                        _ => "SKILL",
+                    };
                     item_card(p, f, sc, &card.name, &format!("{} CARD", label), |p, b| {
-                        p.spawn(text_at(&f.display, 40.0, sc, monogram(&card.name), b.x, b.y + b.h / 2.0 - 24.0, b.w).with_justify());
+                        p.spawn((at(b.x + b.w / 2.0 - 40.0, b.y + b.h / 2.0 - 40.0, 80.0, 80.0), card_image(art, card, ui.sel)));
                     }, &[
                         ("MASTERY", pips(card.mastery)),
                         ("FEEDS", format!("+{} {}", card.mastery.div_ceil(2), card.feeds)),
@@ -2071,6 +2096,55 @@ impl<B: Bundle> Centered for B {
     fn with_justify(self) -> (Self, TextLayout) {
         (self, TextLayout::justify(Justify::Center))
     }
+}
+
+fn tier_image(art: &UiArt, row: usize, col: usize) -> ImageNode {
+    ImageNode::from_atlas_image(art.tier_icons.clone(), TextureAtlas { layout: art.tier_layout.clone(), index: row * 4 + col })
+}
+
+/// Scroll for degrees, wrench for technical certs, armillary for product and
+/// strategy, compass for design and communication; tier from rarity.
+fn item_image(art: &UiArt, it: &crate::content::KeyItem) -> ImageNode {
+    if it.kind_in_game == "relic" {
+        return ImageNode::new(art.ui_icons[item_icon(&it.kind_in_game)].clone());
+    }
+    let row = match it.rarity.as_str() {
+        "legendary" => 4,
+        "unique" => 3,
+        "rare" => 2,
+        "uncommon" => 1,
+        _ => 0,
+    };
+    let col = if matches!(it.kind_in_game.as_str(), "scroll" | "codex") {
+        0
+    } else if it.bonus.contains("DEV") {
+        1
+    } else if it.bonus.contains("PRO") || it.bonus.contains("GTM") {
+        2
+    } else {
+        3
+    };
+    tier_image(art, row, col)
+}
+
+/// Skills and equipment are wrenches, disciplines armillaries, specials
+/// compasses; mastery sets the tier. The profile suit uses the ornate set.
+fn card_image(art: &UiArt, card: &crate::content::SkillCard, i: usize) -> ImageNode {
+    if card.suit == "profile" {
+        return if i < 4 { tier_image(art, 5, i) } else { tier_image(art, 3, 2) };
+    }
+    let row = match card.mastery {
+        5 => 4,
+        4 => 2,
+        3 => 1,
+        _ => 0,
+    };
+    let col = match card.suit.as_str() {
+        "discipline" => 2,
+        "special" => 3,
+        _ => 1,
+    };
+    tier_image(art, row, col)
 }
 
 fn item_icon(kind: &str) -> usize {

@@ -133,7 +133,8 @@ const twitterHandle = `@${new URL(siteConfig.social.twitter).pathname.split('/')
     <link rel="sitemap" href="/sitemap-index.xml" />
     <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="/rss.xml" />
     <link rel="manifest" href="/manifest.json" />
-    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="theme-color" content="#799496" />
     
     <!-- Primary Meta Tags -->
@@ -272,12 +273,59 @@ const twitterHandle = `@${new URL(siteConfig.social.twitter).pathname.split('/')
 </html>
 
 <style is:global>
-  /* Custom fonts */
+  /* Custom fonts: Shupp family. One family name, picked by weight/style/stretch:
+     400 regular, 700 bold, 400 italic, 100 thin; narrow cuts via font-stretch: semi-condensed. */
   @font-face {
     font-family: 'Shupp';
     src: url('/fonts/Shupp.otf') format('opentype');
-    font-weight: normal;
+    font-weight: 400;
     font-style: normal;
+    font-stretch: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Shupp';
+    src: url('/fonts/Shupp-Bold.otf') format('opentype');
+    font-weight: 700;
+    font-style: normal;
+    font-stretch: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Shupp';
+    src: url('/fonts/Shupp-Italic.otf') format('opentype');
+    font-weight: 400;
+    font-style: italic;
+    font-stretch: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Shupp';
+    src: url('/fonts/Shupp-Thin.otf') format('opentype');
+    font-weight: 100;
+    font-style: normal;
+    font-stretch: normal;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Shupp';
+    src: url('/fonts/Shupp-Narrow.otf') format('opentype');
+    font-weight: 400;
+    font-style: normal;
+    font-stretch: semi-condensed;
+    font-display: swap;
+  }
+
+  @font-face {
+    font-family: 'Shupp';
+    src: url('/fonts/Shupp-ThinNarrow.otf') format('opentype');
+    font-weight: 100;
+    font-style: normal;
+    font-stretch: semi-condensed;
     font-display: swap;
   }
 
