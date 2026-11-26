@@ -506,6 +506,7 @@ pub struct Art {
     pub mechanic_work: Handle<Image>,
     pub work_layout: Handle<TextureAtlasLayout>,
     pub archivist_npc: Handle<Image>,
+    pub archivist_hd: Handle<Image>,
 }
 
 #[derive(Component)]
@@ -674,6 +675,7 @@ pub(crate) fn setup(
         mechanic_work: load_smooth(&assets, "cast/mechanic/work.png"),
         work_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(128, 128), 6, 1, None, None)),
         archivist_npc: load_t(&assets, "cast/archivist/npc_outlined.png"),
+        archivist_hd: load_smooth(&assets, "cast/archivist/npc_hd.png"),
     };
 
     // Erikk. The art pack's pivot is (24, 62) in a 48 × 64 cell.
@@ -823,7 +825,8 @@ fn enter_scene(
     if let Some((npc, foot)) = def.npc {
         let (image, layout) = match npc {
             Npc::Technician => (art.technician_npc.clone(), art.npc_hd_layout.clone()),
-            Npc::Archivist | Npc::Mechanic => (art.archivist_npc.clone(), art.npc_layout.clone()),
+            Npc::Archivist => (art.archivist_hd.clone(), art.npc_hd_layout.clone()),
+            Npc::Mechanic => (art.archivist_npc.clone(), art.npc_layout.clone()),
         };
         commands.spawn((
             SceneEntity,
@@ -1382,10 +1385,8 @@ const fn prop(image: &'static str, x: f32, y: f32, w: f32, h: f32, solid: bool, 
 const DAVE: Vec2 = p(566.0, 262.0);
 const HATCH: usize = 0;
 
-static ENGINE_PROPS: [Prop; 12] = [
+static ENGINE_PROPS: [Prop; 11] = [
     prop("props/engine_room/hatch_closed.png", 300.0, 334.0, 50.0, 31.0, false, true),
-    // The doorway back up to the concourse (stand-in art, make_engine_door.py).
-    prop("props/engine_room/doorway.png", 30.0, 246.0, 46.0, 68.0, false, false),
     prop("props/engine_room/coolant_tank.png", 82.0, 176.0, 34.0, 66.0, true, false),
     prop("props/engine_room/flywheel.png", 140.0, 176.0, 56.0, 62.0, true, false),
     prop("props/engine_room/reactor_core.png", 236.0, 178.0, 84.0, 106.0, true, false),
