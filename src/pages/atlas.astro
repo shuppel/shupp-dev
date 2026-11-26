@@ -67,7 +67,7 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
       start: (canvas: string, registry: string, start: string, visited: string, dpr: number) => void;
       go: (id: string) => void;
       set_paused: (p: boolean) => void;
-      tap: (x: number, y: number) => void;
+      tap: (x: number, y: number, touch: boolean) => void;
     };
 
     const $ = (id: string) => document.getElementById(id)!;
@@ -142,12 +142,12 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
           if (id) game.go(id);
         });
         document.addEventListener('visibilitychange', () => game.set_paused(document.hidden));
-        // Touch taps go straight to the game; mobile browsers lose them in winit.
+        // Clicks and taps go straight to the game; winit loses them in some browsers.
         const canvas = $('atlas-canvas');
         canvas.addEventListener('pointerup', (e) => {
-          if (e.pointerType === 'mouse') return;
+          if (e.pointerType === 'mouse' && e.button !== 0) return;
           const r = canvas.getBoundingClientRect();
-          game.tap((e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height);
+          game.tap((e.clientX - r.left) / r.width, (e.clientY - r.top) / r.height, e.pointerType !== 'mouse');
         });
 
         const start = location.hash.slice(1);

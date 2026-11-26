@@ -164,6 +164,7 @@ export async function getAtlasRegistry(): Promise<AtlasRegistry> {
         { title: 'Email', description: siteConfig.email, href: `mailto:${siteConfig.email}` },
         { title: 'GitHub', href: siteConfig.social.github, external: true },
         { title: 'LinkedIn', href: siteConfig.social.linkedin, external: true },
+        { title: 'X', description: '@KimJungUzi', href: siteConfig.social.twitter, external: true },
         { title: 'Bluesky', href: siteConfig.social.bluesky, external: true },
       ],
       chart: { x: 270 / 640, y: 256 / 360 },

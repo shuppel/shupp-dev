@@ -179,6 +179,9 @@ struct UiArt {
     flight: Handle<Image>,
     flight_layout: Handle<TextureAtlasLayout>,
     radar: Handle<Image>,
+    menu_bg: Handle<Image>,
+    /// status, items, quests, map, credential, degree, quest_active, quest_done
+    ui_icons: [Handle<Image>; 8],
 }
 
 #[derive(Resource)]
@@ -239,6 +242,9 @@ fn setup_ui(
         flight: assets.load("ships/crescent_flight.png"),
         flight_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(192, 112), 4, 1, None, None)),
         radar,
+        menu_bg: assets.load("ui/menu_bg.png"),
+        ui_icons: ["status", "items", "quests", "map", "credential", "degree", "quest_active", "quest_done"]
+            .map(|n| assets.load(format!("ui/icon_{n}.png"))),
     });
     let root = commands
         .spawn(Node {
@@ -432,7 +438,9 @@ fn input(
     mut game: ResMut<Game>,
     mut ui: ResMut<Ui>,
 ) {
-    if touches.any_just_pressed() || page_tap.0.is_some() {
+    if page_tap.at.is_some() {
+        ui.touch = page_tap.touch;
+    } else if touches.any_just_pressed() {
         ui.touch = true;
     } else if keys.get_just_pressed().next().is_some() {
         ui.touch = false;
@@ -974,17 +982,21 @@ fn render(
 fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Registry, f: &Fonts, art: &UiArt) {
     let stats = &registry.player.stats;
     commands.entity(overlay).with_children(|p| {
-        p.spawn(panel(TERM.min.x, TERM.min.y, TERM.width(), TERM.height()));
-        p.spawn(text_at(&f.label, 9.0, SAGE, "MENU", 44.0, 24.0, 100.0));
+        p.spawn((at(TERM.min.x, TERM.min.y, TERM.width(), TERM.height()), ImageNode::new(art.menu_bg.clone())));
+        p.spawn(text_at(&f.label, 9.0, CITRON, "MENU", 38.0, 20.0, 64.0).with_justify());
         close_button(p, f);
         for (i, name) in TABS.iter().enumerate() {
             let r = tab_rect(i);
             let on = i == ui.tab;
-            p.spawn((
-                Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(r.min.x, r.min.y, r.width(), r.height()) },
-                BackgroundColor(if on { SELECT } else { Color::NONE }),
-            ));
-            p.spawn(text_at(&f.label, 10.0, if on { CITRON } else { TEXT }, format!("{}{}", if on { "› " } else { "  " }, name.to_uppercase()), r.min.x + 6.0, r.min.y + 5.0, 90.0));
+            if on {
+                p.spawn((
+                    Node { border: UiRect::all(Val::Px(1.0)), ..at(r.min.x, r.min.y, r.width(), r.height()) },
+                    BackgroundColor(SELECT),
+                    BorderColor::all(LINE),
+                ));
+            }
+            p.spawn((at(r.min.x + 4.0, r.min.y + 3.0, 16.0, 16.0), ImageNode::new(art.ui_icons[i].clone())));
+            p.spawn(text_at(&f.label, 10.0, if on { CITRON } else { TEXT }, name.to_uppercase(), r.min.x + 25.0, r.min.y + 5.0, 70.0));
         }
         p.spawn(text_at(&f.label, 7.5, MUTED, "Left/Right tabs · Up/Down select · Esc close", 40.0, 326.0, 200.0));
 
@@ -1028,9 +1040,10 @@ fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Re
                     let y = LIST_TOP + row as f32 * ROW_H;
                     let on = i == ui.sel;
                     p.spawn((Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(144.0, y, 238.0, ROW_H - 2.0) }, BackgroundColor(if on { SELECT } else { Color::NONE })));
-                    let glyph = if it.kind == "credential" { "•" } else { "»" };
-                    p.spawn(text_at(&f.bold, 10.5, if on { CITRON } else { TEXT }, format!("{glyph} {}", truncate(&it.name, 34)), 150.0, y + 1.0, 230.0));
-                    p.spawn(text_at(&f.label, 7.5, SAGE, truncate(&it.from.to_uppercase(), 40), 162.0, y + 15.0, 220.0));
+                    let icon = if it.kind == "credential" { 4 } else { 5 };
+                    p.spawn((at(148.0, y + 5.0, 16.0, 16.0), ImageNode::new(art.ui_icons[icon].clone())));
+                    p.spawn(text_at(&f.bold, 10.5, if on { CITRON } else { TEXT }, truncate(&it.name, 32), 170.0, y + 1.0, 210.0));
+                    p.spawn(text_at(&f.label, 7.5, SAGE, truncate(&it.from.to_uppercase(), 38), 170.0, y + 15.0, 210.0));
                 }
                 if let Some(it) = items.get(ui.sel) {
                     p.spawn(text_at(&f.bold, 12.0, CITRON, it.name.clone(), 398.0, 50.0, 200.0));
@@ -1055,13 +1068,14 @@ fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Re
                     p.spawn((Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(144.0, y, 238.0, ROW_H - 2.0) }, BackgroundColor(if on { SELECT } else { Color::NONE })));
                     let (title, place, years, mark) = if i < quests.len() {
                         let q = &quests[i];
-                        (q.title.clone(), q.place.clone(), q.years.clone(), if q.current { "»" } else { "•" })
+                        (q.title.clone(), q.place.clone(), q.years.clone(), if q.current { 6 } else { 7 })
                     } else {
                         let t = &stats.training[i - quests.len()];
-                        (t.title.clone(), t.place.clone(), t.years.clone(), "·")
+                        (t.title.clone(), t.place.clone(), t.years.clone(), 5)
                     };
-                    p.spawn(text_at(&f.bold, 10.5, if on { CITRON } else { TEXT }, format!("{mark} {}", truncate(&title, 32)), 150.0, y + 1.0, 230.0));
-                    p.spawn(text_at(&f.label, 7.5, SAGE, truncate(&format!("{} · {}", place.to_uppercase(), years), 44), 162.0, y + 15.0, 220.0));
+                    p.spawn((at(148.0, y + 5.0, 16.0, 16.0), ImageNode::new(art.ui_icons[mark].clone())));
+                    p.spawn(text_at(&f.bold, 10.5, if on { CITRON } else { TEXT }, truncate(&title, 30), 170.0, y + 1.0, 210.0));
+                    p.spawn(text_at(&f.label, 7.5, SAGE, truncate(&format!("{} · {}", place.to_uppercase(), years), 40), 170.0, y + 15.0, 210.0));
                 }
                 if ui.sel < quests.len() {
                     let q = &quests[ui.sel];
@@ -1123,7 +1137,8 @@ fn hud(
         if let Some((label, pos)) = prompt {
             let w = 150.0;
             let verb = if touch { "TAP" } else { "E" };
-            p.spawn(panel(pos.x - w / 2.0, (pos.y - 58.0).max(46.0), w, 18.0)).with_children(|b| {
+            let _ = pos;
+            p.spawn(panel(VW / 2.0 - w / 2.0, 310.0, w, 18.0)).with_children(|b| {
                 b.spawn(text_at(&f.label, 8.5, CITRON, format!("{verb} · {}", label.to_uppercase()), 0.0, 2.0, w).with_justify());
             });
         }

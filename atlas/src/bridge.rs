@@ -13,7 +13,7 @@ pub enum Inbound {
     Go(String),
     Paused(bool),
     /// A tap at (x, y) as fractions of the canvas size.
-    Tap(bevy::math::Vec2),
+    Tap(bevy::math::Vec2, bool),
 }
 
 thread_local! {
@@ -62,10 +62,11 @@ mod web {
         super::push(super::Inbound::Go(destination.to_owned()));
     }
 
-    /// A touch or pen tap on the canvas, as fractions of its size (0–1).
+    /// A click or tap on the canvas, as fractions of its size (0–1).
+    /// `touch` is true for a finger or pen.
     #[wasm_bindgen]
-    pub fn tap(x: f32, y: f32) {
-        super::push(super::Inbound::Tap(bevy::math::Vec2::new(x, y)));
+    pub fn tap(x: f32, y: f32, touch: bool) {
+        super::push(super::Inbound::Tap(bevy::math::Vec2::new(x, y), touch));
     }
 
     #[wasm_bindgen]

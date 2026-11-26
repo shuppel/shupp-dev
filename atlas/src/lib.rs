@@ -18,6 +18,7 @@ use bevy::window::PrimaryWindow;
 
 mod bridge;
 mod content;
+mod fx;
 mod ui;
 
 pub use bridge::*;
@@ -352,10 +353,11 @@ pub fn app(canvas: Option<String>, registry: Registry, boot: Boot, visited: Vec<
             use_point.run_if(|g: Res<Game>| g.mode == Mode::Explore && !g.paused),
             animate_player,
             depth_sort,
+            fx::animate,
         )
             .chain(),
     )
-    .add_plugins(ui::UiPlugin);
+    .add_plugins((ui::UiPlugin, fx::FxPlugin));
     app
 }
 
@@ -375,13 +377,13 @@ pub(crate) fn setup(
     ));
 
     let art = Art {
-        idle: assets.load("player/courier_idle.png"),
-        walk: assets.load("player/courier_walk.png"),
+        idle: assets.load("player/courier_idle_outlined.png"),
+        walk: assets.load("player/courier_walk_outlined.png"),
         idle_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(48, 64), 4, 4, None, None)),
         walk_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(48, 64), 6, 4, None, None)),
         npc_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(48, 64), 4, 1, None, None)),
-        technician_npc: assets.load("cast/technician/npc.png"),
-        archivist_npc: assets.load("cast/archivist/npc.png"),
+        technician_npc: assets.load("cast/technician/npc_outlined.png"),
+        archivist_npc: assets.load("cast/archivist/npc_outlined.png"),
     };
 
     // Erikk. The art pack's pivot is (24, 62) in a 48 × 64 cell.
@@ -455,13 +457,20 @@ fn enter_scene(
 /// fraction of the canvas size. Touch goes through the page instead of
 /// winit, which drops taps on mobile browsers.
 #[derive(Resource, Default)]
-pub struct PageTap(pub Option<Vec2>);
+pub struct PageTap {
+    pub at: Option<Vec2>,
+    /// The last pointer the page saw was a finger or pen, not a mouse.
+    pub touch: bool,
+}
 
 fn read_page(mut game: ResMut<Game>, mut tap: ResMut<PageTap>) {
-    tap.0 = None;
+    tap.at = None;
     for msg in bridge::drain() {
         match msg {
-            bridge::Inbound::Tap(at) => tap.0 = Some(at),
+            bridge::Inbound::Tap(at, touch) => {
+                tap.at = Some(at);
+                tap.touch = touch;
+            }
             bridge::Inbound::Paused(p) => game.paused = p,
             bridge::Inbound::Go(id) => game.request = Some(ui::Request::Destination(id)),
         }
@@ -476,9 +485,11 @@ pub fn pointer_press(
     window: &Window,
     frame: &ui::Frame,
 ) -> Option<Vec2> {
-    let screen = if mouse.just_pressed(MouseButton::Left) {
+    // On the web every pointer (mouse, touch, pen) comes through the page,
+    // which is more reliable than winit's canvas events.
+    let screen = if !cfg!(target_arch = "wasm32") && mouse.just_pressed(MouseButton::Left) {
         window.cursor_position()
-    } else if let Some(f) = page_tap.0 {
+    } else if let Some(f) = page_tap.at {
         Some(f * Vec2::new(window.width(), window.height()))
     } else {
         // Taps fire on release, so a quick tap inside one frame still counts.
@@ -635,7 +646,9 @@ pub(crate) fn depth_sort(
 ) {
     let def = scene_def(game.scene);
     let Ok((p, mut tf)) = player.single_mut() else { return };
-    tf.translation = to_world(p.foot).extend(1.0 + p.foot.y / 1000.0);
+    // Whole scene pixels only: a sub-pixel position makes nearest sampling
+    // double or drop columns, which reads as a smeared, low-res sprite.
+    tf.translation = to_world(p.foot.round()).extend(1.0 + p.foot.y / 1000.0);
     for (npc, mut ntf, mut sprite) in &mut npcs {
         ntf.translation.z = 1.0 + npc.foot.y / 1000.0;
         // NPCs turn to face Erikk when he is close.
