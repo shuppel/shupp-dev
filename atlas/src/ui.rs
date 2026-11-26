@@ -575,7 +575,7 @@ fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Regi
             let (who, name, dest, closing) = match npc {
                 Npc::Technician => (
                     Who::Technician,
-                    "Dock Technician",
+                    "Terri the Technician",
                     registry.dest("work"),
                     "The workbench has the full manifest. Every entry opens the real write-up.",
                 ),
@@ -598,7 +598,9 @@ fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Regi
                 lines.push(Line { speaker: name.into(), who, pose: if i % 2 == 0 { 2 } else { 0 }, call: false, text: chunk });
             }
             lines.push(Line { speaker: name.into(), who, pose: 0, call: false, text: dest.preview.clone() });
-            lines.push(Line { speaker: name.into(), who, pose: 3, call: false, text: closing.into() });
+            // Terri's fourth face is "surprised", which doesn't fit a sign-off.
+            let last = if who == Who::Technician { 1 } else { 3 };
+            lines.push(Line { speaker: name.into(), who, pose: last, call: false, text: closing.into() });
             ui.dialogue = Some(Dialogue { lines, idx: 0, shown: 0.0, after: None });
             game.mode = Mode::Dialogue;
         }

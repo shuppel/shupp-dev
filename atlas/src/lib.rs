@@ -175,7 +175,7 @@ pub fn scene_def(id: SceneId) -> &'static SceneDef {
             Point { pos: LIFT_LOWER_EXIT, label: "Ride the lift up", action: Action::Lift, deck: Deck::Lower },
             Point { pos: p(320.0, 304.0), label: "Workbench", action: Action::Terminal("work"), deck: Deck::Lower },
             Point { pos: LIFT_UPPER_EXIT, label: "Ride the lift down", action: Action::Lift, deck: Deck::Upper },
-            Point { pos: p(545.0, 174.0), label: "Talk to the technician", action: Action::Talk(Npc::Technician), deck: Deck::Upper },
+            Point { pos: p(545.0, 174.0), label: "Talk to Terri", action: Action::Talk(Npc::Technician), deck: Deck::Upper },
             Point { pos: p(420.0, 192.0), label: "Inspect the Crescent", action: Action::Crescent, deck: Deck::Upper },
             Point { pos: GANGWAY, label: "Gangway to the Atlier", action: Action::Goto(SceneId::Bridge), deck: Deck::Lower },
         ],
@@ -416,6 +416,8 @@ pub struct Art {
     /// Pongo's idle sheet: stand and sniff, sit down, lie down (facing right).
     pub pongo_idle_layout: Handle<TextureAtlasLayout>,
     pub npc_layout: Handle<TextureAtlasLayout>,
+    /// Crew drawn from 2x art (Terri), shown smooth at 48 x 64.
+    pub npc_hd_layout: Handle<TextureAtlasLayout>,
     pub technician_npc: Handle<Image>,
     pub mechanic_work: Handle<Image>,
     pub work_layout: Handle<TextureAtlasLayout>,
@@ -580,7 +582,8 @@ pub(crate) fn setup(
         idle_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(128, 128), 8, 4, None, None)),
         walk_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(128, 128), 6, 4, None, None)),
         npc_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(48, 64), 4, 1, None, None)),
-        technician_npc: assets.load("cast/technician/npc_outlined.png"),
+        npc_hd_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(96, 128), 4, 1, None, None)),
+        technician_npc: load_smooth(&assets, "cast/technician/npc_hd.png"),
         mechanic_work: load_smooth(&assets, "cast/mechanic/work.png"),
         work_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(128, 128), 6, 1, None, None)),
         archivist_npc: assets.load("cast/archivist/npc_outlined.png"),
@@ -725,14 +728,14 @@ fn enter_scene(
         ));
     }
     if let Some((npc, foot)) = def.npc {
-        let image = match npc {
-            Npc::Technician => art.technician_npc.clone(),
-            Npc::Archivist | Npc::Mechanic => art.archivist_npc.clone(),
+        let (image, layout) = match npc {
+            Npc::Technician => (art.technician_npc.clone(), art.npc_hd_layout.clone()),
+            Npc::Archivist | Npc::Mechanic => (art.archivist_npc.clone(), art.npc_layout.clone()),
         };
         commands.spawn((
             SceneEntity,
             NpcSprite { foot },
-            Sprite::from_atlas_image(image, TextureAtlas { layout: art.npc_layout.clone(), index: 0 }),
+            Sprite { custom_size: Some(Vec2::new(48.0, 64.0)), ..Sprite::from_atlas_image(image, TextureAtlas { layout, index: 0 }) },
             Anchor(Vec2::new(0.0, (32.0 - 62.0) / 64.0)),
             Transform::from_translation(to_world(foot).extend(1.0)),
         ));
