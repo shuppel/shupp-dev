@@ -317,3 +317,27 @@ body.read {
 .ship-button:hover img, .ship-button:focus-visible img { transform: translateX(-4px); }
 .ship-button .px-glyph { margin-top: 0; }
 .press-start { padding: 22px 28px 18px; background: rgba(20, 8, 18, 0.78); border: 1px solid rgba(233, 235, 158, 0.4); border-radius: var(--radius); backdrop-filter: blur(2px); }
+
+/* ---------- resume ---------- */
+.resume .read-lede strong { font-weight: 700; }
+.resume .metric, .read-body .metric { background: var(--citron); color: inherit; padding: 0 3px; border-radius: 3px; font-weight: 600; }
+.resume .cover .panel-body { flex: 1; }
+.resume-actions { display: flex; gap: 10px; align-items: center; }
+.resume-actions button { cursor: pointer; border: var(--line); font: inherit; }
+.read-body .job { padding-block: 4px 10px; }
+.read-body .job + .job { border-top: var(--hair); margin-top: 18px; }
+.read-body .job h3 { margin-top: 1.1em; margin-bottom: 0.2em; }
+.job-meta { display: flex; flex-wrap: wrap; gap: 4px 14px; margin: 0 0 0.6em; font: 500 14px/1.5 var(--label); letter-spacing: 0.02em; color: var(--ink-soft); }
+.job-meta strong { color: var(--ink); }
+.job-context { margin: 0 0 0.6em; font-style: italic; }
+.job-gov { display: flex; flex-wrap: wrap; gap: 8px; margin: 0.4em 0 0; }
+.spec-list > li span { display: block; font: 500 14px/1.5 var(--sans); color: var(--ink-soft); }
+.links.plain li { display: flex; gap: 10px; align-items: center; padding: 9px 0; font: 500 15px/1.4 var(--sans); }
+@media print {
+  .read-root body { background: #fff; }
+  .read-footer, .read-skip, .resume-actions { display: none; }
+  .read-hero { grid-template-columns: 1fr; padding-block: 0 12px; }
+  .resume .cover { display: none; }
+  .read-body { font-size: 12pt; line-height: 1.5; }
+  .read-body .job { break-inside: avoid; }
+}
