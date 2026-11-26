@@ -23,7 +23,7 @@ export interface Props {
   canonicalUrl?: string;
   /** The JSON twin of this page. */
   jsonHref?: string;
-  jsonLdType?: 'website' | 'article';
+  jsonLdType?: 'website' | 'article' | 'press';
   jsonLdData?: any;
 }
 
@@ -96,7 +96,7 @@ const twitterHandle = `@${new URL(siteConfig.social.twitter).pathname.split('/')
       </a>
       <nav aria-label="Page">
         {jsonHref && <a class="outline-button" href={jsonHref}><PixelGlyph name="braces" size={14} /> JSON</a>}
-        <a class="solid-button" href="/" data-return><PixelGlyph name="back" size={14} /> Return to ship</a>
+        <a class="solid-button ship-button" href="/" data-return aria-label="Return to ship" title="Return to ship"><PixelGlyph name="back" size={14} /><img src="/reading/crescent.png" alt="" width="64" height="32" /></a>
       </nav>
     </header>
 

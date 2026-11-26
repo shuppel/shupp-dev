@@ -16,7 +16,10 @@ twin sits at the same path with `.json` in place of the trailing slash.
 
 | What | Page | JSON |
 | --- | --- | --- |
+| Galaxy index | `/galaxy/` | `/galaxy.json` |
 | Galaxy note | `/galaxy/<slug>/` | `/galaxy/<slug>.json` |
+| Press index | `/press/` | `/press.json` |
+| Press entry | `/press/<slug>/` | `/press/<slug>.json` |
 | Design spec | (rendered spec page) | `/design-spec/<name>.spec.json` (already live) |
 
 The page links its twin with `<link rel="alternate" type="application/json">`,
@@ -51,9 +54,13 @@ and the footer links it for people.
 
 The old site format is being sunset section by section.
 
+- Done: press. Video entries open on a full-width "transmission" screen
+  (HUD, scanlines, corner reticle, Press start); the YouTube player loads
+  only on click, from youtube-nocookie. Shorts play vertical with signal and
+  comms panels either side.
 - Done: galaxy notes (the blog). Every note renders from
   `src/pages/galaxy/[slug].astro` on the reading layout and has a JSON twin.
-- Next: press, portfolio, about, then the list pages (the game's terminals do
+- Next: design spec, portfolio, about, then the list pages (the game's terminals do
   the listing, so list pages become light indexes for crawlers).
 
 Reading pages carry no site sidebar, nav or photos of Erikk. Pages without
@@ -74,3 +81,9 @@ otherwise goes to `/`. Without JavaScript it is a plain link to `/`.
   clock, arrows, diamond ornament) drawn as crisp SVG.
 - `src/styles/reading.css`: tokens and type. Fonts and sprites are the game's
   own files under `/atlas/assets/`.
+
+## Editor notes
+
+Blockquotes that start with `NOTE:` in content files are notes to the author
+and are stripped from rendered pages and JSON
+(`src/lib/markdown/remark-drop-editor-notes.mjs`).
