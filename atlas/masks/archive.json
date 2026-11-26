@@ -1,0 +1,29 @@
+{
+  "coordinates": "top-left pixels; foot point; white=walkable",
+  "background": "scenes/archive.png",
+  "walk_mask": "maps/archive_walkable.png",
+  "spawn": [
+    323,
+    301
+  ],
+  "interactions": {
+    "records": [
+      323,
+      151
+    ],
+    "archivist": [
+      385,
+      182
+    ]
+  },
+  "radius_px": 22,
+  "foreground": {
+    "file": "maps/archive_foreground.png",
+    "draw_after_actor_if_foot_y_less_than": 341
+  },
+  "record_reader": {
+    "interaction": "records",
+    "icon": "props/tablet.png",
+    "preview": "reader/index.html"
+  }
+}

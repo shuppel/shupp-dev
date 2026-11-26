@@ -1,0 +1,761 @@
+{
+  "courier.idle.down": {
+    "sheet": "player/movement/courier_idle.png",
+    "cell": [
+      48,
+      64
+    ],
+    "indices": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "frame_ms": 180,
+    "loop": true
+  },
+  "courier.idle.up": {
+    "sheet": "player/movement/courier_idle.png",
+    "cell": [
+      48,
+      64
+    ],
+    "indices": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "frame_ms": 180,
+    "loop": true
+  },
+  "courier.idle.left": {
+    "sheet": "player/movement/courier_idle.png",
+    "cell": [
+      48,
+      64
+    ],
+    "indices": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "frame_ms": 180,
+    "loop": true
+  },
+  "courier.idle.right": {
+    "sheet": "player/movement/courier_idle.png",
+    "cell": [
+      48,
+      64
+    ],
+    "indices": [
+      12,
+      13,
+      14,
+      15
+    ],
+    "frame_ms": 180,
+    "loop": true
+  },
+  "courier.walk.down": {
+    "sheet": "player/movement/courier_walk.png",
+    "cell": [
+      48,
+      64
+    ],
+    "indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "frame_ms": 110,
+    "loop": true
+  },
+  "courier.walk.up": {
+    "sheet": "player/movement/courier_walk.png",
+    "cell": [
+      48,
+      64
+    ],
+    "indices": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "frame_ms": 110,
+    "loop": true
+  },
+  "courier.walk.left": {
+    "sheet": "player/movement/courier_walk.png",
+    "cell": [
+      48,
+      64
+    ],
+    "indices": [
+      12,
+      13,
+      14,
+      15,
+      16,
+      17
+    ],
+    "frame_ms": 110,
+    "loop": true
+  },
+  "courier.walk.right": {
+    "sheet": "player/movement/courier_walk.png",
+    "cell": [
+      48,
+      64
+    ],
+    "indices": [
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ],
+    "frame_ms": 110,
+    "loop": true
+  },
+  "courier.attack.magnum": {
+    "sheet": "player/combat/magnum_attack.png",
+    "cell": [
+      128,
+      96
+    ],
+    "indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "frame_ms": 100,
+    "loop": false
+  },
+  "courier.attack.sword": {
+    "sheet": "player/combat/sword_attack.png",
+    "cell": [
+      128,
+      96
+    ],
+    "indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "frame_ms": 100,
+    "loop": false
+  },
+  "courier.battle_idle": {
+    "sheet": "battle/courier.png",
+    "cell": [
+      96,
+      96
+    ],
+    "indices": [
+      0,
+      1
+    ],
+    "frame_ms": 160,
+    "loop": true
+  },
+  "courier.hit": {
+    "sheet": "battle/courier.png",
+    "cell": [
+      96,
+      96
+    ],
+    "indices": [
+      2,
+      3
+    ],
+    "frame_ms": 160,
+    "loop": false
+  },
+  "eva.idle.down": {
+    "sheet": "player/movement/eva_idle.png",
+    "cell": [
+      48,
+      64
+    ],
+    "indices": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "frame_ms": 180,
+    "loop": true
+  },
+  "eva.idle.up": {
+    "sheet": "player/movement/eva_idle.png",
+    "cell": [
+      48,
+      64
+    ],
+    "indices": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "frame_ms": 180,
+    "loop": true
+  },
+  "eva.idle.left": {
+    "sheet": "player/movement/eva_idle.png",
+    "cell": [
+      48,
+      64
+    ],
+    "indices": [
+      8,
+      9,
+      10,
+      11
+    ],
+    "frame_ms": 180,
+    "loop": true
+  },
+  "eva.idle.right": {
+    "sheet": "player/movement/eva_idle.png",
+    "cell": [
+      48,
+      64
+    ],
+    "indices": [
+      12,
+      13,
+      14,
+      15
+    ],
+    "frame_ms": 180,
+    "loop": true
+  },
+  "eva.walk.down": {
+    "sheet": "player/movement/eva_walk.png",
+    "cell": [
+      48,
+      64
+    ],
+    "indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "frame_ms": 110,
+    "loop": true
+  },
+  "eva.walk.up": {
+    "sheet": "player/movement/eva_walk.png",
+    "cell": [
+      48,
+      64
+    ],
+    "indices": [
+      6,
+      7,
+      8,
+      9,
+      10,
+      11
+    ],
+    "frame_ms": 110,
+    "loop": true
+  },
+  "eva.walk.left": {
+    "sheet": "player/movement/eva_walk.png",
+    "cell": [
+      48,
+      64
+    ],
+    "indices": [
+      12,
+      13,
+      14,
+      15,
+      16,
+      17
+    ],
+    "frame_ms": 110,
+    "loop": true
+  },
+  "eva.walk.right": {
+    "sheet": "player/movement/eva_walk.png",
+    "cell": [
+      48,
+      64
+    ],
+    "indices": [
+      18,
+      19,
+      20,
+      21,
+      22,
+      23
+    ],
+    "frame_ms": 110,
+    "loop": true
+  },
+  "eva.attack.magnum": {
+    "sheet": "battle/eva_magnum.png",
+    "cell": [
+      128,
+      96
+    ],
+    "indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "frame_ms": 100,
+    "loop": false
+  },
+  "eva.attack.sword": {
+    "sheet": "battle/eva_sword.png",
+    "cell": [
+      128,
+      96
+    ],
+    "indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "frame_ms": 100,
+    "loop": false
+  },
+  "eva.battle_idle": {
+    "sheet": "battle/eva.png",
+    "cell": [
+      96,
+      96
+    ],
+    "indices": [
+      0,
+      1
+    ],
+    "frame_ms": 160,
+    "loop": true
+  },
+  "eva.hit": {
+    "sheet": "battle/eva.png",
+    "cell": [
+      96,
+      96
+    ],
+    "indices": [
+      2,
+      3
+    ],
+    "frame_ms": 160,
+    "loop": false
+  },
+  "drone.hover": {
+    "sheet": "battle/drone.png",
+    "cell": [
+      96,
+      96
+    ],
+    "indices": [
+      0
+    ],
+    "frame_ms": 200,
+    "loop": false
+  },
+  "drone.telegraph": {
+    "sheet": "battle/drone.png",
+    "cell": [
+      96,
+      96
+    ],
+    "indices": [
+      1
+    ],
+    "frame_ms": 200,
+    "loop": false
+  },
+  "drone.hit": {
+    "sheet": "battle/drone.png",
+    "cell": [
+      96,
+      96
+    ],
+    "indices": [
+      2
+    ],
+    "frame_ms": 200,
+    "loop": false
+  },
+  "drone.defeat": {
+    "sheet": "battle/drone.png",
+    "cell": [
+      96,
+      96
+    ],
+    "indices": [
+      3
+    ],
+    "frame_ms": 200,
+    "loop": false
+  },
+  "wayfarer.flight": {
+    "sheet": "ships/wayfarer_flight.png",
+    "cell": [
+      192,
+      112
+    ],
+    "indices": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "frame_ms": 110,
+    "loop": true
+  },
+  "crescent.flight": {
+    "sheet": "ships/crescent_flight.png",
+    "cell": [
+      192,
+      112
+    ],
+    "indices": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "frame_ms": 110,
+    "loop": true
+  },
+  "crescent.depart": {
+    "sheet": "ships/crescent_depart.png",
+    "cell": [
+      224,
+      112
+    ],
+    "indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "frame_ms": 100,
+    "loop": false
+  },
+  "technician.calls.rest": {
+    "sheet": "cast/technician/calls.png",
+    "cell": [
+      192,
+      256
+    ],
+    "indices": [
+      0
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "technician.calls.part": {
+    "sheet": "cast/technician/calls.png",
+    "cell": [
+      192,
+      256
+    ],
+    "indices": [
+      1
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "technician.calls.ah": {
+    "sheet": "cast/technician/calls.png",
+    "cell": [
+      192,
+      256
+    ],
+    "indices": [
+      2
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "technician.calls.oh": {
+    "sheet": "cast/technician/calls.png",
+    "cell": [
+      192,
+      256
+    ],
+    "indices": [
+      3
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "technician.faces.listen": {
+    "sheet": "cast/technician/faces.png",
+    "cell": [
+      256,
+      352
+    ],
+    "indices": [
+      0
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "technician.faces.greet": {
+    "sheet": "cast/technician/faces.png",
+    "cell": [
+      256,
+      352
+    ],
+    "indices": [
+      1
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "technician.faces.think": {
+    "sheet": "cast/technician/faces.png",
+    "cell": [
+      256,
+      352
+    ],
+    "indices": [
+      2
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "technician.faces.serious": {
+    "sheet": "cast/technician/faces.png",
+    "cell": [
+      256,
+      352
+    ],
+    "indices": [
+      3
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "archivist.calls.rest": {
+    "sheet": "cast/archivist/calls.png",
+    "cell": [
+      192,
+      256
+    ],
+    "indices": [
+      0
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "archivist.calls.part": {
+    "sheet": "cast/archivist/calls.png",
+    "cell": [
+      192,
+      256
+    ],
+    "indices": [
+      1
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "archivist.calls.ah": {
+    "sheet": "cast/archivist/calls.png",
+    "cell": [
+      192,
+      256
+    ],
+    "indices": [
+      2
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "archivist.calls.oh": {
+    "sheet": "cast/archivist/calls.png",
+    "cell": [
+      192,
+      256
+    ],
+    "indices": [
+      3
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "archivist.faces.listen": {
+    "sheet": "cast/archivist/faces.png",
+    "cell": [
+      256,
+      352
+    ],
+    "indices": [
+      0
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "archivist.faces.greet": {
+    "sheet": "cast/archivist/faces.png",
+    "cell": [
+      256,
+      352
+    ],
+    "indices": [
+      1
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "archivist.faces.think": {
+    "sheet": "cast/archivist/faces.png",
+    "cell": [
+      256,
+      352
+    ],
+    "indices": [
+      2
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "archivist.faces.serious": {
+    "sheet": "cast/archivist/faces.png",
+    "cell": [
+      256,
+      352
+    ],
+    "indices": [
+      3
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "erikk.calls.rest": {
+    "sheet": "player/dialogue/call.png",
+    "cell": [
+      192,
+      256
+    ],
+    "indices": [
+      0
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "erikk.calls.part": {
+    "sheet": "player/dialogue/call.png",
+    "cell": [
+      192,
+      256
+    ],
+    "indices": [
+      1
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "erikk.calls.ah": {
+    "sheet": "player/dialogue/call.png",
+    "cell": [
+      192,
+      256
+    ],
+    "indices": [
+      2
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "erikk.calls.oh": {
+    "sheet": "player/dialogue/call.png",
+    "cell": [
+      192,
+      256
+    ],
+    "indices": [
+      3
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "erikk.faces.listen": {
+    "sheet": "player/dialogue/live.png",
+    "cell": [
+      256,
+      352
+    ],
+    "indices": [
+      0
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "erikk.faces.greet": {
+    "sheet": "player/dialogue/live.png",
+    "cell": [
+      256,
+      352
+    ],
+    "indices": [
+      1
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "erikk.faces.think": {
+    "sheet": "player/dialogue/live.png",
+    "cell": [
+      256,
+      352
+    ],
+    "indices": [
+      2
+    ],
+    "frame_ms": 130,
+    "loop": false
+  },
+  "erikk.faces.serious": {
+    "sheet": "player/dialogue/live.png",
+    "cell": [
+      256,
+      352
+    ],
+    "indices": [
+      3
+    ],
+    "frame_ms": 130,
+    "loop": false
+  }
+}

@@ -5,3 +5,29 @@
 [build.environment]
   NODE_VERSION = "22"
    SECRETS_SCAN_OMIT_KEYS = "PUBLIC_GISCUS_REPO,PUBLIC_GISCUS_REPO_ID,PUBLIC_GISCUS_CATEGORY,PUBLIC_GISCUS_CATEGORY_ID,SCREENSHOT_MACHINE_API_KEY"
+# The game is the front door now; old /atlas links land on it. Exact paths
+# only, so /atlas/pkg, /atlas/assets and /atlas/registry.json still serve.
+[[redirects]]
+  from = "/atlas"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/atlas/"
+  to = "/"
+  status = 301
+  force = true
+
+# The page always asks for the game with ?v=<hash of the build>, so the wasm
+# and its loader can be cached for good; a new build is a new URL.
+[[headers]]
+  for = "/atlas/pkg/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Art isn't versioned, so cache it for an hour and refresh in the background.
+[[headers]]
+  for = "/atlas/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"

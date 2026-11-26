@@ -1,0 +1,24 @@
+{
+  "coordinates": "top-left pixels; foot point; white=walkable",
+  "background": "scenes/bridge.png",
+  "walk_mask": "maps/bridge_walkable.png",
+  "spawn": [
+    310,
+    298
+  ],
+  "interactions": {
+    "star_console": [
+      470,
+      180
+    ],
+    "return": [
+      250,
+      330
+    ]
+  },
+  "radius_px": 22,
+  "foreground": {
+    "file": "maps/bridge_foreground.png",
+    "draw_after_actor_if_foot_y_less_than": 265
+  }
+}

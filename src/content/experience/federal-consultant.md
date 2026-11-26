@@ -1,10 +1,11 @@
 ---
-company: "Nodetus"
-position: "Federal IT Consultant & Founder"
+company: "Nodetus Integrators"
+position: "Founder & Managing Director"
 location: "Washington, DC Metro Area"
-startDate: 2024-01-01
-current: true
-description: "Leading federal IT advisory consultancy providing strategic technology guidance to government agencies"
+startDate: 2017-01-01
+endDate: 2026-06-30
+current: false
+description: "Founded and ran a federal IT and AI services firm: $1.1M+ cumulative revenue across six subcontracts, 40% YoY growth and a 90% renewal rate. Closed in June 2026."
 achievements:
   - "Established successful federal IT consultancy serving multiple government agencies"
   - "Developed comprehensive IT strategies for digital transformation initiatives"
