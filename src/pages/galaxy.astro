@@ -1,57 +1,47 @@
 ---
 // The galaxy index as a reading page. The game's Archive terminal is where
-// people browse; this page is the plain, crawlable list behind it, with a
-// JSON twin at /galaxy.json.
+// people browse; this is the plain, crawlable list behind it, with a JSON twin
+// at /galaxy.json.
 import { getCollection } from 'astro:content';
 import ReadingLayout from '../layouts/ReadingLayout.astro';
 import PixelGlyph from '../components/Reading/PixelGlyph.astro';
 import { STAGE_LABEL, pageUrl, readMinutes, titleCase } from '../lib/reading/galaxy';
 
-const notes = (await getCollection('galaxy'))
-  .filter((n) => n.data.visible)
-  .sort((a, b) => (b.data.pubDate ?? b.data.formed).getTime() - (a.data.pubDate ?? a.data.formed).getTime());
-
+const when = (n: { data: { pubDate?: Date; formed: Date } }) => n.data.pubDate ?? n.data.formed;
+const notes = (await getCollection('galaxy')).filter((n) => n.data.visible).sort((a, b) => when(b).getTime() - when(a).getTime());
 const byYear = new Map<number, typeof notes>();
-for (const n of notes) {
-  const y = (n.data.pubDate ?? n.data.formed).getUTCFullYear();
-  byYear.set(y, [...(byYear.get(y) ?? []), n]);
-}
-const month = (d: Date) => d.toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric' });
+for (const n of notes) byYear.set(when(n).getUTCFullYear(), [...(byYear.get(when(n).getUTCFullYear()) ?? []), n]);
+const day = (d: Date) => d.toLocaleDateString('en-US', { timeZone: 'UTC', month: 'short', day: 'numeric' });
 const title = 'Scribe Galaxy';
 const description = 'Writing by Erikk Shupp: evolving notes on product philosophy, design systems, AI and technical explorations.';
 ---
 
-<ReadingLayout title={title} description={description} terminal="Archive" type="website" jsonLdType="website" jsonHref="/galaxy.json">
-  <article class="read-page">
-    <div class="read-sheet">
-      <div class="read-inner">
-        <header>
-          <p class="read-kicker"><span class="read-kicker__stage"><PixelGlyph name="galaxy" size={14} /> Index</span><span class="read-dot" aria-hidden="true"></span><span>{notes.length} entries</span></p>
-          <h1 class="read-title">{title}</h1>
-          <p class="read-lede">Notes that form, grow and orbit each other. Each one starts as a nebula and becomes a star once it's settled.</p>
-        </header>
-
-        {[...byYear].map(([year, list]) => (
-          <section class="read-end">
-            <div class="read-divider" aria-hidden="true"><PixelGlyph name="diamond" size={10} /></div>
-            <h2>{year}</h2>
-            <ul class="read-links">
-              {list.map((n) => (
-                <li>
-                  <a href={pageUrl(n.id)}>
-                    <PixelGlyph name={n.data.stage} size={24} />
-                    <span>
-                      <span class="read-links__title">{n.data.title}</span>
-                      <span class="read-links__meta">{month(n.data.pubDate ?? n.data.formed)}<span class="read-dot" aria-hidden="true"></span>{STAGE_LABEL[n.data.stage]}<span class="read-dot" aria-hidden="true"></span>{titleCase(n.data.constellation)}<span class="read-dot" aria-hidden="true"></span>{readMinutes(n.body)} min</span>
-                    </span>
-                    <PixelGlyph name="arrow" size={14} />
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </section>
-        ))}
-      </div>
+<ReadingLayout title={title} description={description} terminal="The Archive" type="website" jsonLdType="website" jsonHref="/galaxy.json">
+  <section class="index-hero wrap">
+    <div>
+      <p class="eyebrow"><span class="status-dot"></span> The Archive / {notes.length} notes</p>
+      <h1 class="read-title">Scribe Galaxy</h1>
     </div>
-  </article>
+    <p>Notes that form, grow and orbit each other. Each one starts as a nebula and becomes a star once it has settled.</p>
+  </section>
+
+  <div class="wrap">
+    {[...byYear].map(([year, list]) => (
+      <section aria-labelledby={`y${year}`}>
+        <h2 class="index-year" id={`y${year}`}>{year}</h2>
+        <div class="index-grid">
+          {list.map((n) => (
+            <a class="index-card panel" href={pageUrl(n.id)}>
+              <header><h3 style="font: 600 13px/1.3 var(--sans); letter-spacing: 0"><PixelGlyph name={n.data.stage} size={16} /> {STAGE_LABEL[n.data.stage]}</h3><span>{day(when(n))}</span></header>
+              <div class="panel-body">
+                <h3>{n.data.title}</h3>
+                <p>{n.data.description}</p>
+              </div>
+              <footer><span>{titleCase(n.data.constellation)}</span><span>{readMinutes(n.body)} min <PixelGlyph name="arrow" size={12} /></span></footer>
+            </a>
+          ))}
+        </div>
+      </section>
+    ))}
+  </div>
 </ReadingLayout>

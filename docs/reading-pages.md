@@ -1,8 +1,11 @@
 # Reading pages
 
 The pages the game opens from its terminals (The Archive and friends) are
-standalone reading pages: one written piece, no site sidebar or nav, dressed
-in the game's palette, type and pixel sprites. Each one has a JSON twin for
+standalone reading pages: one written piece, no site sidebar or nav, laid out
+in the Ephemeral design language (wide editorial grid, 1 px ink lines, 12 px
+corners, labelled panels, pills, flat paper surface) with the game's palette,
+fonts (Shupp titles, Manaspace labels, Hind interface, Martel for reading) and
+pixel sprites. Each one has a JSON twin for
 agents and tools. They need no JavaScript, so they render the same in the
 terminal's sandboxed preview, for crawlers, and in a normal tab.
 

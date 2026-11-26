@@ -1,5 +1,5 @@
 ---
-// A galaxy note as a standalone reading page. See src/lib/reading/galaxy.ts.
+// A galaxy note as a standalone reading page. See docs/reading-pages.md.
 import { getCollection, render } from 'astro:content';
 import type { CollectionEntry } from 'astro:content';
 import ReadingLayout from '../../layouts/ReadingLayout.astro';
@@ -11,38 +11,43 @@ interface Props {
   entry: CollectionEntry<'galaxy'>;
 }
 
+type Note = CollectionEntry<'galaxy'>;
 const { entry } = Astro.props;
 const d = entry.data;
-const { Content } = await render(entry);
+const { Content, headings } = await render(entry);
 const all = (await getCollection('galaxy')).filter((n) => n.data.visible);
+const when = (n: Note) => n.data.pubDate ?? n.data.formed;
+const ordered = [...all].sort((a, b) => when(b).getTime() - when(a).getTime());
+const at = ordered.findIndex((n) => n.id === entry.id);
+const newer = at > 0 ? ordered[at - 1] : undefined;
+const older = at >= 0 && at < ordered.length - 1 ? ordered[at + 1] : undefined;
 
 const url = new URL(pageUrl(entry.id), Astro.site).href;
 const author = d.author || siteConfig.author.name;
+const words = wordCount(entry.body);
 const minutes = readMinutes(entry.body);
-const fmt = (date: Date) =>
-  date.toLocaleDateString('en-US', { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' });
-const published = d.pubDate ?? d.formed;
-const revised = d.lastObserved.getTime() > published.getTime() + 86_400_000;
+const fmt = (date: Date) => date.toLocaleDateString('en-US', { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' });
+const published = when(entry);
+// Use the social image as the cover unless the post already opens with it.
+const cover = d.ogImage && !(entry.body ?? '').includes(d.ogImage) ? d.ogImage : undefined;
+const outline = headings.filter((h) => h.depth <= 2);
 
-const connections = d.connections
-  .map((id) => all.find((n) => n.id === id))
-  .filter((n): n is CollectionEntry<'galaxy'> => Boolean(n));
-const backlinks = all.filter(
-  (n) => n.id !== entry.id && n.data.connections.includes(entry.id) && !d.connections.includes(n.id),
-);
-const onward = [...connections, ...backlinks];
+const connections = d.connections.map((id) => all.find((n) => n.id === id)).filter((n): n is Note => Boolean(n));
+const backlinks = all.filter((n) => n.id !== entry.id && n.data.connections.includes(entry.id) && !d.connections.includes(n.id));
+const nearby = [...connections, ...backlinks];
+const planet = (n: Note) => `/atlas/assets/atlas/writing_${n.data.stage === 'star' || n.data.stage === 'galaxy' ? 'selected' : 'normal'}.png`;
 
 const jsonLdData = {
   article: {
     title: d.title,
     description: d.description,
-    image: new URL(d.ogImage || '/og-default.png', Astro.site).href,
+    image: new URL(d.ogImage || '/og-reading.png', Astro.site).href,
     url,
     pubDate: published.toISOString(),
     updatedDate: d.lastObserved.toISOString(),
     author,
     categories: [titleCase(d.constellation)],
-    wordCount: wordCount(entry.body),
+    wordCount: words,
     readTime: `PT${minutes}M`,
   },
   breadcrumbs: [
@@ -56,7 +61,7 @@ const jsonLdData = {
 <ReadingLayout
   title={d.title}
   description={d.description}
-  terminal="Writing"
+  terminal="The Archive"
   image={d.ogImage}
   imageAlt={d.ogImageAlt}
   author={author}
@@ -66,78 +71,88 @@ const jsonLdData = {
   jsonHref={jsonUrl(entry.id)}
   jsonLdData={jsonLdData}
 >
-  <article class="read-page">
-    <div class="read-sheet">
-      <div class="read-inner">
-        <header>
-          <p class="read-kicker">
-            <span class="read-kicker__stage">
-              <PixelGlyph name={d.stage} size={14} />
-              {STAGE_LABEL[d.stage]}
-            </span>
-            <span class="read-dot" aria-hidden="true"></span>
-            <span>{titleCase(d.constellation)}</span>
-          </p>
-          <h1 class="read-title">{d.title}</h1>
-          <p class="read-lede">{d.description}</p>
-          <ul class="read-meta">
-            <li>
-              <img src="/atlas/assets/ui/icon_status.png" alt="" class="px" width="16" height="16" />
-              <span>By <a href="/about/">{author}</a></span>
-            </li>
-            <li>
-              <img src="/atlas/assets/ui/icon_quests.png" alt="" class="px" width="16" height="16" />
-              <time datetime={published.toISOString().slice(0, 10)}>{fmt(published)}</time>
-            </li>
-            {revised && (
-              <li>
-                <PixelGlyph name="eye" size={16} />
-                <span>Last observed <time datetime={d.lastObserved.toISOString().slice(0, 10)}>{fmt(d.lastObserved)}</time></span>
-              </li>
-            )}
-            <li>
-              <PixelGlyph name="clock" size={16} />
-              <span>{minutes} min read</span>
-            </li>
-          </ul>
-        </header>
-
-        <div class="read-divider" aria-hidden="true">
-          <PixelGlyph name="diamond" size={10} />
-          <PixelGlyph name="diamond" size={14} />
-          <PixelGlyph name="diamond" size={10} />
-        </div>
-
-        <div class="read-body">
-          <Content />
-        </div>
-
-        {onward.length > 0 && (
-          <nav class="read-end" aria-labelledby="read-onward">
-            <div class="read-divider" aria-hidden="true">
-              <PixelGlyph name="spark" size={12} />
-            </div>
-            <h2 id="read-onward">
-              <img src="/atlas/assets/ui/icon_map.png" alt="" class="px" width="16" height="16" />
-              Charted nearby
-            </h2>
-            <ul class="read-links">
-              {onward.map((n) => (
-                <li>
-                  <a href={pageUrl(n.id)}>
-                    <img src={`/atlas/assets/atlas/writing_${n.data.stage === 'star' || n.data.stage === 'galaxy' ? 'selected' : 'normal'}.png`} alt="" class="px" width="32" height="32" />
-                    <span>
-                      <span class="read-links__title">{n.data.title}</span>
-                      <span class="read-links__meta">{STAGE_LABEL[n.data.stage]}<span class="read-dot" aria-hidden="true"></span>{titleCase(n.data.constellation)}</span>
-                    </span>
-                    <PixelGlyph name="arrow" size={14} />
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        )}
+  <article>
+    <section class="read-hero wrap">
+      <div>
+        <p class="eyebrow"><span class="status-dot"></span> {STAGE_LABEL[d.stage]} / {titleCase(d.constellation)}</p>
+        <h1 class="read-title">{d.title}</h1>
+        <p class="read-lede">{d.description}</p>
+        <ul class="read-meta">
+          <li class="tag"><img src="/atlas/assets/ui/icon_status.png" alt="" class="px" width="16" height="16" /> {author}</li>
+          <li class="tag"><img src="/atlas/assets/ui/icon_quests.png" alt="" class="px" width="16" height="16" /> <time datetime={published.toISOString().slice(0, 10)}>{fmt(published)}</time></li>
+          <li class="tag citron"><PixelGlyph name="clock" size={16} /> {minutes} min read</li>
+        </ul>
       </div>
+      <figure class="cover panel">
+        <header><h2><img src="/atlas/assets/ui/icon_map.png" alt="" class="px" width="16" height="16" /> Field note</h2><span>{STAGE_LABEL[d.stage]} / {published.getUTCFullYear()}</span></header>
+        <div class="cover-art">
+          {cover ? (
+            <img src={cover} alt={d.ogImageAlt ?? ''} width="1200" height="630" decoding="async" />
+          ) : (
+            <>
+              <img src="/atlas/assets/ui/star_map/chart.png" alt="" class="px" width="640" height="360" />
+              <img src={`/atlas/assets/ui/star_map/writing_${d.stage === 'star' || d.stage === 'galaxy' ? 'selected' : 'normal'}.png`} alt="" class="px cover-planet" width="192" height="192" />
+              <span class="cover-label">{titleCase(d.constellation)}</span>
+            </>
+          )}
+        </div>
+        <footer>{words.toLocaleString('en-US')} words, charted in the Scribe Galaxy.</footer>
+      </figure>
+    </section>
+
+    <div class="read-grid wrap">
+      <nav class="read-rail" aria-labelledby="outline-title">
+        {outline.length > 1 && (
+          <>
+            <p class="eyebrow" id="outline-title">On this page</p>
+            <ol class="outline">
+              {outline.map((h) => <li><a href={`#${h.slug}`}>{h.text}</a></li>)}
+            </ol>
+          </>
+        )}
+      </nav>
+
+      <div class="read-body">
+        <Content />
+      </div>
+
+      <aside class="read-aside" aria-label="About this note">
+        <section class="panel">
+          <header><h2><img src="/atlas/assets/ui/icon_quest_active.png" alt="" class="px" width="16" height="16" /> About this note</h2><span>Log</span></header>
+          <div class="panel-body">
+            <dl class="facts">
+              <div><PixelGlyph name={d.stage} size={16} /><dt>Stage</dt><dd>{STAGE_LABEL[d.stage]}</dd></div>
+              <div><img src="/atlas/assets/ui/icon_map.png" alt="" class="px" width="16" height="16" /><dt>Constellation</dt><dd>{titleCase(d.constellation)}</dd></div>
+              <div><img src="/atlas/assets/ui/icon_quests.png" alt="" class="px" width="16" height="16" /><dt>Published</dt><dd>{fmt(published)}</dd></div>
+              <div><PixelGlyph name="eye" size={16} /><dt>Last observed</dt><dd>{fmt(d.lastObserved)}</dd></div>
+            </dl>
+          </div>
+          <footer><a href={jsonUrl(entry.id)}>Read it as JSON ↗</a></footer>
+        </section>
+
+        {nearby.length > 0 && (
+          <section class="panel">
+            <header><h2><img src="/atlas/assets/ui/icon_map.png" alt="" class="px" width="16" height="16" /> Charted nearby</h2><span>{nearby.length}</span></header>
+            <div class="panel-body" style="padding-block: 6px">
+              <ul class="links">
+                {nearby.map((n) => (
+                  <li><a href={pageUrl(n.id)}>
+                    <img src={planet(n)} alt="" class="px" width="28" height="28" />
+                    <span><strong>{n.data.title}</strong><small>{STAGE_LABEL[n.data.stage]} / {titleCase(n.data.constellation)}</small></span>
+                    <PixelGlyph name="arrow" size={14} />
+                  </a></li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
+      </aside>
     </div>
+
+    <nav class="read-rules wrap" aria-label="Keep reading">
+      <a href="/" data-return><span>01</span><strong>Return to ship</strong><p>Close this page and pick up where you left off.</p></a>
+      {older ? <a href={pageUrl(older.id)}><span>02</span><strong>{older.data.title}</strong><p>Earlier in the archive</p></a> : <div><span>02</span><strong>The first entry</strong><p>Nothing earlier in the archive.</p></div>}
+      {newer ? <a href={pageUrl(newer.id)}><span>03</span><strong>{newer.data.title}</strong><p>Later in the archive</p></a> : <a href="/galaxy/"><span>03</span><strong>The whole archive</strong><p>Every note, newest first.</p></a>}
+    </nav>
   </article>
 </ReadingLayout>
