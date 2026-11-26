@@ -46,10 +46,21 @@ and the footer links it for people.
 
 ## Rollout
 
-Only the notes listed in `READING_PILOT` (`src/lib/reading/galaxy.ts`) use
-the template and get a JSON twin. Add a slug to move a note over. Those notes
-are built by `src/pages/galaxy/[...read].astro`, the rest still by
-`[slug].astro`, so the reading page ships only `src/styles/reading.css`.
+The old site format is being sunset section by section.
+
+- Done: galaxy notes (the blog). Every note renders from
+  `src/pages/galaxy/[slug].astro` on the reading layout and has a JSON twin.
+- Next: press, portfolio, about, then the list pages (the game's terminals do
+  the listing, so list pages become light indexes for crawlers).
+
+Reading pages carry no site sidebar, nav or photos of Erikk. Pages without
+their own social image use `/og-reading.png`.
+
+## Return to ship
+
+The game opens pages in a new window. "Return to ship" closes that window when
+it is the only page in its tab, which drops the reader back into the game, and
+otherwise goes to `/`. Without JavaScript it is a plain link to `/`.
 
 ## Pieces
 

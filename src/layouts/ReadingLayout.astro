@@ -32,7 +32,7 @@ const {
   title,
   description,
   terminal,
-  image = '/og-default.png',
+  image = '/og-reading.png',
   imageAlt = `${title} - shupp.dev`,
   type = 'article',
   author = siteConfig.author.name,
@@ -90,11 +90,11 @@ const twitterHandle = `@${new URL(siteConfig.social.twitter).pathname.split('/')
     <a href="#read-main" class="read-skip">Skip to the writing</a>
 
     <header class="read-bar">
-      <a class="read-bar__home" href="/" aria-label="Back to the ship">
+      <a class="read-bar__home" href="/" aria-label="Back to the ship" data-return>
         <img src="/atlas/assets/props/logbook.png" width="32" height="32" alt="" class="px" />
         <span class="read-bar__crumb"><span>Terminal</span><span class="read-dot" aria-hidden="true"></span><span>{terminal}</span></span>
       </a>
-      <a class="read-bar__return" href="/">
+      <a class="read-bar__return" href="/" data-return>
         <PixelGlyph name="back" size={14} />
         <span>Return to ship</span>
       </a>
@@ -115,5 +115,22 @@ const twitterHandle = `@${new URL(siteConfig.social.twitter).pathname.split('/')
         )}
       </p>
     </footer>
+    <script is:inline>
+      // Return to ship. The game opens pages in a new window, so when this page
+      // is the only thing in its tab, closing it drops the reader back into the
+      // game where they left off. Browsers only let a page close a window a
+      // script opened; if the close doesn't happen, go to the game instead.
+      // Without JavaScript (the terminal preview, crawlers) the link just
+      // goes to the game.
+      document.querySelectorAll('a[data-return]').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+          if (history.length > 1) return;
+          e.preventDefault();
+          window.close();
+          setTimeout(function () { location.href = a.href; }, 150);
+        });
+      });
+    </script>
   </body>
 </html>

@@ -6,16 +6,10 @@
 //   /galaxy/<slug>/      the page people (and search engines) read
 //   /galaxy/<slug>.json  the same page for agents and tools (shupp-page@0.1)
 //
-// Rollout starts small: only the notes in READING_PILOT use the new template.
-// Add a slug to move a note over; when every note is listed, drop the list.
 
 import type { CollectionEntry } from 'astro:content';
 import type { MarkdownHeading } from 'astro';
 import { siteConfig } from '../../config/site';
-
-export const READING_PILOT = new Set<string>(['ephemeral-ui-adaptive-workday']);
-
-export const usesReadingTemplate = (id: string) => READING_PILOT.has(id);
 
 type Note = CollectionEntry<'galaxy'>;
 
@@ -43,7 +37,7 @@ export function noteJson(entry: Note, all: Note[], headings: MarkdownHeading[]) 
     id: n.id,
     title: n.data.title,
     url: abs(pageUrl(n.id)),
-    json: usesReadingTemplate(n.id) ? abs(jsonUrl(n.id)) : null,
+    json: abs(jsonUrl(n.id)),
   });
   const connections = d.connections
     .map((id) => all.find((n) => n.id === id))

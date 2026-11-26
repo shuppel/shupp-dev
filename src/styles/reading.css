@@ -226,6 +226,7 @@ body.read {
 .read-body a:hover { text-decoration-color: currentColor; }
 .read-body a:focus-visible { outline: 2px solid var(--g-lamp); outline-offset: 2px; }
 
+.read-body h1,
 .read-body h2 {
   position: relative;
   font-family: 'Manaspace', var(--mono);
@@ -238,6 +239,7 @@ body.read {
   padding-left: 1.6rem;
   scroll-margin-top: 1.5rem;
 }
+.read-body h1::before,
 .read-body h2::before {
   /* the pixel diamond from the star map, in lamp and brass */
   content: '';
@@ -368,3 +370,4 @@ body.read {
   .read-bar, .read-foot, .read-end { display: none; }
   .read-sheet { box-shadow: none; padding: 0; }
 }
+.read-links__meta .read-dot { margin: 0 0.6em; }

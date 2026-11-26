@@ -10,8 +10,6 @@ relatedProjects: ["portfolio-website"]
 visible: true
 ---
 
-# Don't Forget Your netlify.toml: A Common Deployment Mistake
-
 If you've ever deployed a site to Netlify, you might have encountered this scenario: your site builds perfectly locally, but when you push to Netlify, something isn't quite right. The build fails, or perhaps it succeeds but your site doesn't function as expected. After frantically combing through logs and searching for solutions, you realize the issue: **you forgot to configure your `netlify.toml` file**.
 
 In this post, I'll explain why this simple configuration file is critical for successful Netlify deployments and how to set it up correctly for various project types.

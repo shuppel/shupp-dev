@@ -1,13 +1,11 @@
 import type { APIRoute, GetStaticPaths } from 'astro';
 import { getCollection, render } from 'astro:content';
-import { noteJson, usesReadingTemplate } from '../../lib/reading/galaxy';
+import { noteJson } from '../../lib/reading/galaxy';
 
 // /galaxy/<slug>.json: the machine-readable twin of a reading page.
-// Only notes on the reading template get one for now (see READING_PILOT).
 export const getStaticPaths: GetStaticPaths = async () => {
   const all = await getCollection('galaxy');
   return all
-    .filter((entry) => entry.data.visible && usesReadingTemplate(entry.id))
     .map((entry) => ({ params: { slug: entry.id }, props: { entry, all } }));
 };
 
