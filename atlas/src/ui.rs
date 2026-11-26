@@ -22,7 +22,6 @@ const LINE: Color = Color::srgb(0.80, 0.55, 0.30);
 const TEXT: Color = Color::srgb(0.945, 0.933, 0.902);
 const MUTED: Color = Color::srgb(0.72, 0.70, 0.66);
 const SAGE: Color = Color::srgb(0.475, 0.580, 0.588);
-const OLIVE: Color = Color::srgb(0.675, 0.757, 0.588);
 const CITRON: Color = Color::srgb(0.914, 0.922, 0.620);
 const LAMP: Color = Color::srgb(0.93, 0.55, 0.25);
 const SELECT: Color = Color::srgba(0.93, 0.55, 0.25, 0.22);
@@ -287,13 +286,12 @@ struct UiArt {
     glow_dot: Handle<Image>,
     streaks: Handle<Image>,
     room_glow: Vec<Handle<Image>>,
-    radar: Handle<Image>,
-    menu_bg: Handle<Image>,
+    /// The Status radar, one per menu theme.
+    radar: [Handle<Image>; 3],
     full_body: Handle<Image>,
     /// status, items, quests, map, credential, degree, quest_active, quest_done,
     /// character, ship, settings
     ui_icons: [Handle<Image>; 11],
-    cog: Handle<Image>,
     key_e: Handle<Image>,
     key_tap: Handle<Image>,
 }
@@ -448,7 +446,8 @@ fn setup_ui(
             )
         })
         .collect();
-    let radar = images.add(radar_image(&registry.player.stats.radar.iter().map(|a| a.value).collect::<Vec<_>>()));
+    let values: Vec<f32> = registry.player.stats.radar.iter().map(|a| a.value).collect();
+    let radar = THEMES.map(|t| images.add(radar_image(&values, t.radar)));
     commands.insert_resource(UiArt {
         erikk_faces: crate::load_t(&assets, "portraits/live.png"),
         erikk_call: crate::load_t(&assets, "portraits/call.png"),
@@ -480,7 +479,6 @@ fn setup_ui(
         streaks: images.add(streak_image()),
         room_glow: (0..ROOMS.len()).map(|i| images.add(room_glow_image(i))).collect(),
         radar,
-        menu_bg: crate::load_t(&assets, "ui/menu_bg.png"),
         full_body: crate::load_smooth(&assets, "portraits/full_body.png"),
         ui_icons: [
             "ui/menu/status.png",
@@ -496,7 +494,6 @@ fn setup_ui(
             "ui/menu/settings.png",
         ]
         .map(|p| crate::load_smooth(&assets, p)),
-        cog: images.add(cog_image()),
         key_e: crate::load_t(&assets, "ui/key_e.png"),
         key_tap: crate::load_t(&assets, "ui/key_tap.png"),
     });
@@ -1025,7 +1022,7 @@ fn input(
             }
             // A quest opened in full: any key or tap closes it, except the resume hint.
             if ui.quest_full {
-                if tap.is_some_and(|at| OPEN_BTN.contains(at)) {
+                if tap.is_some_and(|at| RESUME_BTN.contains(at)) {
                     bridge::emit("open", "/resume");
                 } else if back || ok || tap.is_some() || left || right || up || down {
                     ui.quest_full = false;
@@ -1090,8 +1087,20 @@ fn input(
                     }
                 }
             }
+            // T, or a footer chip, picks the menu theme; the page remembers it.
+            let theme_pick = if keys.just_pressed(KeyCode::KeyT) {
+                Some((game.menu_theme + 1) % THEMES.len())
+            } else {
+                tap.and_then(|at| (0..THEMES.len()).find(|i| theme_rect(*i).contains(at)))
+            };
+            if let Some(i) = theme_pick {
+                game.menu_theme = i;
+                bridge::emit("theme", &THEMES[i].name.to_lowercase());
+                ui.dirty = true;
+                return;
+            }
             if let Some(at) = tap {
-                if close_hit(at) {
+                if SHEET_CLOSE.contains(at) {
                     game.mode = Mode::Explore;
                     changed = true;
                 } else if let Some(t) = (0..TABS.len()).find(|t| tab_rect(*t).contains(at)) {
@@ -1111,7 +1120,7 @@ fn input(
                     }
                     ui.sel = i;
                     changed = true;
-                } else if ui.tab == 3 && OPEN_BTN.contains(at) {
+                } else if ui.tab == 3 && RESUME_BTN.contains(at) {
                     bridge::emit("open", "/resume");
                 } else if ui.tab == 3 && QUEST_CARD.contains(at) {
                     ui.quest_full = true;
@@ -1138,10 +1147,8 @@ fn input(
 const TERM: Rect = Rect { min: Vec2::new(28.0, 14.0), max: Vec2::new(612.0, 346.0) };
 const LIST_X: f32 = 44.0;
 const LIST_W: f32 = 300.0;
-const LIST_TOP: f32 = 70.0;
 const T_TOP: f32 = 86.0;
 const ROW_H: f32 = 28.0;
-const ROWS: usize = 9;
 const T_ROWS: usize = 8;
 const OPEN_BTN: Rect = Rect { min: Vec2::new(470.0, 312.0), max: Vec2::new(596.0, 334.0) };
 /// The close X, tucked inside the top-right corner of the 28..612 panel.
@@ -1156,10 +1163,6 @@ fn term_start(sel: usize, n: usize) -> usize {
     if n <= T_ROWS { 0 } else { sel.saturating_sub(T_ROWS / 2).min(n - T_ROWS) }
 }
 
-fn window_start(sel: usize, n: usize) -> usize {
-    if n <= ROWS { 0 } else { sel.saturating_sub(ROWS / 2).min(n - ROWS) }
-}
-
 fn terminal_row_at(at: Vec2, sel: usize, n: usize) -> Option<usize> {
     if at.x < LIST_X || at.x > LIST_X + LIST_W || at.y < T_TOP {
         return None;
@@ -1167,24 +1170,6 @@ fn terminal_row_at(at: Vec2, sel: usize, n: usize) -> Option<usize> {
     let row = ((at.y - T_TOP) / ROW_H) as usize;
     let i = term_start(sel, n) + row;
     (row < T_ROWS && i < n).then_some(i)
-}
-
-const ITEM_COLS: usize = 4;
-/// The quest summary card on the right of the Quests tab.
-const QUEST_CARD: Rect = Rect { min: Vec2::new(390.0, 46.0), max: Vec2::new(600.0, 306.0) };
-const CARD_COLS: usize = 5;
-
-/// A slot in the Items grid (tab 1) or a mini card in the Skills deck (tab 2).
-fn grid_rect(tab: usize, i: usize) -> Rect {
-    let (x0, y0, w, h, cols) = if tab == 1 { (148.0, 66.0, 42.0, 42.0, ITEM_COLS) } else { (148.0, 76.0, 34.0, 46.0, CARD_COLS) };
-    let (c, r) = ((i % cols) as f32, (i / cols) as f32);
-    let (x, y) = (x0 + c * (w + 5.0), y0 + r * (h + 5.0));
-    Rect::new(x, y, x + w, y + h)
-}
-
-fn suit_rect(i: usize) -> Rect {
-    let x = 146.0 + i as f32 * 51.0;
-    Rect::new(x, 52.0, x + 49.0, 68.0)
 }
 
 fn rarity_color(r: &str) -> Color {
@@ -1210,19 +1195,6 @@ fn suit_color(s: &str) -> Color {
 fn title_case(s: &str) -> String {
     let mut c = s.chars();
     c.next().map(|f| f.to_uppercase().collect::<String>() + c.as_str()).unwrap_or_default()
-}
-
-fn tab_rect(i: usize) -> Rect {
-    Rect::new(40.0, 64.0 + i as f32 * 26.0, 132.0, 86.0 + i as f32 * 26.0)
-}
-
-fn sheet_row_at(at: Vec2, sel: usize, n: usize) -> Option<usize> {
-    if n == 0 || at.x < 148.0 || at.x > 148.0 + 230.0 || at.y < LIST_TOP {
-        return None;
-    }
-    let row = ((at.y - LIST_TOP) / ROW_H) as usize;
-    let i = window_start(sel, n) + row;
-    (row < ROWS && i < n).then_some(i)
 }
 
 // ---------------------------------------------------------------------------
@@ -1343,7 +1315,11 @@ struct Shimmer(f32);
 #[derive(Component)]
 struct Holo;
 
-/// A brass cog on the quest dossier, turning at this many radians a second.
+/// The light running along the character menu's scan track; holds the track width.
+#[derive(Component)]
+struct Scan(f32);
+
+/// Spins a UI node at this many radians a second (the menu's orbit ring).
 #[derive(Component)]
 struct Cog(f32);
 
@@ -1380,6 +1356,7 @@ fn animate_map(
     mut sweeps: Query<(&Shimmer, &mut Node), Without<Parallax>>,
     mut cogs: Query<(&Cog, &mut UiTransform), Without<Holo>>,
     mut holo: Query<(&mut ImageNode, &mut UiTransform), (With<Holo>, Without<Pulse>, Without<Orbit>, Without<Cog>)>,
+    mut scans: Query<(&Scan, &mut Node), (Without<Parallax>, Without<Shimmer>, Without<Streak>)>,
 ) {
     let tt = time.elapsed_secs();
     for (l, mut img) in &mut lights {
@@ -1411,6 +1388,10 @@ fn animate_map(
         node.left = Val::Px(x.round());
     }
     let t = time.elapsed_secs();
+    // One pass every 8 s, like the deck's scan line.
+    for (sc, mut node) in &mut scans {
+        node.left = Val::Px((-90.0 + ((t / 8.0) % 1.0) * (sc.0 + 90.0)).round());
+    }
     for (p, mut node) in &mut strips {
         node.left = Val::Px(-((t * p.0) % PARALLAX_W).round());
     }
@@ -1762,247 +1743,582 @@ fn render(
             ui.flight = flight;
         }
 
-        Mode::Sheet => render_sheet(&mut commands, overlay, &ui, &registry, f, &art, game.hatch_open),
+        Mode::Sheet => render_sheet(&mut commands, overlay, &ui, &registry, f, &art, &game),
         Mode::Explore | Mode::Lift => {}
     }
 }
 
-fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Registry, f: &Fonts, art: &UiArt, hatch: bool) {
+// ---------------------------------------------------------------------------
+// Character menu: the Atlier data deck
+// ---------------------------------------------------------------------------
+
+/// One colour set for the character menu. The player picks stone, blue or
+/// orange from the menu footer (or T); the page remembers the pick.
+#[derive(Clone, Copy)]
+struct Theme {
+    name: &'static str,
+    /// Main panel glass, a diagonal gradient.
+    glass: (Color, Color),
+    /// The detail card on the right.
+    card: (Color, Color),
+    edge: Color,
+    rule: Color,
+    btn: Color,
+    on_bg: Color,
+    on_edge: Color,
+    text: Color,
+    label: Color,
+    title: Color,
+    accent: Color,
+    scan: Color,
+    foot: Color,
+    swatch: Color,
+    /// Radar: grid lines, fill, outline.
+    radar: (Srgba, Srgba, Srgba),
+}
+
+const fn hx(c: u32, a: f32) -> Color {
+    Color::srgba(((c >> 16) & 255) as f32 / 255.0, ((c >> 8) & 255) as f32 / 255.0, (c & 255) as f32 / 255.0, a)
+}
+
+const fn sx(c: u32, a: f32) -> Srgba {
+    Srgba::new(((c >> 16) & 255) as f32 / 255.0, ((c >> 8) & 255) as f32 / 255.0, (c & 255) as f32 / 255.0, a)
+}
+
+const THEMES: [Theme; 3] = [
+    Theme {
+        name: "STONE",
+        glass: (hx(0x1d1c1a, 0.97), hx(0x2e2c28, 0.93)),
+        card: (hx(0x151412, 0.95), hx(0x23211e, 0.90)),
+        edge: hx(0xb3aca0, 0.6),
+        rule: hx(0xa39d92, 0.3),
+        btn: hx(0x2a2825, 0.75),
+        on_bg: hx(0x48443d, 1.0),
+        on_edge: hx(0xd8d1c4, 1.0),
+        text: hx(0xf1eee8, 1.0),
+        label: hx(0xbfb8ab, 1.0),
+        title: hx(0xf6f1e6, 1.0),
+        accent: hx(0xe9cf98, 1.0),
+        scan: hx(0xece5d6, 1.0),
+        foot: hx(0x181715, 0.86),
+        swatch: hx(0x9a948a, 1.0),
+        radar: (sx(0xa39d92, 0.5), sx(0xd8d1c4, 0.32), sx(0xe9cf98, 1.0)),
+    },
+    Theme {
+        name: "BLUE",
+        glass: (hx(0x061925, 0.96), hx(0x0b283c, 0.91)),
+        card: (hx(0x091b2b, 0.95), hx(0x092235, 0.88)),
+        edge: hx(0x92c9d2, 0.6),
+        rule: hx(0x86c4cf, 0.33),
+        btn: hx(0x0b2434, 0.69),
+        on_bg: hx(0x234858, 1.0),
+        on_edge: hx(0x91d8e0, 1.0),
+        text: hx(0xf2f7f7, 1.0),
+        label: hx(0xabd4dc, 1.0),
+        title: hx(0xf2f7f7, 1.0),
+        accent: hx(0xffc977, 1.0),
+        scan: hx(0x92e9ec, 1.0),
+        foot: hx(0x081b28, 0.86),
+        swatch: hx(0x3f9bbb, 1.0),
+        radar: (sx(0x86c4cf, 0.5), sx(0x5fb8c8, 0.38), sx(0xb8ffff, 1.0)),
+    },
+    Theme {
+        name: "ORANGE",
+        glass: (hx(0x1a0b10, 0.97), hx(0x2e1610, 0.92)),
+        card: (hx(0x140810, 0.95), hx(0x241009, 0.89)),
+        edge: hx(0xcc8c4d, 0.7),
+        rule: hx(0xd08a4a, 0.3),
+        btn: hx(0x2a130d, 0.72),
+        on_bg: hx(0x5a2e14, 1.0),
+        on_edge: hx(0xee9a4a, 1.0),
+        text: hx(0xf1eee6, 1.0),
+        label: hx(0xe9a66a, 1.0),
+        title: hx(0xe9eb9e, 1.0),
+        accent: hx(0xe9eb9e, 1.0),
+        scan: hx(0xffb468, 1.0),
+        foot: hx(0x150a0b, 0.86),
+        swatch: hx(0xe0803a, 1.0),
+        radar: (sx(0x79949a, 0.55), sx(0xed8c40, 0.45), sx(0xe9eb9e, 1.0)),
+    },
+];
+
+/// Theme index for a name from the page ("stone", "blue", "orange").
+pub fn theme_index(name: &str) -> Option<usize> {
+    THEMES.iter().position(|t| t.name.eq_ignore_ascii_case(name.trim()))
+}
+
+const SHEET: Rect = Rect { min: Vec2::new(24.0, 12.0), max: Vec2::new(616.0, 348.0) };
+const SHEET_CLOSE: Rect = Rect { min: Vec2::new(590.0, 17.0), max: Vec2::new(606.0, 33.0) };
+/// The detail card: Items, Skills, Quests and the Status profile.
+const ARTICLE: Rect = Rect { min: Vec2::new(248.0, 74.0), max: Vec2::new(600.0, 318.0) };
+const QUEST_CARD: Rect = ARTICLE;
+const COL_X: f32 = 40.0;
+const COL_W: f32 = 196.0;
+/// First row of the left column, under its heading.
+const SHEET_TOP: f32 = 92.0;
+const SHEET_ROWS: usize = 8;
+const RESUME_BTN: Rect = Rect { min: Vec2::new(34.0, 326.0), max: Vec2::new(150.0, 346.0) };
+const ITEM_COLS: usize = 4;
+const CARD_COLS: usize = 5;
+
+fn tab_rect(i: usize) -> Rect {
+    let x = 40.0 + i as f32 * 82.0;
+    Rect::new(x, 44.0, x + 78.0, 62.0)
+}
+
+fn theme_rect(i: usize) -> Rect {
+    let x = 446.0 + i as f32 * 52.0;
+    Rect::new(x, 328.0, x + 49.0, 344.0)
+}
+
+/// A slot in the Items grid (tab 1) or a mini card in the Skills deck (tab 2).
+fn grid_rect(tab: usize, i: usize) -> Rect {
+    let (y0, w, h, cols) = if tab == 1 { (SHEET_TOP, 44.0, 42.0, ITEM_COLS) } else { (94.0, 36.0, 46.0, CARD_COLS) };
+    let gap = (COL_W - w * cols as f32) / (cols as f32 - 1.0);
+    let (c, r) = ((i % cols) as f32, (i / cols) as f32);
+    let (x, y) = (COL_X + c * (w + gap), y0 + r * (h + 4.0));
+    Rect::new(x, y, x + w, y + h)
+}
+
+fn suit_rect(i: usize) -> Rect {
+    let x = COL_X + i as f32 * 49.5;
+    Rect::new(x, 74.0, x + 47.0, 88.0)
+}
+
+fn sheet_window_start(sel: usize, n: usize) -> usize {
+    if n <= SHEET_ROWS { 0 } else { sel.saturating_sub(SHEET_ROWS / 2).min(n - SHEET_ROWS) }
+}
+
+fn sheet_row_at(at: Vec2, sel: usize, n: usize) -> Option<usize> {
+    if n == 0 || at.x < COL_X || at.x > COL_X + COL_W || at.y < SHEET_TOP {
+        return None;
+    }
+    let row = ((at.y - SHEET_TOP) / ROW_H) as usize;
+    let i = sheet_window_start(sel, n) + row;
+    (row < SHEET_ROWS && i < n).then_some(i)
+}
+
+fn gradient(angle_deg: f32, (a, b): (Color, Color)) -> BackgroundGradient {
+    BackgroundGradient::from(LinearGradient::new(angle_deg.to_radians(), vec![(a, Val::Percent(0.0)).into(), (b, Val::Percent(100.0)).into()]))
+}
+
+/// A rounded box with a 1 px border.
+fn boxed(x: f32, y: f32, w: f32, h: f32, bg: Color, edge: Color, radius: f32) -> impl Bundle {
+    (
+        Node { border: UiRect::all(Val::Px(1.0)), border_radius: BorderRadius::all(Val::Px(radius)), ..at(x, y, w, h) },
+        BackgroundColor(bg),
+        BorderColor::all(edge),
+    )
+}
+
+fn hline(x: f32, y: f32, w: f32, c: Color) -> impl Bundle {
+    (at(x, y, w, 1.0), BackgroundColor(c))
+}
+
+/// A little key cap, like the E prompt in the world.
+fn keycap(p: &mut ChildSpawnerCommands, f: &Fonts, t: &Theme, x: f32, y: f32, k: &str) -> f32 {
+    let w = 6.0 + k.chars().count() as f32 * 5.0;
+    p.spawn((
+        boxed(x, y, w, 12.0, t.text.with_alpha(0.08), t.label.with_alpha(0.7), 2.0),
+        children![text_at(&f.label, 6.5, t.text, k.to_owned(), 0.0, 1.5, w - 2.0).with_justify()],
+    ));
+    w
+}
+
+/// The detail card's frame: a darker glass pane with a lit top edge.
+fn article_frame(p: &mut ChildSpawnerCommands, t: &Theme, r: Rect) {
+    p.spawn((
+        Node { border: UiRect::top(Val::Px(1.0)), ..at(r.min.x, r.min.y, r.width(), r.height()) },
+        gradient(125.0, t.card),
+        BorderColor { top: t.on_edge.with_alpha(0.75), ..BorderColor::all(Color::NONE) },
+    ));
+}
+
+/// The deck's spec strip: label over value, ruled above and below.
+fn spec_row(p: &mut ChildSpawnerCommands, f: &Fonts, t: &Theme, x: f32, y: f32, w: f32, specs: &[(&str, String)]) {
+    p.spawn(hline(x, y, w, t.rule));
+    p.spawn(hline(x, y + 30.0, w, t.rule));
+    let n = specs.len().max(1) as f32;
+    for (i, (k, v)) in specs.iter().enumerate() {
+        let cx = x + i as f32 * w / n;
+        p.spawn(text_at(&f.label, 6.5, t.label, k.to_uppercase(), cx, y + 6.0, w / n - 4.0));
+        p.spawn(text_at(&f.bold, 9.5, t.text, truncate(v, 22), cx, y + 15.0, w / n - 4.0));
+    }
+}
+
+/// Eyebrow, title, art, spec strip and description: one record in the card.
+fn record_card(
+    p: &mut ChildSpawnerCommands,
+    f: &Fonts,
+    t: &Theme,
+    gem: Color,
+    eyebrow: &str,
+    title: &str,
+    icon: Option<ImageNode>,
+    specs: &[(&str, String)],
+    note: &str,
+) {
+    let r = ARTICLE;
+    let (x, y, w) = (r.min.x + 16.0, r.min.y, r.width() - 32.0);
+    article_frame(p, t, r);
+    p.spawn((Node { border_radius: BorderRadius::all(Val::Px(1.0)), ..at(x, y + 15.0, 5.0, 5.0) }, BackgroundColor(gem)));
+    p.spawn(text_at(&f.label, 7.0, t.label, eyebrow.to_uppercase(), x + 10.0, y + 12.0, w - 90.0));
+    if let Some(img) = icon {
+        p.spawn(boxed(r.max.x - 92.0, y + 14.0, 76.0, 76.0, gem.with_alpha(0.08), gem.with_alpha(0.45), 3.0));
+        p.spawn((at(r.max.x - 86.0, y + 20.0, 64.0, 64.0), img));
+    }
+    p.spawn(text_at(&f.bold, 16.0, t.title, truncate(title, 60), x, y + 28.0, w - 96.0));
+    spec_row(p, f, t, x, y + 100.0, w, specs);
+    p.spawn(text_at(&f.body, 10.0, t.text.with_alpha(0.88), truncate(note, 220), x, y + 142.0, w - 20.0));
+}
+
+/// The left column's heading, like the deck's h2.
+fn col_heading(p: &mut ChildSpawnerCommands, f: &Fonts, t: &Theme, title: &str, count: Option<usize>) {
+    p.spawn(text_at(&f.bold, 11.0, t.title, title.to_owned(), COL_X, 74.0, 140.0));
+    if let Some(n) = count {
+        p.spawn(text_at(&f.label, 7.0, t.label, n.to_string(), COL_X + COL_W - 40.0, 78.0, 40.0).with_justify_right());
+    }
+}
+
+fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Registry, f: &Fonts, art: &UiArt, game: &Game) {
     let stats = &registry.player.stats;
+    let hatch = game.hatch_open;
+    let ti = game.menu_theme.min(THEMES.len() - 1);
+    let t = &THEMES[ti];
     commands.entity(overlay).with_children(|p| {
-        p.spawn((at(TERM.min.x, TERM.min.y, TERM.width(), TERM.height()), ImageNode::new(art.menu_bg.clone())));
-        p.spawn(text_at(&f.label, 9.0, CITRON, "MENU", 38.0, 20.0, 64.0).with_justify());
-        close_button(p, f);
+        // Shell: one glass slab with the deck's clipped corners.
+        let s = SHEET;
+        p.spawn((
+            Node {
+                border: UiRect::all(Val::Px(1.0)),
+                border_radius: BorderRadius::px(12.0, 3.0, 12.0, 3.0),
+                ..at(s.min.x, s.min.y, s.width(), s.height())
+            },
+            gradient(115.0, t.glass),
+            BorderColor::all(t.edge),
+            BoxShadow::new(Color::BLACK.with_alpha(0.55), Val::Px(0.0), Val::Px(8.0), Val::Px(0.0), Val::Px(24.0)),
+        ));
+        // Header: brand on the left, the orbit and deck name on the right.
+        p.spawn(text_at(&f.bold, 10.0, t.text, "A T L I E R", 40.0, 19.0, 120.0));
+        p.spawn((
+            Cog(0.63),
+            UiTransform::IDENTITY,
+            Node {
+                border: UiRect { top: Val::Px(2.0), right: Val::Px(1.0), bottom: Val::Px(1.0), left: Val::Px(1.0) },
+                border_radius: BorderRadius::all(Val::Percent(50.0)),
+                ..at(482.0, 20.0, 10.0, 10.0)
+            },
+            BorderColor { top: t.scan, ..BorderColor::all(t.label.with_alpha(0.6)) },
+        ));
+        p.spawn(text_at(&f.label, 7.0, t.label, "PERSONAL DATA DECK", 498.0, 21.0, 90.0));
+        p.spawn((
+            boxed(SHEET_CLOSE.min.x, SHEET_CLOSE.min.y, SHEET_CLOSE.width(), SHEET_CLOSE.height(), t.btn, t.rule, 2.0),
+            children![text_at(&f.label, 8.0, t.text, "X", 0.0, 2.0, SHEET_CLOSE.width() - 2.0).with_justify()],
+        ));
+        // The scan track: a thin rule with a light running along it.
+        p.spawn((Node { overflow: Overflow::clip(), ..at(s.min.x + 1.0, 38.0, s.width() - 2.0, 1.0) }, BackgroundColor(t.rule)))
+            .with_children(|tr| {
+                tr.spawn((
+                    Scan(s.width()),
+                    at(-90.0, 0.0, 84.0, 1.0),
+                    BackgroundGradient::from(LinearGradient::to_right(vec![(t.scan.with_alpha(0.0), Val::Percent(0.0)).into(), (t.scan, Val::Percent(100.0)).into()])),
+                ));
+            });
+        // Section nav.
         for (i, name) in TABS.iter().enumerate() {
             let r = tab_rect(i);
             let on = i == ui.tab;
-            if on {
-                // Selected tab: an amber bar with an anime-style light sweep across it.
-                p.spawn((
-                    Node { border: UiRect::all(Val::Px(1.0)), overflow: Overflow::clip(), ..at(r.min.x, r.min.y, r.width(), r.height()) },
-                    BackgroundColor(SELECT),
-                    BorderColor::all(LINE),
-                ))
-                .with_children(|bar| {
-                    bar.spawn((Shimmer(r.width()), at(-30.0, -2.0, 14.0, r.height() + 4.0), BackgroundColor(Color::WHITE.with_alpha(0.18))))
-                        .with_children(|band| {
-                            band.spawn((at(5.0, 0.0, 3.0, r.height() + 4.0), BackgroundColor(Color::WHITE.with_alpha(0.55))));
-                        });
-                });
-            }
-            p.spawn((at(r.min.x + 4.0, r.min.y + 3.0, 16.0, 16.0), ImageNode::new(art.ui_icons[TAB_ICONS[i]].clone())));
-            p.spawn(text_at(&f.label, 10.0, if on { CITRON } else { TEXT }, name.to_uppercase(), r.min.x + 25.0, r.min.y + 5.0, 70.0));
+            p.spawn((
+                Node { border: UiRect::all(Val::Px(1.0)), border_radius: BorderRadius::all(Val::Px(2.0)), overflow: Overflow::clip(), ..at(r.min.x, r.min.y, r.width(), r.height()) },
+                BackgroundColor(if on { t.on_bg } else { t.btn }),
+                BorderColor::all(if on { t.on_edge } else { Color::NONE }),
+            ))
+            .with_children(|bar| {
+                if on {
+                    bar.spawn((Shimmer(r.width()), at(-30.0, -2.0, 12.0, r.height() + 4.0), BackgroundColor(Color::WHITE.with_alpha(0.08))));
+                }
+            });
+            p.spawn((at(r.min.x + 5.0, r.min.y + 3.0, 12.0, 12.0), ImageNode::new(art.ui_icons[TAB_ICONS[i]].clone())));
+            p.spawn(text_at(&f.label, 8.0, if on { t.title } else { t.text.with_alpha(0.85) }, name.to_uppercase(), r.min.x + 22.0, r.min.y + 4.5, 56.0));
         }
+        p.spawn(hline(s.min.x + 1.0, 67.0, s.width() - 2.0, t.rule));
 
         match ui.tab {
-            0 => {
-                // STATUS
-                // Full-body character art, standing beside the sheet.
-                p.spawn((at(152.0, 44.0, 96.0, 196.0), ImageNode::new(art.full_body.clone())));
-                p.spawn(text_at(&f.display, 22.0, CITRON, stats.name.clone(), 256.0, 46.0, 200.0));
-                p.spawn(text_at(&f.label, 8.5, LAMP, format!("CLASS · {}", stats.title.to_uppercase()), 256.0, 76.0, 200.0));
-                p.spawn(text_at(&f.body, 10.0, MUTED, stats.location.clone(), 256.0, 90.0, 200.0));
-                p.spawn(text_at(&f.label, 9.0, SAGE, "LV", 256.0, 112.0, 30.0));
-                p.spawn(text_at(&f.label, 22.0, CITRON, stats.level.to_string(), 276.0, 102.0, 60.0));
-                // Attributes in two columns of three: WIL INT WIT / CHA WIS LCK.
-                for (i, a) in stats.attributes.iter().enumerate() {
-                    let (x, y) = (256.0 + (i / 3) as f32 * 76.0, 144.0 + (i % 3) as f32 * 24.0);
-                    p.spawn(text_at(&f.label, 8.5, SAGE, a.label.to_uppercase(), x, y + 3.0, 40.0));
-                    p.spawn(text_at(&f.label, 14.0, OLIVE, a.value.to_string(), x + 30.0, y - 2.0, 40.0));
-                }
-                // Radar.
-                let (cx, cy, r) = (512.0, 150.0, 78.0);
-                p.spawn((at(cx - r - 6.0, cy - r - 6.0, (r + 6.0) * 2.0, (r + 6.0) * 2.0), ImageNode::new(art.radar.clone())));
-                let n = stats.radar.len().max(1);
-                for (i, a) in stats.radar.iter().enumerate() {
-                    let ang = -std::f32::consts::FRAC_PI_2 + i as f32 * std::f32::consts::TAU / n as f32;
-                    let lx = cx + ang.cos() * (r + 18.0);
-                    let ly = cy + ang.sin() * (r + 14.0);
-                    p.spawn(text_at(&f.label, 8.0, TEXT, format!("{} {}", a.label.to_uppercase(), a.value as i32), lx - 40.0, ly - 6.0, 80.0))
-                        .insert(TextLayout::justify(Justify::Center));
-                }
-                if let Some(q) = stats.quest_log.iter().find(|q| q.current) {
-                    p.spawn(text_at(&f.label, 8.0, SAGE, "CURRENT QUEST", 152.0, 252.0, 200.0));
-                    p.spawn(text_at(&f.bold, 12.0, CITRON, q.title.clone(), 152.0, 266.0, 250.0));
-                    p.spawn(text_at(&f.label, 8.0, LAMP, format!("{} · {}", q.place.to_uppercase(), q.years), 152.0, 284.0, 250.0));
-                }
-                let counts = format!(
-                    "{} ITEMS  ·  {} CARDS  ·  {} QUESTS",
-                    stats.inventory.key_items.len() + usize::from(hatch),
-                    stats.cards.iter().filter(|c| c.suit != "profile").count(),
-                    stats.quest_log.len()
-                );
-                p.spawn(text_at(&f.label, 8.0, MUTED, counts, 152.0, 310.0, 250.0));
-                // Alignment: Myers-Briggs type and the StrengthsFinder top picks.
-                let profile: Vec<&crate::content::SkillCard> = stats.cards.iter().filter(|c| c.suit == "profile").collect();
-                if !profile.is_empty() {
-                    let (x, y) = (418.0, 248.0);
-                    p.spawn((
-                        Node { border: UiRect::all(Val::Px(1.0)), border_radius: BorderRadius::all(Val::Px(3.0)), ..at(x, y, 182.0, 82.0) },
-                        BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.3)),
-                        BorderColor::all(suit_color("profile").with_alpha(0.7)),
-                    ));
-                    p.spawn(text_at(&f.label, 7.5, SAGE, "ALIGNMENT", x + 8.0, y + 5.0, 80.0));
-                    let strengths: Vec<&&crate::content::SkillCard> = profile.iter().filter(|c| c.name.contains('·')).collect();
-                    if let Some(t) = profile.iter().find(|c| !c.name.contains('·')) {
-                        p.spawn((at(x + 6.0, y + 15.0, 20.0, 20.0), tier_image(art, 3, 2)));
-                        p.spawn(text_at(&f.bold, 13.0, CITRON, t.name.clone(), x + 30.0, y + 15.0, 50.0));
-                        p.spawn(text_at(&f.label, 7.0, LAMP, "THE VISIONARY", x + 74.0, y + 20.0, 104.0));
-                    }
-                    p.spawn(text_at(&f.label, 7.0, SAGE, "STRENGTHS", x + 8.0, y + 40.0, 80.0));
-                    for (i, c) in strengths.iter().enumerate().take(6) {
-                        let (cx, cy) = (x + 6.0 + (i % 2) as f32 * 88.0, y + 51.0 + (i / 2) as f32 * 14.0);
-                        p.spawn((at(cx, cy - 1.0, 13.0, 13.0), tier_image(art, 5, i % 4)));
-                        p.spawn(text_at(&f.label, 7.5, TEXT, c.name.replace(" · ", " ").to_uppercase(), cx + 15.0, cy + 1.0, 72.0));
-                    }
-                }
-            }
-            1 => {
-                // ITEMS: an inventory grid; the selected item opens as a card.
-                let relic = crate::content::KeyItem {
-                    name: "Dave's Socket Wrench".into(),
-                    from: "Engine room hatch".into(),
-                    note: "Brass, heavy, stamped \"D.\" on the handle. Dave says he lost it years ago. He didn't.".into(),
-                    kind: "relic".into(),
-                    kind_in_game: "relic".into(),
-                    rarity: "legendary".into(),
-                    year: None,
-                    bonus: "+1 LCK".into(),
-                };
-                let mut items: Vec<&crate::content::KeyItem> = stats.inventory.key_items.iter().collect();
-                if hatch {
-                    items.push(&relic);
-                }
-                p.spawn(text_at(&f.label, 8.0, SAGE, format!("INVENTORY · {}", items.len()), 148.0, 50.0, 200.0));
-                let slots = items.len().max(16).div_ceil(ITEM_COLS) * ITEM_COLS;
-                for i in 0..slots.min(20) {
-                    let r = grid_rect(1, i);
-                    let it = items.get(i);
-                    let on = i == ui.sel && it.is_some();
-                    let edge = it.map_or(LINE.with_alpha(0.25), |it| rarity_color(&it.rarity));
-                    p.spawn((
-                        Node { border: UiRect::all(Val::Px(if on { 2.0 } else { 1.0 })), border_radius: BorderRadius::all(Val::Px(3.0)), ..at(r.min.x, r.min.y, r.width(), r.height()) },
-                        BackgroundColor(if on { SELECT } else { Color::srgba(0.0, 0.0, 0.0, 0.35) }),
-                        BorderColor::all(if on { CITRON } else { edge }),
-                    ));
-                    if let Some(it) = it {
-                        p.spawn((at(r.min.x + 5.0, r.min.y + 4.0, 32.0, 32.0), item_image(art, it)));
-                        // Rarity gem in the corner.
-                        p.spawn((Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(r.max.x - 7.0, r.max.y - 7.0, 4.0, 4.0) }, BackgroundColor(edge)));
-                    }
-                }
-                if let Some(it) = items.get(ui.sel) {
-                    let c = rarity_color(&it.rarity);
-                    let kind = title_case(if it.kind_in_game.is_empty() { &it.kind } else { &it.kind_in_game });
-                    item_card(p, f, c, &it.name, &format!("{} · {}", kind.to_uppercase(), it.rarity.to_uppercase()), |p, b| {
-                        p.spawn((at(b.x + b.w / 2.0 - 40.0, b.y + b.h / 2.0 - 40.0, 80.0, 80.0), item_image(art, it)));
-                    }, &[
-                        ("ISSUER", it.from.clone()),
-                        ("YEAR", it.year.map_or("—".into(), |y| y.to_string())),
-                        ("BONUS", it.bonus.clone()),
-                    ], &it.note);
-                }
-            }
-            2 => {
-                // SKILLS: a deck in four suits.
-                for (i, (_, label)) in SUITS.iter().enumerate() {
-                    let r = suit_rect(i);
-                    let on = i == ui.suit;
-                    p.spawn((
-                        Node { border: UiRect::all(Val::Px(1.0)), border_radius: BorderRadius::all(Val::Px(2.0)), ..at(r.min.x, r.min.y, r.width(), r.height()) },
-                        BackgroundColor(if on { suit_color(SUITS[i].0).with_alpha(0.35) } else { Color::NONE }),
-                        BorderColor::all(if on { CITRON } else { suit_color(SUITS[i].0).with_alpha(0.6) }),
-                        children![text_at(&f.label, 5.5, if on { CITRON } else { TEXT }, *label, 0.0, 3.5, r.width() - 2.0).with_justify()],
-                    ));
-                }
-                let suit = SUITS[ui.suit].0;
-                let deck: Vec<&crate::content::SkillCard> = stats.cards.iter().filter(|c| c.suit == suit).collect();
-                let sc = suit_color(suit);
-                for (i, card) in deck.iter().enumerate().take(25) {
-                    let r = grid_rect(2, i);
-                    let on = i == ui.sel;
-                    p.spawn((
-                        Node { border: UiRect::all(Val::Px(if on { 2.0 } else { 1.0 })), border_radius: BorderRadius::all(Val::Px(3.0)), overflow: Overflow::clip(), ..at(r.min.x, r.min.y, r.width(), r.height()) },
-                        BackgroundColor(Color::srgba(0.05, 0.03, 0.05, 0.9)),
-                        BorderColor::all(if on { CITRON } else { sc }),
-                    ))
-                    .with_children(|m| {
-                        m.spawn((at(0.0, 0.0, r.width(), 6.0), BackgroundColor(sc.with_alpha(0.8))));
-                        m.spawn((at(3.0, 9.0, 26.0, 26.0), card_image(art, card, i)));
-                        m.spawn(text_at(&f.label, 5.5, sc, pips(card.mastery), 0.0, r.height() - 12.0, r.width() - 2.0).with_justify());
-                    });
-                }
-                if let Some(card) = deck.get(ui.sel) {
-                    let label = match SUITS[ui.suit].0 {
-                        "skill" => "PROFICIENCY",
-                        "discipline" => "DISCIPLINE",
-                        "special" => "PHILOSOPHY",
-                        _ => "SKILL",
-                    };
-                    item_card(p, f, sc, &card.name, &format!("{} CARD", label), |p, b| {
-                        p.spawn((at(b.x + b.w / 2.0 - 40.0, b.y + b.h / 2.0 - 40.0, 80.0, 80.0), card_image(art, card, ui.sel)));
-                    }, &[
-                        ("MASTERY", pips(card.mastery)),
-                        ("FEEDS", format!("+{} {}", card.mastery.div_ceil(2), card.feeds)),
-                    ], &card.flavor);
-                } else {
-                    p.spawn(text_at(&f.body, 10.0, MUTED, "No cards in this suit yet.", 352.0, 60.0, 240.0));
-                }
-            }
+            0 => status_tab(p, f, art, t, stats, hatch),
+            1 => items_tab(p, f, art, t, ui, stats, hatch),
+            2 => skills_tab(p, f, art, t, ui, stats),
+            3 => quests_tab(p, f, art, t, ui, stats),
+            _ => {}
+        }
+
+        // Footer: a key hint on the left, the theme picker on the right.
+        p.spawn((
+            Node { border: UiRect::top(Val::Px(1.0)), border_radius: BorderRadius::px(0.0, 0.0, 11.0, 2.0), ..at(s.min.x + 1.0, 322.0, s.width() - 2.0, s.max.y - 323.0) },
+            BackgroundColor(t.foot),
+            BorderColor { top: t.rule, ..BorderColor::all(Color::NONE) },
+        ));
+        let (hx0, hy) = (40.0, 330.0);
+        match ui.tab {
             3 => {
-                // QUESTS: career as a quest log. The active quest is a brass
-                // dossier; finished ones are stamped logbook pages.
-                let quests = &stats.quest_log;
-                let total = quests.len() + stats.training.len();
-                p.spawn(text_at(&f.label, 8.0, SAGE, "QUEST LOG", 148.0, 50.0, 200.0));
-                let start = window_start(ui.sel, total);
-                // The full view covers the list, so skip drawing it underneath.
-                let shown = if ui.quest_full && ui.sel < quests.len() { 0 } else { total.min(start + ROWS) };
-                for (row, i) in (start..shown.max(start)).enumerate() {
-                    let y = LIST_TOP + row as f32 * ROW_H;
-                    let on = i == ui.sel;
-                    p.spawn((Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(144.0, y, 238.0, ROW_H - 2.0) }, BackgroundColor(if on { SELECT } else { Color::NONE })));
-                    let (title, place, years, mark) = if i < quests.len() {
-                        let q = &quests[i];
-                        (q.title.clone(), q.place.clone(), q.years.clone(), if q.current { 6 } else { 7 })
-                    } else {
-                        let t = &stats.training[i - quests.len()];
-                        (t.title.clone(), t.place.clone(), t.years.clone(), 5)
-                    };
-                    p.spawn((at(148.0, y + 5.0, 16.0, 16.0), ImageNode::new(art.ui_icons[mark].clone())));
-                    p.spawn(text_at(&f.bold, 10.5, if on { CITRON } else { TEXT }, truncate(&title, 30), 170.0, y + 1.0, 210.0));
-                    p.spawn(text_at(&f.label, 7.0, SAGE, truncate(&format!("{} · {}", place.to_uppercase(), years), 40), 170.0, y + 15.0, 210.0));
-                }
-                let d = (390.0, 46.0, 210.0, 260.0);
-                if ui.quest_full && let Some(q) = quests.get(ui.sel) {
-                    quest_full_view(p, f, art, q);
-                } else if let Some(q) = quests.get(ui.sel) {
-                    if q.current {
-                        dossier(p, f, art, d, q);
-                    } else {
-                        logbook(p, f, d, &q.title, &format!("{} · {}", q.place, q.years), &q.summary, &q.feats);
-                    }
-                } else if let Some(t) = stats.training.get(ui.sel - quests.len()) {
-                    logbook(p, f, d, &t.title, &format!("{} · {}", t.place, t.years), "Training quest.", &[]);
-                }
-                if !ui.quest_full && ui.sel < quests.len() {
-                    p.spawn(text_at(&f.label, 7.0, MUTED, if ui.touch { "TAP THE CARD FOR THE FULL QUEST" } else { "ENTER FOR THE FULL QUEST" }, 390.0, 316.0, 80.0));
-                }
-                // A key hint, like the E prompt in the world: press F (or tap it).
-                let (kx, ky) = (OPEN_BTN.max.x - 92.0, OPEN_BTN.min.y + 4.0);
+                let mut x = hx0;
                 if !ui.touch {
-                    p.spawn((
-                        Node { border: UiRect::all(Val::Px(1.0)), border_radius: BorderRadius::all(Val::Px(2.0)), ..at(kx, ky, 14.0, 14.0) },
-                        BorderColor::all(CITRON),
-                        BackgroundColor(Color::srgba(0.95, 0.92, 0.75, 0.12)),
-                        children![text_at(&f.label, 8.0, CITRON, "F", 0.0, 1.5, 12.0).with_justify()],
-                    ));
+                    x += keycap(p, f, t, x, hy, "F") + 5.0;
                 }
-                p.spawn(text_at(&f.label, 8.0, CITRON, if ui.touch { "FULL RESUME ›" } else { "FULL RESUME" }, kx + if ui.touch { 0.0 } else { 19.0 }, ky + 2.5, 90.0));
+                p.spawn(text_at(&f.label, 7.0, t.title, if ui.touch { "FULL RESUME ›" } else { "FULL RESUME" }, x, hy + 2.0, 90.0));
+            }
+            _ if !ui.touch => {
+                let (k, what) = if ui.tab == 2 { ("SHIFT TAB", "NEXT SUIT") } else { ("TAB", "NEXT SECTION") };
+                let w = keycap(p, f, t, hx0, hy, k);
+                p.spawn(text_at(&f.label, 7.0, t.label, what, hx0 + w + 5.0, hy + 2.0, 90.0));
             }
             _ => {}
         }
+        let tr0 = theme_rect(0);
+        if !ui.touch {
+            keycap(p, f, t, tr0.min.x - 16.0, hy, "T");
+        }
+        p.spawn(text_at(&f.label, 7.0, t.label, "THEME", tr0.min.x - if ui.touch { 32.0 } else { 46.0 }, hy + 2.0, 30.0));
+        for (i, th) in THEMES.iter().enumerate() {
+            let r = theme_rect(i);
+            let on = i == ti;
+            p.spawn(boxed(r.min.x, r.min.y, r.width(), r.height(), if on { t.on_bg } else { t.btn }, if on { t.on_edge } else { t.rule }, 2.0));
+            p.spawn((Node { border_radius: BorderRadius::all(Val::Px(3.0)), ..at(r.min.x + 5.0, r.min.y + 5.0, 6.0, 6.0) }, BackgroundColor(th.swatch)));
+            p.spawn(text_at(&f.label, 6.5, if on { t.title } else { t.text.with_alpha(0.8) }, th.name, r.min.x + 14.0, r.min.y + 3.5, r.width() - 15.0));
+        }
     });
+}
+
+fn status_tab(p: &mut ChildSpawnerCommands, f: &Fonts, art: &UiArt, t: &Theme, stats: &crate::content::Stats, hatch: bool) {
+    // Left column: the full-body art, the current quest under it.
+    p.spawn((at(86.0, 74.0, 100.0, 204.0), ImageNode::new(art.full_body.clone())));
+    if let Some(q) = stats.quest_log.iter().find(|q| q.current) {
+        p.spawn(text_at(&f.label, 6.5, t.label, "CURRENT QUEST", COL_X, 282.0, COL_W));
+        p.spawn(text_at(&f.bold, 10.0, t.title, truncate(&q.title, 34), COL_X, 291.0, COL_W));
+        p.spawn(text_at(&f.label, 6.5, t.accent, truncate(&format!("{} · {}", q.place.to_uppercase(), q.years), 44), COL_X, 305.0, COL_W));
+    }
+    // Card: the profile.
+    let r = ARTICLE;
+    let (x, y, w) = (r.min.x + 16.0, r.min.y, r.width() - 32.0);
+    article_frame(p, t, r);
+    p.spawn(text_at(&f.label, 7.0, t.label, format!("CHARACTER PROFILE · CLASS {}", stats.title.to_uppercase()), x, y + 10.0, w));
+    p.spawn(text_at(&f.display, 20.0, t.title, stats.name.clone(), x, y + 19.0, w));
+    let items = stats.inventory.key_items.len() + usize::from(hatch);
+    let cards = stats.cards.iter().filter(|c| c.suit != "profile").count();
+    spec_row(p, f, t, x, y + 48.0, w, &[
+        ("Region", stats.location.clone()),
+        ("Level", stats.level.to_string()),
+        ("Items", items.to_string()),
+        ("Cards", cards.to_string()),
+        ("Quests", stats.quest_log.len().to_string()),
+    ]);
+    // Attributes in two columns of three: WIL INT WIT / CHA WIS LCK.
+    for (i, a) in stats.attributes.iter().enumerate() {
+        let (ax, ay) = (x + (i / 3) as f32 * 64.0, y + 90.0 + (i % 3) as f32 * 22.0);
+        p.spawn(text_at(&f.label, 7.5, t.label, a.label.to_uppercase(), ax, ay + 3.0, 30.0));
+        p.spawn(text_at(&f.label, 13.0, t.title, a.value.to_string(), ax + 26.0, ay - 2.0, 34.0));
+    }
+    // Radar, tinted for the theme.
+    let (cx, cy, rr) = (x + 236.0, y + 132.0, 34.0);
+    p.spawn((at(cx - rr - 4.0, cy - rr - 4.0, (rr + 4.0) * 2.0, (rr + 4.0) * 2.0), ImageNode::new(art.radar[THEMES.iter().position(|x| x.name == t.name).unwrap_or(1)].clone())));
+    let n = stats.radar.len().max(1);
+    for (i, a) in stats.radar.iter().enumerate() {
+        let ang = -std::f32::consts::FRAC_PI_2 + i as f32 * std::f32::consts::TAU / n as f32;
+        let lx = cx + ang.cos() * (rr + 22.0);
+        let ly = cy + ang.sin() * (rr + 11.0);
+        p.spawn(text_at(&f.label, 7.0, t.text, format!("{} {}", a.label.to_uppercase(), a.value as i32), lx - 30.0, ly - 5.0, 60.0)).insert(TextLayout::justify(Justify::Center));
+    }
+    // Alignment: Myers-Briggs type and the StrengthsFinder top picks.
+    let profile: Vec<&crate::content::SkillCard> = stats.cards.iter().filter(|c| c.suit == "profile").collect();
+    if !profile.is_empty() {
+        let (bx, by, bw) = (x, y + 188.0, w);
+        p.spawn(hline(bx, by, bw, t.rule));
+        p.spawn(text_at(&f.label, 6.5, t.label, "ALIGNMENT", bx, by + 6.0, 80.0));
+        if let Some(c) = profile.iter().find(|c| !c.name.contains('·')) {
+            p.spawn((at(bx + 52.0, by + 3.0, 14.0, 14.0), tier_image(art, 3, 2)));
+            p.spawn(text_at(&f.bold, 10.0, t.title, c.name.clone(), bx + 70.0, by + 3.0, 50.0));
+            p.spawn(text_at(&f.label, 6.5, t.accent, "THE VISIONARY", bx + 106.0, by + 6.5, 100.0));
+        }
+        p.spawn(text_at(&f.label, 6.5, t.label, "STRENGTHS", bx, by + 26.0, 80.0));
+        let strengths: Vec<&&crate::content::SkillCard> = profile.iter().filter(|c| c.name.contains('·')).collect();
+        for (i, c) in strengths.iter().enumerate().take(4) {
+            let (sx0, sy) = (bx + 52.0 + (i % 2) as f32 * 136.0, by + 23.0 + (i / 2) as f32 * 15.0);
+            p.spawn((at(sx0, sy, 12.0, 12.0), tier_image(art, 5, i % 4)));
+            p.spawn(text_at(&f.label, 7.0, t.text, c.name.replace(" · ", " ").to_uppercase(), sx0 + 15.0, sy + 2.0, 118.0));
+        }
+    }
+}
+
+fn items_tab(p: &mut ChildSpawnerCommands, f: &Fonts, art: &UiArt, t: &Theme, ui: &Ui, stats: &crate::content::Stats, hatch: bool) {
+    let relic = crate::content::KeyItem {
+        name: "Dave's Socket Wrench".into(),
+        from: "Engine room hatch".into(),
+        note: "Brass, heavy, stamped \"D.\" on the handle. Dave says he lost it years ago. He didn't.".into(),
+        kind: "relic".into(),
+        kind_in_game: "relic".into(),
+        rarity: "legendary".into(),
+        year: None,
+        bonus: "+1 LCK".into(),
+    };
+    let mut items: Vec<&crate::content::KeyItem> = stats.inventory.key_items.iter().collect();
+    if hatch {
+        items.push(&relic);
+    }
+    col_heading(p, f, t, "Inventory", Some(items.len()));
+    let slots = items.len().max(16).div_ceil(ITEM_COLS) * ITEM_COLS;
+    for i in 0..slots.min(20) {
+        let r = grid_rect(1, i);
+        let it = items.get(i);
+        let on = i == ui.sel && it.is_some();
+        let edge = it.map_or(t.rule, |it| rarity_color(&it.rarity));
+        p.spawn((
+            Node { border: UiRect::all(Val::Px(if on { 2.0 } else { 1.0 })), border_radius: BorderRadius::all(Val::Px(3.0)), ..at(r.min.x, r.min.y, r.width(), r.height()) },
+            BackgroundColor(if on { t.on_bg } else { t.btn }),
+            BorderColor::all(if on { t.accent } else { edge.with_alpha(if it.is_some() { 0.8 } else { 0.5 }) }),
+        ));
+        if let Some(it) = it {
+            p.spawn((at(r.min.x + 6.0, r.min.y + 5.0, 32.0, 32.0), item_image(art, it)));
+            p.spawn((Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(r.max.x - 7.0, r.max.y - 7.0, 4.0, 4.0) }, BackgroundColor(edge)));
+        }
+    }
+    if let Some(it) = items.get(ui.sel) {
+        let c = rarity_color(&it.rarity);
+        let kind = title_case(if it.kind_in_game.is_empty() { &it.kind } else { &it.kind_in_game });
+        record_card(p, f, t, c, &format!("{kind} · {}", it.rarity), &it.name, Some(item_image(art, it)), &[
+            ("Issuer", it.from.clone()),
+            ("Year", it.year.map_or("—".into(), |y| y.to_string())),
+            ("Bonus", it.bonus.clone()),
+        ], &it.note);
+    }
+}
+
+fn skills_tab(p: &mut ChildSpawnerCommands, f: &Fonts, art: &UiArt, t: &Theme, ui: &Ui, stats: &crate::content::Stats) {
+    for (i, (key, label)) in SUITS.iter().enumerate() {
+        let r = suit_rect(i);
+        let on = i == ui.suit;
+        let sc = suit_color(key);
+        p.spawn((
+            boxed(r.min.x, r.min.y, r.width(), r.height(), if on { sc.with_alpha(0.32) } else { t.btn }, if on { t.accent } else { sc.with_alpha(0.55) }, 2.0),
+            children![text_at(&f.label, 5.5, if on { t.title } else { t.text.with_alpha(0.85) }, *label, 0.0, 3.5, r.width() - 2.0).with_justify()],
+        ));
+    }
+    let suit = SUITS[ui.suit].0;
+    let deck: Vec<&crate::content::SkillCard> = stats.cards.iter().filter(|c| c.suit == suit).collect();
+    let sc = suit_color(suit);
+    for (i, card) in deck.iter().enumerate().take(20) {
+        let r = grid_rect(2, i);
+        let on = i == ui.sel;
+        p.spawn((
+            Node { border: UiRect::all(Val::Px(if on { 2.0 } else { 1.0 })), border_radius: BorderRadius::all(Val::Px(3.0)), overflow: Overflow::clip(), ..at(r.min.x, r.min.y, r.width(), r.height()) },
+            BackgroundColor(if on { t.on_bg } else { t.btn }),
+            BorderColor::all(if on { t.accent } else { sc.with_alpha(0.7) }),
+        ))
+        .with_children(|m| {
+            m.spawn((at(0.0, 0.0, r.width(), 4.0), BackgroundColor(sc.with_alpha(0.85))));
+            m.spawn((at(4.0, 8.0, 26.0, 26.0), card_image(art, card, i)));
+            m.spawn(text_at(&f.label, 5.5, t.label, pips(card.mastery), 0.0, r.height() - 11.0, r.width() - 2.0).with_justify());
+        });
+    }
+    if let Some(card) = deck.get(ui.sel) {
+        let label = match suit {
+            "skill" => "Proficiency",
+            "discipline" => "Discipline",
+            "special" => "Philosophy",
+            _ => "Skill",
+        };
+        record_card(p, f, t, sc, &format!("{label} card"), &card.name, Some(card_image(art, card, ui.sel)), &[
+            ("Mastery", pips(card.mastery)),
+            ("Feeds", format!("+{} {}", card.mastery.div_ceil(2), card.feeds)),
+            ("Suit", title_case(&SUITS[ui.suit].1.to_lowercase())),
+        ], &card.flavor);
+    } else {
+        article_frame(p, t, ARTICLE);
+        p.spawn(text_at(&f.body, 10.0, t.label, "No cards in this suit yet.", ARTICLE.min.x + 16.0, ARTICLE.min.y + 16.0, 240.0));
+    }
+}
+
+fn quests_tab(p: &mut ChildSpawnerCommands, f: &Fonts, art: &UiArt, t: &Theme, ui: &Ui, stats: &crate::content::Stats) {
+    let quests = &stats.quest_log;
+    let total = quests.len() + stats.training.len();
+    if ui.quest_full && let Some(q) = quests.get(ui.sel) {
+        quest_full_view(p, f, t, q);
+        return;
+    }
+    col_heading(p, f, t, "Quest log", Some(total));
+    let start = sheet_window_start(ui.sel, total);
+    for (row, i) in (start..total.min(start + SHEET_ROWS)).enumerate() {
+        let y = SHEET_TOP + row as f32 * ROW_H;
+        let on = i == ui.sel;
+        p.spawn((
+            Node {
+                border: UiRect { left: Val::Px(if on { 3.0 } else { 0.0 }), ..default() },
+                border_radius: BorderRadius::all(Val::Px(2.0)),
+                ..at(COL_X, y, COL_W, ROW_H - 3.0)
+            },
+            BackgroundColor(if on { t.on_bg } else { t.btn }),
+            BorderColor::all(t.accent),
+        ));
+        let (title, place, years, mark) = if i < quests.len() {
+            let q = &quests[i];
+            (q.title.clone(), q.place.clone(), q.years.clone(), if q.current { 6 } else { 7 })
+        } else {
+            let tr = &stats.training[i - quests.len()];
+            (tr.title.clone(), tr.place.clone(), tr.years.clone(), 5)
+        };
+        p.spawn((at(COL_X + 7.0, y + 5.0, 14.0, 14.0), ImageNode::new(art.ui_icons[mark].clone())));
+        p.spawn(text_at(&f.bold, 9.5, if on { t.title } else { t.text }, truncate(&title, 30), COL_X + 26.0, y + 1.5, COL_W - 30.0));
+        p.spawn(text_at(&f.label, 6.5, t.label, truncate(&format!("{} · {}", place.to_uppercase(), years), 40), COL_X + 26.0, y + 14.5, COL_W - 30.0));
+    }
+    let r = ARTICLE;
+    let (x, y, w) = (r.min.x + 16.0, r.min.y, r.width() - 32.0);
+    if let Some(q) = quests.get(ui.sel) {
+        article_frame(p, t, r);
+        let (eyebrow, gem) = if q.current { ("ACTIVE QUEST", t.accent) } else { ("COMPLETED QUEST", t.label) };
+        p.spawn((Node { border_radius: BorderRadius::all(Val::Px(3.0)), ..at(x, y + 14.0, 6.0, 6.0) }, BackgroundColor(gem)));
+        p.spawn(text_at(&f.label, 7.0, gem, eyebrow, x + 10.0, y + 12.0, 200.0));
+        p.spawn(text_at(&f.bold, 16.0, t.title, truncate(&q.title, 48), x, y + 26.0, w));
+        spec_row(p, f, t, x, y + 70.0, w, &[
+            ("Company", q.place.clone()),
+            ("Service", q.years.clone()),
+            ("Status", if q.current { "Active".into() } else { "Complete".into() }),
+        ]);
+        let mut ty = y + 110.0;
+        if q.current {
+            // How long this quest has been running, as a thin gauge.
+            let since = q.years.split('–').next().and_then(|v| v.parse::<i32>().ok()).unwrap_or(2026);
+            let run = (2026 - since).clamp(0, 10) as f32 / 10.0;
+            p.spawn((Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(x, ty, w, 3.0) }, BackgroundColor(t.rule)));
+            p.spawn((Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(x, ty, (w * run).max(6.0), 3.0) }, BackgroundColor(t.accent)));
+            ty += 10.0;
+        }
+        p.spawn(text_at(&f.body, 9.5, t.text.with_alpha(0.9), truncate(&q.summary, 240), x, ty, w));
+        let feats: Vec<String> = q.feats.iter().take(3).map(|v| format!("• {}", truncate(v, 70))).collect();
+        p.spawn(text_at(&f.body, 8.5, t.label, feats.join("\n"), x, y + 186.0, w));
+        p.spawn(text_at(&f.label, 6.5, t.label.with_alpha(0.8), if ui.touch { "TAP THE CARD FOR THE FULL QUEST" } else { "ENTER FOR THE FULL QUEST" }, x, r.max.y - 14.0, w));
+    } else if let Some(tr) = stats.training.get(ui.sel - quests.len()) {
+        record_card(p, f, t, t.label, "Training quest", &tr.title, None, &[("School", tr.place.clone()), ("Years", tr.years.clone())], "");
+    }
+}
+
+/// One quest in full, across the content area: everything it involved.
+fn quest_full_view(p: &mut ChildSpawnerCommands, f: &Fonts, t: &Theme, q: &crate::content::Quest) {
+    let r = Rect::new(COL_X, 74.0, ARTICLE.max.x, ARTICLE.max.y);
+    let (x, y, w) = (r.min.x + 16.0, r.min.y, r.width() - 32.0);
+    article_frame(p, t, r);
+    let gem = if q.current { t.accent } else { t.label };
+    p.spawn((Node { border_radius: BorderRadius::all(Val::Px(3.0)), ..at(x, y + 14.0, 6.0, 6.0) }, BackgroundColor(gem)));
+    p.spawn(text_at(&f.label, 7.0, gem, if q.current { "ACTIVE QUEST" } else { "COMPLETED QUEST" }, x + 10.0, y + 12.0, 200.0));
+    p.spawn(text_at(&f.bold, 16.0, t.title, q.title.clone(), x, y + 26.0, w));
+    spec_row(p, f, t, x, y + 50.0, w, &[
+        ("Company", q.place.clone()),
+        ("Service", q.years.clone()),
+        ("Status", if q.current { "Active".into() } else { "Complete".into() }),
+    ]);
+    p.spawn(text_at(&f.body, 9.5, t.text.with_alpha(0.92), q.summary.clone(), x, y + 90.0, w));
+    let feats: Vec<String> = q.feats.iter().take(6).map(|v| format!("• {}", truncate(v, 110))).collect();
+    p.spawn(text_at(&f.body, 9.0, t.text.with_alpha(0.85), feats.join("\n"), x, y + 130.0, w));
+    if !q.tech.is_empty() {
+        p.spawn(text_at(&f.label, 6.5, t.label, format!("KIT · {}", q.tech.join(" · ").to_uppercase()), x, r.max.y - 16.0, w));
+    }
 }
 
 /// The HUD: location, menu and map buttons, interaction prompt, first-run hint.
@@ -2091,10 +2407,16 @@ trait Centered {
     fn with_justify(self) -> (Self, TextLayout)
     where
         Self: Sized;
+    fn with_justify_right(self) -> (Self, TextLayout)
+    where
+        Self: Sized;
 }
 impl<B: Bundle> Centered for B {
     fn with_justify(self) -> (Self, TextLayout) {
         (self, TextLayout::justify(Justify::Center))
+    }
+    fn with_justify_right(self) -> (Self, TextLayout) {
+        (self, TextLayout::justify(Justify::Right))
     }
 }
 
@@ -2159,81 +2481,7 @@ fn pips(n: u8) -> String {
     format!("{n} / 5")
 }
 
-/// A content box: x, y, width, height.
-#[derive(Clone, Copy)]
-struct Bx {
-    x: f32,
-    y: f32,
-    w: f32,
-    h: f32,
-}
-
-/// The detail card on the right of Items and Skills: a framed title plate,
-/// an art window, attribute rows and flavour text.
-fn item_card(
-    p: &mut ChildSpawnerCommands,
-    f: &Fonts,
-    edge: Color,
-    title: &str,
-    kind: &str,
-    art: impl FnOnce(&mut ChildSpawnerCommands, Bx),
-    attrs: &[(&str, String)],
-    note: &str,
-) {
-    let c = Bx { x: 352.0, y: 48.0, w: 248.0, h: 262.0 };
-    p.spawn((
-        Node { border: UiRect::all(Val::Px(2.0)), border_radius: BorderRadius::all(Val::Px(4.0)), ..at(c.x, c.y, c.w, c.h) },
-        BackgroundColor(Color::srgba(0.06, 0.04, 0.06, 0.92)),
-        BorderColor::all(edge),
-    ));
-    p.spawn(text_at(&f.label, 7.0, edge, kind.to_owned(), c.x + 10.0, c.y + 7.0, c.w - 20.0));
-    p.spawn(text_at(&f.bold, 11.0, CITRON, truncate(title, 64), c.x + 10.0, c.y + 18.0, c.w - 20.0));
-    // Art window: the detailed illustration goes here once the art lands.
-    let a = Bx { x: c.x + 10.0, y: c.y + 48.0, w: c.w - 20.0, h: 96.0 };
-    p.spawn((
-        Node { border: UiRect::all(Val::Px(1.0)), border_radius: BorderRadius::all(Val::Px(2.0)), ..at(a.x, a.y, a.w, a.h) },
-        BackgroundColor(edge.with_alpha(0.12)),
-        BorderColor::all(edge.with_alpha(0.5)),
-    ));
-    art(p, a);
-    let mut y = a.y + a.h + 8.0;
-    for (k, v) in attrs {
-        p.spawn(text_at(&f.label, 7.0, SAGE, *k, c.x + 10.0, y + 2.0, 60.0));
-        p.spawn(text_at(&f.bold, 9.5, TEXT, truncate(v, 40), c.x + 70.0, y, c.w - 80.0));
-        y += 15.0;
-    }
-    p.spawn(text_at(&f.body, 9.0, MUTED, truncate(note, 150), c.x + 10.0, y + 4.0, c.w - 20.0));
-}
-
 const BRASS: Color = Color::srgb(0.71, 0.54, 0.23);
-
-/// The active quest: a riveted brass dossier with turning cogs.
-fn dossier(p: &mut ChildSpawnerCommands, f: &Fonts, art: &UiArt, (x, y, w, h): (f32, f32, f32, f32), q: &crate::content::Quest) {
-    p.spawn((
-        Node { border: UiRect::all(Val::Px(2.0)), border_radius: BorderRadius::all(Val::Px(4.0)), overflow: Overflow::clip(), ..at(x, y, w, h) },
-        BackgroundColor(Color::srgba(0.16, 0.10, 0.06, 0.96)),
-        BorderColor::all(BRASS),
-    ))
-    .with_children(|d| {
-        d.spawn((Cog(0.6), UiTransform::IDENTITY, at(w - 52.0, -18.0, 64.0, 64.0), ImageNode::new(art.cog.clone()).with_color(BRASS.with_alpha(0.55))));
-        d.spawn((Cog(-1.0), UiTransform::IDENTITY, at(w - 70.0, 30.0, 32.0, 32.0), ImageNode::new(art.cog.clone()).with_color(BRASS.with_alpha(0.4))));
-        for (rx, ry) in [(4.0, 4.0), (w - 10.0, 4.0), (4.0, h - 10.0), (w - 10.0, h - 10.0)] {
-            d.spawn((Node { border_radius: BorderRadius::all(Val::Px(3.0)), ..at(rx, ry, 4.0, 4.0) }, BackgroundColor(BRASS)));
-        }
-        d.spawn((Node { border_radius: BorderRadius::all(Val::Px(3.0)), ..at(12.0, 13.0, 6.0, 6.0) }, BackgroundColor(LAMP)));
-        d.spawn(text_at(&f.label, 7.5, LAMP, "ACTIVE QUEST", 22.0, 10.0, 120.0));
-        d.spawn(text_at(&f.bold, 12.0, CITRON, q.title.clone(), 12.0, 26.0, w - 60.0));
-        d.spawn(text_at(&f.label, 7.5, BRASS, format!("{} · {}", q.place.to_uppercase(), q.years), 12.0, 58.0, w - 24.0));
-        // Pressure tube: how long this quest has been running.
-        let since = q.years.split('–').next().and_then(|y| y.parse::<i32>().ok()).unwrap_or(2026);
-        let run = (2026 - since).clamp(0, 10) as f32 / 10.0;
-        d.spawn((Node { border: UiRect::all(Val::Px(1.0)), border_radius: BorderRadius::all(Val::Px(3.0)), ..at(12.0, 74.0, w - 24.0, 7.0) }, BorderColor::all(BRASS), BackgroundColor(Color::srgba(0.0, 0.0, 0.0, 0.4))));
-        d.spawn((Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(13.0, 75.0, ((w - 26.0) * run).max(4.0), 5.0) }, BackgroundColor(LAMP)));
-        d.spawn(text_at(&f.body, 9.0, TEXT, truncate(&q.summary, 150), 12.0, 88.0, w - 24.0));
-        let feats: Vec<String> = q.feats.iter().take(3).map(|x| format!("• {}", truncate(x, 64))).collect();
-        d.spawn(text_at(&f.body, 8.5, MUTED, feats.join("\n"), 12.0, 160.0, w - 24.0));
-    });
-}
 
 /// The codec-style hologram for a transmission. Returns the head's entity so
 /// the dialogue tick can animate its mouth.
@@ -2267,65 +2515,6 @@ fn holo_call(p: &mut ChildSpawnerCommands, f: &Fonts, img: &Handle<Image>, layou
     ));
     p.spawn((Node { border_radius: BorderRadius::all(Val::Px(2.0)), ..at(x + w / 2.0 - 12.0, y + 158.0, 24.0, 3.0) }, BackgroundColor(cyan)));
     head
-}
-
-/// One quest in full, over the list: everything it involved.
-fn quest_full_view(p: &mut ChildSpawnerCommands, f: &Fonts, art: &UiArt, q: &crate::content::Quest) {
-    let (x, y, w, h) = (140.0, 44.0, 460.0, 262.0);
-    let (bg, edge, ink, sub) = if q.current {
-        (Color::srgba(0.16, 0.10, 0.06, 0.98), BRASS, TEXT, BRASS)
-    } else {
-        (Color::srgb(0.87, 0.81, 0.67), Color::srgb(0.55, 0.42, 0.28), Color::srgb(0.22, 0.14, 0.09), Color::srgb(0.45, 0.30, 0.18))
-    };
-    p.spawn((
-        Node { border: UiRect::all(Val::Px(2.0)), border_radius: BorderRadius::all(Val::Px(4.0)), overflow: Overflow::clip(), ..at(x, y, w, h) },
-        BackgroundColor(bg),
-        BorderColor::all(edge),
-    ))
-    .with_children(|d| {
-        if q.current {
-            d.spawn((Cog(0.5), UiTransform::IDENTITY, at(w - 70.0, -24.0, 88.0, 88.0), ImageNode::new(art.cog.clone()).with_color(BRASS.with_alpha(0.45))));
-            d.spawn((Node { border_radius: BorderRadius::all(Val::Px(3.0)), ..at(14.0, 15.0, 6.0, 6.0) }, BackgroundColor(LAMP)));
-            d.spawn(text_at(&f.label, 7.5, LAMP, "ACTIVE QUEST", 24.0, 12.0, 160.0));
-        } else {
-            d.spawn(text_at(&f.label, 7.5, sub, "COMPLETED QUEST", 14.0, 12.0, 160.0));
-        }
-        d.spawn(text_at(&f.bold, 14.0, if q.current { CITRON } else { ink }, q.title.clone(), 14.0, 24.0, w - 100.0));
-        d.spawn(text_at(&f.label, 8.0, sub, format!("{} · {}", q.place.to_uppercase(), q.years), 14.0, 46.0, w - 28.0));
-        d.spawn(text_at(&f.body, 9.5, ink, q.summary.clone(), 14.0, 62.0, w - 28.0));
-        let feats: Vec<String> = q.feats.iter().take(6).map(|x| format!("• {}", truncate(x, 110))).collect();
-        d.spawn(text_at(&f.body, 9.0, ink, feats.join("\n"), 14.0, 104.0, w - 28.0));
-        if !q.tech.is_empty() {
-            d.spawn(text_at(&f.label, 7.0, sub, format!("KIT · {}", q.tech.join(" · ").to_uppercase()), 14.0, h - 20.0, w - 28.0));
-        }
-    });
-}
-
-/// A finished quest: an aged logbook page with a COMPLETE stamp.
-fn logbook(p: &mut ChildSpawnerCommands, f: &Fonts, (x, y, w, h): (f32, f32, f32, f32), title: &str, sub: &str, summary: &str, feats: &[String]) {
-    let ink = Color::srgb(0.22, 0.14, 0.09);
-    p.spawn((
-        Node { border: UiRect::all(Val::Px(1.0)), border_radius: BorderRadius::all(Val::Px(2.0)), overflow: Overflow::clip(), ..at(x, y, w, h) },
-        BackgroundColor(Color::srgb(0.87, 0.81, 0.67)),
-        BorderColor::all(Color::srgb(0.55, 0.42, 0.28)),
-    ))
-    .with_children(|d| {
-        for i in 0..14 {
-            d.spawn((at(0.0, 30.0 + i as f32 * 16.0, w, 1.0), BackgroundColor(Color::srgba(0.4, 0.5, 0.6, 0.18))));
-        }
-        d.spawn(text_at(&f.bold, 12.0, ink, title.to_owned(), 12.0, 10.0, w - 24.0));
-        d.spawn(text_at(&f.label, 7.5, Color::srgb(0.45, 0.30, 0.18), sub.to_uppercase(), 12.0, 44.0, w - 24.0));
-        d.spawn(text_at(&f.body, 9.0, ink, truncate(summary, 150), 12.0, 60.0, w - 24.0));
-        let feats: Vec<String> = feats.iter().take(3).map(|x| format!("• {}", truncate(x, 64))).collect();
-        d.spawn(text_at(&f.body, 8.5, Color::srgb(0.35, 0.25, 0.17), feats.join("\n"), 12.0, 140.0, w - 24.0));
-        let red = Color::srgb(0.72, 0.16, 0.12);
-        d.spawn((
-            UiTransform::from_rotation(Rot2::degrees(-12.0)),
-            Node { border: UiRect::all(Val::Px(2.0)), border_radius: BorderRadius::all(Val::Px(3.0)), ..at(w - 104.0, h - 44.0, 88.0, 24.0) },
-            BorderColor::all(red.with_alpha(0.8)),
-            children![text_at(&f.label, 10.0, red.with_alpha(0.85), "COMPLETE", 0.0, 4.0, 84.0).with_justify()],
-        ));
-    });
 }
 
 fn seg_d(p: Vec2, a: Vec2, b: Vec2) -> f32 {
@@ -2408,37 +2597,8 @@ fn room_glow_image(i: usize) -> Image {
     img
 }
 
-/// A plain cog wheel, white so it can be tinted.
-fn cog_image() -> Image {
-    const S: u32 = 128;
-    let mut img = Image::new_fill(
-        Extent3d { width: S, height: S, depth_or_array_layers: 1 },
-        TextureDimension::D2,
-        &[0, 0, 0, 0],
-        TextureFormat::Rgba8UnormSrgb,
-        RenderAssetUsages::default(),
-    );
-    let c = S as f32 / 2.0;
-    for y in 0..S {
-        for x in 0..S {
-            let d = Vec2::new(x as f32 + 0.5 - c, y as f32 + 0.5 - c);
-            let r = d.length();
-            let ang = d.y.atan2(d.x);
-            // Ten teeth: the rim bumps out where cos(10θ) is high.
-            let tooth = if (ang * 10.0).cos() > 0.2 { 60.0 } else { 50.0 };
-            let edge = (tooth - r).min(r - 18.0);
-            let spoke = (ang * 3.0).cos().abs() > 0.93 || r > 40.0 || r < 26.0;
-            let a = edge.clamp(0.0, 1.0) * if spoke { 1.0 } else { 0.0 };
-            if a > 0.0 {
-                let _ = img.set_color_at(x, y, Color::srgba(1.0, 1.0, 1.0, a));
-            }
-        }
-    }
-    img
-}
-
 /// Rasterise the stats radar into a small image (rings, spokes, filled shape).
-fn radar_image(values: &[f32]) -> Image {
+fn radar_image(values: &[f32], (grid, fill, edge): (Srgba, Srgba, Srgba)) -> Image {
     const S: u32 = 336;
     let n = values.len().max(3);
     let c = Vec2::splat(S as f32 / 2.0);
@@ -2490,31 +2650,31 @@ fn radar_image(values: &[f32]) -> Image {
             let p = Vec2::new(x as f32 + 0.5, y as f32 + 0.5);
             let mut px = Srgba::NONE;
             if inside(&rings[3], p) {
-                px = blend(px, Srgba::new(0.08, 0.03, 0.055, 0.55));
+                px = blend(px, Srgba::new(0.0, 0.0, 0.0, 0.3));
             }
             for ring in &rings {
                 let a = cov(poly_dist(ring, p), 0.8);
                 if a > 0.0 {
-                    px = blend(px, Srgba::new(0.475, 0.58, 0.588, 0.55 * a));
+                    px = blend(px, grid.with_alpha(grid.alpha * a));
                 }
             }
             for i in 0..n {
                 let a = cov(seg_dist(p, c, vert(i, 1.0)), 0.6);
                 if a > 0.0 {
-                    px = blend(px, Srgba::new(0.475, 0.58, 0.588, 0.4 * a));
+                    px = blend(px, grid.with_alpha(grid.alpha * 0.7 * a));
                 }
             }
             if inside(&shape, p) {
-                px = blend(px, Srgba::new(0.93, 0.55, 0.25, 0.45));
+                px = blend(px, fill);
             }
             let a = cov(poly_dist(&shape, p), 1.6);
             if a > 0.0 {
-                px = blend(px, Srgba::new(0.914, 0.922, 0.62, a));
+                px = blend(px, edge.with_alpha(a));
             }
             for v in &shape {
                 let a = cov(p.distance(*v), 3.5);
                 if a > 0.0 {
-                    px = blend(px, Srgba::new(0.914, 0.922, 0.62, a));
+                    px = blend(px, edge.with_alpha(a));
                 }
             }
             let _ = img.set_color_at(x, y, Color::Srgba(px));

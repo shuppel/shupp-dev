@@ -2,7 +2,7 @@
 //!
 //! Outbound: `emit(kind, value)` calls `window.__atlasEmit(kind, value)`:
 //! `open` (a site URL to open), `visited` (a destination id), `scene`
-//! (the current location label).
+//! (the current location label), `theme` (the character menu theme).
 //! Inbound: the page calls `go(destinationId)` (hash links) and
 //! `set_paused(bool)` and `tap(x, y)` for touch.
 
@@ -18,6 +18,8 @@ pub enum Inbound {
     DialogueFont(bool),
     /// The terminal search text, typed into the page's input on phones.
     Search(String),
+    /// Character menu theme by name: stone, blue or orange.
+    MenuTheme(String),
 }
 
 thread_local! {
@@ -79,6 +81,12 @@ mod web {
         super::push(super::Inbound::DialogueFont(mana));
     }
 
+    /// Character menu theme: "stone", "blue" or "orange".
+    #[wasm_bindgen]
+    pub fn set_menu_theme(name: &str) {
+        super::push(super::Inbound::MenuTheme(name.to_owned()));
+    }
+
     /// The terminal search box's text (phones type into a page input).
     #[wasm_bindgen]
     pub fn search(text: &str) {
@@ -92,7 +100,7 @@ mod web {
 }
 
 #[cfg(target_arch = "wasm32")]
-pub use web::{go, search, set_dialogue_font, set_paused, start, tap};
+pub use web::{go, search, set_dialogue_font, set_menu_theme, set_paused, start, tap};
 
 #[cfg(target_arch = "wasm32")]
 pub(crate) fn emit(kind: &str, value: &str) {

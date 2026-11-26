@@ -85,6 +85,7 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
       go: (id: string) => void;
       set_paused: (p: boolean) => void;
       set_dialogue_font: (mana: boolean) => void;
+      set_menu_theme: (name: string) => void;
       tap: (x: number, y: number, touch: boolean) => void;
       search: (text: string) => void;
     };
@@ -156,6 +157,8 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
       } else if (kind === 'visited') {
         visited.add(value);
         store.set('atlas:visited', [...visited].join(','));
+      } else if (kind === 'theme') {
+        store.set('atlas:theme', value);
       } else if (kind === 'scene') {
         document.title = `${value} · The Scattered Atlas`;
       } else if (kind === 'terminal') {
@@ -283,6 +286,9 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
           if (!String(err).includes('Using exceptions for control flow')) throw err;
         }
         if (new URLSearchParams(location.search).get('font') === 'body') game.set_dialogue_font(false);
+        // Character menu theme: ?theme= wins, then the player's last pick.
+        const theme = new URLSearchParams(location.search).get('theme') || store.get('atlas:theme');
+        if (theme) game.set_menu_theme(theme);
         if (start === 'about' || start === 'contact') game.go(start);
         label.textContent = 'Unpacking the ship…';
         // Never strand someone on the loading screen if an asset hangs.

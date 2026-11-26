@@ -461,6 +461,8 @@ pub struct Game {
     pub request: Option<ui::Request>,
     /// Dialogue in Manaspace instead of the sans (`?font=mana` on the page).
     pub mana_dialogue: bool,
+    /// Character menu theme: 0 stone, 1 blue, 2 orange.
+    pub menu_theme: usize,
     /// The engine room's maintenance hatch has been opened (relic found).
     pub hatch_open: bool,
     /// Pongo has been sent to his bed in the quarters.
@@ -607,6 +609,7 @@ pub fn app(canvas: Option<String>, registry: Registry, boot: Boot, visited: Vec<
         paused: false,
         request: None,
         mana_dialogue: true,
+        menu_theme: 1,
         hatch_open: false,
         pongo_bed: false,
     })
@@ -1009,6 +1012,11 @@ fn read_page(mut game: ResMut<Game>, mut tap: ResMut<PageTap>) {
             }
             bridge::Inbound::Paused(p) => game.paused = p,
             bridge::Inbound::DialogueFont(mana) => game.mana_dialogue = mana,
+            bridge::Inbound::MenuTheme(name) => {
+                if let Some(i) = ui::theme_index(&name) {
+                    game.menu_theme = i;
+                }
+            }
             bridge::Inbound::Go(id) => game.request = Some(ui::Request::Destination(id)),
             bridge::Inbound::Search(q) => game.search = Some(q),
         }
