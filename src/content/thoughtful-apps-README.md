@@ -77,23 +77,12 @@ Optional markdown content for additional details.
 3. Click Share → Get Link
 4. Use the share URL in the `mainMockup` or feature `mockup` fields
 
-## Engagement Features
+## Pages
 
-Each app page includes:
-- **Voting**: Users can vote once per app (stored in localStorage, will upgrade to Lyket)
-- **Comments**: GitHub-based discussions via Giscus
-- **Email Capture**: "Notify me if built" feature
-- **Price Sensitivity**: Users can indicate willingness to pay
-
-## Configuration
-
-To enable Giscus comments:
-1. Update `src/components/GiscusComments.astro` with your GitHub repo details
-2. Follow the [Giscus setup guide](https://giscus.app/)
-
-To enable Lyket voting:
-1. Sign up at [lyket.dev](https://lyket.dev)
-2. Update the API key in `src/components/LyketVote.astro`
+Each concept renders as a standalone reading page at `/thoughtful-app-co/<id>/`
+with a JSON twin at `/thoughtful-app-co/<id>.json` (see docs/reading-pages.md).
+The placeholder voting, comments, email capture and price buttons were retired
+with the old site layout; readers reach out by email or on GitHub instead.
 
 ## Best Practices
 

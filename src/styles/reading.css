@@ -23,6 +23,7 @@
   --sheet: #fbf8f1;
   --lamp: #ed8c40;
   --citron: #e9eb9e;
+  --sage: #799496;
   --line: 1px solid var(--ink);
   --hair: 1px solid rgba(20, 8, 18, 0.18);
   --radius: 12px;
@@ -341,3 +342,22 @@ body.read {
   .read-body { font-size: 12pt; line-height: 1.5; }
   .read-body .job { break-inside: avoid; }
 }
+
+/* ---------- documents and app concepts ---------- */
+.read-body .callout { margin: 1.4em 0; padding: 16px 20px; border: var(--line); border-radius: var(--radius); background: var(--sheet); }
+.read-body .callout--green { box-shadow: inset 6px 0 0 var(--sage); }
+.read-body .callout--yellow { box-shadow: inset 6px 0 0 var(--lamp); }
+.read-body .callout--red { box-shadow: inset 6px 0 0 var(--ink); }
+.read-body .callout h3 { margin-top: 0; }
+.read-body .callout > :last-child { margin-bottom: 0; }
+.read-body .fine { font: 400 14px/1.6 var(--sans); color: var(--ink-soft); }
+.read-body--doc h3 { font-size: 19px; }
+.read-pull { font-size: 1.15em; border-left: 4px solid var(--lamp); padding-left: 18px; }
+.read-defs { display: grid; grid-template-columns: max-content 1fr; gap: 10px 22px; margin: 1em 0; }
+.read-defs dt { font: 400 12px/2 var(--label); text-transform: uppercase; letter-spacing: 0.08em; }
+.read-defs dd { margin: 0; }
+.read-embed { width: 100%; aspect-ratio: 16 / 10; border: var(--line); border-radius: var(--radius); background: var(--sheet); }
+.pips { display: inline-flex; gap: 3px; vertical-align: middle; margin-right: 6px; }
+.pips i { width: 9px; height: 9px; border: var(--line); background: var(--sheet); }
+.pips i.on { background: var(--lamp); }
+@media (max-width: 560px) { .read-defs { grid-template-columns: 1fr; gap: 2px; } .read-defs dd { margin-bottom: 10px; } }

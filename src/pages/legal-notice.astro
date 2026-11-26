@@ -1,91 +1,69 @@
 ---
-import Layout from '../layouts/Layout.astro';
+// Privacy policy and legal notice for shupp.dev, as a reading page.
+import DocReading from '../components/Reading/DocReading.astro';
 ---
 
-<Layout title="Privacy Policy & Legal Notice">
-  <main class="max-w-4xl mx-auto px-6 py-12">
-    <h1 class="text-4xl font-bold mb-8">Privacy Policy & Legal Notice</h1>
-    
-    <section class="mb-8">
-      <h2 class="text-2xl font-semibold mb-4">Privacy Policy</h2>
-      
-      <h3 class="text-xl font-semibold mb-3">Information Collection</h3>
-      <p class="mb-4">This website does not collect personal information unless you voluntarily provide it (e.g., through contact forms or email). We do not use cookies for tracking or analytics.</p>
-      
-      <h3 class="text-xl font-semibold mb-3">Information Use</h3>
-      <p class="mb-4">Any information you provide will only be used to respond to your inquiries or for the purpose for which it was provided. We do not sell, trade, or share your personal information with third parties.</p>
-      
-      <h3 class="text-xl font-semibold mb-3">External Links</h3>
-      <p class="mb-4">This website contains links to external sites. We are not responsible for the privacy practices or content of these external sites.</p>
-    </section>
-
-    <section class="mb-8">
-      <h2 class="text-2xl font-semibold mb-4">Copyright Notice</h2>
-      <p class="mb-4">© 2025 Erikk Shupp. All rights reserved.</p>
-      <p class="mb-4">All content on this website, including but not limited to app concepts, designs, mockups, technical architectures, and written descriptions, is the intellectual property of Erikk Shupp unless otherwise noted.</p>
-    </section>
-
-    <section class="mb-8">
-      <h2 class="text-2xl font-semibold mb-4">Intellectual Property Protection</h2>
-      
-      <h3 class="text-xl font-semibold mb-3">App Concepts & Ideas</h3>
-      <p class="mb-3">All application concepts, features, and implementations described in the Thoughtful App Co. section are proprietary ideas owned by Erik Shupp. These include but are not limited to:</p>
-      <ul class="list-disc list-inside mb-4 space-y-1">
-        <li>Application concepts and functionality</li>
-        <li>User journey designs</li>
-        <li>Technical architecture proposals</li>
-        <li>Feature specifications</li>
-        <li>Business models and strategies</li>
-        <li>Unique combinations of existing technologies</li>
-      </ul>
-
-      <h3 class="text-xl font-semibold mb-3">Protection Under Law</h3>
-      <p class="mb-3">These ideas are protected under:</p>
-      <ul class="list-disc list-inside mb-4 space-y-1">
-        <li>Copyright law for creative expressions and written content</li>
-        <li>Trade secret law for proprietary concepts and methodologies</li>
-        <li>Applicable intellectual property laws in the United States</li>
-      </ul>
-
-      <h3 class="text-xl font-semibold mb-3">Permitted Use</h3>
-      <p class="mb-3">You may:</p>
-      <ul class="list-disc list-inside mb-4 space-y-1">
-        <li>View and read the content for personal, non-commercial purposes</li>
-        <li>Share links to this website</li>
-        <li>Reference ideas with proper attribution</li>
-      </ul>
-
-      <h3 class="text-xl font-semibold mb-3">Prohibited Use</h3>
-      <p class="mb-3">Without express written permission from Erik Shupp, you may NOT:</p>
-      <ul class="list-disc list-inside mb-4 space-y-1">
-        <li>Copy, reproduce, or distribute any app concepts for commercial purposes</li>
-        <li>Implement or develop any of the described applications</li>
-        <li>Use the ideas as the basis for your own applications or services</li>
-        <li>Claim ownership of any concepts presented here</li>
-        <li>Remove or alter any copyright notices</li>
-      </ul>
-    </section>
-
-    <section class="mb-8">
-      <h2 class="text-2xl font-semibold mb-4">Confidentiality Notice</h2>
-      <p class="mb-4">The app concepts and ideas presented in the Thoughtful App Co. section are confidential and proprietary. By accessing this website, you agree not to disclose, reproduce, or use these ideas without explicit written permission.</p>
-    </section>
-
-    <section class="mb-8">
-      <h2 class="text-2xl font-semibold mb-4">Prior Art Documentation</h2>
-      <p class="mb-4">This website serves as documented prior art for all concepts presented, establishing the date of conception and public disclosure for intellectual property purposes.</p>
-    </section>
-
-    <section class="mb-8">
-      <h2 class="text-2xl font-semibold mb-4">Contact</h2>
-      <p class="mb-4">For privacy concerns, licensing inquiries, collaboration proposals, or permission requests, please contact:<br>
-      <a href="mailto:erikk@shupp.dev" class="text-blue-600 hover:underline">erikk@shupp.dev</a></p>
-    </section>
-
-    <section class="mb-8">
-      <h2 class="text-2xl font-semibold mb-4">Disclaimer</h2>
-      <p class="mb-4">While efforts are made to protect the intellectual property presented here, publication of ideas does not guarantee patent protection. Some concepts may incorporate or reference existing technologies or methodologies.</p>
-      <p class="text-sm text-gray-600">Last updated: August 15, 2025</p>
-    </section>
-  </main>
-</Layout>
+<DocReading
+  title="Privacy Policy & Legal Notice"
+  description="How shupp.dev handles your information, and who owns the ideas published here."
+  terminal="The Charter"
+  eyebrow="Legal / shupp.dev"
+  lede="No tracking cookies, no selling your details, and a note on who owns the app ideas published here."
+  facts={[['Last updated', 'August 15, 2025']]}
+  contact={{ label: 'erikk@shupp.dev', href: 'mailto:erikk@shupp.dev' }}
+>
+  <h2 id="privacy-policy">Privacy Policy</h2>
+  <h3>Information Collection</h3>
+  <p>This website does not collect personal information unless you voluntarily provide it (e.g., through contact forms or email). We do not use cookies for tracking or analytics.</p>
+  <h3>Information Use</h3>
+  <p>Any information you provide will only be used to respond to your inquiries or for the purpose for which it was provided. We do not sell, trade, or share your personal information with third parties.</p>
+  <h3>External Links</h3>
+  <p>This website contains links to external sites. We are not responsible for the privacy practices or content of these external sites.</p>
+  <h2 id="copyright-notice">Copyright Notice</h2>
+  <p>© 2025 Erikk Shupp. All rights reserved.</p>
+  <p>All content on this website, including but not limited to app concepts, designs, mockups, technical architectures, and written descriptions, is the intellectual property of Erikk Shupp unless otherwise noted.</p>
+  <h2 id="intellectual-property-protection">Intellectual Property Protection</h2>
+  <h3>App Concepts & Ideas</h3>
+  <p>All application concepts, features, and implementations described in the Thoughtful App Co. section are proprietary ideas owned by Erik Shupp. These include but are not limited to:</p>
+  <ul>
+  <li>Application concepts and functionality</li>
+  <li>User journey designs</li>
+  <li>Technical architecture proposals</li>
+  <li>Feature specifications</li>
+  <li>Business models and strategies</li>
+  <li>Unique combinations of existing technologies</li>
+  </ul>
+  <h3>Protection Under Law</h3>
+  <p>These ideas are protected under:</p>
+  <ul>
+  <li>Copyright law for creative expressions and written content</li>
+  <li>Trade secret law for proprietary concepts and methodologies</li>
+  <li>Applicable intellectual property laws in the United States</li>
+  </ul>
+  <h3>Permitted Use</h3>
+  <p>You may:</p>
+  <ul>
+  <li>View and read the content for personal, non-commercial purposes</li>
+  <li>Share links to this website</li>
+  <li>Reference ideas with proper attribution</li>
+  </ul>
+  <h3>Prohibited Use</h3>
+  <p>Without express written permission from Erik Shupp, you may NOT:</p>
+  <ul>
+  <li>Copy, reproduce, or distribute any app concepts for commercial purposes</li>
+  <li>Implement or develop any of the described applications</li>
+  <li>Use the ideas as the basis for your own applications or services</li>
+  <li>Claim ownership of any concepts presented here</li>
+  <li>Remove or alter any copyright notices</li>
+  </ul>
+  <h2 id="confidentiality-notice">Confidentiality Notice</h2>
+  <p>The app concepts and ideas presented in the Thoughtful App Co. section are confidential and proprietary. By accessing this website, you agree not to disclose, reproduce, or use these ideas without explicit written permission.</p>
+  <h2 id="prior-art-documentation">Prior Art Documentation</h2>
+  <p>This website serves as documented prior art for all concepts presented, establishing the date of conception and public disclosure for intellectual property purposes.</p>
+  <h2 id="contact">Contact</h2>
+  <p>For privacy concerns, licensing inquiries, collaboration proposals, or permission requests, please contact:<br>
+  <a href="mailto:erikk@shupp.dev">erikk@shupp.dev</a></p>
+  <h2 id="disclaimer">Disclaimer</h2>
+  <p>While efforts are made to protect the intellectual property presented here, publication of ideas does not guarantee patent protection. Some concepts may incorporate or reference existing technologies or methodologies.</p>
+  <p class="fine">Last updated: August 15, 2025</p>
+</DocReading>
