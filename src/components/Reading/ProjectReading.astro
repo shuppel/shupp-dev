@@ -23,6 +23,11 @@ const newer: Project | undefined = at > 0 ? all[at - 1] : undefined;
 const older: Project | undefined = at >= 0 && at < all.length - 1 ? all[at + 1] : undefined;
 const month = (date: Date) => date.toLocaleDateString('en-US', { timeZone: 'UTC', year: 'numeric', month: 'long' });
 const url = new URL(projectUrl(entry.id), Astro.site).href;
+// Films (a YouTube link as the live project) open in a cinema: the video is
+// the cover, and the player loads only when the reader presses play.
+const ytId = d.projectUrl?.match(/youtube\.com\/(?:watch\?v=|embed\/)([\w-]{11})|youtu\.be\/([\w-]{11})/)?.slice(1).find(Boolean) ?? null;
+const poster = ytId ? (d.image ?? `https://i.ytimg.com/vi/${ytId}/maxresdefault.jpg`) : null;
+const studio = /thoughtful app co/i.test(entry.body ?? '') || /thoughtful app co/i.test(d.description) ? 'Thoughtful App Co.' : siteConfig.author.name;
 ---
 
 <ReadingLayout
@@ -38,7 +43,32 @@ const url = new URL(projectUrl(entry.id), Astro.site).href;
   author={siteConfig.author.name}
 >
   <article>
-    <section class="read-hero wrap">
+    {ytId && (
+      <section class="cinema" aria-label="Film">
+        <p class="cinema-marquee wrap"><span>Now showing</span><span>{studio} presents</span><span>{d.projectDate.getUTCFullYear()}</span></p>
+        <div class="cinema-body wrap">
+          <div class="film" data-yt={ytId} data-title={d.title}>
+            <img class="film-poster" src={poster} alt="" width="1280" height="720" decoding="async" onerror={`this.onerror=null;this.src='https://i.ytimg.com/vi/${ytId}/hqdefault.jpg'`} />
+            <span class="film-shade" aria-hidden="true"></span>
+            <div class="film-card">
+              <p class="film-kicker">{d.technologies[0] ?? 'A film'}</p>
+              <p class="film-title">{d.title}</p>
+            </div>
+            <a class="film-play" href={d.projectUrl} target="_blank" rel="noopener">
+              <span class="film-play__icon" aria-hidden="true"></span>
+              <span>Play film</span>
+            </a>
+          </div>
+        </div>
+        <dl class="cinema-credits wrap">
+          <div><dt>A film by</dt><dd>{studio}</dd></div>
+          <div><dt>Released</dt><dd>{month(d.projectDate)}</dd></div>
+          <div><dt>Made with</dt><dd>{d.technologies.slice(1, 3).join(' · ') || d.technologies[0]}</dd></div>
+          <div><dt>Watch</dt><dd><a href={d.projectUrl} target="_blank" rel="noopener">YouTube ↗</a></dd></div>
+        </dl>
+      </section>
+    )}
+    <section class:list={['read-hero wrap', { 'read-hero--solo': ytId }]}>
       <div>
         <p class="eyebrow"><span class="status-dot"></span> Project / {month(d.projectDate)}</p>
         <h1 class="read-title">{d.title}</h1>
@@ -49,7 +79,7 @@ const url = new URL(projectUrl(entry.id), Astro.site).href;
           {d.githubUrl && <a class="outline-button" href={d.githubUrl} target="_blank" rel="noopener">Source on GitHub ↗</a>}
         </div>
       </div>
-      <figure class="cover panel">
+      {!ytId && <figure class="cover panel">
         <header><h2><img src="/atlas/assets/props/star_console.png" alt="" class="px" width="16" height="16" /> On the bench</h2><span>{d.completed ? 'Shipped' : 'In progress'}</span></header>
         <div class="cover-art">
           {d.image ? <img src={d.image} alt={d.title} decoding="async" /> : (
@@ -61,7 +91,7 @@ const url = new URL(projectUrl(entry.id), Astro.site).href;
           )}
         </div>
         <footer>{d.technologies.slice(0, 4).join(' / ')}</footer>
-      </figure>
+      </figure>}
     </section>
 
     <div class="read-grid read-grid--two wrap">
@@ -113,4 +143,25 @@ const url = new URL(projectUrl(entry.id), Astro.site).href;
       {newer ? <a href={projectHref(newer)}><span>03</span><strong>{newer.data.title}</strong><p>Later on the bench</p></a> : <a href="/portfolio/"><span>03</span><strong>All projects</strong><p>Everything on the bench.</p></a>}
     </nav>
   </article>
+
+  {ytId && (
+    <script is:inline>
+      // Play: swap the poster for the YouTube player, so the player (and its
+      // tracking) only loads when the reader asks for it.
+      document.querySelectorAll('.film[data-yt]').forEach(function (film) {
+        var play = film.querySelector('.film-play');
+        play.addEventListener('click', function (e) {
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+          e.preventDefault();
+          var f = document.createElement('iframe');
+          f.src = 'https://www.youtube-nocookie.com/embed/' + film.dataset.yt + '?autoplay=1&rel=0&modestbranding=1';
+          f.title = film.dataset.title;
+          f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+          f.allowFullscreen = true;
+          film.classList.add('playing');
+          film.appendChild(f);
+        });
+      });
+    </script>
+  )}
 </ReadingLayout>
