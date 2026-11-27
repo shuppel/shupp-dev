@@ -271,11 +271,56 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
         ${(stats.training ?? []).length ? `<h3>Training</h3><ul class="s-train">${stats.training.map((t: { title: string; place: string; years: string }) => `<li><b>${esc(t.title)}</b><br><span>${esc(t.place)} · ${esc(t.years)}</span></li>`).join('')}</ul>` : ''}
         <p><a class="s-btn" href="/resume">Open the full resume</a></p>`;
     }
-    function terminalHtml(d: Dest) {
-      return `<p class="s-muted">${esc(d.preview)}</p><ul class="s-links">${d.items.map((it) => `
-        <li><a href="${esc(it.href)}"${/^https?:/.test(it.href) ? ' target="_blank" rel="noopener"' : ''}><b>${esc(it.title)}</b>${it.meta ? `<span class="s-meta">${esc(it.meta)}</span>` : ''}${it.description ? `<span>${esc(it.description)}</span>` : ''}</a></li>`).join('')}</ul>
-        <p><a class="s-btn" href="${esc(d.href)}">Open ${esc(d.label)}</a></p>`;
+    // Terminals on phones: a full-screen list; tapping an entry opens a second
+    // screen with its preview (the page at phone width) and an Open button.
+    const external = (href: string) => (/^https?:/.test(href) ? ' target="_blank" rel="noopener"' : '');
+    let termDest: Dest | null = null;
+    let termQuery = '';
+    let termScroll = 0;
+    function termMatches(d: Dest) {
+      const q = termQuery.trim().toLowerCase();
+      return d.items.map((it, k) => ({ it, k })).filter(({ it }) => !q || `${it.title} ${it.meta ?? ''} ${it.description ?? ''}`.toLowerCase().includes(q));
     }
+    function termRows(d: Dest) {
+      const rows = termMatches(d);
+      return rows.length
+        ? rows.map(({ it, k }) => `<li><button type="button" data-k="${k}"><b>${esc(it.title)}</b>${it.meta ? `<span class="s-meta">${esc(it.meta)}</span>` : ''}</button></li>`).join('')
+        : '<li class="s-muted">Nothing matches.</li>';
+    }
+    function showTermList() {
+      const d = termDest!;
+      $('sheet-title').textContent = d.name;
+      $('sheet-body').innerHTML = `<p class="s-muted">${esc(d.preview)}</p>
+        <input class="s-find" id="s-find" type="search" placeholder="Find" aria-label="Find in ${esc(d.label)}" value="${esc(termQuery)}" />
+        <p class="s-count" id="s-count">${termMatches(d).length} of ${d.items.length}</p>
+        <ul class="s-links" id="s-rows">${termRows(d)}</ul>
+        <p><a class="s-btn" href="${esc(d.href)}">Open ${esc(d.label)}</a></p>`;
+      const find = $('s-find') as HTMLInputElement;
+      find.addEventListener('input', () => {
+        termQuery = find.value;
+        $('s-rows').innerHTML = termRows(d);
+        $('s-count').textContent = `${termMatches(d).length} of ${d.items.length}`;
+      });
+      $('sheet-body').scrollTop = termScroll;
+    }
+    function showTermItem(k: number) {
+      const d = termDest!;
+      const it = d.items[k];
+      termScroll = $('sheet-body').scrollTop;
+      audio.sfx('ui_confirm');
+      $('sheet-body').innerHTML = `<button type="button" class="s-back" id="s-back">‹ All of ${esc(d.label)}</button>
+        <h3 class="s-title">${esc(it.title)}</h3>
+        ${it.meta ? `<p class="s-meta">${esc(it.meta)}</p>` : ''}
+        ${it.description ? `<p>${esc(it.description)}</p>` : ''}
+        ${it.href.startsWith('/') ? `<div class="s-preview"><iframe src="${esc(it.href)}" title="Preview of ${esc(it.title)}" loading="lazy" tabindex="-1"></iframe></div>` : ''}
+        <p class="s-actions"><a class="s-btn" href="${esc(it.href)}"${external(it.href)}>Open page ›</a></p>`;
+      $('s-back').addEventListener('click', () => { audio.sfx('ui_cancel'); showTermList(); });
+      $('sheet-body').scrollTop = 0;
+    }
+    $('sheet-body').addEventListener('click', (e) => {
+      const b = (e.target as HTMLElement).closest('#s-rows button') as HTMLElement | null;
+      if (b && termDest) showTermItem(Number(b.dataset.k));
+    });
     function showTab(i: number) {
       $('sheet-title').textContent = TABS[i];
       $('sheet-tabs').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-current', String(i === j)));
@@ -289,11 +334,14 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
       if (what.startsWith('terminal:')) {
         const d: Dest | undefined = (registry.destinations ?? []).find((x: Dest) => x.id === what.slice(9));
         tabs.hidden = true;
-        $('sheet-title').textContent = d ? d.name : 'Terminal';
-        $('sheet-body').innerHTML = d ? terminalHtml(d) : '';
-        $('sheet-body').scrollTop = 0;
+        termDest = d ?? null;
+        termQuery = '';
+        termScroll = 0;
+        if (d) showTermList();
+        else { $('sheet-title').textContent = 'Terminal'; $('sheet-body').innerHTML = ''; }
       } else {
         tabs.hidden = false;
+        termDest = null;
         tabs.innerHTML = TABS.map((t, i) => `<button type="button" data-i="${i}">${t}</button>`).join('');
         tabs.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { audio.sfx('ui_tab_switch'); showTab(Number((b as HTMLElement).dataset.i)); }));
         showTab(Math.min(Number(what) || 0, TABS.length - 1));
@@ -419,7 +467,11 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
         if (matchMedia('(pointer: coarse)').matches) game.set_touch(true);
         game.set_sound(audio.on);
         // Phones get the scrolling sheets; tablets and desktops keep the game menus.
-        const syncSheets = () => game!.set_html_menus(matchMedia('(pointer: coarse)').matches && Math.min(innerWidth, innerHeight) < 600);
+        // Narrow or tall screens get the scrolling sheets instead of a shrunken
+        // widescreen menu: phones, and desktop windows sized like one.
+        const syncSheets = () => game!.set_html_menus(
+          innerWidth < 720 || innerHeight > innerWidth * 1.05 || (matchMedia('(pointer: coarse)').matches && Math.min(innerWidth, innerHeight) < 600),
+        );
         syncSheets();
         window.addEventListener('resize', syncSheets);
         if (start === 'about' || start === 'contact') game.go(start);
@@ -510,6 +562,18 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
   .s-tech span { padding: 2px 8px; border: 1px solid rgba(121, 148, 150, 0.6); border-radius: 10px; font-size: 0.75rem; color: #b9c7c8; }
   .s-train li { padding: 8px 0; border-bottom: 1px solid rgba(204, 140, 77, 0.2); }
   .s-train span { color: #b9b6ad; font-size: 0.85rem; }
+  .s-links li button { display: block; width: 100%; padding: 12px 0; border: 0; border-bottom: 1px solid rgba(204, 140, 77, 0.3); background: none; color: #f1eee6; font: inherit; text-align: left; cursor: pointer; }
+  .s-links li button b { display: block; color: #E9EB9E; }
+  .s-links li button .s-meta { display: block; font-size: 0.8rem; }
+  .s-find { box-sizing: border-box; width: 100%; margin: 10px 0 2px; padding: 10px 12px; border: 1px solid rgba(204, 140, 77, 0.6); border-radius: 4px; background: rgba(0, 0, 0, 0.35); color: #f1eee6; font: inherit; }
+  .s-count { margin: 4px 0 0; font-size: 0.75rem; color: #799496; letter-spacing: 0.08em; text-transform: uppercase; }
+  .s-back { min-height: 44px; margin: 4px 0 4px -4px; padding: 0 4px; border: 0; background: none; color: #ee8c40; font: 600 0.9rem 'Hind', sans-serif; cursor: pointer; }
+  .sheet-body h3.s-title { margin: 6px 0 4px; font: 600 1.25rem/1.3 'Hind', sans-serif; letter-spacing: 0; text-transform: none; color: #E9EB9E; }
+  .s-preview { position: relative; height: min(58vh, 520px); margin: 14px 0 0; overflow: hidden; border: 1px solid rgba(204, 140, 77, 0.5); border-radius: 6px; background: #111; }
+  .s-preview iframe { width: 100%; height: 100%; border: 0; pointer-events: none; }
+  .s-preview::after { content: ''; position: absolute; inset: auto 0 0; height: 48px; background: linear-gradient(transparent, rgba(0, 0, 0, 0.85)); }
+  .s-actions .s-btn { display: block; margin-top: 10px; text-align: center; background: #0e080e; }
+  .s-actions { position: sticky; bottom: 0; padding: 4px 0 8px; background: linear-gradient(transparent, #0e080e 40%); }
   .s-links li a { display: block; padding: 12px 0; border-bottom: 1px solid rgba(204, 140, 77, 0.3); color: #f1eee6; text-decoration: none; }
   .s-links li a b { display: block; color: #E9EB9E; }
   .s-links li a span { display: block; font-size: 0.85rem; color: #b9b6ad; }
