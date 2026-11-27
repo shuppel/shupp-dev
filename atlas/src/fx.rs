@@ -10,11 +10,12 @@ use bevy::sprite::Anchor;
 use crate::{to_world, Action, Game, Mode, Player, SceneId, SceneEntity};
 
 /// Console boxes in scene pixels (x0, y0, x1, y1). Keep in sync with make_fx.py.
-const GLOWS: [(&str, [f32; 4]); 4] = [
+const GLOWS: [(&str, [f32; 4]); 5] = [
     ("fx/glow_star_console.png", [506.0, 116.0, 592.0, 162.0]),
     ("fx/glow_workbench.png", [292.0, 250.0, 348.0, 298.0]),
     ("fx/glow_records.png", [254.0, 70.0, 388.0, 142.0]),
     ("fx/glow_treehouse_door.png", [170.0, 84.0, 212.0, 136.0]),
+    ("fx/glow_engine_door.png", [7.0, 85.0, 54.0, 239.0]),
 ];
 
 /// Where the cloud's tail tip sits in its 40 × 34 image.
@@ -30,7 +31,7 @@ impl Plugin for FxPlugin {
 
 #[derive(Resource)]
 pub(crate) struct FxArt {
-    glows: [Handle<Image>; 4],
+    glows: [Handle<Image>; 5],
     spark: Handle<Image>,
     ring: Handle<Image>,
 }
@@ -154,6 +155,15 @@ fn setup(mut commands: Commands, assets: Res<AssetServer>, mut images: ResMut<As
     commands.insert_resource(art);
 }
 
+/// The doorway glow that pulses in a room while nothing is in reach.
+fn idle_glow(scene: SceneId) -> Option<usize> {
+    match scene {
+        SceneId::Bridge => Some(3),
+        SceneId::Engine => Some(4),
+        _ => None,
+    }
+}
+
 /// Which glow (if any) belongs to this point, and the console box.
 fn glow_for(scene: SceneId, action: Action) -> Option<(usize, [f32; 4])> {
     let i = match (scene, action) {
@@ -161,6 +171,7 @@ fn glow_for(scene: SceneId, action: Action) -> Option<(usize, [f32; 4])> {
         (SceneId::Port, Action::Terminal(_)) => 1,
         (SceneId::Archive, Action::Terminal(_)) => 2,
         (SceneId::Bridge, Action::Goto(SceneId::Quarters)) => 3,
+        (SceneId::Engine, Action::Goto(SceneId::Bridge)) => 4,
         _ => return None,
     };
     Some((i, GLOWS[i].1))
@@ -233,6 +244,17 @@ pub(crate) fn animate(
                 Transform::from_translation(to_world(Vec2::new(x, y)).extend(0.35)),
             ));
         }
+    } else if let Some(i) = idle_glow(game.scene).filter(|_| game.mode == Mode::Explore) {
+        // Doorways breathe softly even from across the room, so the way out reads.
+        let b = GLOWS[i].1;
+        if gs.image != art.glows[i] {
+            gs.image = art.glows[i].clone();
+        }
+        gt.translation = to_world(Vec2::new((b[0] + b[2]) / 2.0, (b[1] + b[3]) / 2.0)).round().extend(0.3);
+        let a = 0.35 + 0.25 * (time.elapsed_secs() * 2.4).sin();
+        gs.color = Color::srgba(1.0, 1.0, 1.0, a);
+        **gv = Visibility::Visible;
+        st.spark_clock = 0.0;
     } else {
         **gv = Visibility::Hidden;
         st.spark_clock = 0.0;
