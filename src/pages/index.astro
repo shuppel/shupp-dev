@@ -84,6 +84,7 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
   <script type="application/json" id="atlas-registry" set:html={json}></script>
 
   <script>
+    import { createAudio } from '../lib/atlas/audio';
     type Game = {
       default: (opts?: unknown) => Promise<unknown>;
       start: (canvas: string, registry: string, start: string, visited: string, dpr: number) => void;
@@ -92,6 +93,7 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
       set_dialogue_font: (mana: boolean) => void;
       set_touch: (touch: boolean) => void;
       set_html_menus: (on: boolean) => void;
+      set_sound: (on: boolean) => void;
       tap: (x: number, y: number, touch: boolean) => void;
       search: (text: string) => void;
     };
@@ -149,6 +151,7 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
       set(k: string, v: string) { try { localStorage.setItem(k, v); } catch { /* private mode */ } },
     };
     const visited = new Set(store.get('atlas:visited').split(',').filter(Boolean));
+    const audio = createAudio(store);
 
     function fallback(note?: string) {
       if (note) $('fallback-note').textContent = note;
@@ -180,6 +183,12 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
         reveal();
       } else if (kind === 'sheet') {
         openSheet(value);
+      } else if (kind === 'music') {
+        audio.music(value);
+      } else if (kind === 'sfx') {
+        audio.sfx(value);
+      } else if (kind === 'sound') {
+        audio.setOn(value === 'on');
       }
     };
 
@@ -267,15 +276,17 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
       } else {
         tabs.hidden = false;
         tabs.innerHTML = TABS.map((t, i) => `<button type="button" data-i="${i}">${t}</button>`).join('');
-        tabs.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => showTab(Number((b as HTMLElement).dataset.i))));
+        tabs.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { audio.sfx('ui_tab_switch'); showTab(Number((b as HTMLElement).dataset.i)); }));
         showTab(Math.min(Number(what) || 0, TABS.length - 1));
       }
       $('sheet').hidden = false;
+      audio.sfx(what.startsWith('terminal:') ? 'fx_console_activate' : 'ui_menu_open');
       $('sheet-close').focus();
     }
     function closeSheet() {
       if ($('sheet').hidden) return;
       $('sheet').hidden = true;
+      audio.sfx('ui_menu_close');
       game?.set_paused(false);
       $('atlas-canvas').focus();
     }
@@ -387,6 +398,7 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
         }
         if (new URLSearchParams(location.search).get('font') === 'body') game.set_dialogue_font(false);
         if (matchMedia('(pointer: coarse)').matches) game.set_touch(true);
+        game.set_sound(audio.on);
         // Phones get the scrolling sheets; tablets and desktops keep the game menus.
         const syncSheets = () => game!.set_html_menus(matchMedia('(pointer: coarse)').matches && Math.min(innerWidth, innerHeight) < 600);
         syncSheets();

@@ -469,6 +469,8 @@ pub struct Game {
     pub hatch_open: bool,
     /// Pongo has been sent to his bed in the quarters.
     pub pongo_bed: bool,
+    /// Music and effects on; the page remembers it between visits.
+    pub sound: bool,
 }
 
 impl Game {
@@ -615,6 +617,7 @@ pub fn app(canvas: Option<String>, registry: Registry, boot: Boot, visited: Vec<
         touch_hint: false,
         html_menus: false,
         hatch_open: false,
+        sound: true,
         pongo_bed: false,
     })
     .add_message::<EnterScene>()
@@ -1020,6 +1023,7 @@ fn read_page(mut game: ResMut<Game>, mut tap: ResMut<PageTap>) {
             bridge::Inbound::DialogueFont(mana) => game.mana_dialogue = mana,
             bridge::Inbound::Touch(t) => game.touch_hint = t,
             bridge::Inbound::HtmlMenus(on) => game.html_menus = on,
+            bridge::Inbound::Sound(on) => game.sound = on,
             bridge::Inbound::Go(id) => game.request = Some(ui::Request::Destination(id)),
             bridge::Inbound::Search(q) => game.search = Some(q),
         }
@@ -1176,7 +1180,7 @@ fn use_point(keys: Res<ButtonInput<KeyCode>>, mut game: ResMut<Game>) {
     }
 }
 
-fn animate_player(time: Res<Time>, art: Res<Art>, mut q: Query<(&mut Player, &mut Sprite)>) {
+fn animate_player(time: Res<Time>, art: Res<Art>, game: Res<Game>, mut q: Query<(&mut Player, &mut Sprite)>) {
     for (mut p, mut sprite) in &mut q {
         let (cols, ms, image, layout) = if p.walking && p.running {
             (4, 0.085, &art.run, &art.run_layout)
@@ -1189,6 +1193,10 @@ fn animate_player(time: Res<Time>, art: Res<Art>, mut q: Query<(&mut Player, &mu
         if p.clock >= ms {
             p.clock = 0.0;
             p.frame = (p.frame + 1) % cols;
+            // A footstep on each foot's contact frame: wood in the treehouse, deck plate elsewhere.
+            if p.walking && game.mode == Mode::Explore && !game.paused && p.frame % (cols / 2) == 0 {
+                bridge::emit("sfx", if game.scene == SceneId::Quarters { "step_wood" } else { "step_metal" });
+            }
         }
         if p.frame >= cols {
             p.frame = 0;

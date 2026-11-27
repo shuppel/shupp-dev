@@ -2,7 +2,8 @@
 //!
 //! Outbound: `emit(kind, value)` calls `window.__atlasEmit(kind, value)`:
 //! `open` (a site URL to open), `visited` (a destination id), `scene`
-//! (the current location label).
+//! (the current location label), `music` (a room key), `sfx` (a sound
+//! name), `sound` (on/off).
 //! Inbound: the page calls `go(destinationId)` (hash links) and
 //! `set_paused(bool)` and `tap(x, y)` for touch.
 
@@ -22,6 +23,8 @@ pub enum Inbound {
     Touch(bool),
     /// Phones: the page draws the menus and terminals as scrolling sheets.
     HtmlMenus(bool),
+    /// Music and effects on or off (the page's saved setting).
+    Sound(bool),
 }
 
 thread_local! {
@@ -101,6 +104,12 @@ mod web {
         super::push(super::Inbound::HtmlMenus(on));
     }
 
+    /// Sound on or off, from the page's saved setting.
+    #[wasm_bindgen]
+    pub fn set_sound(on: bool) {
+        super::push(super::Inbound::Sound(on));
+    }
+
     #[wasm_bindgen]
     pub fn set_paused(paused: bool) {
         super::push(super::Inbound::Paused(paused));
@@ -108,7 +117,7 @@ mod web {
 }
 
 #[cfg(target_arch = "wasm32")]
-pub use web::{go, search, set_dialogue_font, set_html_menus, set_paused, set_touch, start, tap};
+pub use web::{go, search, set_dialogue_font, set_html_menus, set_paused, set_sound, set_touch, start, tap};
 
 #[cfg(target_arch = "wasm32")]
 pub(crate) fn emit(kind: &str, value: &str) {

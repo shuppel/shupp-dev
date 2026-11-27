@@ -15,6 +15,8 @@ use bevy::window::PrimaryWindow;
 use crate::content::{Destination, Registry};
 use crate::{Action, EnterScene, Game, Mode, Npc, Point, SceneId, VH, VW, bridge, scene_def};
 
+mod sound;
+
 // Palette: shupp.dev brand colours plus the warm lamp orange from the art pack.
 const INK: Color = Color::srgba(0.078, 0.031, 0.055, 0.94);
 const INK_SOLID: Color = Color::srgb(0.078, 0.031, 0.055);
@@ -36,7 +38,7 @@ impl Plugin for UiPlugin {
             .add_systems(Startup, setup_ui.after(crate::setup))
             .add_systems(
                 Update,
-                (layout_frame, handle_request, input, tick, render, hud, animate_map)
+                (layout_frame, handle_request, input, tick, render, hud, animate_map, sound::cues)
                     .chain()
                     .after(crate::depth_sort),
             );
@@ -116,11 +118,13 @@ impl Frame {
 
 // The menus hide in a sliver tab at the bottom-left edge (this is a website
 // first; the game chrome stays out of the way). Tap the sliver to slide out
-// the tray with the Menu and Map icons.
+// the tray with the Menu, Map and Sound icons.
 const SLIVER: Rect = Rect { min: Vec2::new(0.0, 312.0), max: Vec2::new(22.0, 356.0) };
-const TRAY: Rect = Rect { min: Vec2::new(0.0, 312.0), max: Vec2::new(98.0, 356.0) };
+const TRAY: Rect = Rect { min: Vec2::new(0.0, 312.0), max: Vec2::new(136.0, 356.0) };
 const MENU_BTN: Rect = Rect { min: Vec2::new(6.0, 316.0), max: Vec2::new(44.0, 352.0) };
 const MAP_BTN: Rect = Rect { min: Vec2::new(46.0, 316.0), max: Vec2::new(84.0, 352.0) };
+/// Sound on/off, saved by the page between visits.
+const SOUND_BTN: Rect = Rect { min: Vec2::new(86.0, 316.0), max: Vec2::new(124.0, 352.0) };
 
 pub fn hud_hit(at: Vec2) -> bool {
     TRAY.contains(at)
@@ -302,7 +306,7 @@ struct UiArt {
     full_body: Handle<Image>,
     /// status, items, quests, map, credential, degree, quest_active, quest_done,
     /// character, ship, settings
-    ui_icons: [Handle<Image>; 11],
+    ui_icons: [Handle<Image>; 13],
     cog: Handle<Image>,
     key_e: Handle<Image>,
     key_tap: Handle<Image>,
@@ -504,6 +508,8 @@ fn setup_ui(
             "ui/menu/character.png",
             "ui/menu/ship.png",
             "ui/menu/settings.png",
+            "ui/menu/sound_on.png",
+            "ui/menu/sound_off.png",
         ]
         .map(|p| crate::load_smooth(&assets, p)),
         cog: images.add(cog_image()),
@@ -885,6 +891,10 @@ fn input(
                 // M and the tray's map button open the ship map; the bridge's star console has the planets.
                 ui.tray = false;
                 game.request = Some(Request::Ship);
+            } else if tray_tap(SOUND_BTN) {
+                // The tray stays open so the icon visibly flips.
+                game.sound = !game.sound;
+                bridge::emit("sound", if game.sound { "on" } else { "off" });
             } else if let Some(t) = tap {
                 // The sliver opens the tray; its chevron, or any tap elsewhere, closes it.
                 ui.tray = if ui.tray { false } else { SLIVER.contains(t) };
@@ -2106,7 +2116,7 @@ fn hud(
     let show = game.mode == Mode::Explore;
     let prompt = if show { game.nearby } else { None };
     let key = format!("{show}|{:?}|{:?}|{}|{}", game.scene, prompt.map(|p| p.label), ui.hint > 0.0, ui.touch);
-    let key = format!("{key}|{}|{}", ui.tray, frame.view_w.round());
+    let key = format!("{key}|{}|{}|{}", ui.tray, frame.view_w.round(), game.sound);
     if key == ui.hud_key {
         return;
     }
@@ -2133,12 +2143,13 @@ fn hud(
         });
         if tray {
             p.spawn(panel(TRAY.min.x - 3.0, TRAY.min.y, TRAY.width() + 3.0, TRAY.height())).with_children(|b| {
-                for (r, icon, label) in [(MENU_BTN, 8usize, "MENU"), (MAP_BTN, 3, "MAP")] {
+                let sound = if game.sound { (11, "SOUND") } else { (12, "MUTED") };
+                for (r, icon, label) in [(MENU_BTN, 8usize, "MENU"), (MAP_BTN, 3, "MAP"), (SOUND_BTN, sound.0, sound.1)] {
                     let x = r.min.x + 3.0;
                     b.spawn((at(x + r.width() / 2.0 - 8.0, 6.0, 16.0, 16.0), ImageNode::new(art.ui_icons[icon].clone())));
                     b.spawn(text_at(&f.label, 7.0, CITRON, label, x, 25.0, r.width()).with_justify());
                 }
-                b.spawn(text_at(&f.label, 12.0, LINE, "‹", 88.0, 12.0, 10.0));
+                b.spawn(text_at(&f.label, 12.0, LINE, "‹", 126.0, 12.0, 10.0));
             });
         } else {
             p.spawn(panel(-3.0, 318.0, 13.0, 32.0)).with_children(|b| {
