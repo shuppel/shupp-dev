@@ -1,0 +1,130 @@
+---
+// The 404: the Atlier has drifted into a sector that isn't on the chart.
+// All art is the game's own sprites. Netlify serves dist/404.html for any
+// missing path. Animation is CSS only and stops under reduced motion.
+import ReadingLayout from '../layouts/ReadingLayout.astro';
+import PixelGlyph from '../components/Reading/PixelGlyph.astro';
+
+const routes = [
+  ['Scribe Galaxy', '/galaxy/', 'Writing, newest first.', 'writing_selected'],
+  ['The Relay', '/press/', 'Talks, shows and interviews.', 'contact_selected'],
+  ['The Workbench', '/portfolio/', 'Design systems, apps and sites.', 'work_selected'],
+  ["Captain's Quarters", '/about/', 'The story and how I work.', 'about_selected'],
+];
+---
+
+<ReadingLayout
+  title="Lost in space"
+  description="This page drifted off the chart. Head back to the ship or pick a destination."
+  terminal="Uncharted sector"
+  type="website"
+  jsonLdType="website"
+  noindex
+>
+  <section class="lost" aria-labelledby="lost-title">
+    <div class="lost-sky" aria-hidden="true">
+      <div class="lost-stars lost-stars--far"></div>
+      <div class="lost-stars lost-stars--near"></div>
+      <img class="lost-chart px" src="/atlas/assets/ui/star_map/chart.png" alt="" width="640" height="360" />
+      <div class="lost-ship"><div class="lost-ship__sprite"></div></div>
+      <img class="lost-planet lost-planet--a px" src="/atlas/assets/ui/star_map/writing_selected.png" alt="" width="96" height="96" />
+      <img class="lost-planet lost-planet--b px" src="/atlas/assets/ui/star_map/contact_selected.png" alt="" width="64" height="64" />
+    </div>
+
+    <div class="lost-hud wrap">
+      <span class="eyebrow"><span class="rec"></span> Signal lost</span>
+      <span class="eyebrow">Sector 404 / not on the chart</span>
+    </div>
+
+    <div class="lost-copy wrap">
+      <p class="lost-code" aria-hidden="true">404</p>
+      <h1 class="read-title" id="lost-title">Lost in space</h1>
+      <p class="read-lede">The page you were heading for isn't on the chart. It may have moved when the ship was refitted, or the link drifted off course.</p>
+      <div class="read-meta">
+        <a class="solid-button ship-button" href="/" data-return aria-label="Return to ship"><PixelGlyph name="back" size={14} /><img src="/reading/crescent.png" alt="" width="64" height="32" /> <span>Return to ship</span></a>
+        <a class="outline-button" href="/galaxy/">Browse the archive</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="lost-grid wrap">
+    <section class="panel lost-pongo">
+      <header><h2><img src="/atlas/assets/ui/icon_quest_active.png" alt="" class="px" width="16" height="16" /> Search party</h2><span>On the scent</span></header>
+      <div class="panel-body">
+        <div class="pongo" role="img" aria-label="Pongo, the ship's dog, sniffing the deck"></div>
+        <p>Pongo is sniffing around the deck for it. While he looks, these sectors are charted and safe.</p>
+      </div>
+    </section>
+
+    <nav class="panel" aria-label="Charted destinations">
+      <header><h2><img src="/atlas/assets/ui/icon_map.png" alt="" class="px" width="16" height="16" /> Charted sectors</h2><span>{routes.length}</span></header>
+      <div class="panel-body" style="padding-block: 6px">
+        <ul class="links">
+          {routes.map(([name, href, note, icon]) => (
+            <li><a href={href}>
+              <img src={`/atlas/assets/ui/star_map/${icon}.png`} alt="" class="px" width="28" height="28" />
+              <span><strong>{name}</strong><small>{note}</small></span>
+              <PixelGlyph name="arrow" size={14} />
+            </a></li>
+          ))}
+        </ul>
+      </div>
+    </nav>
+  </div>
+</ReadingLayout>
+
+<style is:global>
+  .lost { position: relative; overflow: hidden; background: #081122; color: var(--citron); border-bottom: var(--line); min-height: min(78vh, 680px); display: flex; flex-direction: column; justify-content: space-between; padding-block: 18px 56px; isolation: isolate; }
+  .lost-sky { position: absolute; inset: 0; z-index: -1; }
+  .lost-stars { position: absolute; inset: 0; background-repeat: repeat-x; background-size: auto 100%; image-rendering: pixelated; }
+  .lost-stars--far { background-image: url('/atlas/assets/parallax/stars_far.png'); animation: lost-pan 140s linear infinite; }
+  .lost-stars--near { background-image: url('/atlas/assets/parallax/stars_near.png'); animation: lost-pan 60s linear infinite; }
+  @keyframes lost-pan { to { background-position-x: -200vw; } }
+  .lost-chart { position: absolute; right: -6%; top: 50%; width: min(78vw, 980px); height: auto; transform: translateY(-50%); opacity: 0.45; }
+
+  /* The Atlier: 4 frames of 768 x 448 in one sheet; the thrusters flicker. */
+  .lost-ship { position: absolute; top: 18%; left: 0; width: clamp(260px, 34vw, 480px); aspect-ratio: 768 / 448; animation: lost-drift 26s ease-in-out infinite alternate; }
+  .lost-ship__sprite { width: 100%; height: 100%; background: url('/atlas/assets/ships/atlier/flight.png') 0 0 / 400% 100% no-repeat; image-rendering: pixelated; animation: lost-thrust 0.5s steps(3) infinite; }
+  @keyframes lost-thrust { to { background-position-x: 100%; } }
+  @keyframes lost-drift {
+    0% { transform: translate(38vw, 0) rotate(-6deg); }
+    50% { transform: translate(52vw, 4vh) rotate(4deg); }
+    100% { transform: translate(44vw, -2vh) rotate(-12deg); }
+  }
+  .lost-planet { position: absolute; image-rendering: pixelated; animation: lost-bob 7s ease-in-out infinite alternate; }
+  .lost-planet--a { right: 8%; bottom: 14%; width: 96px; height: 96px; }
+  .lost-planet--b { right: 30%; top: 12%; width: 64px; height: 64px; animation-delay: -3s; }
+  @keyframes lost-bob { to { transform: translateY(-14px); } }
+
+  .lost-hud { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .lost-hud .eyebrow { color: var(--citron); background: rgba(8, 17, 34, 0.7); padding: 6px 10px; border-radius: var(--pill); }
+  .lost-copy { max-width: var(--wrap); }
+  .lost-copy > * { max-width: 40rem; }
+  .lost-code { margin: 0; font: 400 clamp(72px, 13vw, 168px)/0.9 var(--label); color: var(--lamp); letter-spacing: 0.04em; text-shadow: 4px 4px 0 var(--ink); }
+  .lost .read-title { color: var(--sheet); margin-top: 8px; }
+  .lost .read-lede { color: rgba(251, 248, 241, 0.86); }
+  .lost .ship-button { color: var(--ink); }
+  .lost .ship-button span { margin-left: 4px; }
+  .lost .outline-button { color: var(--ink); }
+
+  .lost-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 28px; padding-block: 48px 64px; }
+  .lost-pongo .panel-body { display: grid; grid-template-columns: auto 1fr; gap: 20px; align-items: center; }
+  .lost-pongo p { margin: 0; font: 400 17px/1.7 var(--serif); }
+  /* Pongo: a 4 x 3 sheet of 128 x 96 frames; the top row is the sniff. */
+  .pongo { width: 192px; height: 144px; background: url('/atlas/assets/cast/pongo/idle.png') 0 0 / 768px 432px no-repeat; image-rendering: pixelated; animation: pongo-sniff 1.6s steps(4) infinite; }
+  @keyframes pongo-sniff { to { background-position-x: -768px; } }
+
+  @media (max-width: 860px) {
+    .lost-grid { grid-template-columns: 1fr; }
+    .lost-ship { top: 8%; opacity: 0.85; }
+    .lost-chart { opacity: 0.3; }
+  }
+  @media (max-width: 560px) {
+    .lost-pongo .panel-body { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+    .lost-planet--b { display: none; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .lost-stars, .lost-ship, .lost-ship__sprite, .lost-planet, .pongo, .lost .rec { animation: none; }
+    .lost-ship { transform: translate(44vw, 0) rotate(-8deg); }
+  }
+</style>

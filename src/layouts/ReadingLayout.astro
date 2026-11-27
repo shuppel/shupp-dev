@@ -25,6 +25,8 @@ export interface Props {
   jsonHref?: string;
   jsonLdType?: 'website' | 'article' | 'press' | 'person';
   jsonLdData?: any;
+  /** Keep this page out of search results (the 404). */
+  noindex?: boolean;
 }
 
 const {
@@ -41,6 +43,7 @@ const {
   jsonHref,
   jsonLdType = 'article',
   jsonLdData = {},
+  noindex = false,
 } = Astro.props;
 
 const canonical = canonicalUrl ?? new URL(Astro.url.pathname, Astro.site).href;
@@ -56,6 +59,7 @@ const twitterHandle = `@${new URL(siteConfig.social.twitter).pathname.split('/')
     <title>{title} | shupp.dev</title>
     <meta name="description" content={description} />
     <meta name="author" content={author} />
+    {noindex && <meta name="robots" content="noindex" />}
     <link rel="canonical" href={canonical} />
     {jsonHref && <link rel="alternate" type="application/json" href={jsonHref} title="This page as JSON" />}
     <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="/rss.xml" />
