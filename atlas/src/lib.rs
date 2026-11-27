@@ -461,10 +461,16 @@ pub struct Game {
     pub request: Option<ui::Request>,
     /// Dialogue in Manaspace instead of the sans (`?font=mana` on the page).
     pub mana_dialogue: bool,
+    /// The page says this is a touch device; ui picks it up once.
+    pub touch_hint: bool,
+    /// Phones: menus and terminals open as the page's scrolling sheets.
+    pub html_menus: bool,
     /// The engine room's maintenance hatch has been opened (relic found).
     pub hatch_open: bool,
     /// Pongo has been sent to his bed in the quarters.
     pub pongo_bed: bool,
+    /// Music and effects on; the page remembers it between visits.
+    pub sound: bool,
 }
 
 impl Game {
@@ -506,6 +512,7 @@ pub struct Art {
     pub mechanic_work: Handle<Image>,
     pub work_layout: Handle<TextureAtlasLayout>,
     pub archivist_npc: Handle<Image>,
+    pub archivist_hd: Handle<Image>,
 }
 
 #[derive(Component)]
@@ -607,7 +614,10 @@ pub fn app(canvas: Option<String>, registry: Registry, boot: Boot, visited: Vec<
         paused: false,
         request: None,
         mana_dialogue: true,
+        touch_hint: false,
+        html_menus: false,
         hatch_open: false,
+        sound: true,
         pongo_bed: false,
     })
     .add_message::<EnterScene>()
@@ -674,6 +684,7 @@ pub(crate) fn setup(
         mechanic_work: load_smooth(&assets, "cast/mechanic/work.png"),
         work_layout: layouts.add(TextureAtlasLayout::from_grid(UVec2::new(128, 128), 6, 1, None, None)),
         archivist_npc: load_t(&assets, "cast/archivist/npc_outlined.png"),
+        archivist_hd: load_smooth(&assets, "cast/archivist/npc_hd.png"),
     };
 
     // Erikk. The art pack's pivot is (24, 62) in a 48 × 64 cell.
@@ -823,7 +834,8 @@ fn enter_scene(
     if let Some((npc, foot)) = def.npc {
         let (image, layout) = match npc {
             Npc::Technician => (art.technician_npc.clone(), art.npc_hd_layout.clone()),
-            Npc::Archivist | Npc::Mechanic => (art.archivist_npc.clone(), art.npc_layout.clone()),
+            Npc::Archivist => (art.archivist_hd.clone(), art.npc_hd_layout.clone()),
+            Npc::Mechanic => (art.archivist_npc.clone(), art.npc_layout.clone()),
         };
         commands.spawn((
             SceneEntity,
@@ -1009,6 +1021,9 @@ fn read_page(mut game: ResMut<Game>, mut tap: ResMut<PageTap>) {
             }
             bridge::Inbound::Paused(p) => game.paused = p,
             bridge::Inbound::DialogueFont(mana) => game.mana_dialogue = mana,
+            bridge::Inbound::Touch(t) => game.touch_hint = t,
+            bridge::Inbound::HtmlMenus(on) => game.html_menus = on,
+            bridge::Inbound::Sound(on) => game.sound = on,
             bridge::Inbound::Go(id) => game.request = Some(ui::Request::Destination(id)),
             bridge::Inbound::Search(q) => game.search = Some(q),
         }
@@ -1068,7 +1083,7 @@ fn pointer_walk(
     mut player: Single<&mut Player>,
 ) {
     let Some(at) = pointer_press(&mouse, &touches, &page_tap, &window, &frame) else { return };
-    if ui::hud_hit(at) || !(0.0..VW).contains(&at.x) || !(0.0..VH).contains(&at.y) {
+    if ui::hud_hit(at - Vec2::new(frame.view_x0, 0.0)) || !(0.0..VW).contains(&at.x) || !(0.0..VH).contains(&at.y) {
         return;
     }
     let hit = points_here(&game).find(|pt| pt.pos.distance(at) < 30.0).copied();
@@ -1165,7 +1180,7 @@ fn use_point(keys: Res<ButtonInput<KeyCode>>, mut game: ResMut<Game>) {
     }
 }
 
-fn animate_player(time: Res<Time>, art: Res<Art>, mut q: Query<(&mut Player, &mut Sprite)>) {
+fn animate_player(time: Res<Time>, art: Res<Art>, game: Res<Game>, mut q: Query<(&mut Player, &mut Sprite)>) {
     for (mut p, mut sprite) in &mut q {
         let (cols, ms, image, layout) = if p.walking && p.running {
             (4, 0.085, &art.run, &art.run_layout)
@@ -1178,6 +1193,10 @@ fn animate_player(time: Res<Time>, art: Res<Art>, mut q: Query<(&mut Player, &mu
         if p.clock >= ms {
             p.clock = 0.0;
             p.frame = (p.frame + 1) % cols;
+            // A footstep on each foot's contact frame: wood in the treehouse, deck plate elsewhere.
+            if p.walking && game.mode == Mode::Explore && !game.paused && p.frame % (cols / 2) == 0 {
+                bridge::emit("sfx", if game.scene == SceneId::Quarters { "step_wood" } else { "step_metal" });
+            }
         }
         if p.frame >= cols {
             p.frame = 0;
@@ -1382,10 +1401,8 @@ const fn prop(image: &'static str, x: f32, y: f32, w: f32, h: f32, solid: bool, 
 const DAVE: Vec2 = p(566.0, 262.0);
 const HATCH: usize = 0;
 
-static ENGINE_PROPS: [Prop; 12] = [
+static ENGINE_PROPS: [Prop; 11] = [
     prop("props/engine_room/hatch_closed.png", 300.0, 334.0, 50.0, 31.0, false, true),
-    // The doorway back up to the concourse (stand-in art, make_engine_door.py).
-    prop("props/engine_room/doorway.png", 30.0, 246.0, 46.0, 68.0, false, false),
     prop("props/engine_room/coolant_tank.png", 82.0, 176.0, 34.0, 66.0, true, false),
     prop("props/engine_room/flywheel.png", 140.0, 176.0, 56.0, 62.0, true, false),
     prop("props/engine_room/reactor_core.png", 236.0, 178.0, 84.0, 106.0, true, false),

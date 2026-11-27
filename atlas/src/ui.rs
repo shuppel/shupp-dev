@@ -15,6 +15,8 @@ use bevy::window::PrimaryWindow;
 use crate::content::{Destination, Registry};
 use crate::{Action, EnterScene, Game, Mode, Npc, Point, SceneId, VH, VW, bridge, scene_def};
 
+mod sound;
+
 // Palette: shupp.dev brand colours plus the warm lamp orange from the art pack.
 const INK: Color = Color::srgba(0.078, 0.031, 0.055, 0.94);
 const INK_SOLID: Color = Color::srgb(0.078, 0.031, 0.055);
@@ -31,12 +33,12 @@ pub struct UiPlugin;
 
 impl Plugin for UiPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(Frame { scale: 1.0, offset: Vec2::ZERO, window: Vec2::ZERO })
+        app.insert_resource(Frame { scale: 1.0, offset: Vec2::ZERO, window: Vec2::ZERO, view_x0: 0.0, view_w: VW, portrait: false })
             .insert_resource(Ui::default())
             .add_systems(Startup, setup_ui.after(crate::setup))
             .add_systems(
                 Update,
-                (layout_frame, handle_request, input, tick, render, hud, animate_map)
+                (layout_frame, handle_request, input, tick, render, hud, animate_map, sound::cues)
                     .chain()
                     .after(crate::depth_sort),
             );
@@ -96,7 +98,17 @@ pub struct Frame {
     /// Letterbox offset, in virtual pixels.
     pub offset: Vec2,
     window: Vec2,
+    /// The part of the 640-wide scene on screen: all of it in landscape; in
+    /// portrait a full-height slice that follows Erikk.
+    pub view_x0: f32,
+    pub view_w: f32,
+    pub portrait: bool,
 }
+
+/// A UI node that stays on screen while the portrait camera pans: its left
+/// edge tracks the view and its width is the view's.
+#[derive(Component)]
+struct Pinned;
 
 impl Frame {
     pub fn to_scene(&self, screen: Vec2) -> Vec2 {
@@ -106,11 +118,13 @@ impl Frame {
 
 // The menus hide in a sliver tab at the bottom-left edge (this is a website
 // first; the game chrome stays out of the way). Tap the sliver to slide out
-// the tray with the Menu and Map icons.
+// the tray with the Menu, Map and Sound icons.
 const SLIVER: Rect = Rect { min: Vec2::new(0.0, 312.0), max: Vec2::new(22.0, 356.0) };
-const TRAY: Rect = Rect { min: Vec2::new(0.0, 312.0), max: Vec2::new(98.0, 356.0) };
+const TRAY: Rect = Rect { min: Vec2::new(0.0, 312.0), max: Vec2::new(136.0, 356.0) };
 const MENU_BTN: Rect = Rect { min: Vec2::new(6.0, 316.0), max: Vec2::new(44.0, 352.0) };
 const MAP_BTN: Rect = Rect { min: Vec2::new(46.0, 316.0), max: Vec2::new(84.0, 352.0) };
+/// Sound on/off, saved by the page between visits.
+const SOUND_BTN: Rect = Rect { min: Vec2::new(86.0, 316.0), max: Vec2::new(124.0, 352.0) };
 
 pub fn hud_hit(at: Vec2) -> bool {
     TRAY.contains(at)
@@ -292,7 +306,7 @@ struct UiArt {
     full_body: Handle<Image>,
     /// status, items, quests, map, credential, degree, quest_active, quest_done,
     /// character, ship, settings
-    ui_icons: [Handle<Image>; 11],
+    ui_icons: [Handle<Image>; 13],
     cog: Handle<Image>,
     key_e: Handle<Image>,
     key_tap: Handle<Image>,
@@ -318,11 +332,11 @@ enum RoomGo {
 type RoomDef = (&'static str, &'static str, RoomGo, &'static str, &'static [(f32, f32)], (f32, f32));
 const ROOMS: [RoomDef; 5] = [
     ("Engine Room", "SKILLS", RoomGo::Scene(SceneId::Engine), "Dave keeps the reactor humming. Ask him about the tools that keep the ship flying.",
-        &[(205.0, 252.0), (250.0, 234.0), (420.0, 238.0), (436.0, 300.0), (432.0, 386.0), (240.0, 388.0), (205.0, 384.0)], (318.0, 268.0)),
+        &[(196.0, 394.0), (640.0, 394.0), (658.0, 440.0), (660.0, 504.0), (632.0, 512.0), (632.0, 656.0), (250.0, 656.0), (200.0, 600.0)], (430.0, 410.0)),
     ("Captain's Quarters", "ABOUT", RoomGo::Scene(SceneId::Quarters), "A bunk, a desk, and a mirror up in the treehouse. Stand in front of the mirror and you end up explaining yourself.",
         &[(1150.0, 296.0), (1302.0, 296.0), (1302.0, 470.0), (1150.0, 470.0)], (1226.0, 300.0)),
     ("The Archive", "WRITING", RoomGo::Scene(SceneId::Archive), "",
-        &[(196.0, 394.0), (640.0, 394.0), (658.0, 440.0), (660.0, 504.0), (632.0, 512.0), (632.0, 656.0), (250.0, 656.0), (200.0, 600.0)], (430.0, 410.0)),
+        &[(205.0, 252.0), (250.0, 234.0), (420.0, 238.0), (436.0, 300.0), (432.0, 386.0), (240.0, 388.0), (205.0, 384.0)], (318.0, 268.0)),
     ("The Dockyard", "WORK", RoomGo::Scene(SceneId::Port), "",
         &[(640.0, 508.0), (986.0, 510.0), (990.0, 666.0), (640.0, 666.0)], (812.0, 524.0)),
     ("The Bridge", "HOME", RoomGo::Scene(SceneId::Bridge), "The garden concourse at the heart of the ship, with the star console up in the nose.",
@@ -494,6 +508,8 @@ fn setup_ui(
             "ui/menu/character.png",
             "ui/menu/ship.png",
             "ui/menu/settings.png",
+            "ui/menu/sound_on.png",
+            "ui/menu/sound_off.png",
         ]
         .map(|p| crate::load_smooth(&assets, p)),
         cog: images.add(cog_image()),
@@ -514,24 +530,68 @@ fn setup_ui(
     ui.dirty = true;
 }
 
+#[allow(clippy::too_many_arguments)]
 fn layout_frame(
     window: Single<&Window, With<PrimaryWindow>>,
+    time: Res<Time>,
+    game: Res<Game>,
+    player: Single<&crate::Player>,
+    mut ui: ResMut<Ui>,
     mut frame: ResMut<Frame>,
     mut scale: ResMut<UiScale>,
     root: Res<UiRoot>,
-    mut nodes: Query<&mut Node>,
+    mut camera: Single<(&mut Transform, &mut Projection), With<Camera2d>>,
+    mut nodes: Query<&mut Node, Without<Pinned>>,
+    mut pinned: Query<&mut Node, With<Pinned>>,
 ) {
     let size = Vec2::new(window.width(), window.height());
-    if size == frame.window || size.x < 1.0 {
+    if size.x < 1.0 {
         return;
     }
+    // Tall screens (phones held upright) fill the height and follow Erikk
+    // while exploring and talking; maps, menus and travel show the whole frame.
+    let portrait = size.y > size.x * 1.05 && matches!(game.mode, Mode::Explore | Mode::Dialogue);
+    let switched = portrait != frame.portrait || size != frame.window;
+    let (s, x0, vw) = if portrait {
+        let s = size.y / VH;
+        let vw = (size.x / s).min(VW);
+        let target = (player.foot.x - vw / 2.0).clamp(0.0, VW - vw);
+        let x0 = if switched { target } else { frame.view_x0 + (target - frame.view_x0) * (1.0 - (-6.0 * time.delta_secs()).exp()) };
+        (s, x0, vw)
+    } else {
+        ((size.x / VW).min(size.y / VH), 0.0, VW)
+    };
+    if !switched && (x0 - frame.view_x0).abs() < 0.01 {
+        return;
+    }
+    if portrait != frame.portrait || (vw - frame.view_w).abs() > 0.5 {
+        // The HUD and dialogue lay out for the new width.
+        ui.hud_key.clear();
+        ui.dirty = true;
+    }
     frame.window = size;
-    frame.scale = (size.x / VW).min(size.y / VH);
-    frame.offset = (size / frame.scale - Vec2::new(VW, VH)) / 2.0;
-    scale.0 = frame.scale;
+    frame.portrait = portrait;
+    frame.scale = s;
+    frame.view_x0 = x0;
+    frame.view_w = vw;
+    frame.offset = if portrait { Vec2::new(-x0, 0.0) } else { (size / s - Vec2::new(VW, VH)) / 2.0 };
+    scale.0 = s;
+    let (tf, proj) = &mut *camera;
+    tf.translation.x = if portrait { x0 + vw / 2.0 - VW / 2.0 } else { 0.0 };
+    if let Projection::Orthographic(o) = &mut **proj {
+        o.scaling_mode = if portrait {
+            bevy::camera::ScalingMode::FixedVertical { viewport_height: VH }
+        } else {
+            bevy::camera::ScalingMode::AutoMin { min_width: VW, min_height: VH }
+        };
+    }
     if let Ok(mut node) = nodes.get_mut(root.0) {
         node.left = Val::Px(frame.offset.x);
         node.top = Val::Px(frame.offset.y);
+    }
+    for mut node in &mut pinned {
+        node.left = Val::Px(x0);
+        node.width = Val::Px(vw);
     }
 }
 
@@ -587,6 +647,12 @@ fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Regi
             let here = ROOMS.iter().position(|r| matches!(r.2, RoomGo::Scene(s) if s == game.scene)).unwrap_or(0);
             ui.ship_sel = here;
             game.mode = Mode::Ship;
+        }
+        Request::Menu if game.html_menus => open_sheet(&mut game, "0"),
+        Request::MenuTab(t) if game.html_menus => open_sheet(&mut game, &t.to_string()),
+        Request::Terminal(id) if game.html_menus => {
+            game.mark_visited(&id);
+            open_sheet(&mut game, &format!("terminal:{id}"));
         }
         Request::Menu => {
             ui.tab = 0;
@@ -727,6 +793,15 @@ fn handle_request(mut game: ResMut<Game>, mut ui: ResMut<Ui>, registry: Res<Regi
     }
 }
 
+/// Phones: the page shows the menu or a terminal as a scrolling sheet over
+/// the paused game, and unpauses it when the sheet closes.
+fn open_sheet(game: &mut Game, what: &str) {
+    let what = if game.hatch_open { format!("{what}|hatch") } else { what.to_owned() };
+    bridge::emit("sheet", &what);
+    game.paused = true;
+    game.mode = Mode::Explore;
+}
+
 fn start_travel(game: &mut Game, ui: &mut Ui, to: SceneId, flight: bool) {
     if !flight && to == game.scene {
         game.mode = Mode::Explore;
@@ -781,6 +856,10 @@ fn input(
         ui.fresh = false;
         return;
     }
+    if std::mem::take(&mut game.touch_hint) {
+        ui.touch = true;
+        ui.dirty = true;
+    }
     if page_tap.at.is_some() {
         ui.touch = page_tap.touch;
     } else if touches.any_just_pressed() {
@@ -802,6 +881,8 @@ fn input(
 
     match game.mode {
         Mode::Explore => {
+            // The tray is pinned to the view, which pans in portrait.
+            let tap = tap.map(|t| t - Vec2::new(frame.view_x0, 0.0));
             let tray_tap = |r: Rect| ui.tray && tap.is_some_and(|t| r.contains(t));
             if keys.any_just_pressed([KeyCode::Escape, KeyCode::KeyC, KeyCode::Tab]) || tray_tap(MENU_BTN) {
                 ui.tray = false;
@@ -810,6 +891,10 @@ fn input(
                 // M and the tray's map button open the ship map; the bridge's star console has the planets.
                 ui.tray = false;
                 game.request = Some(Request::Ship);
+            } else if tray_tap(SOUND_BTN) {
+                // The tray stays open so the icon visibly flips.
+                game.sound = !game.sound;
+                bridge::emit("sound", if game.sound { "on" } else { "off" });
             } else if let Some(t) = tap {
                 // The sliver opens the tray; its chevron, or any tap elsewhere, closes it.
                 ui.tray = if ui.tray { false } else { SLIVER.contains(t) };
@@ -1498,6 +1583,7 @@ fn render(
     fonts: Res<Fonts>,
     art: Res<UiArt>,
     root: Res<UiRoot>,
+    frame: Res<Frame>,
 ) {
     if !ui.dirty {
         return;
@@ -1514,7 +1600,13 @@ fn render(
     if game.mode == Mode::Explore {
         return;
     }
-    let overlay = commands.spawn((at(0.0, 0.0, VW, VH), ZIndex(10))).id();
+    let tall = frame.portrait && game.mode == Mode::Dialogue;
+    let vw = if tall { frame.view_w } else { VW };
+    let overlay = if tall {
+        commands.spawn((Pinned, at(frame.view_x0, 0.0, vw, VH), ZIndex(10))).id()
+    } else {
+        commands.spawn((at(0.0, 0.0, VW, VH), ZIndex(10))).id()
+    };
     commands.entity(root.0).add_child(overlay);
     ui.overlay = Some(overlay);
     let f = &*fonts;
@@ -1538,32 +1630,38 @@ fn render(
             let mut more = None;
             let mut portrait = None;
             commands.entity(overlay).with_children(|p| {
-                if line.call {
+                // Portrait phones: a taller box across the narrow view, the
+                // speaker smaller above it.
+                let (bx, by, bw, bh) = if tall { (6.0, VH - 134.0, vw - 12.0, 128.0) } else { (12.0, 258.0, 616.0, 92.0) };
+                let k = if tall { 0.62 } else { 1.0 };
+                let (w, h) = (w * k, h * k);
+                if line.call && !tall {
                     // A transmission: the caller's head floats as a hologram
                     // over a little brass projector (a codec-style call).
                     portrait = Some(holo_call(p, f, img, layout, line.pose));
                 } else {
                     portrait = Some(
                         p.spawn((
-                            at(18.0, 262.0 - h + 8.0, w, h),
+                            at(bx + 6.0, by + 4.0 - h + 8.0 * k, w, h),
                             ImageNode::from_atlas_image(img.clone(), TextureAtlas { layout: layout.clone(), index: line.pose }),
                         ))
                         .id(),
                     );
                 }
-                p.spawn(panel(12.0, 258.0, 616.0, 92.0)).with_children(|b| {
-                    b.spawn(text_at(&f.label, 10.0, LAMP, line.speaker.to_uppercase(), 14.0, 6.0, 400.0));
-                    let (font, size) = if mana_dialogue { (&f.mana, 10.0) } else { (&f.body, 13.0) };
-                    typed = Some(b.spawn(text_at(font, size, TEXT, "", 14.0, 24.0, 586.0)).id());
-                    more = Some(b.spawn(text_at(&f.label, 10.0, CITRON, "›", 596.0, 72.0, 14.0)).id());
+                p.spawn(panel(bx, by, bw, bh)).with_children(|b| {
+                    let px = if tall { 8.0 } else { 14.0 };
+                    b.spawn(text_at(&f.label, 10.0, LAMP, line.speaker.to_uppercase(), px, 6.0, bw - 16.0));
+                    let (font, size) = if mana_dialogue { (&f.mana, if tall { 8.5 } else { 10.0 }) } else { (&f.body, if tall { 11.0 } else { 13.0 }) };
+                    typed = Some(b.spawn(text_at(font, size, TEXT, "", px, if tall { 22.0 } else { 24.0 }, bw - 2.0 * px - 2.0)).id());
+                    more = Some(b.spawn(text_at(&f.label, 10.0, CITRON, "›", bw - 16.0, bh - 20.0, 14.0)).id());
                 });
                 p.spawn(text_at(
                     &f.label,
                     8.0,
                     MUTED,
                     format!("{}/{}", d.idx + 1, d.lines.len()),
-                    590.0,
-                    246.0,
+                    bx + bw - 40.0,
+                    by - 12.0,
                     40.0,
                 ));
             });
@@ -2013,11 +2111,12 @@ fn hud(
     fonts: Res<Fonts>,
     art: Res<UiArt>,
     root: Res<UiRoot>,
+    frame: Res<Frame>,
 ) {
     let show = game.mode == Mode::Explore;
     let prompt = if show { game.nearby } else { None };
     let key = format!("{show}|{:?}|{:?}|{}|{}", game.scene, prompt.map(|p| p.label), ui.hint > 0.0, ui.touch);
-    let key = format!("{key}|{}", ui.tray);
+    let key = format!("{key}|{}|{}|{}", ui.tray, frame.view_w.round(), game.sound);
     if key == ui.hud_key {
         return;
     }
@@ -2033,7 +2132,8 @@ fn hud(
     let touch = ui.touch;
     let tray = ui.tray;
     let hint = ui.hint > 0.0;
-    let hud = commands.spawn((at(0.0, 0.0, VW, VH), ZIndex(5))).id();
+    let (vw, portrait) = (frame.view_w, frame.portrait);
+    let hud = commands.spawn((Pinned, at(frame.view_x0, 0.0, vw, VH), ZIndex(5))).id();
     commands.entity(root.0).add_child(hud);
     ui.hud = Some(hud);
     commands.entity(hud).with_children(|p| {
@@ -2043,12 +2143,13 @@ fn hud(
         });
         if tray {
             p.spawn(panel(TRAY.min.x - 3.0, TRAY.min.y, TRAY.width() + 3.0, TRAY.height())).with_children(|b| {
-                for (r, icon, label) in [(MENU_BTN, 8usize, "MENU"), (MAP_BTN, 3, "MAP")] {
+                let sound = if game.sound { (11, "SOUND") } else { (12, "MUTED") };
+                for (r, icon, label) in [(MENU_BTN, 8usize, "MENU"), (MAP_BTN, 3, "MAP"), (SOUND_BTN, sound.0, sound.1)] {
                     let x = r.min.x + 3.0;
                     b.spawn((at(x + r.width() / 2.0 - 8.0, 6.0, 16.0, 16.0), ImageNode::new(art.ui_icons[icon].clone())));
                     b.spawn(text_at(&f.label, 7.0, CITRON, label, x, 25.0, r.width()).with_justify());
                 }
-                b.spawn(text_at(&f.label, 12.0, LINE, "‹", 88.0, 12.0, 10.0));
+                b.spawn(text_at(&f.label, 12.0, LINE, "‹", 126.0, 12.0, 10.0));
             });
         } else {
             p.spawn(panel(-3.0, 318.0, 13.0, 32.0)).with_children(|b| {
@@ -2062,10 +2163,13 @@ fn hud(
                 _ => pt.label.to_owned(),
             };
             // Manaspace runs wide: about 6.4 UI px per character at this size.
-            let w = 32.0 + text.chars().count() as f32 * 6.4;
-            let (x, y) = match crate::fx::cloud_tip(game.scene, &pt) {
+            let w = (32.0 + text.chars().count() as f32 * 6.4).min(vw - 8.0);
+            // Portrait: the camera pans, so the prompt sits at the bottom.
+            let tip = if portrait { None } else { crate::fx::cloud_tip(game.scene, &pt) };
+            let (x, y) = match tip {
                 Some(tip) if tip.x + 40.0 + w <= VW - 4.0 => (tip.x + 40.0, tip.y - 26.0),
                 Some(tip) => (tip.x - w - 4.0, tip.y - 26.0),
+                None if portrait => (vw / 2.0 - w / 2.0, 284.0),
                 None => (VW / 2.0 - w / 2.0, 310.0),
             };
             let key = if touch { art.key_tap.clone() } else { art.key_e.clone() };
@@ -2080,9 +2184,16 @@ fn hud(
             } else {
                 "WASD or click to walk · E to interact · Esc menu · M atlas"
             };
-            p.spawn(panel(120.0, 334.0, 400.0, 18.0)).with_children(|b| {
-                b.spawn(text_at(&f.label, 8.0, TEXT, msg, 0.0, 2.0, 400.0).with_justify());
-            });
+            if portrait {
+                let w = vw - 30.0;
+                p.spawn(panel(24.0, 322.0, w, 32.0)).with_children(|b| {
+                    b.spawn(text_at(&f.label, 7.5, TEXT, msg, 4.0, 3.0, w - 8.0).with_justify());
+                });
+            } else {
+                p.spawn(panel(120.0, 334.0, 400.0, 18.0)).with_children(|b| {
+                    b.spawn(text_at(&f.label, 8.0, TEXT, msg, 0.0, 2.0, 400.0).with_justify());
+                });
+            }
         }
     });
 }
