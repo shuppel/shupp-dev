@@ -328,11 +328,11 @@ enum RoomGo {
 type RoomDef = (&'static str, &'static str, RoomGo, &'static str, &'static [(f32, f32)], (f32, f32));
 const ROOMS: [RoomDef; 5] = [
     ("Engine Room", "SKILLS", RoomGo::Scene(SceneId::Engine), "Dave keeps the reactor humming. Ask him about the tools that keep the ship flying.",
-        &[(205.0, 252.0), (250.0, 234.0), (420.0, 238.0), (436.0, 300.0), (432.0, 386.0), (240.0, 388.0), (205.0, 384.0)], (318.0, 268.0)),
+        &[(196.0, 394.0), (640.0, 394.0), (658.0, 440.0), (660.0, 504.0), (632.0, 512.0), (632.0, 656.0), (250.0, 656.0), (200.0, 600.0)], (430.0, 410.0)),
     ("Captain's Quarters", "ABOUT", RoomGo::Scene(SceneId::Quarters), "A bunk, a desk, and a mirror up in the treehouse. Stand in front of the mirror and you end up explaining yourself.",
         &[(1150.0, 296.0), (1302.0, 296.0), (1302.0, 470.0), (1150.0, 470.0)], (1226.0, 300.0)),
     ("The Archive", "WRITING", RoomGo::Scene(SceneId::Archive), "",
-        &[(196.0, 394.0), (640.0, 394.0), (658.0, 440.0), (660.0, 504.0), (632.0, 512.0), (632.0, 656.0), (250.0, 656.0), (200.0, 600.0)], (430.0, 410.0)),
+        &[(205.0, 252.0), (250.0, 234.0), (420.0, 238.0), (436.0, 300.0), (432.0, 386.0), (240.0, 388.0), (205.0, 384.0)], (318.0, 268.0)),
     ("The Dockyard", "WORK", RoomGo::Scene(SceneId::Port), "",
         &[(640.0, 508.0), (986.0, 510.0), (990.0, 666.0), (640.0, 666.0)], (812.0, 524.0)),
     ("The Bridge", "HOME", RoomGo::Scene(SceneId::Bridge), "The garden concourse at the heart of the ship, with the star console up in the nose.",
