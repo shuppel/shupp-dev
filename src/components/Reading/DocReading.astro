@@ -1,0 +1,57 @@
+---
+// A plain document (a policy, a notice) as a standalone reading page: hero,
+// an outline built from the body's h2s, the text, and a contact panel.
+import ReadingLayout from '../../layouts/ReadingLayout.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  terminal: string;
+  eyebrow: string;
+  lede: string;
+  facts: [string, string][];
+  contact: { label: string; href: string };
+  jsonHref?: string;
+  back?: { href: string; title: string; note: string };
+}
+
+const { title, description, terminal, eyebrow, lede, facts, contact, jsonHref, back } = Astro.props;
+const html = await Astro.slots.render('default');
+const outline = [...html.matchAll(/<h2 id="([^"]+)">(.*?)<\/h2>/g)].map((m) => ({ id: m[1], text: m[2].replace(/<[^>]+>/g, '') }));
+---
+
+<ReadingLayout title={title} description={description} terminal={terminal} type="website" jsonLdType="website" jsonHref={jsonHref}>
+  <article>
+    <section class="read-hero read-hero--solo wrap">
+      <div>
+        <p class="eyebrow"><span class="status-dot"></span> {eyebrow}</p>
+        <h1 class="read-title">{title}</h1>
+        <p class="read-lede">{lede}</p>
+        <ul class="read-meta">
+          {facts.map(([k, v]) => <li class="tag"><img src="/atlas/assets/ui/icon_quests.png" alt="" class="px" width="16" height="16" /> {k}: {v}</li>)}
+        </ul>
+      </div>
+    </section>
+
+    <div class="read-grid wrap">
+      <nav class="read-rail" aria-labelledby="outline-title">
+        <p class="eyebrow" id="outline-title">On this page</p>
+        <ol class="outline">{outline.map((h) => <li><a href={`#${h.id}`}>{h.text}</a></li>)}</ol>
+      </nav>
+      <div class="read-body read-body--doc" set:html={html} />
+      <aside class="read-aside" aria-label="Contact">
+        <section class="panel">
+          <header><h2><img src="/atlas/assets/props/comms.png" alt="" class="px" width="16" height="16" /> Questions</h2><span>Comms</span></header>
+          <div class="panel-body"><p style="margin: 0 0 10px">Write in and a person reads it.</p><a class="solid-button" href={contact.href}>{contact.label}</a></div>
+          {jsonHref && <footer><a href={jsonHref}>Read it as JSON ↗</a></footer>}
+        </section>
+      </aside>
+    </div>
+
+    <nav class="read-rules wrap" aria-label="Keep browsing">
+      <a href="/" data-return><span>01</span><strong>Return to ship</strong><p>Close this page and pick up where you left off.</p></a>
+      {back ? <a href={back.href}><span>02</span><strong>{back.title}</strong><p>{back.note}</p></a> : <a href="/about/"><span>02</span><strong>About</strong><p>The story and how I work.</p></a>}
+      <a href="/portfolio/"><span>03</span><strong>Portfolio</strong><p>Design systems, apps, shows and sites.</p></a>
+    </nav>
+  </article>
+</ReadingLayout>

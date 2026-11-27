@@ -1,0 +1,208 @@
+---
+// A press entry as a standalone page. Video entries open on a full-width
+// screen dressed as a ship's transmission (HUD, scanlines, corner reticle);
+// the YouTube player only loads when the reader presses play.
+import { getCollection, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import ReadingLayout from '../../layouts/ReadingLayout.astro';
+import PixelGlyph from './PixelGlyph.astro';
+import { PRESS_TYPE, pressJsonUrl, pressUrl, publicBody, spotifyEmbed, youtube } from '../../lib/reading/press';
+import { titleCase } from '../../lib/reading/galaxy';
+import { siteConfig } from '../../config/site';
+
+interface Props {
+  entry: CollectionEntry<'press'>;
+}
+type Press = CollectionEntry<'press'>;
+
+const { entry } = Astro.props;
+const d = entry.data;
+const { Content } = await render(entry);
+const hasBody = publicBody(entry.body).length > 0;
+const meta = PRESS_TYPE[d.type] ?? { label: titleCase(d.type), cta: 'View on' };
+const yt = youtube(entry);
+const spotify = yt ? null : spotifyEmbed(entry);
+const thumb = yt ? `https://i.ytimg.com/vi/${yt.id}/${yt.vertical ? 'hq720' : 'maxresdefault'}.jpg` : null;
+const thumbFallback = yt ? `https://i.ytimg.com/vi/${yt.id}/hqdefault.jpg` : null;
+const fmt = (date: Date) => date.toLocaleDateString('en-US', { timeZone: 'UTC', year: 'numeric', month: 'long', day: 'numeric' });
+const stamp = d.pubDate.toISOString().slice(0, 10).replaceAll('-', '.');
+
+const all = (await getCollection('press')).sort((a, b) => b.data.pubDate.getTime() - a.data.pubDate.getTime());
+const at = all.findIndex((n) => n.id === entry.id);
+const newer: Press | undefined = at > 0 ? all[at - 1] : undefined;
+const older: Press | undefined = at >= 0 && at < all.length - 1 ? all[at + 1] : undefined;
+const channel = String(all.length - at).padStart(2, '0');
+
+const url = new URL(pressUrl(entry.id), Astro.site).href;
+const listen = [
+  d.youtubeUrl && { label: 'YouTube', href: d.youtubeUrl },
+  d.spotifyUrl && { label: 'Spotify', href: d.spotifyUrl },
+  d.appleUrl && { label: 'Apple Podcasts', href: d.appleUrl },
+].filter(Boolean) as { label: string; href: string }[];
+
+const jsonLdData = {
+  press: {
+    title: d.title,
+    description: d.description,
+    type: d.type,
+    pubDate: d.pubDate.toISOString(),
+    externalUrl: d.externalUrl,
+    outlet: d.outlet,
+    eventName: d.eventName,
+    location: d.location,
+    image: d.coverImage ?? thumbFallback ?? undefined,
+    tags: d.tags || [],
+    guests: d.guests || [],
+  },
+  breadcrumbs: [
+    { name: 'Home', url: 'https://shupp.dev/' },
+    { name: 'Press', url: 'https://shupp.dev/press/' },
+    { name: d.title, url },
+  ],
+};
+---
+
+<ReadingLayout
+  title={d.title}
+  description={d.description}
+  terminal="The Relay"
+  image={d.coverImage ?? thumbFallback ?? undefined}
+  imageAlt={d.title}
+  author={siteConfig.author.name}
+  publishedTime={d.pubDate.toISOString()}
+  canonicalUrl={d.externalUrl}
+  jsonHref={pressJsonUrl(entry.id)}
+  jsonLdType="press"
+  jsonLdData={jsonLdData}
+>
+  <article>
+    {yt && (
+      <section class:list={['stage', { vertical: yt.vertical }]} aria-label="Video">
+        <div class="stage-hud wrap">
+          <span class="eyebrow"><img src="/atlas/assets/props/transmission.png" alt="" class="px" width="24" height="24" /> Incoming transmission</span>
+          <span class="eyebrow">CH {channel} / {d.outlet ?? 'shupp.dev'}</span>
+          <span class="eyebrow"><span class="rec"></span> REC {stamp}</span>
+        </div>
+        <div class="stage-body wrap">
+          {yt.vertical && (
+            <div class="stage-side">
+              <p class="eyebrow">Signal</p>
+              <dl>
+                <div><dt>Format</dt><dd>{meta.label}</dd></div>
+                <div><dt>Received</dt><dd>{fmt(d.pubDate)}</dd></div>
+                {d.outlet && <div><dt>Station</dt><dd>{d.outlet}</dd></div>}
+              </dl>
+            </div>
+          )}
+          <div class="screen" data-yt={yt.id} data-title={d.title}>
+            <img class="screen-thumb" src={thumb} alt="" width={yt.vertical ? 720 : 1280} height={yt.vertical ? 1280 : 720} decoding="async" onerror={`this.onerror=null;this.src='${thumbFallback}'`} />
+            <span class="screen-scan" aria-hidden="true"></span>
+            <span class="reticle tl" aria-hidden="true"></span><span class="reticle tr" aria-hidden="true"></span>
+            <span class="reticle bl" aria-hidden="true"></span><span class="reticle br" aria-hidden="true"></span>
+            <a class="press-start" href={`https://www.youtube.com/watch?v=${yt.id}`} target="_blank" rel="noopener">
+              <span class="press-start__icon" aria-hidden="true"><PixelGlyph name="arrow" size={22} /></span>
+              <span>Press start</span>
+              <small>Play “{d.title}”</small>
+            </a>
+          </div>
+          {yt.vertical && (
+            <div class="stage-side">
+              <p class="eyebrow">Comms</p>
+              <img src="/atlas/assets/props/comms.png" alt="" class="px" width="72" height="72" />
+              <a class="outline-button" href={`https://www.youtube.com/shorts/${yt.id}`} target="_blank" rel="noopener">Open on YouTube ↗</a>
+            </div>
+          )}
+        </div>
+        <div class="stage-hud wrap">
+          <span class="eyebrow">{meta.label} / {d.title}</span>
+          <a class="eyebrow" href={`https://www.youtube.com/watch?v=${yt.id}`} target="_blank" rel="noopener">Watch on YouTube ↗</a>
+        </div>
+      </section>
+    )}
+
+    <section class:list={['read-hero wrap', { 'read-hero--solo': yt }]}>
+      <div>
+        <p class="eyebrow"><span class="status-dot"></span> {meta.label}{d.outlet && ` / ${d.outlet}`}</p>
+        <h1 class="read-title">{d.title}</h1>
+        <p class="read-lede">{d.description}</p>
+        <div class="read-meta">
+          <a class="solid-button" href={d.externalUrl} target="_blank" rel="noopener">{meta.cta} {d.outlet ?? 'the original'} ↗</a>
+          {listen.filter((l) => l.href !== d.externalUrl).map((l) => <a class="outline-button" href={l.href} target="_blank" rel="noopener">{l.label} ↗</a>)}
+        </div>
+      </div>
+      {!yt && (
+        <figure class="cover panel">
+          <header><h2><img src="/atlas/assets/props/comms.png" alt="" class="px" width="16" height="16" /> Broadcast</h2><span>{meta.label} / {d.pubDate.getUTCFullYear()}</span></header>
+          {spotify ? (
+            <iframe class="spotify" src={spotify} title={`Listen to ${d.title}`} width="100%" height="232" loading="lazy" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"></iframe>
+          ) : (
+            <div class="cover-art">
+              {d.coverImage ? <img src={d.coverImage} alt="" /> : (
+                <>
+                  <img src="/atlas/assets/ui/star_map/chart.png" alt="" class="px" width="640" height="360" />
+                  <img src="/atlas/assets/props/transmission.png" alt="" class="px cover-planet" width="48" height="48" />
+                  <span class="cover-label">{d.outlet ?? 'The Relay'}</span>
+                </>
+              )}
+            </div>
+          )}
+          <footer>{fmt(d.pubDate)}</footer>
+        </figure>
+      )}
+    </section>
+
+    <div class="read-grid read-grid--two wrap">
+      <div class="read-body">
+        {hasBody ? <Content /> : <p>{d.description}</p>}
+      </div>
+      <aside class="read-aside" aria-label="About this broadcast">
+        <section class="panel">
+          <header><h2><img src="/atlas/assets/props/transmission.png" alt="" class="px" width="16" height="16" /> Broadcast log</h2><span>CH {channel}</span></header>
+          <div class="panel-body">
+            <dl class="facts">
+              <div><img src="/atlas/assets/ui/icon_quests.png" alt="" class="px" width="16" height="16" /><dt>Format</dt><dd>{meta.label}</dd></div>
+              <div><PixelGlyph name="clock" size={16} /><dt>Published</dt><dd>{fmt(d.pubDate)}</dd></div>
+              {d.outlet && <div><img src="/atlas/assets/ui/icon_map.png" alt="" class="px" width="16" height="16" /><dt>Outlet</dt><dd>{d.outletUrl ? <a href={d.outletUrl} target="_blank" rel="noopener">{d.outlet}</a> : d.outlet}</dd></div>}
+              {d.eventName && <div><img src="/atlas/assets/ui/icon_quest_active.png" alt="" class="px" width="16" height="16" /><dt>Event</dt><dd>{d.eventName}{d.location && `, ${d.location}`}</dd></div>}
+              {d.guests?.length ? <div><img src="/atlas/assets/ui/icon_status.png" alt="" class="px" width="16" height="16" /><dt>Guests</dt><dd>{d.guests.join(', ')}</dd></div> : null}
+              {d.coHosts?.length ? <div><img src="/atlas/assets/ui/icon_status.png" alt="" class="px" width="16" height="16" /><dt>Co-hosts</dt><dd>{d.coHosts.join(', ')}</dd></div> : null}
+            </dl>
+          </div>
+          <footer><a href={pressJsonUrl(entry.id)}>Read it as JSON ↗</a></footer>
+        </section>
+        {d.tags?.length ? (
+          <section class="panel">
+            <header><h2><img src="/atlas/assets/ui/icon_items.png" alt="" class="px" width="16" height="16" /> Tags</h2><span>{d.tags.length}</span></header>
+            <div class="panel-body tag-cloud">{d.tags.map((t) => <span class="tag">{t.replaceAll('-', ' ')}</span>)}</div>
+          </section>
+        ) : null}
+      </aside>
+    </div>
+
+    <nav class="read-rules wrap" aria-label="Keep browsing">
+      <a href="/" data-return><span>01</span><strong>Return to ship</strong><p>Close this page and pick up where you left off.</p></a>
+      {older ? <a href={pressUrl(older.id)}><span>02</span><strong>{older.data.title}</strong><p>Earlier on the relay</p></a> : <div><span>02</span><strong>The first broadcast</strong><p>Nothing earlier on the relay.</p></div>}
+      {newer ? <a href={pressUrl(newer.id)}><span>03</span><strong>{newer.data.title}</strong><p>Later on the relay</p></a> : <a href="/press/"><span>03</span><strong>Every broadcast</strong><p>The whole relay, newest first.</p></a>}
+    </nav>
+  </article>
+
+  <script is:inline>
+    // Press start: swap the poster for the YouTube player, so the player (and
+    // its tracking) only loads when the reader asks for it.
+    document.querySelectorAll('.screen[data-yt]').forEach(function (screen) {
+      var start = screen.querySelector('.press-start');
+      start.addEventListener('click', function (e) {
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        var f = document.createElement('iframe');
+        f.src = 'https://www.youtube-nocookie.com/embed/' + screen.dataset.yt + '?autoplay=1&rel=0&modestbranding=1';
+        f.title = screen.dataset.title;
+        f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+        f.allowFullscreen = true;
+        screen.classList.add('playing');
+        screen.appendChild(f);
+        start.remove();
+      });
+    });
+  </script>
+</ReadingLayout>

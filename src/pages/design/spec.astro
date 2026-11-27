@@ -4,6 +4,7 @@ import specRaw from '../../../design-spec/shupp.spec.json?raw';
 import templateRaw from '../../../design-spec/template.spec.json?raw';
 import page from '../../../design-spec/render/page.template.html?raw';
 import { rootCss } from '../../lib/design-spec/render';
+import { prerender } from '../../lib/design-spec/prerender';
 
 // Design spec — the site's design language as a machine-readable file.
 // Standalone document like /design/void: the reference page is rendered in the
@@ -15,10 +16,14 @@ const description =
 const url = 'https://shupp.dev/design/spec';
 
 const embed = (raw: string): string => raw.replace(/<\//g, '<\\/');
-const html = page
-  .replace('__ROOTCSS__', rootCss(spec))
-  .replace('__SPEC__', embed(specRaw))
-  .replace('__TEMPLATE__', embed(templateRaw));
+const html = prerender(
+  page
+    .replace('__ROOTCSS__', rootCss(spec))
+    .replace('__SPEC__', embed(specRaw))
+    .replace('__TEMPLATE__', embed(templateRaw)),
+  specRaw,
+  templateRaw,
+);
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -37,7 +42,7 @@ const html = page
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={url} />
-    <meta property="og:image" content="https://shupp.dev/og-default.png" />
+    <meta property="og:image" content="https://shupp.dev/og-reading.png" />
     <meta name="twitter:card" content="summary_large_image" />
 
     <!-- Follow the site's own light/dark choice unless the page's toggle was used. -->

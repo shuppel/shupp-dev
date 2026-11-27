@@ -1,483 +1,95 @@
 ---
-import Layout from '../layouts/Layout.astro';
+// About, as a standalone reading page with a JSON twin at /about.json.
+// No photos: the page is the writing, the details and the ship.
 import { getCollection } from 'astro:content';
-import Icon from '../components/Icon/Icon.astro';
+import ReadingLayout from '../layouts/ReadingLayout.astro';
+import { siteConfig } from '../config/site';
 
-// Get the author data
-const authorEntries = await getCollection('authors');
-const author = authorEntries[0];
-
-// Split longBio into paragraphs for better layout
-const bioParagraphs = author.data.longBio.split('\n\n');
+const author = (await getCollection('authors'))[0].data;
+const bio = author.longBio.split('\n\n').map((p) => p.trim()).filter(Boolean);
+const philosophy = [
+  ['Fitts optimizing', 'Make the important things easy to reach.'],
+  ['Kotter × Parkinson’s law²', 'Create urgency to fill the day.'],
+  ['Optimize for outcomes', 'Results over process, always.'],
+  ['All meetings are f(x)', 'Every meeting has inputs and outputs.'],
+  ['XML prompt chain shotting', 'Structured thinking for complex problems.'],
+];
+const channels = [
+  ['GitHub', author.socialLinks.github ?? siteConfig.social.github],
+  ['LinkedIn', author.socialLinks.linkedin ?? siteConfig.social.linkedin],
+  ['Bluesky', author.socialLinks.bluesky ?? siteConfig.social.bluesky],
+  ['X', author.socialLinks.twitter ?? siteConfig.social.twitter],
+  ['Podcast', author.socialLinks.podcast],
+].filter(([, u]) => u) as [string, string][];
+const groups = [
+  ['Technical skills', author.skills ?? []],
+  ['Soft skills', author.softSkills ?? []],
+  ['Interests', author.interests ?? []],
+] as [string, string[]][];
 ---
 
-<Layout title="About Me" description="Learn more about my professional background, skills, and experience">
-  <div class="about-page">
-    
-    <!-- Hero Section -->
-    <section class="about-hero">
-      <div class="hero-content">
-        <div class="hero-text">
-          <div class="about-header">
-            <Icon name="User" size={48} weight="duotone" liquid={true} inkEffect="medium" />
-            <h1>About Me</h1>
-          </div>
-          <p class="lead">{author.data.shortBio}</p>
-        </div>
-        
-        <div class="hero-actions">
-          <a href="/portfolio" class="hero-action-link">
-            <Icon name="Briefcase" size={32} weight="duotone" liquid={true} />
-            <span>Portfolio</span>
-          </a>
-          <a href="/resume" class="hero-action-link">
-            <Icon name="FileText" size={32} weight="duotone" liquid={true} />
-            <span>Resume</span>
-          </a>
+<ReadingLayout title="About" description={author.shortBio} terminal="Captain's Quarters" type="website" jsonLdType="person" jsonHref="/about.json" author={author.name}>
+  <article>
+    <section class="read-hero wrap">
+      <div>
+        <p class="eyebrow"><span class="status-dot"></span> About / {author.location}</p>
+        <h1 class="read-title">{author.name}</h1>
+        <p class="read-lede">{author.shortBio}</p>
+        <div class="read-meta">
+          <a class="solid-button" href="/portfolio/">See the work</a>
+          <a class="outline-button" href="/resume">Resume ↗</a>
+          <a class="outline-button" href={`mailto:${siteConfig.email}`}>Send a message ↗</a>
         </div>
       </div>
+      <figure class="cover panel">
+        <header><h2><img src="/atlas/assets/props/logbook.png" alt="" class="px" width="16" height="16" /> Captain's log</h2><span>{author.title}</span></header>
+        <div class="cover-art">
+          <img src="/atlas/assets/ui/star_map/chart.png" alt="" class="px" width="640" height="360" />
+          <img src="/atlas/assets/ships/crescent/exterior.png" alt="The Crescent, the ship this site flies" class="cover-planet" style="width: 62%" width="768" height="448" />
+          <span class="cover-label">The Crescent</span>
+        </div>
+        <footer>{author.location}</footer>
+      </figure>
     </section>
 
-    <!-- Photo Grid -->
-    <section class="photo-section">
-      <div class="photo-grid">
-        <div class="photo-item photo-main">
-          <img src="/images/about/esheadshot.jpg" alt={author.data.name} />
-        </div>
-        <div class="photo-item photo-secondary">
-          <img src="/images/about/shupp-e-2.png" alt="Erikk Shupp" />
-        </div>
-        <div class="photo-item photo-secondary">
-          <img src="/images/about/shupp-e-3.png" alt="Erikk Shupp" />
-        </div>
-      </div>
-    </section>
-
-    <!-- Story Section -->
-    <section class="story-section">
-      <div class="story-content">
-        <h2>My Story</h2>
-        {bioParagraphs.map(paragraph => (
-          <p>{paragraph}</p>
-        ))}
-
-        <h3>Professional Philosophy</h3>
-        <ul class="philosophy-list">
-          <li><strong>Fitts Optimizing</strong> - Making the important things easy to reach</li>
-          <li><strong>Kotter × Parkinson's Law²</strong> - Create urgency to fill the day</li>
-          <li><strong>Optimize For Outcomes</strong> - Results over process, always</li>
-          <li><strong>All Meetings are F(x)'s</strong> - Every meeting must have inputs and outputs</li>
-          <li><strong>XML Prompt Chain Shotting</strong> - Structured thinking for complex problems</li>
+    <div class="read-grid read-grid--two wrap">
+      <div class="read-body">
+        <h2 id="story">The story</h2>
+        {bio.map((p) => <p>{p}</p>)}
+        <h2 id="philosophy">How I work</h2>
+        <ul>
+          {philosophy.map(([k, v]) => <li><strong>{k}</strong>. {v}</li>)}
         </ul>
       </div>
-    </section>
+      <aside class="read-aside" aria-label="Details">
+        <section class="panel">
+          <header><h2><img src="/atlas/assets/ui/icon_status.png" alt="" class="px" width="16" height="16" /> Profile</h2><span>Crew</span></header>
+          <div class="panel-body">
+            <dl class="facts">
+              <div><img src="/atlas/assets/ui/icon_credential.png" alt="" class="px" width="16" height="16" /><dt>Role</dt><dd>{author.title}</dd></div>
+              <div><img src="/atlas/assets/ui/icon_map.png" alt="" class="px" width="16" height="16" /><dt>Based in</dt><dd>{author.location}</dd></div>
+              <div><img src="/atlas/assets/props/comms.png" alt="" class="px" width="16" height="16" /><dt>Email</dt><dd><a href={`mailto:${siteConfig.email}`}>{siteConfig.email}</a></dd></div>
+            </dl>
+          </div>
+          <footer><a href="/about.json">Read it as JSON ↗</a></footer>
+        </section>
+        <section class="panel">
+          <header><h2><img src="/atlas/assets/props/transmission.png" alt="" class="px" width="16" height="16" /> Channels</h2><span>{channels.length}</span></header>
+          <div class="panel-body tag-cloud">{channels.map(([n, u]) => <a class="tag" href={u} target="_blank" rel="noopener">{n} ↗</a>)}</div>
+        </section>
+        {groups.filter(([, l]) => l.length).map(([g, l]) => (
+          <section class="panel">
+            <header><h2><img src="/atlas/assets/ui/icon_items.png" alt="" class="px" width="16" height="16" /> {g}</h2><span>{l.length}</span></header>
+            <div class="panel-body tag-cloud">{l.map((s) => <span class="tag">{s}</span>)}</div>
+          </section>
+        ))}
+      </aside>
+    </div>
 
-    <!-- Skills Section -->
-    <section class="skills-section">
-      <h2>Skills & Expertise</h2>
-      
-      <div class="skills-categories">
-        <div class="skill-category">
-          <h3>Technical Skills</h3>
-          <ul class="skills-list">
-            {author.data.skills?.map(skill => (
-              <li>{skill}</li>
-            )) || []}
-          </ul>
-        </div>
-        
-        <div class="skill-category">
-          <h3>Soft Skills</h3>
-          <ul class="skills-list">
-            {author.data.softSkills?.map(skill => (
-              <li>{skill}</li>
-            )) || []}
-          </ul>
-        </div>
-        
-        <div class="skill-category">
-          <h3>Interests</h3>
-          <ul class="skills-list">
-            {author.data.interests?.map(interest => (
-              <li>{interest}</li>
-            )) || []}
-          </ul>
-        </div>
-      </div>
-    </section>
-
-
-  </div>
-</Layout>
-
-<style>
-  .about-page {
-    max-width: 1400px;
-    margin: 0 auto;
-    padding: 4rem 1.5rem;
-  }
-
-  /* Hero Section */
-  .about-hero {
-    margin-bottom: 3rem;
-  }
-
-  .hero-content {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    gap: 2rem;
-    align-items: center;
-  }
-
-  .hero-text {
-    min-width: 0;
-  }
-
-  .about-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .about-hero h1 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    margin: 0;
-    color: var(--text-color);
-  }
-
-  .lead {
-    font-size: 1.25rem;
-    color: var(--text-light);
-    line-height: 1.6;
-    margin: 0;
-  }
-
-  .hero-actions {
-    display: flex;
-    gap: 1.5rem;
-    justify-content: flex-end;
-    align-items: center;
-  }
-
-  .hero-action-link {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-decoration: none;
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    background: var(--card-bg, white);
-    border-radius: 12px;
-    padding: 1.5rem;
-    box-shadow: var(--card-shadow);
-    width: 120px;
-    color: var(--text-color);
-  }
-
-  .hero-action-link:hover {
-    transform: translateY(-7px);
-    box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 10px rgba(20, 8, 14, 0.05);
-  }
-
-  html.dark .hero-action-link {
-    background: #23232b;
-    color: #f3f4f6;
-  }
-
-  .hero-action-link svg {
-    font-size: 2rem;
-    margin-bottom: 0.75rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-  .hero-action-link span {
-    font-weight: 500;
-    font-size: 0.9rem;
-  }
-
-  /* Photo Section */
-  .photo-section {
-    margin-bottom: 3rem;
-  }
-
-  .photo-grid {
-    display: grid;
-    grid-template-columns: 2fr 1fr;
-    grid-template-rows: 200px 200px;
-    gap: 1rem;
-  }
-
-  .photo-main {
-    grid-row: 1 / -1;
-  }
-
-  .photo-item {
-    border-radius: 12px;
-    overflow: hidden;
-    background: var(--card-bg, white);
-    box-shadow: var(--card-shadow);
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-  }
-
-  .photo-item:hover {
-    transform: translateY(-4px) scale(1.01);
-    box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 10px rgba(20, 8, 14, 0.05);
-  }
-
-  .photo-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    display: block;
-  }
-
-  .photo-placeholder {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    color: var(--text-light);
-    font-size: 0.85rem;
-  }
-
-  html.dark .photo-item {
-    background: #23232b;
-  }
-
-  /* Story Section */
-  .story-section {
-    margin-bottom: 4rem;
-  }
-
-  .story-content h2 {
-    color: var(--text-color);
-    margin-bottom: 1.5rem;
-  }
-
-  .story-content h3 {
-    margin-top: 2rem;
-    margin-bottom: 1rem;
-  }
-
-  .story-content p {
-    margin-bottom: 1.2rem;
-    line-height: 1.7;
-  }
-
-  .philosophy-list {
-    list-style: none;
-    padding: 0;
-    margin: 1.5rem 0;
-  }
-
-  .philosophy-list li {
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--border-color);
-    line-height: 1.6;
-  }
-
-  html.dark .philosophy-list li {
-    border-bottom-color: #374151;
-  }
-
-  .philosophy-list li:last-child {
-    border-bottom: none;
-  }
-
-  .philosophy-list strong {
-    color: var(--color-tertiary);
-    display: inline-block;
-    margin-right: 0.5rem;
-  }
-
-  html.dark .philosophy-list strong {
-    color: var(--color-accent);
-  }
-
-  /* Skills Section */
-  .skills-section {
-    margin-bottom: 4rem;
-  }
-
-  .skills-section h2 {
-    text-align: center;
-    margin-bottom: 2.5rem;
-    position: relative;
-  }
-
-  .skills-section h2::after {
-    content: "";
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 3px;
-    background: var(--primary-color);
-    border-radius: 3px;
-  }
-
-  .skills-categories {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2rem;
-    align-items: stretch;
-  }
-
-  .skill-category {
-    border-radius: 12px;
-    box-shadow: var(--card-shadow);
-    overflow: hidden;
-    transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    display: flex;
-    flex-direction: column;
-  }
-
-  .skill-category:hover {
-    transform: translateY(-7px) scale(1.01);
-    box-shadow: 0 15px 30px rgba(20, 8, 14, 0.1), 0 8px 10px rgba(20, 8, 14, 0.05);
-  }
-
-  .skills-list {
-    list-style: none;
-    padding: 1.5rem;
-    background: white;
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-  }
-
-  .skills-list li {
-    padding: 0.75rem 0;
-    border-bottom: 1px solid rgba(121, 148, 150, 0.1);
-    display: flex;
-    align-items: center;
-  }
-
-  .skills-list li:last-child {
-    border-bottom: none;
-    flex: 1;
-  }
-
-  .skill-category h3 {
-    background: linear-gradient(45deg, var(--color-tertiary), var(--color-secondary));
-    color: white;
-    margin-bottom: 0;
-    padding: 1.5rem;
-    text-align: center;
-  }
-
-  html.dark .skill-category h3 {
-    background: linear-gradient(45deg, #2c2c38, #3a3a46);
-    color: white;
-    position: relative;
-    overflow: hidden;
-  }
-
-  html.dark .skill-category h3::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(172, 193, 150, 0.1) 0%, rgba(233, 235, 158, 0.2) 50%, rgba(172, 193, 150, 0.1) 100%);
-    opacity: 0.6;
-    z-index: 0;
-  }
-
-  html.dark .skills-list {
-    background: #23232b;
-  }
-
-  html.dark .skills-list li {
-    border-bottom: 1px solid rgba(172, 193, 150, 0.1);
-  }
-
-  .skills-list li::before {
-    content: '•';
-    color: var(--color-tertiary);
-    margin-right: 0.5rem;
-    font-size: 1.2rem;
-  }
-
-  html.dark .skills-list li::before {
-    color: var(--color-accent);
-  }
-
-  /* Responsive */
-  @media (max-width: 1024px) {
-    .skills-categories {
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.5rem;
-    }
-  }
-
-  @media (max-width: 900px) {
-    .photo-grid {
-      grid-template-columns: 1fr 1fr;
-      grid-template-rows: 180px 180px;
-    }
-
-    .photo-main {
-      grid-row: 1 / 2;
-      grid-column: 1 / -1;
-    }
-  }
-
-  @media (max-width: 768px) {
-    .about-page {
-      padding: 3rem 1rem;
-    }
-
-    .hero-content {
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
-      text-align: center;
-    }
-
-    .hero-actions {
-      justify-content: center;
-    }
-
-    .about-header {
-      flex-direction: column;
-      text-align: center;
-    }
-
-    .about-hero h1 {
-      font-size: 2rem;
-    }
-
-    .lead {
-      font-size: 1.1rem;
-    }
-
-    .photo-grid {
-      grid-template-columns: 1fr;
-      grid-template-rows: 250px 150px 150px;
-    }
-
-    .photo-main {
-      grid-column: 1;
-      grid-row: 1;
-    }
-
-    .contact-options {
-      gap: 1.5rem;
-    }
-  }
-
-  @media (max-width: 600px) {
-    .skills-categories {
-      grid-template-columns: 1fr;
-      gap: 1.25rem;
-    }
-  }
-</style>
+    <nav class="read-rules wrap" aria-label="Keep browsing">
+      <a href="/" data-return><span>01</span><strong>Return to ship</strong><p>Close this page and pick up where you left off.</p></a>
+      <a href="/portfolio/"><span>02</span><strong>Portfolio</strong><p>Design systems, apps, shows and sites.</p></a>
+      <a href="/galaxy/"><span>03</span><strong>Scribe Galaxy</strong><p>Writing, newest first.</p></a>
+    </nav>
+  </article>
+</ReadingLayout>

@@ -1,0 +1,116 @@
+---
+// A portfolio project as a standalone reading page.
+import { getCollection, render } from 'astro:content';
+import type { CollectionEntry } from 'astro:content';
+import ReadingLayout from '../../layouts/ReadingLayout.astro';
+import PixelGlyph from './PixelGlyph.astro';
+import { notesFor, projectHref, projectJsonUrl, projectUrl } from '../../lib/reading/projects';
+import { STAGE_LABEL, titleCase } from '../../lib/reading/galaxy';
+import { siteConfig } from '../../config/site';
+
+interface Props {
+  entry: CollectionEntry<'projects'>;
+}
+type Project = CollectionEntry<'projects'>;
+
+const { entry } = Astro.props;
+const d = entry.data;
+const { Content } = await render(entry);
+const notes = notesFor(entry, await getCollection('galaxy'));
+const all = (await getCollection('projects')).sort((a, b) => b.data.projectDate.getTime() - a.data.projectDate.getTime());
+const at = all.findIndex((p) => p.id === entry.id);
+const newer: Project | undefined = at > 0 ? all[at - 1] : undefined;
+const older: Project | undefined = at >= 0 && at < all.length - 1 ? all[at + 1] : undefined;
+const month = (date: Date) => date.toLocaleDateString('en-US', { timeZone: 'UTC', year: 'numeric', month: 'long' });
+const url = new URL(projectUrl(entry.id), Astro.site).href;
+---
+
+<ReadingLayout
+  title={d.title}
+  description={d.description}
+  terminal="The Workbench"
+  image={d.image}
+  imageAlt={d.title}
+  type="website"
+  jsonLdType="website"
+  canonicalUrl={url}
+  jsonHref={projectJsonUrl(entry.id)}
+  author={siteConfig.author.name}
+>
+  <article>
+    <section class="read-hero wrap">
+      <div>
+        <p class="eyebrow"><span class="status-dot"></span> Project / {month(d.projectDate)}</p>
+        <h1 class="read-title">{d.title}</h1>
+        <p class="read-lede">{d.description}</p>
+        <div class="read-meta">
+          {d.customUrl && <a class="solid-button" href={d.customUrl}>Open the design system ↗</a>}
+          {d.projectUrl && <a class:list={[d.customUrl ? 'outline-button' : 'solid-button']} href={d.projectUrl} target="_blank" rel="noopener">Visit the live project ↗</a>}
+          {d.githubUrl && <a class="outline-button" href={d.githubUrl} target="_blank" rel="noopener">Source on GitHub ↗</a>}
+        </div>
+      </div>
+      <figure class="cover panel">
+        <header><h2><img src="/atlas/assets/props/star_console.png" alt="" class="px" width="16" height="16" /> On the bench</h2><span>{d.completed ? 'Shipped' : 'In progress'}</span></header>
+        <div class="cover-art">
+          {d.image ? <img src={d.image} alt={d.title} decoding="async" /> : (
+            <>
+              <img src="/atlas/assets/ui/star_map/chart.png" alt="" class="px" width="640" height="360" />
+              <img src="/atlas/assets/ui/star_map/work_selected.png" alt="" class="px cover-planet" width="192" height="192" />
+              <span class="cover-label">{d.technologies[0] ?? 'Project'}</span>
+            </>
+          )}
+        </div>
+        <footer>{d.technologies.slice(0, 4).join(' / ')}</footer>
+      </figure>
+    </section>
+
+    <div class="read-grid read-grid--two wrap">
+      <div class="read-body">
+        <Content />
+      </div>
+      <aside class="read-aside" aria-label="About this project">
+        <section class="panel">
+          <header><h2><img src="/atlas/assets/props/star_console.png" alt="" class="px" width="16" height="16" /> Project log</h2><span>Work</span></header>
+          <div class="panel-body">
+            <dl class="facts">
+              <div><img src="/atlas/assets/ui/icon_quests.png" alt="" class="px" width="16" height="16" /><dt>Started</dt><dd>{month(d.projectDate)}</dd></div>
+              <div><img src={d.completed ? '/atlas/assets/ui/icon_quest_done.png' : '/atlas/assets/ui/icon_quest_active.png'} alt="" class="px" width="16" height="16" /><dt>Status</dt><dd>{d.completed ? 'Shipped' : 'In progress'}</dd></div>
+              {d.projectUrl && <div><img src="/atlas/assets/ui/icon_map.png" alt="" class="px" width="16" height="16" /><dt>Live</dt><dd><a href={d.projectUrl} target="_blank" rel="noopener">{new URL(d.projectUrl).hostname.replace(/^www\./, '')}</a></dd></div>}
+            </dl>
+          </div>
+          <footer><a href={projectJsonUrl(entry.id)}>Read it as JSON ↗</a></footer>
+        </section>
+        <section class="panel">
+          <header><h2><img src="/atlas/assets/ui/icon_items.png" alt="" class="px" width="16" height="16" /> Toolkit</h2><span>{d.technologies.length}</span></header>
+          <div class="panel-body tag-cloud">{d.technologies.map((t) => <span class="tag">{t}</span>)}</div>
+        </section>
+        {notes.length > 0 && (
+          <section class="panel">
+            <header><h2><img src="/atlas/assets/props/logbook.png" alt="" class="px" width="16" height="16" /> Field notes</h2><span>{notes.length}</span></header>
+            <div class="panel-body" style="padding-block: 6px">
+              <ul class="links">
+                {notes.map((n) => (
+                  <li><a href={`/galaxy/${n.id}/`}>
+                    <img src={`/atlas/assets/atlas/writing_${n.data.stage === 'star' || n.data.stage === 'galaxy' ? 'selected' : 'normal'}.png`} alt="" class="px" width="28" height="28" />
+                    <span><strong>{n.data.title}</strong><small>{STAGE_LABEL[n.data.stage]} / {titleCase(n.data.constellation)}</small></span>
+                    <PixelGlyph name="arrow" size={14} />
+                  </a></li>
+                ))}
+              </ul>
+            </div>
+          </section>
+        )}
+        <section class="panel">
+          <header><h2><img src="/atlas/assets/props/comms.png" alt="" class="px" width="16" height="16" /> Work together</h2><span>Comms</span></header>
+          <div class="panel-body"><p style="margin:0 0 12px">Open to product, design and partnership work.</p><a class="outline-button" href={`mailto:${siteConfig.email}`}>Send a message ↗</a></div>
+        </section>
+      </aside>
+    </div>
+
+    <nav class="read-rules wrap" aria-label="Keep browsing">
+      <a href="/" data-return><span>01</span><strong>Return to ship</strong><p>Close this page and pick up where you left off.</p></a>
+      {older ? <a href={projectHref(older)}><span>02</span><strong>{older.data.title}</strong><p>Earlier on the bench</p></a> : <div><span>02</span><strong>The first project</strong><p>Nothing earlier on the bench.</p></div>}
+      {newer ? <a href={projectHref(newer)}><span>03</span><strong>{newer.data.title}</strong><p>Later on the bench</p></a> : <a href="/portfolio/"><span>03</span><strong>All projects</strong><p>Everything on the bench.</p></a>}
+    </nav>
+  </article>
+</ReadingLayout>

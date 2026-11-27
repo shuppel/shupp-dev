@@ -415,10 +415,14 @@ pre.json { margin: 0; padding: 1rem 1.1rem; max-height: 520px; overflow: auto; f
     ['file', 'The file', 'The template and this site’s filled spec']
   ];
   const nav = document.getElementById('nav');
+  // The build prerenders this page (src/lib/design-spec/prerender.ts) so it
+  // reads without JavaScript; start clean so nothing is drawn twice.
+  nav.innerHTML = '';
   LAYERS.forEach(([id, label], i) => {
     nav.append($(`<a class="nav-link" href="#${id}" data-id="${id}"><span class="n">${String(i + 1).padStart(2, '0')}</span>${label}</a>`));
   });
   const app = document.getElementById('app');
+  app.innerHTML = '';
   const head = (id, path, title, lede) => `<div class="eyebrow">${esc(LAYERS.find((l) => l[0] === id)[1])} <span class="path">${esc(path)}</span></div><h2 class="h2">${esc(title)}</h2>${lede ? `<p class="lede">${lede}</p>` : ''}`;
 
   // 1. identity

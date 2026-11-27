@@ -1,215 +1,35 @@
- ---
- import { getCollection } from 'astro:content';
- import Layout from '../layouts/Layout.astro';
- import Icon from '../components/Icon/Icon.astro';
+---
+// Thoughtful App Co. as a standalone index, with a JSON twin at /thoughtful-app-co.json.
+import { getCollection } from 'astro:content';
+import ReadingLayout from '../layouts/ReadingLayout.astro';
+import PixelGlyph from '../components/Reading/PixelGlyph.astro';
+import { APP_STATUS, appScore, appUrl } from '../lib/reading/apps';
 
-// Get all thoughtful apps
-const allApps = await getCollection('thoughtful-apps');
-
-// Sort apps by excitement and feasibility (for default view)
-const apps = allApps.sort((a, b) => {
-  const scoreA = (a.data.excitement * 0.6) + (a.data.feasibility * 0.4);
-  const scoreB = (b.data.excitement * 0.6) + (b.data.feasibility * 0.4);
-  return scoreB - scoreA;
-});
-
-// Status configuration for display
-const statusConfig = {
-  concept: 'Concept',
-  exploring: 'Exploring',
-  prototyping: 'Prototyping',
-  shelved: 'Shelved'
-};
+const apps = (await getCollection('thoughtful-apps')).sort((a, b) => appScore(b) - appScore(a));
+const icon = (s: string) => (s === 'prototyping' ? 'icon_quest_done' : s === 'shelved' ? 'icon_quests' : 'icon_quest_active');
 ---
 
-<Layout title="Thoughtful App Co." description="A collection of app concepts and ideas - some practical, some moonshots, all thoughtfully designed">
-  <div class="thoughtful-apps-page">
-     <section class="apps-hero">
-       <div class="apps-header">
-         <Icon name="Brain" size={48} weight="duotone" liquid={true} inkEffect="medium" />
-         <h1>Thoughtful App Co.</h1>
-       </div>
-       <p class="lead">Building apps for humans. A collection of thoughtful concepts and ideas.</p>
-     </section>
-
-    <section class="apps-list">
-      {apps.map(app => (
-        <a href={`/thoughtful-app-co/${app.slug}`} class="app-item">
-          <div class="app-content">
-            <h3 class="app-title">{app.data.title}</h3>
-            <p class="app-tagline">{app.data.oneLiner}</p>
+<ReadingLayout title="Thoughtful App Co." description="A collection of app concepts and ideas - some practical, some moonshots, all thoughtfully designed" terminal="The Workbench" type="website" jsonLdType="website" jsonHref="/thoughtful-app-co.json">
+  <section class="index-hero wrap">
+    <div>
+      <p class="eyebrow"><span class="status-dot"></span> Apps for humans / {apps.length} concepts</p>
+      <h1 class="read-title">Thoughtful App Co.</h1>
+    </div>
+    <p>Building apps for humans. Some practical, some moonshots, all thought through. The most promising ones come first.</p>
+  </section>
+  <div class="wrap">
+    <div class="index-grid">
+      {apps.map((a) => (
+        <a class="index-card panel" href={appUrl(a.id)}>
+          <header><h3 style="font: 600 13px/1.3 var(--sans); letter-spacing: 0"><img src={`/atlas/assets/ui/${icon(a.data.status)}.png`} alt="" class="px" width="16" height="16" /> {APP_STATUS[a.data.status]}</h3><span>{a.data.lastUpdated.getUTCFullYear()}</span></header>
+          <div class="panel-body">
+            <h3>{a.data.title}</h3>
+            <p>{a.data.oneLiner}</p>
           </div>
-          <div class="app-meta">
-            <span class="app-status">{statusConfig[app.data.status]}</span>
-            <span class="app-year">{app.data.lastUpdated.getFullYear()}</span>
-          </div>
+          <footer><span>{a.data.category}</span><PixelGlyph name="arrow" size={12} /></footer>
         </a>
       ))}
-    </section>
+    </div>
+    <p style="margin: 28px 0 0; font-size: 14px"><a href="/legal-notice/">Privacy policy and legal notice ↗</a></p>
   </div>
-</Layout>
-
-<style>
-  .thoughtful-apps-page {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 4rem 1.5rem;
-  }
-
-    /* Hero Section */
-    .apps-hero {
-      margin-bottom: 3rem;
-    }
-
-   .apps-header {
-     display: flex;
-     align-items: center;
-     gap: 1rem;
-     margin-bottom: 0.75rem;
-   }
-
-   .apps-hero h1 {
-     font-size: 2.5rem;
-     font-weight: 700;
-     margin: 0;
-     color: var(--text-color);
-   }
-
-   .lead {
-     font-size: 1.25rem;
-     color: var(--text-light);
-     line-height: 1.6;
-     margin: 0;
-   }
-
-  /* Apps List */
-  .apps-list {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-  }
-
-  .app-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    padding: 2rem 0;
-    border-bottom: 1px solid var(--border-color);
-    text-decoration: none;
-    color: inherit;
-    transition: all 0.2s ease;
-    cursor: pointer;
-  }
-
-  .app-item:first-child {
-    padding-top: 0;
-  }
-
-  .app-item:last-child {
-    border-bottom: none;
-  }
-
-  .app-item:hover {
-    opacity: 0.8;
-  }
-
-  .app-item:hover .app-title {
-    color: var(--primary-color);
-  }
-
-  .app-content {
-    flex: 1;
-    padding-right: 2rem;
-  }
-
-  .app-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
-    color: var(--text-color);
-    transition: color 0.2s ease;
-  }
-
-  .app-tagline {
-    color: var(--text-light);
-    line-height: 1.6;
-    font-size: 1rem;
-  }
-
-  .app-meta {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    flex-shrink: 0;
-  }
-
-  .app-status {
-    padding: 0.25rem 0.75rem;
-    background: rgba(139, 92, 246, 0.1);
-    color: #8b5cf6;
-    border-radius: 20px;
-    font-size: 0.85rem;
-    font-weight: 500;
-  }
-
-  html.dark .app-status {
-    background: rgba(139, 92, 246, 0.15);
-    color: #a78bfa;
-  }
-
-  .app-year {
-    color: var(--text-light);
-    font-size: 0.95rem;
-  }
-
-   /* Responsive */
-   @media (max-width: 768px) {
-     .thoughtful-apps-page {
-       padding: 3rem 1rem;
-     }
-
-     .apps-header {
-       flex-direction: column;
-       text-align: center;
-     }
-
-     .apps-hero h1 {
-       font-size: 2rem;
-     }
-
-     .lead {
-       font-size: 1.1rem;
-     }
-
-    .app-item {
-      flex-direction: column;
-      gap: 1rem;
-      padding: 1.5rem 0;
-    }
-
-    .app-content {
-      padding-right: 0;
-    }
-
-    .app-meta {
-      width: 100%;
-    }
-
-    .app-title {
-      font-size: 1.15rem;
-    }
-
-    .app-tagline {
-      font-size: 0.95rem;
-    }
-  }
-
-  /* Dark mode enhancements */
-  html.dark .app-item {
-    border-color: rgba(255, 255, 255, 0.1);
-  }
-
-  html.dark .app-item:hover {
-    background: rgba(255, 255, 255, 0.02);
-  }
-</style>
+</ReadingLayout>
