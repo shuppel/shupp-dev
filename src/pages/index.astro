@@ -85,6 +85,7 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
       go: (id: string) => void;
       set_paused: (p: boolean) => void;
       set_dialogue_font: (mana: boolean) => void;
+      set_touch: (touch: boolean) => void;
       tap: (x: number, y: number, touch: boolean) => void;
       search: (text: string) => void;
     };
@@ -167,6 +168,8 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
         // The art for the first room, the cast and the menus: the last 30% of the bar.
         const [done, total] = value.split('/').map(Number);
         if (total) $('boot-fill').style.width = `${70 + 30 * (done / total)}%`;
+        if (total) $('boot-text').textContent = `Unpacking the ship… ${done} / ${total}`;
+        lastProgress = Date.now();
       } else if (kind === 'ready') {
         reveal();
       }
@@ -181,6 +184,7 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
     syncRotate();
 
     let revealed = false;
+    let lastProgress = Date.now();
     function reveal() {
       if (revealed) return;
       revealed = true;
@@ -283,10 +287,17 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
           if (!String(err).includes('Using exceptions for control flow')) throw err;
         }
         if (new URLSearchParams(location.search).get('font') === 'body') game.set_dialogue_font(false);
+        if (matchMedia('(pointer: coarse)').matches) game.set_touch(true);
         if (start === 'about' || start === 'contact') game.go(start);
         label.textContent = 'Unpacking the ship…';
-        // Never strand someone on the loading screen if an asset hangs.
-        setTimeout(reveal, 20000);
+        // Never strand someone on the loading screen if an asset hangs, but
+        // keep waiting while art is still arriving (phones on slow networks
+        // otherwise got the HUD over an empty room).
+        lastProgress = Date.now();
+        const watchdog = window.setInterval(() => {
+          if (revealed) { clearInterval(watchdog); return; }
+          if (Date.now() - lastProgress > 25000) { clearInterval(watchdog); reveal(); }
+        }, 1000);
       } catch (err) {
         console.error('[atlas]', err);
         fallback('The game could not start on this device. Here is the same ship as a list.');

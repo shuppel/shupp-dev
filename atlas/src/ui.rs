@@ -781,6 +781,10 @@ fn input(
         ui.fresh = false;
         return;
     }
+    if std::mem::take(&mut game.touch_hint) {
+        ui.touch = true;
+        ui.dirty = true;
+    }
     if page_tap.at.is_some() {
         ui.touch = page_tap.touch;
     } else if touches.any_just_pressed() {

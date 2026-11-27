@@ -18,6 +18,8 @@ pub enum Inbound {
     DialogueFont(bool),
     /// The terminal search text, typed into the page's input on phones.
     Search(String),
+    /// The page's guess that this is a touch device, before any tap.
+    Touch(bool),
 }
 
 thread_local! {
@@ -85,6 +87,12 @@ mod web {
         super::push(super::Inbound::Search(text.to_owned()));
     }
 
+    /// A phone or tablet: show touch hints from the start.
+    #[wasm_bindgen]
+    pub fn set_touch(touch: bool) {
+        super::push(super::Inbound::Touch(touch));
+    }
+
     #[wasm_bindgen]
     pub fn set_paused(paused: bool) {
         super::push(super::Inbound::Paused(paused));
@@ -92,7 +100,7 @@ mod web {
 }
 
 #[cfg(target_arch = "wasm32")]
-pub use web::{go, search, set_dialogue_font, set_paused, start, tap};
+pub use web::{go, search, set_dialogue_font, set_paused, set_touch, start, tap};
 
 #[cfg(target_arch = "wasm32")]
 pub(crate) fn emit(kind: &str, value: &str) {
