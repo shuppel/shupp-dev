@@ -28,6 +28,9 @@ the real page in a new tab.
 If WebGL2 is missing or the game fails, the page shows a plain list of the
 same destinations. The Astro site is untouched.
 
+What comes next (planet worlds such as Dino World, and the loading screen
+they need) is in [ROADMAP.md](ROADMAP.md).
+
 ## How the pieces fit
 
 | Piece | Where | Owns |
