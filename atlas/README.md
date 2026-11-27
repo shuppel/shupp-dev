@@ -5,7 +5,11 @@ everything on it is drawn by this Bevy crate: the ship scenes, the courier
 you walk around, crew dialogue with portraits, terminals that list the site's
 pages, the star atlas for travel, and a JRPG menu.
 
-The menu is the bio:
+The menu is the bio, laid out as the Atlier data deck (a glass panel with a
+section nav, a list or grid on the left and a detail card on the right). The
+player picks a stone, blue or orange theme from the menu footer or with T;
+the page remembers it in `localStorage` (`atlas:theme`), and `?theme=stone`
+overrides it.
 
 - **Status**: portrait, class, level (years since the first quest log entry),
   attributes, a six-axis radar chart, skills and disciplines.
@@ -37,9 +41,10 @@ same destinations. The Astro site is untouched.
 ### Page ↔ game messages
 
 - Game → page: `window.__atlasEmit(kind, value)` with `open` (a URL),
-  `visited` (a destination id) or `scene` (a location label).
+  `visited` (a destination id), `scene` (a location label) or `theme` (the
+  menu theme name).
 - Page → game: `start(canvas, registry, startId, visited, dpr)`, `go(id)` for
-  hash links, `set_paused(bool)`, and `tap(x, y)` for touch taps (fractions of
+  hash links, `set_paused(bool)`, `set_menu_theme(name)`, and `tap(x, y)` for touch taps (fractions of
   the canvas), since winit loses touch taps in mobile browsers.
 
 ## Building
@@ -60,5 +65,5 @@ whenever `atlas/src` changes. Moving this into CI is a follow-up.
 ## Controls
 
 WASD or arrows to walk, E / Enter / Space to talk or use, M for the atlas,
-Esc or C for the menu. On touch, tap to walk, tap a crew member or console to
+Esc or C for the menu (T cycles its theme). On touch, tap to walk, tap a crew member or console to
 walk over and use it, and use the MAP and MENU buttons.

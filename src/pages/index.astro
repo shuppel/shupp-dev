@@ -110,6 +110,7 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
       go: (id: string) => void;
       set_paused: (p: boolean) => void;
       set_dialogue_font: (mana: boolean) => void;
+      set_menu_theme: (name: string) => void;
       set_touch: (touch: boolean) => void;
       set_html_menus: (on: boolean) => void;
       set_sound: (on: boolean) => void;
@@ -185,6 +186,8 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
       } else if (kind === 'visited') {
         visited.add(value);
         store.set('atlas:visited', [...visited].join(','));
+      } else if (kind === 'theme') {
+        store.set('atlas:theme', value);
       } else if (kind === 'scene') {
         document.title = `${value} · The Scattered Atlas`;
       } else if (kind === 'terminal') {
@@ -416,6 +419,9 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
           if (!String(err).includes('Using exceptions for control flow')) throw err;
         }
         if (new URLSearchParams(location.search).get('font') === 'body') game.set_dialogue_font(false);
+        // Character menu theme: ?theme= wins, then the player's last pick.
+        const theme = new URLSearchParams(location.search).get('theme') || store.get('atlas:theme');
+        if (theme) game.set_menu_theme(theme);
         if (matchMedia('(pointer: coarse)').matches) game.set_touch(true);
         game.set_sound(audio.on);
         // Phones get the scrolling sheets; tablets and desktops keep the game menus.
