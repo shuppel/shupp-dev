@@ -1,0 +1,41 @@
+<!doctype html>
+<!-- Share card: The Scattered Atlas title screen.
+     Rendered to public/og/atlas-title.png at 1200x630 by scripts/og/render.mjs. -->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<style>
+  @font-face { font-family: Shupp; src: url(../../public/atlas/assets/fonts/Shupp.otf); font-weight: 400 900; }
+  @font-face { font-family: Mana; src: url(../../public/atlas/assets/fonts/Manaspace.ttf); }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; background: #08080f; }
+  .bg { position: absolute; inset: 0; background: url(../../public/atlas/assets/scenes/bridge.png) center 40%/cover; }
+  .bg::after { content: ""; position: absolute; inset: 0;
+    background: radial-gradient(ellipse 70% 60% at 50% 45%, rgba(8,8,22,.05), rgba(8,8,22,.75) 100%),
+                linear-gradient(180deg, rgba(8,8,22,.7) 0%, rgba(8,8,22,0) 35%, rgba(8,8,22,0) 60%, rgba(8,8,22,.9) 100%); }
+  .scan { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, rgba(0,0,0,.14) 0 2px, transparent 2px 4px); }
+  .ship { position: absolute; top: 210px; left: 600px; width: 560px; transform: rotate(-6deg); filter: drop-shadow(0 18px 20px rgba(0,0,0,.6)); }
+  .hero { position: absolute; left: 70px; bottom: -10px; height: 470px; filter: drop-shadow(0 0 18px rgba(0,0,0,.8)); }
+  .title { position: absolute; top: 46px; left: 320px; right: 40px; text-align: center; }
+  .title small { display: block; font: 18px Mana, monospace; letter-spacing: 8px; color: #9fd3ff; margin-bottom: 8px; text-shadow: 0 0 10px rgba(80,160,255,.7); }
+  .title h1 { font: 900 82px/0.9 Shupp, sans-serif; color: #ffe2a8; text-transform: uppercase; letter-spacing: 2px;
+    -webkit-text-stroke: 2px #6b2f10; text-shadow: 0 5px 0 #b8521a, 0 10px 0 #4a1d08, 0 0 40px rgba(242,165,65,.6); }
+  .menu { position: absolute; left: 50%; margin-left: 140px; bottom: 54px; transform: translateX(-50%); text-align: left;
+    font: 26px/1.6 Mana, monospace; color: #e8e3ff; letter-spacing: 3px; padding: 14px 30px; border: 3px solid #f2a541; border-radius: 8px;
+    background: rgba(10,8,22,.82); box-shadow: 0 0 24px rgba(242,165,65,.35); }
+  .menu b { color: #ffd28a; text-shadow: 0 0 10px rgba(242,165,65,.8); font-weight: normal; }
+  .menu b::before { content: "\25B6 "; color: #f2a541; }
+  .menu span { padding-left: 26px; opacity: .75; }
+  .url { position: absolute; right: 30px; bottom: 18px; font: 20px Mana, monospace; color: #ffd28a; letter-spacing: 2px; }
+</style>
+</head>
+<body>
+  <div class="bg"></div>
+  <img class="ship" src="../../public/atlas/assets/ships/atlier/exterior.png" alt="" />
+  <img class="hero" src="../../public/atlas/assets/portraits/full_body.png" alt="" />
+  <div class="title"><small>A SPRITE JRPG</small><h1>The Scattered<br>Atlas</h1></div>
+  <div class="menu"><b>PRESS START</b><br><span>CREW LOG</span></div>
+  <div class="scan"></div>
+  <div class="url">shupp.dev</div>
+</body>
+</html>

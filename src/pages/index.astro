@@ -1,6 +1,6 @@
 ---
 // The Scattered Atlas: shupp.dev as a sprite JRPG, and the site's front door.
-// The classic homepage lives at /home.
+// The classic homepage (/home) is retired and redirects here.
 //
 // The page is only a full-screen canvas. Everything the visitor sees is drawn
 // by the Bevy game in atlas/. The site content reaches the game as JSON from
@@ -14,6 +14,9 @@ import { readFileSync } from 'node:fs';
 const atlas = await getAtlasRegistry();
 const origin = Astro.site?.origin ?? siteConfig.siteUrl;
 const canonical = new URL('/', origin).href;
+const shareImage = new URL('/og/atlas-box.jpg', origin).href;
+const shareAlt = `${atlas.ship.name}, boxed like a retail game on a store shelf: Erikk and the ship Atlier on the cover, with a Play Free sticker.`;
+const twitterHandle = `@${new URL(siteConfig.social.twitter).pathname.split('/').filter(Boolean).at(-1)}`;
 const description = `${atlas.ship.name}: shupp.dev as a small sprite JRPG. Walk the ship, talk to the crew, read the quest log.`;
 // Cache-bust the game files: a phone holding yesterday's JS glue with today's
 // wasm fails silently, so both URLs carry a hash of the build.
@@ -36,6 +39,22 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
   <meta property="og:title" content={atlas.ship.name} />
   <meta property="og:description" content={description} />
   <meta property="og:url" content={canonical} />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="shupp.dev" />
+  <!-- Share card: the game as a boxed release on a shelf. Source and render
+       script live in scripts/og/; X, Bluesky, Slack and iMessage all read these. -->
+  <meta property="og:image" content={shareImage} />
+  <meta property="og:image:type" content="image/jpeg" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="630" />
+  <meta property="og:image:alt" content={shareAlt} />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content={twitterHandle} />
+  <meta name="twitter:creator" content={twitterHandle} />
+  <meta name="twitter:title" content={atlas.ship.name} />
+  <meta name="twitter:description" content={description} />
+  <meta name="twitter:image" content={shareImage} />
+  <meta name="twitter:image:alt" content={shareAlt} />
   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
   <link rel="icon" href="/favicon-32.png" sizes="32x32" type="image/png" />
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
@@ -72,7 +91,7 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
         </li>
       ))}
       <li><a href="/resume">Resume</a></li>
-      <li><a href="/home">The classic shupp.dev</a></li>
+      <li><a href="/about/">About</a></li>
     </ul>
   </nav>
 

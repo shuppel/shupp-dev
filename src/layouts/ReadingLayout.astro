@@ -1,0 +1,135 @@
+---
+// The standalone reading page: one written piece, no site sidebar or nav, in
+// the Ephemeral design language with the game's palette, fonts and sprites.
+// It needs no JavaScript to render, so it looks the same in the game
+// terminal's sandboxed preview, for crawlers, and in a normal tab.
+
+import JsonLd from '../components/SEO/JsonLd.astro';
+import PixelGlyph from '../components/Reading/PixelGlyph.astro';
+import { siteConfig } from '../config/site';
+import '../styles/reading.css';
+
+export interface Props {
+  title: string;
+  description: string;
+  /** Which terminal on the ship this page belongs to, e.g. "The Archive". */
+  terminal: string;
+  image?: string;
+  imageAlt?: string;
+  type?: 'website' | 'article';
+  author?: string;
+  publishedTime?: string;
+  modifiedTime?: string;
+  canonicalUrl?: string;
+  /** The JSON twin of this page. */
+  jsonHref?: string;
+  jsonLdType?: 'website' | 'article' | 'press' | 'person';
+  jsonLdData?: any;
+  /** Keep this page out of search results (the 404). */
+  noindex?: boolean;
+}
+
+const {
+  title,
+  description,
+  terminal,
+  image = '/og-reading.png',
+  imageAlt = `${title} - shupp.dev`,
+  type = 'article',
+  author = siteConfig.author.name,
+  publishedTime,
+  modifiedTime,
+  canonicalUrl,
+  jsonHref,
+  jsonLdType = 'article',
+  jsonLdData = {},
+  noindex = false,
+} = Astro.props;
+
+const canonical = canonicalUrl ?? new URL(Astro.url.pathname, Astro.site).href;
+const imageURL = new URL(image, Astro.site).href;
+const twitterHandle = `@${new URL(siteConfig.social.twitter).pathname.split('/').filter(Boolean).at(-1)}`;
+---
+
+<!doctype html>
+<html lang="en" class="read-root">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} | shupp.dev</title>
+    <meta name="description" content={description} />
+    <meta name="author" content={author} />
+    {noindex && <meta name="robots" content="noindex" />}
+    <link rel="canonical" href={canonical} />
+    {jsonHref && <link rel="alternate" type="application/json" href={jsonHref} title="This page as JSON" />}
+    <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="/rss.xml" />
+    <link rel="sitemap" href="/sitemap-index.xml" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="color-scheme" content="light" />
+    <meta name="theme-color" content="#f3eee3" />
+
+    <meta property="og:type" content={type} />
+    <meta property="og:url" content={canonical} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={imageURL} />
+    <meta property="og:image:alt" content={imageAlt} />
+    <meta property="og:site_name" content="shupp.dev" />
+    {type === 'article' && publishedTime && <meta property="article:published_time" content={publishedTime} />}
+    {type === 'article' && modifiedTime && <meta property="article:modified_time" content={modifiedTime} />}
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={imageURL} />
+    <meta name="twitter:image:alt" content={imageAlt} />
+    <meta name="twitter:creator" content={twitterHandle} />
+
+    <link rel="preload" href="/ephemeral/fonts/martel-regular.woff" as="font" type="font/woff" crossorigin />
+    <link rel="preload" href="/atlas/assets/fonts/Hind_400Regular.ttf" as="font" type="font/ttf" crossorigin />
+
+    <JsonLd type={jsonLdType} data={jsonLdData} />
+  </head>
+  <body class="read">
+    <a href="#read-main" class="read-skip">Skip to the writing</a>
+
+    <header class="read-header wrap">
+      <a class="wordmark" href="/" data-return aria-label="shupp.dev, back to the ship">
+        <span class="brand-mark"><img src="/atlas/assets/props/logbook.png" width="28" height="28" alt="" class="px" /></span>
+        <span>shupp.dev</span>
+        <small>/ {terminal}</small>
+      </a>
+      <nav aria-label="Page">
+        {jsonHref && <a class="outline-button" href={jsonHref}><PixelGlyph name="braces" size={14} /> JSON</a>}
+        <a class="solid-button ship-button" href="/" data-return aria-label="Return to ship" title="Return to ship"><PixelGlyph name="back" size={14} /><img src="/reading/crescent.png" alt="" width="64" height="32" /></a>
+      </nav>
+    </header>
+
+    <main id="read-main">
+      <slot />
+    </main>
+
+    <footer class="read-footer wrap">
+      <a href="/about/">{author} ↗</a>
+      <span>shupp.dev / notes from the Scattered Atlas</span>
+      {jsonHref ? <a href={jsonHref}>This page as JSON ↗</a> : <a href="/rss.xml">RSS ↗</a>}
+    </footer>
+
+    <script is:inline>
+      // Return to ship. The game opens pages in a new window, so when this page
+      // is the only thing in its tab, closing it drops the reader back into the
+      // game where they left off. Browsers only let a page close a window a
+      // script opened; if the close doesn't happen, go to the game instead.
+      // Without JavaScript (the terminal preview, crawlers) the link just
+      // goes to the game.
+      document.querySelectorAll('a[data-return]').forEach(function (a) {
+        a.addEventListener('click', function (e) {
+          if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0) return;
+          if (history.length > 1) return;
+          e.preventDefault();
+          window.close();
+          setTimeout(function () { location.href = a.href; }, 150);
+        });
+      });
+    </script>
+  </body>
+</html>

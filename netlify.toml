@@ -19,6 +19,19 @@
   status = 301
   force = true
 
+# The classic homepage is retired; the game is the front door.
+[[redirects]]
+  from = "/home"
+  to = "/"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/home/"
+  to = "/"
+  status = 301
+  force = true
+
 # The page always asks for the game with ?v=<hash of the build>, so the wasm
 # and its loader can be cached for good; a new build is a new URL.
 [[headers]]

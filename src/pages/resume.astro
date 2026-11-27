@@ -1,864 +1,128 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import Icon from '../components/Icon/Icon.astro';
+// The resume as a standalone reading page, with a JSON twin at /resume.json.
+// It prints cleanly: the header, side panels and end row drop away.
+import ReadingLayout from '../layouts/ReadingLayout.astro';
+import PixelGlyph from '../components/Reading/PixelGlyph.astro';
+import {
+  certifications, contactItems, coreCompetencies, education, experiences,
+  otherExperience, renderEmphasis, resumeHeadline as h, specializations, techStack,
+} from '../lib/reading/resume';
 
-interface ExperienceItem {
-  company: string;
-  logo?: string;
-  title: string;
-  employmentType: string;
-  startDate: string;
-  endDate?: string;
-  duration: string;
-  location: string;
-  context?: string;
-  bullets?: string[];
-  governance?: string[];
-  isCurrent?: boolean;
-  website?: string;
-}
-
-const experiences: ExperienceItem[] = [
-  {
-    company: "Steampunk",
-    title: "Senior Product Manager",
-    employmentType: "Full-time",
-    startDate: "Aug 2026",
-    duration: "Present",
-    location: "Washington, DC Metro Area",
-    bullets: [
-      "Senior Product Manager over the USCG Beacon Program (50 people) and part of core leadership, guiding 6 product teams that deliver AI and Big Data products and services to the entire U.S. Coast Guard",
-      "Created Product Punks on Punk University (PunkU), a 5-star rated course that drew C-suite attention for concepts such as Design as Spec and PRDs",
-      "Introduced commercial product development best practices for building technical products",
-      "Took over an incumbent project and had the development team write Product Technical Summaries of how each product exists in the codebase"
-    ],
-    isCurrent: true
-  },
-  {
-    company: "A-Frame Solutions",
-    title: "AI Product Manager / GTM",
-    employmentType: "Contract",
-    startDate: "Mar 2025",
-    endDate: "Jun 2026",
-    duration: "1 yr 3 mos",
-    location: "Arlington, VA",
-    context: "ArcSuiteAI (@@$5.4M ARR@@) — AI procurement-lifecycle SaaS for federal agencies",
-    bullets: [
-      "Ran daily scrums and backlog discussions for an 11-person Agile pod through **FedRAMP Moderate** and **IRS ATO**.",
-      "Drove AI strategy and implementation: moved developers to multi-terminal TUI agents (OpenCode, Claude Code) alongside Cursor workflows — sharply increasing developer throughput. Researched prompt engineering and RAG (Pinecone / GraphRAG).",
-      "Built the product design and branding for the ArcSuiteAI line (ArcCompose, ArcInsight, ArcTracker, ArcSelect, ArcPropose) — messaging architecture, design system, and content strategy.",
-      "Shipped **20+ PRs** with agentic tooling to support the team. Built in TypeScript and Rust/WASM. Prisma → Postgres → AWS GovCloud.",
-      "Grew LinkedIn following **16x** in two weeks (12 → 200) including a viral thought-leadership piece — product walkthroughs validated B2G positioning vs. competitors.",
-      "Negotiated a FedRAMP partner from $250K to $155K (@@38% savings@@) via willingness-to-pay analysis; built the VC outreach strategy for angel investors.",
-    ],
-    governance: ["FedRAMP Moderate", "IRS ATO"],
-    isCurrent: false
-  },
-  {
-    company: "Disca",
-    title: "Fractional CTO",
-    employmentType: "Contract",
-    startDate: "Mar 2025",
-    duration: "Present",
-    location: "Remote / Phoenix, AZ",
-    context: "Clinical Trial Management Client",
-    bullets: [
-      "Working with 3 developers and two SMEs to build a Clinical Trials Data Platform.",
-      "Orchestrate meetings and demos with the business owner to showcase product features and value.",
-      "Provide strategy, technical architecture, and direction to developers to build better products.",
-      "Provide executive strategy across growth, operations, product, and marketing vectors.",
-    ],
-    governance: ["HIPAA", "FISMA"],
-    isCurrent: true
-  },
-  {
-    company: "Nodetus Integrators LLC",
-    title: "Founder & Managing Director",
-    employmentType: "Self-employed",
-    startDate: "Jan 2017",
-    endDate: "Jun 2026",
-    duration: "9 yrs 6 mos",
-    location: "Arlington, VA",
-    context: "AI services firm; federal B2B",
-    bullets: [
-      "Built enterprise GTM from zero: **$1.1M+** cumulative revenue (six subcontracts), @@40%@@ YoY growth, @@90%@@ renewal rate over 8+ years with 2.5 FTE peak headcount.",
-      "Clients: Disca, Sprezzatura, A-Frame Solutions, MAXIMUS, IME, AFI. Worked with HHS, NIH, Commerce, IRS.",
-      "Active participation at ACT-IAC community (Acquisitions and Project Management COIs).",
-    ],
-    isCurrent: false
-  },
-  {
-    company: "Tria Federal",
-    title: "Sr. Technical Project Manager",
-    employmentType: "Full-time",
-    startDate: "Apr 2020",
-    endDate: "Mar 2025",
-    duration: "5 yrs",
-    location: "Arlington, VA · Remote",
-    context: "VA EHR Modernization, multi-vendor program",
-    bullets: [
-      "Authored Scrum Master playbooks adopted program-wide across **20+ interface teams (400+ people)**; took **15+ interfaces LIVE** at VA Hospitals.",
-      "Migrated legacy languages to modern FHIR — crosswalked legacy systems (MUMPS) to Cerner/Oracle and built FHIR/HL7 calls from hospital systems.",
-      "Hand-coded a Python + Excel utility that cut new-interface setup from days to minutes — an estimated @@$160K@@ in annual cross-team labor savings.",
-      "Managed ATOs with security and compliance leads, maintaining **HIPAA** and **SOC2** compliance across hospital systems and patient data.",
-    ],
-    governance: ["HIPAA", "SOC2", "ATO"],
-    isCurrent: false
-  },
-  {
-    company: "MAXIMUS",
-    title: "Technical Agile Product Delivery Lead",
-    employmentType: "Full-time",
-    startDate: "2019",
-    endDate: "2020",
-    duration: "1 yr 1 mo",
-    location: "Vienna, VA",
-    context: "Large billion-dollar GovTech & services firm",
-    bullets: [
-      "PM for Genesys FedRAMP: managed a **50-person team** spanning security, operations, data warehouse, on-prem, and AWS engineers/architects.",
-      "NIH Technical Help Desk liaison: single-handedly converted physical certification courses to online during COVID — process, testing, and videos — driving re-engagement across **6 subcontracts** (2019–2024).",
-      "Built digital and Agile strategy for a $1B company with the CTO, VP of Technology, and VP of Agile Services — playbooks used org-wide.",
-      "Served as scrum master and business analyst during tech demos and orals, building technical solutions from SME consultations.",
-    ],
-    governance: ["FedRAMP"],
-    isCurrent: false
-  },
-  {
-    company: "RWD Consulting LLC",
-    title: "Proposal Manager / Technical PM",
-    employmentType: "Full-time",
-    startDate: "2018",
-    endDate: "2019",
-    duration: "1 yr 2 mos",
-    location: "Washington, DC",
-    context: "8(a) services firm",
-    bullets: [
-      "Proposal + capture: drove **14 contract wins**, @@165%@@ revenue growth ($8M → $21M). Submitted 30 proposals and assisted in orals.",
-      "Built a customized SharePoint platform with Flow automation to manage BD team opportunities.",
-      "Managed 6 FTEs (4 developers, 2 support) at DHS TSA in Crystal City, VA.",
-    ],
-    isCurrent: false
-  },
-  {
-    company: "Highlight Technologies",
-    title: "Proposal Manager",
-    employmentType: "Full-time",
-    startDate: "2016",
-    endDate: "2017",
-    duration: "1 yr 1 mo",
-    location: "Fairfax, VA",
-    context: "8(a) services firm",
-    bullets: [
-      "Drove a @@35%@@ increase in proposal win rate and supported @@102%@@ company growth ($10M → $20.12M) with **12 contract wins** — early sales-enablement and competitive-positioning at scale.",
-    ],
-    isCurrent: false
-  },
-  {
-    company: "Quick Services LLC",
-    title: "Proposal Manager",
-    employmentType: "Full-time",
-    startDate: "2015",
-    endDate: "2016",
-    duration: "1 yr",
-    location: "Remote / Bozeman, MT",
-    context: "SDVOSB DoD contractor",
-    bullets: [
-      "Direct report to the VP of BD. The SDVOSB specialized in warfighter and asymmetric warfare support, with major clients at Fort Bragg, NC.",
-    ],
-    isCurrent: false
-  }
-];
-
-const otherExperience = [
-  { company: "DRT Strategies", title: "Proposal Manager", dates: "2014 — 2015" },
-  { company: "CapRelo", title: "Proposal Coordinator", dates: "2013 — 2014" },
-];
-
-const coreCompetencies = [
-  "AI-Native Delivery",
-  "Agentic Tooling",
-  "Agile / Scrum",
-  "Health IT",
-  "Product Management",
-  "GTM Strategy",
-  "Capture Management",
-  "Proposal Development",
-  "Executive Strategy",
-  "Product Marketing",
-  "FedRAMP / ATO",
-  "Vendor Negotiation",
-];
-
-const techStack = [
-  "Prisma",
-  "PostgreSQL",
-  "Cloudflare",
-  "Rust / WASM",
-  "Solid.js",
-  "Next.js",
-  "Anthropic SDK",
-  "AWS GovCloud",
-  "FHIR / HL7",
-  "Supabase",
-  "Python",
-  "Claude Code",
-];
-
-const education = [
-  {
-    school: "George Mason University",
-    degree: "M.S., Technology Management",
-    detail: "Apr 2020 · 3.74 GPA",
-  },
-  {
-    school: "Longwood University",
-    degree: "B.A., English",
-    detail: "Apr 2012",
-  }
-];
-
-const certifications = [
-  "AWS Certified Cloud Practitioner",
-  "Product School — PMC",
-  "Nielsen Norman Group — UXMC (~2,000 globally)",
-  "SAFe 4 Practitioner",
-  "ITIL v4 Foundation",
-];
-
-const specializations = [
-  { title: "Digital Healthcare Informatics & AI", org: "Illinois Tech" },
-  { title: "AI Agents with Model Context Protocol", org: "Vanderbilt University" },
-  { title: "Supervised Machine Learning", org: "DeepLearning.AI" },
-  { title: "Algorithms & Data Structures", org: "UC San Diego" },
-  { title: "Python for Everybody", org: "University of Michigan" },
-  { title: "PostgreSQL for Everybody", org: "University of Michigan" },
-  { title: "Introduction to Computer Programming", org: "University of London" },
-  { title: "Computer Communications", org: "University of Colorado" },
-  { title: "Finance & Quantitative Modeling", org: "University of Pennsylvania" },
-  { title: "Precalculus through Data & Modeling", org: "Johns Hopkins University" },
-  { title: "Digital Marketing", org: "University of Illinois" },
-  { title: "Search Engine Optimization (SEO)", org: "UC Davis" },
-  { title: "RPA Specialization", org: "UiPath" },
-  { title: "Pre-Security Learning Path", org: "TryHackMe" },
-];
-
-const contactItems = [
-  { label: "erikk@shupp.dev", href: "mailto:erikk@shupp.dev" },
-  { label: "703-618-4953", href: "tel:+17036184953" },
-  { label: "shupp.dev", href: "https://www.shupp.dev" },
-  { label: "in/shupp-erikk", href: "https://www.linkedin.com/in/shupp-erikk" },
-  { label: "Washington, DC" },
-];
-
-// Inline emphasis: **bold** -> <strong>, @@metric@@ -> amber span
-const renderEmphasis = (s: string) =>
-  s
-    .replace(/@@(.+?)@@/g, '<span class="metric">$1</span>')
-    .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+const current = experiences.filter((e) => e.isCurrent);
+const slug = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
 ---
 
-<Layout title="Resume - Erikk Shupp" description="Professional resume of Erikk Shupp - Sr. Technical Product Manager">
-  <div class="resume-sheet">
-    <div class="sheet-bar"></div>
-
-    <div class="resume-shell">
-      <a href="/about" class="back-link">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M19 12H5M12 19l-7-7 7-7"/>
-        </svg>
-        Back to About
-      </a>
-
-      <header class="resume-header">
-        <h1 class="name">Erikk Shupp<span class="dot">.</span></h1>
-        <p class="role">Sr. Technical Product Manager</p>
-        <p class="tagline">AI-Native · Health IT · Procurement &amp; Acquisitions · Executive Strategy</p>
-
-        <div class="contact-row">
-          {contactItems.map((item) => (
-            <span class="contact-item">
-              <span class="diamond">◆</span>
-              {item.href ? (
-                <a href={item.href} target={item.href.startsWith('http') ? '_blank' : undefined} rel="noopener noreferrer">{item.label}</a>
-              ) : (
-                <span>{item.label}</span>
-              )}
-            </span>
+<ReadingLayout
+  title={`Resume - ${h.name}`}
+  description={`${h.name}, ${h.role}. ${h.focus.join(', ')}.`}
+  terminal="Captain's Quarters"
+  type="website"
+  jsonLdType="person"
+  jsonHref="/resume.json"
+  author={h.name}
+>
+  <article class="resume">
+    <section class="read-hero wrap">
+      <div>
+        <p class="eyebrow"><span class="status-dot"></span> Resume / {h.focus.join(' / ')}</p>
+        <h1 class="read-title">{h.name}</h1>
+        <p class="read-lede" set:html={renderEmphasis(h.summary)} />
+        <ul class="read-meta">
+          {contactItems.map((c) => (
+            <li class="tag">{c.href ? <a href={c.href} target={c.href.startsWith('http') ? '_blank' : undefined} rel="noopener">{c.label}</a> : c.label}</li>
           ))}
+        </ul>
+      </div>
+      <figure class="cover panel">
+        <header><h2><img src="/atlas/assets/ui/icon_credential.png" alt="" class="px" width="16" height="16" /> Crew record</h2><span>{h.role}</span></header>
+        <div class="panel-body">
+          <dl class="facts">
+            <div><img src="/atlas/assets/ui/icon_status.png" alt="" class="px" width="16" height="16" /><dt>Role</dt><dd>{h.role}</dd></div>
+            {current.map((e) => (
+              <div><img src="/atlas/assets/ui/icon_quest_active.png" alt="" class="px" width="16" height="16" /><dt>Now</dt><dd>{e.title}, {e.company}</dd></div>
+            ))}
+            <div><img src="/atlas/assets/ui/icon_quests.png" alt="" class="px" width="16" height="16" /><dt>Roles held</dt><dd>{experiences.length + otherExperience.length}</dd></div>
+            <div><img src="/atlas/assets/ui/icon_items.png" alt="" class="px" width="16" height="16" /><dt>Credentials</dt><dd>{certifications.length} certifications, {specializations.length} specializations</dd></div>
+          </dl>
         </div>
+        <footer class="resume-actions">
+          <button type="button" class="solid-button" onclick="window.print()">Print</button>
+          <a class="outline-button" href="/resume.json"><PixelGlyph name="braces" size={14} /> JSON</a>
+        </footer>
+      </figure>
+    </section>
 
-        <p class="summary" set:html={renderEmphasis(
-          "Senior technical product manager spanning federal GovTech, health IT, and AI-native delivery. **8+ years** building enterprise GTM, modernizing clinical and EHR systems, and steering Agile programs through **FedRAMP** and **ATO** — pairing product strategy, design, and hands-on engineering."
-        )} />
-      </header>
-
-      <div class="resume-grid">
-        <main class="resume-main">
-          <section>
-            <div class="sec-head"><h2>Relevant Experience</h2></div>
-
-            {experiences.map((job, i) => (
-              <article class="exp-item">
-                <div class={`exp-logo ${i % 2 === 0 ? 'teal' : 'dark'}`}>
-                  <span>{job.company.charAt(0)}</span>
-                </div>
-
-                <div class="exp-body">
-                  <div class="exp-top">
-                    <h3 class="exp-title">{job.title}</h3>
-                    <span class="exp-dates">{job.startDate} — {job.endDate || "Present"}</span>
-                  </div>
-                  <p class="exp-meta">
-                    {job.company}
-                    <span class="mid-dot">·</span>{job.employmentType}
-                    <span class="mid-dot">·</span>{job.location}
-                  </p>
-                  {job.context && (
-                    <p class="exp-context" set:html={renderEmphasis(job.context)} />
-                  )}
-
-                  {job.bullets && (
-                    <ul class="exp-bullets">
-                      {job.bullets.map((b) => (
-                        <li set:html={renderEmphasis(b)} />
-                      ))}
-                    </ul>
-                  )}
-
-                  {job.governance && (
-                    <p class="exp-gov">
-                      <span class="gov-label">governance</span>
-                      {job.governance.map((g) => (
-                        <span class="gov-chip">{g}</span>
-                      ))}
-                    </p>
-                  )}
-                </div>
-              </article>
-            ))}
+    <div class="read-grid read-grid--two wrap">
+      <div class="read-body">
+        <h2 id="experience">Experience</h2>
+        {experiences.map((job) => (
+          <section class="job" id={slug(job.company)}>
+            <h3>{job.title}</h3>
+            <p class="job-meta">
+              <strong>{job.company}</strong>
+              <span>{job.startDate} to {job.endDate ?? 'present'}</span>
+              <span>{job.employmentType}</span>
+              <span>{job.location}</span>
+            </p>
+            {job.context && <p class="job-context" set:html={renderEmphasis(job.context)} />}
+            {job.bullets && (
+              <ul>{job.bullets.map((b) => <li set:html={renderEmphasis(b)} />)}</ul>
+            )}
+            {job.governance && (
+              <p class="job-gov">{job.governance.map((g) => <span class="tag">{g}</span>)}</p>
+            )}
           </section>
+        ))}
 
-          <section class="other-exp">
-            <div class="sec-head"><h2>Other Experience</h2></div>
-            {otherExperience.map((item) => (
-              <article class="exp-item compact">
-                <div class="exp-logo dark"><span>{item.company.charAt(0)}</span></div>
-                <div class="exp-body">
-                  <h3 class="exp-title small">{item.title}</h3>
-                  <p class="exp-meta">{item.company}<span class="mid-dot">·</span>{item.dates}</p>
-                </div>
-              </article>
-            ))}
-          </section>
-        </main>
+        <h2 id="earlier">Earlier roles</h2>
+        <ul>
+          {otherExperience.map((o) => <li><strong>{o.title}</strong>, {o.company} ({o.dates})</li>)}
+        </ul>
 
-        <aside class="resume-aside">
-          <section class="aside-block">
-            <h4 class="aside-head">Core</h4>
-            <div class="pill-cloud">
-              {coreCompetencies.map((c) => (
-                <span class="pill core">{c}</span>
-              ))}
-            </div>
-          </section>
-
-          <section class="aside-block">
-            <h4 class="aside-head">Tech</h4>
-            <div class="pill-cloud">
-              {techStack.map((t) => (
-                <span class="pill">{t}</span>
-              ))}
-            </div>
-          </section>
-
-          <section class="aside-block">
-            <h4 class="aside-head">Education</h4>
-            {education.map((edu) => (
-              <div class="edu-item">
-                <p class="edu-degree">{edu.degree}</p>
-                <p class="edu-meta">{edu.school}</p>
-                <p class="edu-meta light">{edu.detail}</p>
-              </div>
-            ))}
-          </section>
-
-          <section class="aside-block">
-            <h4 class="aside-head">Certifications</h4>
-            <ul class="cert-list">
-              {certifications.map((cert) => (
-                <li><span class="diamond">◆</span>{cert}</li>
-              ))}
-            </ul>
-          </section>
-        </aside>
+        <h2 id="specializations">Specializations</h2>
+        <ul class="spec-list">
+          {specializations.map((s) => <li><strong>{s.title}</strong> <span>{s.org}</span></li>)}
+        </ul>
       </div>
 
-      <section class="spec-section">
-        <div class="sec-head"><h2>Specializations</h2></div>
-        <div class="spec-grid">
-          {specializations.map((s) => (
-            <div class="spec-card">
-              <p class="spec-title">{s.title}</p>
-              <p class="spec-org">{s.org}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      <footer class="resume-footer">
-        <div class="resume-actions">
-          <button class="btn btn-primary" onclick="window.print()">
-            <Icon name="Printer" size={18} weight="duotone" />
-            Print
-          </button>
-          <a href="/api/resume.pdf" class="btn btn-secondary">
-            <Icon name="Download" size={18} weight="duotone" />
-            Download PDF
-          </a>
-        </div>
-      </footer>
+      <aside class="read-aside" aria-label="Skills and credentials">
+        <section class="panel">
+          <header><h2><img src="/atlas/assets/ui/icon_quest_active.png" alt="" class="px" width="16" height="16" /> Core</h2><span>{coreCompetencies.length}</span></header>
+          <div class="panel-body tag-cloud">{coreCompetencies.map((c) => <span class="tag citron">{c}</span>)}</div>
+        </section>
+        <section class="panel">
+          <header><h2><img src="/atlas/assets/ui/icon_items.png" alt="" class="px" width="16" height="16" /> Toolkit</h2><span>{techStack.length}</span></header>
+          <div class="panel-body tag-cloud">{techStack.map((t) => <span class="tag">{t}</span>)}</div>
+        </section>
+        <section class="panel">
+          <header><h2><img src="/atlas/assets/props/logbook.png" alt="" class="px" width="16" height="16" /> Education</h2><span>{education.length}</span></header>
+          <div class="panel-body">
+            <dl class="facts">
+              {education.map((e) => (
+                <div><img src="/atlas/assets/ui/icon_credential.png" alt="" class="px" width="16" height="16" /><dt>{e.school}</dt><dd>{e.degree}<br /><small>{e.detail}</small></dd></div>
+              ))}
+            </dl>
+          </div>
+        </section>
+        <section class="panel">
+          <header><h2><img src="/atlas/assets/ui/icon_credential.png" alt="" class="px" width="16" height="16" /> Certifications</h2><span>{certifications.length}</span></header>
+          <div class="panel-body">
+            <ul class="links plain">{certifications.map((c) => <li><PixelGlyph name="diamond" size={12} /> {c}</li>)}</ul>
+          </div>
+          <footer><a href="/resume.json">Read it as JSON ↗</a></footer>
+        </section>
+      </aside>
     </div>
-  </div>
-</Layout>
 
-<style>
-  /* Load editorial typefaces matching the PDF (slab name + serif body + mono labels) */
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Roboto+Slab:wght@600;700;800&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;0,8..60,700;1,8..60,400&display=swap');
+    <nav class="read-rules wrap" aria-label="Keep browsing">
+      <a href="/" data-return><span>01</span><strong>Return to ship</strong><p>Close this page and pick up where you left off.</p></a>
+      <a href="/about/"><span>02</span><strong>About</strong><p>The story and how I work.</p></a>
+      <a href="/portfolio/"><span>03</span><strong>Portfolio</strong><p>Design systems, apps, shows and sites.</p></a>
+    </nav>
+  </article>
+</ReadingLayout>
 
-  .resume-sheet {
-    /* Resume-scoped palette (warm, editorial) */
-    --r-bg: #f5f3ec;
-    --r-surface: #faf8f2;
-    --r-ink: #262420;
-    --r-muted: #6f6d65;
-    --r-teal: #5f7d80;
-    --r-teal-soft: rgba(95, 125, 128, 0.10);
-    --r-teal-line: rgba(95, 125, 128, 0.28);
-    --r-amber: #bd6f31;
-    --r-border: #ddd8cb;
-    --r-dash: rgba(95, 125, 128, 0.22);
-
-    --r-serif: 'Source Serif 4', Georgia, 'Times New Roman', serif;
-    --r-slab: 'Roboto Slab', 'Source Serif 4', Georgia, serif;
-    --r-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
-
-    background: var(--r-bg);
-    color: var(--r-ink);
-    min-height: 100vh;
-    /* Break out of the Layout's centered, 960px-capped <main> so the
-       resume spans the full window to the right of the side nav. */
-    width: calc(100vw - 240px);
-    margin: -2rem 0 -2rem -2rem;
-    padding: 0;
-    overflow-x: hidden;
-  }
-
-  html.dark .resume-sheet {
-    --r-bg: #1b1a17;
-    --r-surface: #232220;
-    --r-ink: #e9e6df;
-    --r-muted: #a29f96;
-    --r-teal: #8fb1b3;
-    --r-teal-soft: rgba(143, 177, 179, 0.10);
-    --r-teal-line: rgba(143, 177, 179, 0.28);
-    --r-amber: #d9985a;
-    --r-border: #353330;
-    --r-dash: rgba(143, 177, 179, 0.22);
-  }
-
-  .sheet-bar {
-    height: 6px;
-    background: linear-gradient(90deg, var(--r-teal), color-mix(in srgb, var(--r-teal) 55%, #34484a));
-  }
-
-  .resume-shell {
-    max-width: 1500px;
-    margin: 0 auto;
-    padding: 2rem clamp(2rem, 4vw, 5rem) 3.5rem;
-  }
-
-  /* Back Link */
-  .back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    color: var(--r-muted);
-    text-decoration: none;
-    font-family: var(--r-mono);
-    font-size: 0.78rem;
-    letter-spacing: 0.04em;
-    margin-bottom: 2rem;
-    transition: color 0.2s ease, transform 0.2s ease;
-  }
-  .back-link:hover { color: var(--r-teal); }
-  .back-link:hover svg { transform: translateX(-3px); }
-  .back-link svg { transition: transform 0.2s ease; }
-
-  /* Header */
-  .resume-header { margin-bottom: 2.25rem; }
-
-  .name {
-    font-family: var(--r-slab);
-    font-weight: 800;
-    font-size: clamp(2.6rem, 6vw, 4rem);
-    line-height: 1;
-    letter-spacing: -0.02em;
-    color: var(--r-ink);
-    margin: 0 0 0.5rem;
-  }
-  .name .dot { color: var(--r-teal); }
-
-  .role {
-    font-family: var(--r-mono);
-    text-transform: uppercase;
-    letter-spacing: 0.22em;
-    font-size: 0.92rem;
-    font-weight: 500;
-    color: var(--r-teal);
-    margin: 0 0 0.5rem;
-  }
-
-  .tagline {
-    font-family: var(--r-mono);
-    font-size: 0.82rem;
-    letter-spacing: 0.02em;
-    color: var(--r-muted);
-    margin: 0 0 1.1rem;
-  }
-
-  .contact-row {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.4rem 1.1rem;
-    font-family: var(--r-mono);
-    font-size: 0.82rem;
-    margin-bottom: 1.5rem;
-  }
-  .contact-item { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--r-ink); }
-  .contact-item a { color: var(--r-ink); text-decoration: none; }
-  .contact-item a:hover { color: var(--r-teal); text-decoration: underline; }
-  .diamond { color: var(--r-teal); font-size: 0.6rem; line-height: 1; }
-
-  .summary {
-    font-family: var(--r-serif);
-    font-size: 1.08rem;
-    line-height: 1.7;
-    color: var(--r-ink);
-    max-width: 760px;
-    margin: 0;
-  }
-  .summary :global(strong) { font-weight: 700; }
-
-  /* Shared emphasis */
-  .resume-sheet :global(strong) { color: var(--r-ink); font-weight: 700; }
-  .resume-sheet :global(.metric) {
-    font-family: var(--r-mono);
-    font-weight: 700;
-    font-size: 0.92em;
-    color: var(--r-amber);
-  }
-
-  /* Grid */
-  .resume-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 320px;
-    gap: 3.5rem;
-    margin-top: 2.5rem;
-    padding-top: 2.5rem;
-    border-top: 1px solid var(--r-border);
-    position: relative;
-  }
-  .resume-aside {
-    border-left: 1px solid var(--r-border);
-    padding-left: 2.25rem;
-  }
-
-  /* Section heads */
-  .sec-head {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.75rem;
-  }
-  .sec-head h2 {
-    font-family: var(--r-mono);
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: var(--r-teal);
-    margin: 0;
-    white-space: nowrap;
-  }
-  .sec-head::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--r-teal-line);
-  }
-
-  /* Experience */
-  .exp-item {
-    display: grid;
-    grid-template-columns: 52px 1fr;
-    gap: 1.1rem;
-    padding-bottom: 1.6rem;
-    margin-bottom: 1.6rem;
-    border-bottom: 1px dashed var(--r-dash);
-  }
-  .exp-item:last-child { border-bottom: none; margin-bottom: 0; }
-  .exp-item.compact { padding-bottom: 1.1rem; margin-bottom: 1.1rem; }
-
-  .exp-logo {
-    width: 52px;
-    height: 52px;
-    border-radius: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: var(--r-slab);
-    font-weight: 700;
-    font-size: 1.4rem;
-    color: #f7f5ef;
-    flex-shrink: 0;
-  }
-  .exp-logo.teal { background: var(--r-teal); }
-  .exp-logo.dark { background: #34322d; }
-  html.dark .exp-logo.dark { background: #45433d; }
-
-  .exp-body { min-width: 0; }
-  .exp-top {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 1rem;
-    flex-wrap: wrap;
-  }
-  .exp-title {
-    font-family: var(--r-serif);
-    font-weight: 700;
-    font-size: 1.25rem;
-    color: var(--r-ink);
-    margin: 0;
-    line-height: 1.2;
-  }
-  .exp-title.small { font-size: 1.1rem; }
-  .exp-dates {
-    font-family: var(--r-mono);
-    font-size: 0.78rem;
-    color: var(--r-muted);
-    white-space: nowrap;
-  }
-  .exp-meta {
-    font-family: var(--r-mono);
-    font-size: 0.78rem;
-    color: var(--r-teal);
-    margin: 0.3rem 0 0;
-  }
-  .mid-dot { color: var(--r-muted); margin: 0 0.45rem; opacity: 0.7; }
-
-  .exp-context {
-    font-family: var(--r-serif);
-    font-style: italic;
-    font-size: 0.92rem;
-    color: var(--r-muted);
-    margin: 0.55rem 0 0.65rem;
-  }
-
-  .exp-bullets {
-    margin: 0.65rem 0 0;
-    padding: 0;
-    list-style: none;
-  }
-  .exp-bullets li {
-    position: relative;
-    padding-left: 1.25rem;
-    font-family: var(--r-serif);
-    font-size: 0.98rem;
-    line-height: 1.6;
-    color: var(--r-ink);
-    margin-bottom: 0.45rem;
-    max-width: 760px;
-  }
-  .exp-bullets li::before {
-    content: '◆';
-    position: absolute;
-    left: 0;
-    top: 0.05em;
-    font-size: 0.55rem;
-    color: var(--r-teal);
-  }
-
-  .exp-gov {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 0.4rem;
-    margin: 0.85rem 0 0;
-  }
-  .gov-label {
-    font-family: var(--r-mono);
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--r-muted);
-    margin-right: 0.25rem;
-  }
-  .gov-chip {
-    font-family: var(--r-mono);
-    font-size: 0.68rem;
-    padding: 0.18rem 0.5rem;
-    border: 1px solid var(--r-teal-line);
-    border-radius: 5px;
-    color: var(--r-teal);
-    background: var(--r-teal-soft);
-  }
-
-  /* Aside */
-  .aside-block { margin-bottom: 2rem; }
-  .aside-head {
-    font-family: var(--r-mono);
-    text-transform: uppercase;
-    letter-spacing: 0.2em;
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: var(--r-teal);
-    margin: 0 0 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--r-teal-line);
-  }
-
-  .pill-cloud { display: flex; flex-wrap: wrap; gap: 0.45rem; }
-  .pill {
-    font-family: var(--r-mono);
-    font-size: 0.72rem;
-    padding: 0.32rem 0.6rem;
-    border: 1px solid var(--r-border);
-    border-radius: 6px;
-    background: var(--r-surface);
-    color: var(--r-ink);
-  }
-  .pill.core {
-    background: var(--r-teal-soft);
-    border-color: var(--r-teal-line);
-    color: var(--r-teal);
-  }
-
-  .edu-item { margin-bottom: 1.1rem; }
-  .edu-item:last-child { margin-bottom: 0; }
-  .edu-degree {
-    font-family: var(--r-serif);
-    font-weight: 700;
-    font-size: 1rem;
-    color: var(--r-ink);
-    margin: 0 0 0.2rem;
-  }
-  .edu-meta {
-    font-family: var(--r-mono);
-    font-size: 0.76rem;
-    color: var(--r-muted);
-    margin: 0;
-  }
-  .edu-meta.light { opacity: 0.8; margin-top: 0.15rem; }
-
-  .cert-list { list-style: none; margin: 0; padding: 0; }
-  .cert-list li {
-    display: flex;
-    align-items: baseline;
-    gap: 0.55rem;
-    font-family: var(--r-mono);
-    font-size: 0.76rem;
-    line-height: 1.4;
-    color: var(--r-ink);
-    margin-bottom: 0.6rem;
-  }
-
-  /* Specializations */
-  .spec-section {
-    margin-top: 3rem;
-    padding-top: 2.5rem;
-    border-top: 1px solid var(--r-border);
-  }
-  .spec-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 0.85rem;
-  }
-  .spec-card {
-    background: var(--r-surface);
-    border: 1px solid var(--r-border);
-    border-left: 3px solid var(--r-teal);
-    border-radius: 8px;
-    padding: 0.85rem 1rem;
-  }
-  .spec-title {
-    font-family: var(--r-serif);
-    font-weight: 700;
-    font-size: 0.95rem;
-    color: var(--r-ink);
-    margin: 0 0 0.2rem;
-    line-height: 1.25;
-  }
-  .spec-org {
-    font-family: var(--r-mono);
-    font-size: 0.74rem;
-    color: var(--r-muted);
-    margin: 0;
-  }
-
-  /* Footer */
-  .resume-footer {
-    margin-top: 3rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--r-border);
-  }
-  .resume-actions { display: flex; justify-content: center; gap: 1rem; }
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.6rem 1.4rem;
-    border-radius: 30px;
-    font-family: var(--r-mono);
-    font-size: 0.82rem;
-    font-weight: 500;
-    letter-spacing: 0.03em;
-    text-decoration: none;
-    cursor: pointer;
-    border: none;
-    transition: all 0.25s ease;
-  }
-  .btn-primary { background: var(--r-teal); color: #f7f5ef; }
-  .btn-primary:hover { transform: translateY(-2px); filter: brightness(1.08); }
-  .btn-secondary { background: transparent; color: var(--r-teal); border: 1.5px solid var(--r-teal); }
-  .btn-secondary:hover { background: var(--r-teal); color: #f7f5ef; transform: translateY(-2px); }
-
-  /* Print */
-  @media print {
-    .resume-sheet { margin: 0; background: #ffffff; }
-    .back-link, .resume-footer { display: none; }
-    .resume-shell { padding: 1rem 1.5rem; max-width: 100%; }
-    .spec-section, .resume-grid { page-break-inside: auto; }
-    .exp-item { page-break-inside: avoid; }
-  }
-
-  /* Responsive */
-  @media (max-width: 900px) {
-    .resume-grid { grid-template-columns: 1fr; gap: 2.5rem; }
-    .resume-aside { border-left: none; padding-left: 0; border-top: 1px solid var(--r-border); padding-top: 2rem; }
-  }
-
-  /* Below the side-nav breakpoint the Layout removes the 240px offset,
-     so the sheet should bleed to the full viewport instead. */
-  @media (max-width: 768px) {
-    .resume-sheet { width: calc(100% + 4rem); }
-  }
-
-  @media (max-width: 640px) {
-    .resume-shell { padding: 1.5rem 1.25rem 2.5rem; }
-    .exp-item { grid-template-columns: 42px 1fr; gap: 0.85rem; }
-    .exp-logo { width: 42px; height: 42px; border-radius: 11px; font-size: 1.1rem; }
-    .exp-top { gap: 0.25rem; }
-    .summary { font-size: 1rem; }
-  }
-</style>
+<script is:inline>
+  // /api/resume.pdf lands here with ?print=true.
+  if (new URLSearchParams(location.search).get('print') === 'true') window.addEventListener('load', function () { window.print(); });
+</script>

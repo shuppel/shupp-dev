@@ -1,0 +1,158 @@
+<!doctype html>
+<!-- Share card: The Scattered Atlas as a boxed game on a store shelf.
+     Rendered to public/og/atlas-box.png at 1200x630 by scripts/og/render.mjs.
+     All art comes from public/atlas/assets; the store is made up. -->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<style>
+  @font-face { font-family: Shupp; src: url(../../public/atlas/assets/fonts/Shupp.otf); font-weight: 400 900; }
+  @font-face { font-family: Mana; src: url(../../public/atlas/assets/fonts/Manaspace.ttf); }
+  @font-face { font-family: Cairo; src: url(../../public/atlas/assets/fonts/Cairo_700Bold.ttf); font-weight: 700; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html, body { width: 1200px; height: 630px; overflow: hidden; background: #0d0b14; }
+
+  /* ---------- the store ---------- */
+  .store { position: absolute; inset: 0; overflow: hidden;
+    background:
+      radial-gradient(ellipse 60% 70% at 50% 18%, rgba(255,190,120,.35), transparent 70%),
+      linear-gradient(#1c1626 0%, #241a2b 55%, #120e18 100%); }
+  /* blurred aisle behind: the game's own bridge, out of focus */
+  .aisle { position: absolute; inset: -40px; background: url(../../public/atlas/assets/scenes/bridge.png) center 35%/cover;
+    filter: blur(9px) brightness(.38) saturate(1.2); }
+  .ceiling-lights { position: absolute; top: 0; left: 0; right: 0; height: 90px; display: flex; justify-content: space-around; }
+  .ceiling-lights i { width: 180px; height: 10px; margin-top: 18px; border-radius: 6px; background: #ffe7c2;
+    box-shadow: 0 0 40px 14px rgba(255,214,160,.45); opacity: .8; }
+
+  /* sign over the shelf */
+  .sign { position: absolute; top: 26px; left: 50%; transform: translateX(-50%);
+    padding: 10px 26px 8px; border: 3px solid #f2a541; border-radius: 6px; background: rgba(18,12,24,.85);
+    font: 22px Mana, monospace; letter-spacing: 3px; color: #ffd28a; text-shadow: 0 0 10px rgba(242,165,65,.8);
+    box-shadow: 0 0 24px rgba(242,165,65,.35), inset 0 0 18px rgba(242,165,65,.2); white-space: nowrap; }
+
+  /* ---------- shelving ---------- */
+  .shelf-back { position: absolute; left: 0; right: 0; top: 100px; bottom: 112px;
+    background: linear-gradient(#2a2233, #1b1522); box-shadow: inset 0 18px 30px rgba(0,0,0,.6); }
+  .shelf-board { position: absolute; left: -10px; right: -10px; bottom: 86px; height: 30px;
+    background: linear-gradient(#4b3a2c, #2c2018); border-top: 3px solid #7a5b3d;
+    box-shadow: 0 20px 30px rgba(0,0,0,.65); }
+  .shelf-lip { position: absolute; left: -10px; right: -10px; bottom: 60px; height: 28px;
+    background: linear-gradient(#e9e3d7, #bdb5a6); border-top: 2px solid #fff; }
+  .floor { position: absolute; left: 0; right: 0; bottom: 0; height: 60px; background: linear-gradient(#17121c, #0b090e); }
+
+  /* other games on the shelf: spines only, no titles that look real */
+  .row { position: absolute; bottom: 116px; display: flex; gap: 4px; align-items: flex-end; }
+  .row.left { left: 22px; } .row.right { right: 22px; flex-direction: row-reverse; }
+  .spine { width: 38px; border-radius: 3px 3px 0 0; position: relative; filter: brightness(.55) saturate(.8);
+    box-shadow: inset -6px 0 10px rgba(0,0,0,.35), inset 3px 0 0 rgba(255,255,255,.08); }
+  .spine::before { content: ""; position: absolute; left: 7px; right: 7px; top: 14px; height: 4px; background: rgba(255,255,255,.35); border-radius: 2px; }
+  .spine::after  { content: ""; position: absolute; left: 10px; right: 10px; top: 26px; bottom: 30px; background: rgba(255,255,255,.12); border-radius: 2px; }
+  .face { width: 150px; height: 210px; border-radius: 4px; filter: brightness(.5) saturate(.85); background-size: cover; background-position: center;
+    box-shadow: inset 0 0 0 4px rgba(0,0,0,.4), 0 8px 18px rgba(0,0,0,.5); position: relative; }
+  .face::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 22px; background: rgba(0,0,0,.55); }
+
+  /* ---------- the hero box ---------- */
+  .stage { position: absolute; left: 50%; bottom: 114px; width: 300px; height: 400px; transform: translateX(-50%);
+    perspective: 1400px; }
+  .spot { position: absolute; left: 50%; bottom: 100px; width: 640px; height: 520px; transform: translateX(-50%);
+    background: radial-gradient(ellipse at 50% 60%, rgba(255,214,150,.38), transparent 62%); pointer-events: none; }
+  .box { position: absolute; inset: 0; transform-style: preserve-3d; transform: rotateY(22deg) rotateX(2deg); }
+  .front, .side, .top { position: absolute; backface-visibility: hidden; }
+  .front { inset: 0; border-radius: 6px; overflow: hidden; transform: translateZ(28px);
+    background: #10101a; box-shadow: 0 0 0 2px rgba(255,255,255,.08); }
+  .side { top: 0; bottom: 0; left: 0; width: 56px; transform-origin: left center; transform: translateZ(28px) rotateY(-90deg);
+    background: linear-gradient(90deg, #0d1a2e, #1d3556 60%, #0d1a2e); border-radius: 6px 0 0 6px;
+    display: flex; align-items: center; justify-content: center; }
+  .side span { writing-mode: vertical-rl; transform: rotate(180deg); font: 900 22px Shupp, sans-serif; letter-spacing: 3px; color: #f2a541; }
+  .shadow { position: absolute; left: -40px; right: -10px; bottom: -14px; height: 30px; border-radius: 50%;
+    background: radial-gradient(ellipse, rgba(0,0,0,.75), transparent 70%); }
+
+  /* cover art */
+  .cover-bg { position: absolute; inset: 0; background: url(../../public/atlas/assets/scenes/bridge.png) 38% 50%/auto 100%; }
+  .cover-bg::after { content: ""; position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(8,8,22,.92) 0%, rgba(8,8,22,.25) 34%, rgba(8,8,22,0) 55%, rgba(8,8,22,.85) 100%); }
+  .band { position: absolute; top: 0; left: 0; right: 0; height: 30px; display: flex; align-items: center; justify-content: space-between;
+    padding: 0 12px 0 18px; background: linear-gradient(90deg, #f2a541, #e0762b); color: #1a1020; font: 700 13px Cairo, sans-serif; letter-spacing: 2px; }
+  .band b { font: 13px Mana, monospace; letter-spacing: 1px; }
+  .ship { position: absolute; top: 100px; left: 24px; width: 270px; transform: rotate(-8deg); filter: drop-shadow(0 10px 14px rgba(0,0,0,.6)); }
+  .title { position: absolute; top: 40px; left: 0; right: 0; text-align: center; }
+  .title small { display: block; font: 12px Mana, monospace; letter-spacing: 4px; color: #9fd3ff; margin-bottom: 2px; }
+  .title h1 { font: 900 36px/0.92 Shupp, sans-serif; color: #ffe2a8; letter-spacing: 1px; text-transform: uppercase;
+    -webkit-text-stroke: 1px #6b2f10; text-shadow: 0 3px 0 #b8521a, 0 6px 0 #4a1d08, 0 0 22px rgba(242,165,65,.55); }
+  .hero { position: absolute; left: 10px; bottom: 0; height: 225px; filter: drop-shadow(0 0 12px rgba(0,0,0,.7)); }
+  .crew { position: absolute; right: 18px; bottom: 58px; display: flex; gap: 4px; }
+  .crew div { width: 64px; height: 64px; background-size: auto 100%; background-repeat: no-repeat; image-rendering: pixelated; }
+  .badge { position: absolute; right: 12px; bottom: 12px; width: 50px; height: 58px; border: 2px solid #fff; border-radius: 4px;
+    background: #111; color: #fff; text-align: center; font: 700 22px/30px Cairo, sans-serif; }
+  .badge small { display: block; font: 8px/10px Mana, monospace; letter-spacing: 1px; border-top: 2px solid #fff; padding-top: 4px; }
+  .blurb { position: absolute; left: 92px; right: 66px; bottom: 16px; font: 11px/1.25 Mana, monospace; color: #e8e3ff; text-align: right; }
+  .gloss { position: absolute; inset: 0; background: linear-gradient(115deg, rgba(255,255,255,.18) 0%, rgba(255,255,255,0) 30%, rgba(255,255,255,0) 70%, rgba(255,255,255,.07) 100%); }
+
+  /* sticker + price tag */
+  .sticker { position: absolute; top: 170px; right: -38px; width: 96px; height: 96px; border-radius: 50%; transform: rotate(14deg) translateZ(40px);
+    background: radial-gradient(circle at 35% 30%, #ff6b6b, #c81d3a); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font: 900 20px/0.95 Shupp, sans-serif; text-align: center; box-shadow: 0 6px 14px rgba(0,0,0,.5); border: 3px dashed rgba(255,255,255,.7); }
+  .sticker small { font: 10px Mana, monospace; letter-spacing: 1px; margin-top: 4px; }
+  .tag { position: absolute; bottom: 62px; left: 50%; transform: translateX(-50%); width: 270px; height: 24px; background: #fff8e4;
+    border: 2px solid #c9b98f; display: flex; align-items: center; justify-content: space-between; padding: 0 10px;
+    font: 13px Mana, monospace; color: #2a1d10; }
+  .tag b { font: 700 15px Cairo, sans-serif; color: #b8231b; }
+
+  /* URL plate, bottom right of the card */
+  .url { position: absolute; right: 26px; bottom: 14px; font: 22px Mana, monospace; color: #ffd28a; letter-spacing: 2px;
+    text-shadow: 0 0 10px rgba(242,165,65,.7); }
+  .press { position: absolute; left: 26px; bottom: 16px; font: 16px Mana, monospace; color: #9fd3ff; letter-spacing: 3px; }
+  .press::before { content: "\25B6  "; color: #f2a541; }
+</style>
+</head>
+<body>
+<div class="store">
+  <div class="aisle"></div>
+  <div class="ceiling-lights"><i></i><i></i><i></i></div>
+  <div class="shelf-back"></div>
+  <div class="sign">NEW RELEASE / NOW BOARDING</div>
+
+  <div class="row left">
+    <div class="face" style="background-image:url(../../public/atlas/assets/scenes/engine_room.png)"></div>
+    <div class="spine" style="height:212px;background:#3b5c7a"></div>
+    <div class="spine" style="height:212px;background:#7a3b4c"></div>
+    <div class="spine" style="height:212px;background:#3f6b4a"></div>
+    <div class="spine" style="height:212px;background:#6b5a2f"></div>
+  </div>
+  <div class="row right">
+    <div class="face" style="background-image:url(../../public/atlas/assets/scenes/quarters.png)"></div>
+    <div class="spine" style="height:212px;background:#5a3f7a"></div>
+    <div class="spine" style="height:212px;background:#2f5f6b"></div>
+    <div class="spine" style="height:212px;background:#7a5a3b"></div>
+    <div class="spine" style="height:212px;background:#4a4a5a"></div>
+  </div>
+
+  <div class="spot"></div>
+  <div class="shelf-board"></div>
+  <div class="shelf-lip"></div>
+  <div class="floor"></div>
+
+  <div class="stage">
+    <div class="shadow"></div>
+    <div class="box">
+      <div class="side"><span>THE SCATTERED ATLAS</span></div>
+      <div class="front">
+        <div class="cover-bg"></div>
+        <div class="band"><span>SHUPP.DEV</span><b>WEB / WASM</b></div>
+        <div class="title"><small>A SPRITE JRPG</small><h1>The Scattered<br>Atlas</h1></div>
+        <img class="ship" src="../../public/atlas/assets/ships/atlier/exterior.png" alt="" />
+        <img class="hero" src="../../public/atlas/assets/portraits/full_body.png" alt="" />
+        <div class="blurb">Walk the ship.<br>Talk to the crew.<br>Read the quest log.</div>
+        <div class="badge">C<small>ALL CREW</small></div>
+        <div class="gloss"></div>
+      </div>
+      <div class="sticker">PLAY<br>FREE<small>IN BROWSER</small></div>
+    </div>
+  </div>
+
+  <div class="tag"><span>SCATTERED ATLAS</span><b>$0.00</b></div>
+  <div class="press">PRESS START</div>
+  <div class="url">shupp.dev</div>
+</div>
+</body>
+</html>
