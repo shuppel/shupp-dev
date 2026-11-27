@@ -1022,7 +1022,7 @@ fn input(
             }
             // A quest opened in full: any key or tap closes it, except the resume hint.
             if ui.quest_full {
-                if tap.is_some_and(|at| RESUME_BTN.contains(at)) {
+                if ui.touch && tap.is_some_and(|at| RESUME_BTN.contains(at)) {
                     bridge::emit("open", "/resume");
                 } else if back || ok || tap.is_some() || left || right || up || down {
                     ui.quest_full = false;
@@ -1120,7 +1120,7 @@ fn input(
                     }
                     ui.sel = i;
                     changed = true;
-                } else if ui.tab == 3 && RESUME_BTN.contains(at) {
+                } else if ui.tab == 3 && ui.touch && RESUME_BTN.contains(at) {
                     bridge::emit("open", "/resume");
                 } else if ui.tab == 3 && QUEST_CARD.contains(at) {
                     ui.quest_full = true;
@@ -2057,21 +2057,27 @@ fn render_sheet(commands: &mut Commands, overlay: Entity, ui: &Ui, registry: &Re
             BackgroundColor(t.foot),
             BorderColor { top: t.rule, ..BorderColor::all(Color::NONE) },
         ));
-        let (hx0, hy) = (40.0, 330.0);
-        match ui.tab {
-            3 => {
-                let mut x = hx0;
-                if !ui.touch {
-                    x += keycap(p, f, t, x, hy, "F") + 5.0;
-                }
-                p.spawn(text_at(&f.label, 7.0, t.title, if ui.touch { "FULL RESUME ›" } else { "FULL RESUME" }, x, hy + 2.0, 90.0));
+        // Key hints: one short row, just what this section adds. On touch,
+        // only the resume button on Quests.
+        let hy = 330.0;
+        if ui.touch {
+            if ui.tab == 3 {
+                p.spawn(text_at(&f.label, 7.0, t.title, "FULL RESUME ›", 40.0, hy + 2.0, 90.0));
             }
-            _ if !ui.touch => {
-                let (k, what) = if ui.tab == 2 { ("SHIFT TAB", "NEXT SUIT") } else { ("TAB", "NEXT SECTION") };
-                let w = keycap(p, f, t, hx0, hy, k);
-                p.spawn(text_at(&f.label, 7.0, t.label, what, hx0 + w + 5.0, hy + 2.0, 90.0));
+        } else {
+            let mut hints = vec![("TAB", "SECTION")];
+            match ui.tab {
+                2 => hints.push(("SHIFT TAB", "SUIT")),
+                3 => hints.extend([("ENTER", "OPEN"), ("F", "RESUME")]),
+                _ => {}
             }
-            _ => {}
+            hints.push(("ESC", "CLOSE"));
+            let mut x = 40.0;
+            for (k, word) in hints {
+                x += keycap(p, f, t, x, hy, k) + 4.0;
+                p.spawn(text_at(&f.label, 6.5, t.label, word, x, hy + 2.5, 50.0));
+                x += word.len() as f32 * 3.7 + 10.0;
+            }
         }
         let tr0 = theme_rect(0);
         if !ui.touch {
@@ -2293,7 +2299,9 @@ fn quests_tab(p: &mut ChildSpawnerCommands, f: &Fonts, art: &UiArt, t: &Theme, u
         p.spawn(text_at(&f.body, 9.5, t.text.with_alpha(0.9), truncate(&q.summary, 240), x, ty, w));
         let feats: Vec<String> = q.feats.iter().take(3).map(|v| format!("• {}", truncate(v, 70))).collect();
         p.spawn(text_at(&f.body, 8.5, t.label, feats.join("\n"), x, y + 186.0, w));
-        p.spawn(text_at(&f.label, 6.5, t.label.with_alpha(0.8), if ui.touch { "TAP THE CARD FOR THE FULL QUEST" } else { "ENTER FOR THE FULL QUEST" }, x, r.max.y - 14.0, w));
+        if ui.touch {
+            p.spawn(text_at(&f.label, 6.5, t.label.with_alpha(0.8), "TAP THE CARD FOR THE FULL QUEST", x, r.max.y - 14.0, w));
+        }
     } else if let Some(tr) = stats.training.get(ui.sel - quests.len()) {
         record_card(p, f, t, t.label, "Training quest", &tr.title, None, &[("School", tr.place.clone()), ("Years", tr.years.clone())], "");
     }
