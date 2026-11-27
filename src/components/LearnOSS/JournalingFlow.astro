@@ -1,0 +1,112 @@
+---
+import DiagramFrame from './DiagramFrame.astro';
+---
+
+<DiagramFrame
+  title="Write-ahead logging (journaling)"
+  caption="The intent is durably logged before any block changes, so a crash at any point is recoverable: replay the log on reboot and the file system is consistent again. This is the scheme behind ext3/ext4, NTFS, and APFS."
+>
+  <svg viewBox="0 0 760 250" role="img" aria-label="Flow diagram of write-ahead logging: append intent to the log, update cached blocks, flush lazily; after a crash, replay the log to restore consistency">
+    <defs>
+      <marker id="jf-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" class="arrow-head" />
+      </marker>
+    </defs>
+
+    <!-- Step 1 -->
+    <rect x="20" y="40" width="160" height="66" rx="10" class="step" />
+    <text x="100" y="66" class="step-name">Operation</text>
+    <text x="100" y="84" class="step-sub">"add block x to</text>
+    <text x="100" y="98" class="step-sub">inode y at index z"</text>
+
+    <!-- Step 2 (the load-bearing one) -->
+    <rect x="220" y="40" width="160" height="66" rx="10" class="step step-log" />
+    <text x="300" y="66" class="step-name">1 · Log the intent</text>
+    <text x="300" y="84" class="step-sub">sequential write,</text>
+    <text x="300" y="98" class="step-sub">synced to disk first</text>
+
+    <!-- Step 3 -->
+    <rect x="420" y="40" width="160" height="66" rx="10" class="step" />
+    <text x="500" y="66" class="step-name">2 · Update cache</text>
+    <text x="500" y="84" class="step-sub">bitmap + inode</text>
+    <text x="500" y="98" class="step-sub">blocks in memory</text>
+
+    <!-- Step 4 -->
+    <rect x="620" y="40" width="120" height="66" rx="10" class="step" />
+    <text x="680" y="66" class="step-name">3 · Flush</text>
+    <text x="680" y="84" class="step-sub">lazily, log</text>
+    <text x="680" y="98" class="step-sub">already safe</text>
+
+    <path d="M 180 73 L 216 73" class="edge" marker-end="url(#jf-arrow)" />
+    <path d="M 380 73 L 416 73" class="edge" marker-end="url(#jf-arrow)" />
+    <path d="M 580 73 L 616 73" class="edge" marker-end="url(#jf-arrow)" />
+
+    <!-- Crash branch -->
+    <path d="M 500 106 C 500 140, 460 160, 420 172" class="edge edge-crash" marker-end="url(#jf-arrow)" />
+    <text x="540" y="146" class="crash-mark">⚡ crash anywhere here</text>
+
+    <rect x="150" y="168" width="260" height="56" rx="10" class="step step-recover" />
+    <text x="280" y="192" class="step-name">On reboot: replay the log</text>
+    <text x="280" y="210" class="step-sub">no full-disk scan — fast, consistent recovery</text>
+
+    <path d="M 150 196 C 110 196, 100 140, 100 110" class="edge edge-crash" marker-end="url(#jf-arrow)" />
+    <text x="94" y="150" class="edge-label">resume</text>
+  </svg>
+</DiagramFrame>
+
+<style>
+  .step {
+    fill: var(--surface-muted);
+    stroke: var(--color-tertiary);
+    stroke-width: 1.5;
+  }
+
+  .step-log {
+    fill: var(--hover-tint);
+    stroke-width: 2.5;
+  }
+
+  .step-recover {
+    stroke-dasharray: 5 4;
+  }
+
+  .step-name {
+    fill: var(--text-color);
+    font-size: 13.5px;
+    font-weight: 700;
+    text-anchor: middle;
+  }
+
+  .step-sub {
+    fill: var(--text-muted);
+    font-size: 11.5px;
+    text-anchor: middle;
+  }
+
+  .edge {
+    fill: none;
+    stroke: var(--color-tertiary);
+    stroke-width: 1.75;
+  }
+
+  .edge-crash {
+    stroke-dasharray: 3 3;
+  }
+
+  .arrow-head {
+    fill: var(--color-tertiary);
+  }
+
+  .edge-label {
+    fill: var(--text-muted);
+    font-size: 12px;
+    text-anchor: middle;
+  }
+
+  .crash-mark {
+    fill: var(--text-muted);
+    font-size: 12.5px;
+    font-weight: 600;
+    text-anchor: start;
+  }
+</style>

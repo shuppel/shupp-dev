@@ -1,0 +1,26 @@
+---
+import ThreadLifecycle from './ThreadLifecycle.astro';
+import AddressTranslation from './AddressTranslation.astro';
+import StorageHierarchy from './StorageHierarchy.astro';
+import JournalingFlow from './JournalingFlow.astro';
+
+// Registry of diagrams a course unit can reference by name in its frontmatter
+// (`units[].diagram`). Unknown names render nothing so content can't break pages.
+export interface Props {
+  name: string;
+}
+
+const { name } = Astro.props;
+
+const registry = {
+  'thread-lifecycle': ThreadLifecycle,
+  'address-translation': AddressTranslation,
+  'storage-hierarchy': StorageHierarchy,
+  'journaling-flow': JournalingFlow,
+} as const;
+
+const isKnown = (n: string): n is keyof typeof registry => n in registry;
+const Diagram = isKnown(name) ? registry[name] : null;
+---
+
+{Diagram !== null && <Diagram />}

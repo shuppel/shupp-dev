@@ -1,0 +1,89 @@
+---
+import DiagramFrame from './DiagramFrame.astro';
+---
+
+<DiagramFrame
+  title="The thread lifecycle"
+  caption="Notice there is no arrow from ready to blocked: a thread has to be running to ask for something worth waiting on."
+>
+  <svg viewBox="0 0 720 320" role="img" aria-label="State diagram showing threads moving between running, ready, and blocked states">
+    <defs>
+      <marker id="tl-arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" class="arrow-head" />
+      </marker>
+    </defs>
+
+    <!-- Running (top center, highlighted: it holds the core) -->
+    <rect x="285" y="30" width="150" height="60" rx="10" class="state state-active" />
+    <text x="360" y="55" class="state-name">Running</text>
+    <text x="360" y="76" class="state-sub">owns a core</text>
+
+    <!-- Ready (bottom left) -->
+    <rect x="70" y="220" width="150" height="60" rx="10" class="state" />
+    <text x="145" y="245" class="state-name">Ready</text>
+    <text x="145" y="266" class="state-sub">waiting in queue</text>
+
+    <!-- Blocked (bottom right) -->
+    <rect x="500" y="220" width="150" height="60" rx="10" class="state" />
+    <text x="575" y="245" class="state-name">Blocked</text>
+    <text x="575" y="266" class="state-sub">waiting on a resource</text>
+
+    <!-- Ready -> Running: dispatch -->
+    <path d="M 168 220 C 200 150, 240 105, 288 82" class="edge" marker-end="url(#tl-arrow)" />
+    <text x="176" y="128" class="edge-label">dispatch</text>
+
+    <!-- Running -> Ready: preempt -->
+    <path d="M 302 96 C 265 140, 225 180, 190 216" class="edge" marker-end="url(#tl-arrow)" />
+    <text x="298" y="176" class="edge-label">preempt / yield</text>
+
+    <!-- Running -> Blocked: wait -->
+    <path d="M 418 96 C 460 140, 505 180, 545 216" class="edge" marker-end="url(#tl-arrow)" />
+    <text x="512" y="150" class="edge-label">wait: I/O, lock, page fault</text>
+
+    <!-- Blocked -> Ready: resource available -->
+    <path d="M 500 262 C 400 292, 320 292, 224 266" class="edge" marker-end="url(#tl-arrow)" />
+    <text x="360" y="308" class="edge-label">resource becomes available</text>
+  </svg>
+</DiagramFrame>
+
+<style>
+  .state {
+    fill: var(--surface-muted);
+    stroke: var(--color-tertiary);
+    stroke-width: 1.5;
+  }
+
+  .state-active {
+    fill: var(--hover-tint);
+    stroke-width: 2.5;
+  }
+
+  .state-name {
+    fill: var(--text-color);
+    font-size: 17px;
+    font-weight: 700;
+    text-anchor: middle;
+  }
+
+  .state-sub {
+    fill: var(--text-muted);
+    font-size: 12px;
+    text-anchor: middle;
+  }
+
+  .edge {
+    fill: none;
+    stroke: var(--color-tertiary);
+    stroke-width: 1.75;
+  }
+
+  .arrow-head {
+    fill: var(--color-tertiary);
+  }
+
+  .edge-label {
+    fill: var(--text-muted);
+    font-size: 12.5px;
+    text-anchor: middle;
+  }
+</style>

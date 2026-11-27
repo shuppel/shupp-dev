@@ -1,0 +1,96 @@
+---
+import DiagramFrame from './DiagramFrame.astro';
+
+// Access latency per tier, from the CS 111 disks / flash / NVM lectures.
+// Bars are on a log scale: x(v) = X0 + (log10(v in ns) - 1) * STEP
+const X0 = 170;
+const STEP = 78;
+const x = (ns: number): number => X0 + (Math.log10(ns) - 1) * STEP;
+
+const rows = [
+  { name: 'DRAM', sub: 'volatile', ns: 100, label: '~100 ns', opacity: 0.35 },
+  { name: 'NVM', sub: 'e.g. Optane', ns: 300, label: '~100–300 ns', opacity: 0.5 },
+  { name: 'Flash (SSD)', sub: 'persistent', ns: 100_000, label: '~20–100 µs', opacity: 0.7 },
+  { name: 'Disk (HDD)', sub: 'persistent', ns: 10_000_000, label: '~2–10 ms', opacity: 0.9 },
+];
+
+const ticks = [
+  { ns: 100, label: '100ns' },
+  { ns: 1_000, label: '1µs' },
+  { ns: 10_000, label: '10µs' },
+  { ns: 100_000, label: '100µs' },
+  { ns: 1_000_000, label: '1ms' },
+  { ns: 10_000_000, label: '10ms' },
+];
+
+const rowY = (i: number): number => 56 + i * 48;
+const AXIS_Y = 248;
+---
+
+<DiagramFrame
+  title="The storage hierarchy — access latency, log scale"
+  caption="Each step down is roughly persistent-er, bigger, and cheaper per bit — and orders of magnitude slower. DRAM is ~100,000× faster than disk, while disk is ~100× cheaper per bit; that gap is why demand paging, block caches, and flash translation layers exist."
+>
+  <svg viewBox="0 0 720 290" role="img" aria-label="Log-scale bar chart comparing access latency of DRAM at about 100 nanoseconds, nonvolatile memory at 100 to 300 nanoseconds, flash at 20 to 100 microseconds, and disk at 2 to 10 milliseconds">
+    <!-- recessive log grid -->
+    {ticks.map(t => (
+      <>
+        <line x1={x(t.ns)} y1="44" x2={x(t.ns)} y2={AXIS_Y} class="grid" />
+        <text x={x(t.ns)} y={AXIS_Y + 18} class="tick">{t.label}</text>
+      </>
+    ))}
+    <line x1={X0} y1={AXIS_Y} x2="640" y2={AXIS_Y} class="axis" />
+
+    <!-- latency bars, one sequential hue stepped by magnitude -->
+    {rows.map((r, i) => (
+      <>
+        <text x="158" y={rowY(i) + 14} class="row-name">{r.name}</text>
+        <text x="158" y={rowY(i) + 30} class="row-sub">{r.sub}</text>
+        <rect x={X0} y={rowY(i)} width={x(r.ns) - X0} height="24" rx="4" class="bar" opacity={r.opacity} />
+        <text x={x(r.ns) + 10} y={rowY(i) + 17} class="value">{r.label}</text>
+      </>
+    ))}
+  </svg>
+</DiagramFrame>
+
+<style>
+  .grid {
+    stroke: var(--border-subtle);
+    stroke-width: 1;
+  }
+
+  .axis {
+    stroke: var(--text-muted);
+    stroke-width: 1;
+  }
+
+  .tick {
+    fill: var(--text-muted);
+    font-size: 11.5px;
+    text-anchor: middle;
+  }
+
+  .row-name {
+    fill: var(--text-color);
+    font-size: 14px;
+    font-weight: 700;
+    text-anchor: end;
+  }
+
+  .row-sub {
+    fill: var(--text-muted);
+    font-size: 11.5px;
+    text-anchor: end;
+  }
+
+  .bar {
+    fill: var(--color-tertiary);
+  }
+
+  .value {
+    fill: var(--text-color);
+    font-size: 12.5px;
+    font-weight: 600;
+    text-anchor: start;
+  }
+</style>
