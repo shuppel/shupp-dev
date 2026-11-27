@@ -20,6 +20,8 @@ pub enum Inbound {
     Search(String),
     /// The page's guess that this is a touch device, before any tap.
     Touch(bool),
+    /// Phones: the page draws the menus and terminals as scrolling sheets.
+    HtmlMenus(bool),
 }
 
 thread_local! {
@@ -93,6 +95,12 @@ mod web {
         super::push(super::Inbound::Touch(touch));
     }
 
+    /// Phones: hand the menus and terminals to the page's scrolling sheets.
+    #[wasm_bindgen]
+    pub fn set_html_menus(on: bool) {
+        super::push(super::Inbound::HtmlMenus(on));
+    }
+
     #[wasm_bindgen]
     pub fn set_paused(paused: bool) {
         super::push(super::Inbound::Paused(paused));
@@ -100,7 +108,7 @@ mod web {
 }
 
 #[cfg(target_arch = "wasm32")]
-pub use web::{go, search, set_dialogue_font, set_paused, set_touch, start, tap};
+pub use web::{go, search, set_dialogue_font, set_html_menus, set_paused, set_touch, start, tap};
 
 #[cfg(target_arch = "wasm32")]
 pub(crate) fn emit(kind: &str, value: &str) {

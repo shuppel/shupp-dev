@@ -55,10 +55,15 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
     <p class="boot-text" id="boot-text">Boarding…</p>
   </div>
 
-  <div class="rotate" id="rotate" hidden>
-    <p>Turn your phone sideways for the full ship.</p>
-    <button type="button" id="rotate-dismiss">Play anyway</button>
-  </div>
+  <!-- Phones: the menu and terminals as one scrolling sheet over the paused game. -->
+  <section class="sheet" id="sheet" hidden aria-modal="true" role="dialog" aria-labelledby="sheet-title">
+    <header class="sheet-head">
+      <h2 id="sheet-title">Menu</h2>
+      <button type="button" class="sheet-close" id="sheet-close" aria-label="Close">×</button>
+    </header>
+    <nav class="sheet-tabs" id="sheet-tabs" aria-label="Menu sections"></nav>
+    <div class="sheet-body" id="sheet-body"></div>
+  </section>
 
   <!-- Screen readers, no-WebGL devices and search engines get the plain version. -->
   <nav class="fallback" id="fallback" aria-label="Site">
@@ -86,6 +91,7 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
       set_paused: (p: boolean) => void;
       set_dialogue_font: (mana: boolean) => void;
       set_touch: (touch: boolean) => void;
+      set_html_menus: (on: boolean) => void;
       tap: (x: number, y: number, touch: boolean) => void;
       search: (text: string) => void;
     };
@@ -172,16 +178,109 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
         lastProgress = Date.now();
       } else if (kind === 'ready') {
         reveal();
+      } else if (kind === 'sheet') {
+        openSheet(value);
       }
     };
 
-    // Portrait phones: suggest landscape, but never block.
-    const portrait = matchMedia('(orientation: portrait) and (max-width: 700px)');
-    let dismissed = false;
-    const syncRotate = () => { $('rotate').hidden = dismissed || !portrait.matches; };
-    portrait.addEventListener('change', syncRotate);
-    $('rotate-dismiss').addEventListener('click', () => { dismissed = true; syncRotate(); });
-    syncRotate();
+    // ---- Phone sheets: the menu and terminals as scrolling HTML -------------
+    type Card = { name: string; suit: string; mastery: number; feeds: string; flavor: string };
+    type KeyItem = { name: string; from: string; note: string; kind: string; type?: string; rarity: string; year?: number; bonus: string };
+    type Dest = { id: string; name: string; label: string; preview: string; href: string; items: { title: string; description?: string; href: string; meta?: string }[] };
+    const registry = JSON.parse($('atlas-registry').textContent || '{}');
+    const stats = registry.player?.stats ?? {};
+    const esc = (s: unknown) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
+    const TIER: Record<string, number> = { common: 0, uncommon: 1, rare: 2, unique: 3, legendary: 4 };
+    // Same picks as item_image / card_image in atlas/src/ui.rs.
+    const icon = (row: number, col: number) => `<span class="ticon" style="background-position:${-col * 40}px ${-row * 40}px" aria-hidden="true"></span>`;
+    const itemIcon = (it: KeyItem) => {
+      const col = it.type === 'scroll' || it.type === 'codex' ? 0 : /DEV/.test(it.bonus) ? 1 : /PRO|GTM/.test(it.bonus) ? 2 : 3;
+      return icon(TIER[it.rarity] ?? 0, col);
+    };
+    const cardIcon = (c: Card) => icon(c.mastery >= 5 ? 4 : c.mastery === 4 ? 2 : c.mastery === 3 ? 1 : 0, c.suit === 'discipline' ? 2 : c.suit === 'special' ? 3 : 1);
+    const SUITS: [string, string][] = [['skill', 'Proficiencies'], ['discipline', 'Disciplines'], ['special', 'Philosophies'], ['equipment', 'Skills']];
+    const TABS = ['Status', 'Items', 'Skills', 'Quests'];
+    let hatch = false;
+
+    function statusHtml() {
+      const profile: Card[] = (stats.cards ?? []).filter((c: Card) => c.suit === 'profile');
+      const type = profile.find((c) => !c.name.includes('·'));
+      const strengths = profile.filter((c) => c.name.includes('·'));
+      const current = (stats.questLog ?? []).find((q: { current: boolean }) => q.current);
+      return `
+        <div class="s-hero"><img src="/atlas/assets/portraits/full_body.png" alt="" width="96" height="196" />
+          <div><p class="s-name">${esc(stats.name)}</p><p class="s-class">Class · ${esc(stats.title)}</p><p class="s-muted">${esc(stats.location)}</p><p class="s-lv">LV <b>${esc(stats.level)}</b></p></div></div>
+        <h3>Attributes</h3>
+        <dl class="s-attrs">${(stats.attributes ?? []).map((a: { label: string; value: number; note: string }) => `<div><dt>${esc(a.label)}</dt><dd>${esc(a.value)}</dd><p>${esc(a.note)}</p></div>`).join('')}</dl>
+        <h3>Competencies</h3>
+        <ul class="s-bars">${(stats.radar ?? []).map((a: { label: string; value: number; note: string }) => `<li><span>${esc(a.label)}</span><i style="width:${Math.min(100, a.value * 10)}%"></i><b>${Math.round(a.value)}</b></li>`).join('')}</ul>
+        ${type ? `<h3>Alignment</h3><div class="s-align">${icon(3, 2)}<p><b>${esc(type.name)}</b> · The Visionary</p></div>
+          <ul class="s-strengths">${strengths.map((c, i) => `<li>${icon(5, i % 4)}${esc(c.name.replace(' · ', ' '))}</li>`).join('')}</ul>` : ''}
+        ${current ? `<h3>Current quest</h3><p class="s-quest"><b>${esc(current.title)}</b><br><span>${esc(current.place)} · ${esc(current.years)}</span></p>` : ''}`;
+    }
+    function itemsHtml() {
+      const items: KeyItem[] = [...(stats.inventory?.keyItems ?? [])];
+      if (hatch) items.push({ name: "Dave's Socket Wrench", from: 'Engine room hatch', note: 'Brass, heavy, stamped "D." on the handle. Dave says he lost it years ago. He didn\'t.', kind: 'relic', type: 'relic', rarity: 'legendary', bonus: '+1 LCK' });
+      return `<ul class="s-items">${items.map((it) => `
+        <li class="r-${esc(it.rarity)}">${itemIcon(it)}<div><p class="s-iname">${esc(it.name)}</p>
+          <p class="s-meta">${esc(it.rarity)} · ${esc(it.from)}${it.year ? ` · ${it.year}` : ''} · ${esc(it.bonus)}</p><p>${esc(it.note)}</p></div></li>`).join('')}</ul>`;
+    }
+    function skillsHtml() {
+      const cards: Card[] = stats.cards ?? [];
+      return SUITS.map(([suit, label]) => {
+        const deck = cards.filter((c) => c.suit === suit);
+        if (!deck.length) return '';
+        return `<h3>${label}</h3><ul class="s-cards">${deck.map((c) => `
+          <li>${cardIcon(c)}<div><p class="s-iname">${esc(c.name)}</p><p class="s-meta">Mastery ${c.mastery} / 5 · +${Math.ceil(c.mastery / 2)} ${esc(c.feeds)}</p><p>${esc(c.flavor)}</p></div></li>`).join('')}</ul>`;
+      }).join('');
+    }
+    function questsHtml() {
+      const quests = stats.questLog ?? [];
+      return `${quests.map((q: { title: string; place: string; years: string; current: boolean; summary: string; feats: string[]; tech: string[] }) => `
+        <article class="s-q${q.current ? ' now' : ''}"><p class="s-iname">${esc(q.title)}</p><p class="s-meta">${esc(q.place)} · ${esc(q.years)}${q.current ? ' · active' : ''}</p>
+          <p>${esc(q.summary)}</p>${q.feats?.length ? `<ul>${q.feats.map((f) => `<li>${esc(f)}</li>`).join('')}</ul>` : ''}
+          ${q.tech?.length ? `<p class="s-tech">${q.tech.map((t) => `<span>${esc(t)}</span>`).join('')}</p>` : ''}</article>`).join('')}
+        ${(stats.training ?? []).length ? `<h3>Training</h3><ul class="s-train">${stats.training.map((t: { title: string; place: string; years: string }) => `<li><b>${esc(t.title)}</b><br><span>${esc(t.place)} · ${esc(t.years)}</span></li>`).join('')}</ul>` : ''}
+        <p><a class="s-btn" href="/resume">Open the full resume</a></p>`;
+    }
+    function terminalHtml(d: Dest) {
+      return `<p class="s-muted">${esc(d.preview)}</p><ul class="s-links">${d.items.map((it) => `
+        <li><a href="${esc(it.href)}"${/^https?:/.test(it.href) ? ' target="_blank" rel="noopener"' : ''}><b>${esc(it.title)}</b>${it.meta ? `<span class="s-meta">${esc(it.meta)}</span>` : ''}${it.description ? `<span>${esc(it.description)}</span>` : ''}</a></li>`).join('')}</ul>
+        <p><a class="s-btn" href="${esc(d.href)}">Open ${esc(d.label)}</a></p>`;
+    }
+    function showTab(i: number) {
+      $('sheet-title').textContent = TABS[i];
+      $('sheet-tabs').querySelectorAll('button').forEach((b, j) => b.setAttribute('aria-current', String(i === j)));
+      $('sheet-body').innerHTML = [statusHtml, itemsHtml, skillsHtml, questsHtml][i]();
+      $('sheet-body').scrollTop = 0;
+    }
+    function openSheet(value: string) {
+      const [what, flag] = value.split('|');
+      hatch = flag === 'hatch';
+      const tabs = $('sheet-tabs');
+      if (what.startsWith('terminal:')) {
+        const d: Dest | undefined = (registry.destinations ?? []).find((x: Dest) => x.id === what.slice(9));
+        tabs.hidden = true;
+        $('sheet-title').textContent = d ? d.name : 'Terminal';
+        $('sheet-body').innerHTML = d ? terminalHtml(d) : '';
+        $('sheet-body').scrollTop = 0;
+      } else {
+        tabs.hidden = false;
+        tabs.innerHTML = TABS.map((t, i) => `<button type="button" data-i="${i}">${t}</button>`).join('');
+        tabs.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => showTab(Number((b as HTMLElement).dataset.i))));
+        showTab(Math.min(Number(what) || 0, TABS.length - 1));
+      }
+      $('sheet').hidden = false;
+      $('sheet-close').focus();
+    }
+    function closeSheet() {
+      if ($('sheet').hidden) return;
+      $('sheet').hidden = true;
+      game?.set_paused(false);
+      $('atlas-canvas').focus();
+    }
+    $('sheet-close').addEventListener('click', closeSheet);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
 
     let revealed = false;
     let lastProgress = Date.now();
@@ -248,7 +347,7 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
           const id = location.hash.slice(1);
           if (id) game!.go(id);
         });
-        document.addEventListener('visibilitychange', () => game!.set_paused(document.hidden));
+        document.addEventListener('visibilitychange', () => game!.set_paused(document.hidden || !$('sheet').hidden));
         // Clicks and taps go straight to the game; winit loses them in some browsers.
         const canvas = $('atlas-canvas');
         const search = $('term-search') as HTMLInputElement;
@@ -288,6 +387,10 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
         }
         if (new URLSearchParams(location.search).get('font') === 'body') game.set_dialogue_font(false);
         if (matchMedia('(pointer: coarse)').matches) game.set_touch(true);
+        // Phones get the scrolling sheets; tablets and desktops keep the game menus.
+        const syncSheets = () => game!.set_html_menus(matchMedia('(pointer: coarse)').matches && Math.min(innerWidth, innerHeight) < 600);
+        syncSheets();
+        window.addEventListener('resize', syncSheets);
         if (start === 'about' || start === 'contact') game.go(start);
         label.textContent = 'Unpacking the ship…';
         // Never strand someone on the loading screen if an asset hangs, but
@@ -330,16 +433,61 @@ const json = JSON.stringify(atlas).replace(/</g, '\\u003c');
   .boot-bar span { display: block; height: 100%; width: 0; background: #ee8c40; transition: width 0.2s; }
   .boot-text { margin: 0; font-size: 0.8rem; letter-spacing: 0.16em; text-transform: uppercase; color: #799496; }
 
-  .rotate { position: fixed; inset: auto 12px 12px; z-index: 5; display: flex; gap: 12px; align-items: center; justify-content: space-between;
-    padding: 10px 14px; border: 1px solid #cc8c4d; border-radius: 4px; background: rgba(20, 8, 14, 0.94); font-size: 0.85rem; }
-  .rotate[hidden] { display: none; }
-  .rotate p { margin: 0; }
-  .rotate button { min-height: 44px; padding: 0 14px; border: 1px solid #E9EB9E; border-radius: 4px; background: none; color: #E9EB9E; font: inherit; }
+  /* Phone sheet: brass-on-ink like the game menu, but real scrolling text. */
+  .sheet { position: fixed; inset: 0; z-index: 6; display: flex; flex-direction: column; background: rgba(14, 8, 14, 0.97); color: #f1eee6; font-size: 15px; }
+  .sheet[hidden] { display: none; }
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; padding: max(10px, env(safe-area-inset-top)) 16px 6px; border-bottom: 1px solid rgba(204, 140, 77, 0.5); }
+  .sheet-head h2 { margin: 0; font: 1.7rem 'Shupp', cursive; color: #E9EB9E; }
+  .sheet-close { width: 44px; height: 44px; border: 1px solid #cc8c4d; border-radius: 6px; background: none; color: #E9EB9E; font-size: 1.6rem; line-height: 1; }
+  .sheet-tabs { display: flex; gap: 6px; padding: 8px 12px; overflow-x: auto; border-bottom: 1px solid rgba(204, 140, 77, 0.3); }
+  .sheet-tabs[hidden] { display: none; }
+  .sheet-tabs button { flex: 1 0 auto; min-height: 40px; padding: 0 12px; border: 1px solid rgba(204, 140, 77, 0.6); border-radius: 4px; background: none; color: #f1eee6; font: 600 0.8rem/1 'Hind', sans-serif; letter-spacing: 0.08em; text-transform: uppercase; }
+  .sheet-tabs button[aria-current="true"] { background: rgba(238, 140, 64, 0.25); border-color: #E9EB9E; color: #E9EB9E; }
+  .sheet-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; overscroll-behavior: contain; padding: 8px 16px max(24px, env(safe-area-inset-bottom)); }
+  .sheet-body h3 { margin: 22px 0 8px; font: 600 0.75rem/1 'Hind', sans-serif; letter-spacing: 0.16em; text-transform: uppercase; color: #799496; }
+  .sheet-body p { margin: 4px 0; }
+  .s-muted, .s-meta { color: #b9b6ad; font-size: 0.85rem; }
+  .s-meta { text-transform: capitalize; color: #ee8c40; }
+  .s-hero { display: flex; gap: 14px; align-items: center; margin-top: 8px; }
+  .s-hero img { width: 84px; height: auto; }
+  .s-name { font: 1.8rem 'Shupp', cursive; color: #E9EB9E; }
+  .s-class { color: #ee8c40; font-weight: 600; font-size: 0.85rem; text-transform: uppercase; }
+  .s-lv b { font-size: 1.6rem; color: #E9EB9E; }
+  .s-attrs { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 0; }
+  .s-attrs div { padding: 8px 10px; border: 1px solid rgba(204, 140, 77, 0.35); border-radius: 4px; }
+  .s-attrs dt { display: inline; font-weight: 600; color: #799496; }
+  .s-attrs dd { display: inline; margin: 0 0 0 8px; font-size: 1.3rem; color: #c8d58a; }
+  .s-attrs p { font-size: 0.75rem; color: #b9b6ad; }
+  .s-bars { list-style: none; margin: 0; padding: 0; }
+  .s-bars li { display: grid; grid-template-columns: 44px 1fr 24px; gap: 8px; align-items: center; padding: 4px 0; }
+  .s-bars i { height: 8px; border-radius: 4px; background: linear-gradient(90deg, #cc8c4d, #E9EB9E); }
+  .s-align { display: flex; align-items: center; gap: 10px; }
+  .s-align b { font-size: 1.3rem; color: #E9EB9E; }
+  .s-strengths { list-style: none; margin: 6px 0 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .s-strengths li { display: flex; align-items: center; gap: 6px; font-weight: 600; text-transform: uppercase; font-size: 0.85rem; }
+  .s-strengths .ticon { width: 28px; height: 28px; background-size: 112px 168px; }
+  .s-items, .s-cards, .s-links, .s-train { list-style: none; margin: 0; padding: 0; }
+  .s-items li, .s-cards li { display: flex; gap: 12px; padding: 12px; margin: 8px 0; border: 1px solid rgba(204, 140, 77, 0.35); border-radius: 6px; background: rgba(0, 0, 0, 0.3); }
+  .s-items li.r-legendary { border-color: #e8ba4a; } .s-items li.r-unique { border-color: #b06bd9; }
+  .s-items li.r-rare { border-color: #4f9ed9; } .s-items li.r-uncommon { border-color: #8cbd78; } .s-items li.r-common { border-color: #9e9e9e; }
+  .s-iname { font-weight: 700; color: #E9EB9E; }
+  .ticon { flex: none; display: inline-block; width: 40px; height: 40px; background: url('/atlas/assets/ui/tier_icons.png') no-repeat; background-size: 160px 240px; }
+  .s-q { padding: 12px 0; border-bottom: 1px solid rgba(204, 140, 77, 0.3); }
+  .s-q.now .s-iname::before { content: '★ '; color: #ee8c40; }
+  .s-q ul { margin: 6px 0; padding-left: 18px; color: #d8d4ca; font-size: 0.9rem; }
+  .s-tech { display: flex; flex-wrap: wrap; gap: 4px; }
+  .s-tech span { padding: 2px 8px; border: 1px solid rgba(121, 148, 150, 0.6); border-radius: 10px; font-size: 0.75rem; color: #b9c7c8; }
+  .s-train li { padding: 8px 0; border-bottom: 1px solid rgba(204, 140, 77, 0.2); }
+  .s-train span { color: #b9b6ad; font-size: 0.85rem; }
+  .s-links li a { display: block; padding: 12px 0; border-bottom: 1px solid rgba(204, 140, 77, 0.3); color: #f1eee6; text-decoration: none; }
+  .s-links li a b { display: block; color: #E9EB9E; }
+  .s-links li a span { display: block; font-size: 0.85rem; color: #b9b6ad; }
+  .s-btn { display: inline-block; margin-top: 16px; padding: 10px 16px; border: 1px solid #E9EB9E; border-radius: 4px; color: #E9EB9E; text-decoration: none; font-weight: 600; }
 
   /* Visually hidden while the game runs; shown if it can't. */
   .fallback { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
   .no-game { overflow: auto; }
-  .no-game #atlas-canvas, .no-game .boot, .no-game .rotate { display: none; }
+  .no-game #atlas-canvas, .no-game .boot, .no-game .sheet { display: none; }
   .no-game .fallback { position: static; width: auto; height: auto; clip: auto; max-width: 640px; margin: 0 auto; padding: 32px 16px; }
   .fallback h1 { font: 2.2rem 'Shupp', cursive; color: #E9EB9E; margin: 0 0 8px; }
   .fallback ul { list-style: none; padding: 0; }

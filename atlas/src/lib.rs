@@ -463,6 +463,8 @@ pub struct Game {
     pub mana_dialogue: bool,
     /// The page says this is a touch device; ui picks it up once.
     pub touch_hint: bool,
+    /// Phones: menus and terminals open as the page's scrolling sheets.
+    pub html_menus: bool,
     /// The engine room's maintenance hatch has been opened (relic found).
     pub hatch_open: bool,
     /// Pongo has been sent to his bed in the quarters.
@@ -611,6 +613,7 @@ pub fn app(canvas: Option<String>, registry: Registry, boot: Boot, visited: Vec<
         request: None,
         mana_dialogue: true,
         touch_hint: false,
+        html_menus: false,
         hatch_open: false,
         pongo_bed: false,
     })
@@ -1016,6 +1019,7 @@ fn read_page(mut game: ResMut<Game>, mut tap: ResMut<PageTap>) {
             bridge::Inbound::Paused(p) => game.paused = p,
             bridge::Inbound::DialogueFont(mana) => game.mana_dialogue = mana,
             bridge::Inbound::Touch(t) => game.touch_hint = t,
+            bridge::Inbound::HtmlMenus(on) => game.html_menus = on,
             bridge::Inbound::Go(id) => game.request = Some(ui::Request::Destination(id)),
             bridge::Inbound::Search(q) => game.search = Some(q),
         }
@@ -1075,7 +1079,7 @@ fn pointer_walk(
     mut player: Single<&mut Player>,
 ) {
     let Some(at) = pointer_press(&mouse, &touches, &page_tap, &window, &frame) else { return };
-    if ui::hud_hit(at) || !(0.0..VW).contains(&at.x) || !(0.0..VH).contains(&at.y) {
+    if ui::hud_hit(at - Vec2::new(frame.view_x0, 0.0)) || !(0.0..VW).contains(&at.x) || !(0.0..VH).contains(&at.y) {
         return;
     }
     let hit = points_here(&game).find(|pt| pt.pos.distance(at) < 30.0).copied();
