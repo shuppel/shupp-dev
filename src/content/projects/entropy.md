@@ -17,16 +17,6 @@ anime. It pairs a hand-shaped story and art direction with generative video,
 audio, and editing pipelines driven by AI agents rather than a traditional
 production crew.
 
-<div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;border-radius:12px;margin:1.5rem 0;background:#000;">
-  <iframe
-    src="https://www.youtube.com/embed/cZX464Azeck"
-    title="ENTROPY (2027) — First AI Agentic Japanese Anime"
-    loading="lazy"
-    style="position:absolute;top:0;left:0;width:100%;height:100%;border:0;"
-    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-    allowfullscreen
-  ></iframe>
-</div>
 
 ## The experiment
 

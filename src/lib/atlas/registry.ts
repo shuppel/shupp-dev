@@ -203,9 +203,9 @@ export async function getAtlasRegistry(): Promise<AtlasRegistry> {
         ...projects.map((p) => ({
           title: p.data.title,
           description: p.data.description,
-          // The reading page, like every other terminal entry; it links on to
-          // a project's own showcase (customUrl) when it has one.
-          href: `/portfolio/${p.id}`,
+          // Design systems open their own showcase; everything else (the
+          // design spec isn't a design system) opens its reading page.
+          href: p.id === 'design-spec' ? `/portfolio/${p.id}` : (p.data.customUrl ?? `/portfolio/${p.id}`),
           meta: p.data.technologies.slice(0, 3).join(' · '),
         })),
         ...apps.map((a) => ({
