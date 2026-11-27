@@ -203,7 +203,9 @@ export async function getAtlasRegistry(): Promise<AtlasRegistry> {
         ...projects.map((p) => ({
           title: p.data.title,
           description: p.data.description,
-          href: p.data.customUrl ?? `/portfolio/${p.id}`,
+          // The reading page, like every other terminal entry; it links on to
+          // a project's own showcase (customUrl) when it has one.
+          href: `/portfolio/${p.id}`,
           meta: p.data.technologies.slice(0, 3).join(' · '),
         })),
         ...apps.map((a) => ({
@@ -212,7 +214,6 @@ export async function getAtlasRegistry(): Promise<AtlasRegistry> {
           href: `/thoughtful-app-co/${a.id}`,
           meta: `Thoughtful App Co. · ${a.data.status}`,
         })),
-        { title: 'Open the full portfolio', href: '/portfolio', meta: 'shupp.dev/portfolio' },
       ],
       chart: { x: 140 / 640, y: 137 / 360 },
     },
