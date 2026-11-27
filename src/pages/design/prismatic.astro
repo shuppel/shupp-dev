@@ -73,6 +73,7 @@ const cascades = cascadeRows(1440, 900);
 
     <!-- PRISM drop-in layer (self-imports its own fonts) -->
     <link rel="stylesheet" href="/prism/prism.css" />
+    <link rel="stylesheet" href="/prism/icons.css" />
 
     <link rel="stylesheet" href="/prism/guide.css" />
   </head>
@@ -502,13 +503,39 @@ const cascades = cascadeRows(1440, 900);
           </div>
         </section>
 
+        <section class="ds-section" aria-labelledby="ds-solid-icons">
+          <header>
+            <span class="ds-law">SOLID ICONS · THREE.JS</span>
+            <h3 id="ds-solid-icons">A small family, cut from the same prism.</h3>
+            <p>Navigation uses faceted solids, derived from the PRISM mark and the anchor palette.
+              They hold still at rest. Hover an action or focus it with the keyboard to turn its icon;
+              leave or blur to let it settle. Reduced motion keeps every solid still.</p>
+          </header>
+          <div class="ds-solid-family">
+            {[
+              ['mark', 'PRISM mark'], ['accounts', 'All accounts'], ['marketplace', 'Marketplace'],
+              ['send', 'Send money'], ['activity', 'Activity'],
+            ].map(([name, label]) => (
+              <button class="ds-solid-example prism-btn prism-btn--secondary" type="button" aria-label={`${label} — hover or focus to rotate`}>
+                <prism-icon name={name} style="--prism-icon-size:88px"></prism-icon>
+                <span>{label}</span>
+              </button>
+            ))}
+          </div>
+          <p class="ds-caption">One shared icon renderer. Static at rest; 24q per turn, 10q to settle.
+            Three.js geometry also projects in software when WebGL2 is unavailable. Text labels carry the action.</p>
+          <pre class="ds-code"><code>{`<link rel="stylesheet" href="/prism/icons.css">
+<script type="module" src="/prism/icons.js"></script>
+<button><prism-icon name="accounts"></prism-icon> All accounts</button>`}</code></pre>
+        </section>
+
         <section class="ds-section" aria-labelledby="ds-displays">
           <header>
-            <span class="ds-law">LAW 22 · ICONS &amp; DISPLAYS</span>
+            <span class="ds-law">PIXEL DISPLAYS · OPTIONAL SPECIALTY</span>
             <h3 id="ds-displays">Quantized light on tiny screens</h3>
             <p>
               After Ink &amp; Switch's <a href="https://www.inkandswitch.com/project/tenfold/playground/">Tenfold</a>:
-              icons are 8×8 displays that emit rather than print, so the glass stays dark in both modes.
+              specialty displays use 8×8 pixels that emit rather than print; primary navigation uses the solid icon family above.
               Click an icon to re-tune its band. Drag on the large display to paint.
             </p>
           </header>
@@ -612,6 +639,7 @@ const cascades = cascadeRows(1440, 900);
             <pre class="guide-code" tabindex="0" aria-label="Prismatic starter markup"><code>{`<html data-mode="day" style="--h:185; --hr:129">
 <link rel="stylesheet" href="/prism/prism.css">
 <script type="module" src="/prism/light.js"></script>
+<script type="module" is:inline src="/prism/icons.js"></script>
 
 <article class="prism-card prism-edge" data-light="transient">
   <h2>Review the release</h2>
